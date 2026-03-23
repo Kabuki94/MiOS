@@ -1,14 +1,16 @@
 #Requires -RunAsAdministrator
 <#
-.SYNOPSIS  CloudWS v3.0 — Cloud Workstation OS Builder
+.SYNOPSIS  CloudWS v3.3 — Cloud Workstation OS Builder
 .DESCRIPTION
-    Architecture: XFS root (composefs, fills entire disk) + /var/home on same FS
-    Desktop:      GNOME 50 Tokyo (Wayland-only) + Geist font + Flatpak-first app delivery
-    RPM Layer:    Nautilus, GNOME Terminal, Wine/Steam/Proton/Lutris, KVM/QEMU/Libvirt, Podman
-    Flatpak:      ALL GNOME apps + Podman Desktop + Bottles — installed at first boot via systemd
-    Hardware:     AMD RDNA2 iGPU + NVIDIA RTX 4090 (akmod) + driverctl VFIO toggle
-    Targets:      RAW disk, Hyper-V VHDX, WSL2 tarball, Anaconda ISO, local OCI
-    Self-repl:    Build scripts embedded at /usr/share/cloudws/ — run cloudws-rebuild to self-compile
+    Architecture: XFS root (composefs) + /var/home on same FS
+    Desktop:      GNOME 50 (Wayland-only) + Geist font + Flatpak-first
+    RPM Layer:    Nautilus, Ptyxis, virt-manager, Wine/Steam/Lutris, KVM/QEMU/Libvirt, Podman
+    Flatpak:      Epiphany, Baobab, Podman Desktop, Bottles, VSCodium — baked into image
+    Hardware:     Multi-GPU (Mesa + NVIDIA akmod) + driverctl VFIO toggle
+    Security:     CrowdSec IPS, fapolicyd, USBGuard, firewalld drop-zone, SELinux
+    Android:      Waydroid (LXC container, native Wayland windows)
+    Targets:      RAW, Hyper-V VHDX, WSL2, Anaconda ISO, Live USB, OCI
+    Self-repl:    Embedded at /usr/share/cloudws/ — cloudws-rebuild
 #>
 $ErrorActionPreference="Stop";Set-StrictMode -Version Latest
 $I="cloudws:latest";$O="$PWD\cloudws-deploy-out";$B="$env:TEMP\cws-build"
@@ -30,7 +32,7 @@ function Read-TimedHost($prompt, $default = 'n', $seconds = 300) {
 #  PHASE 0: ALL QUESTIONS UPFRONT
 # ══════════════════════════════════════════════════════════════════════════════
 Write-Host "`n╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║         CloudWS v3.1 — Build Configuration                  ║" -ForegroundColor Cyan
+Write-Host "║         CloudWS v3.3 — Build Configuration                  ║" -ForegroundColor Cyan
 Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 
@@ -56,6 +58,21 @@ $deployHyperV = if ($buildVhdx -eq 'y') { Read-TimedHost "  Create Hyper-V VM af
 $startVm = if ($deployHyperV -eq 'y') { Read-TimedHost "    Start VM immediately? (y/n)" 'n' } else { 'n' }
 
 # ── GHCR (absolute last step) ──
+# ── Encryption ──
+Write-Host "`n═══ Encryption ═══" -ForegroundColor Yellow
+$enableLuks = Read-TimedHost "  Enable LUKS encryption for Hyper-V/ISO/Live builds? (y/n)" 'n'
+$luksPass = ""
+if ($enableLuks -eq 'y') {
+    while ($true) {
+        $lp1 = Read-Host "  LUKS passphrase" -AsSecureString
+        $lp2 = Read-Host "  Confirm passphrase" -AsSecureString
+        $lp1p = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($lp1))
+        $lp2p = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($lp2))
+        if ($lp1p -eq $lp2p) { $luksPass = $lp1p; Write-Host "  ✓ LUKS passphrase confirmed" -ForegroundColor Green; break }
+        else { Write-Host "  ✗ Passphrases do not match. Try again." -ForegroundColor Red }
+    }
+}
+
 Write-Host "`n═══ GitHub Container Registry ═══" -ForegroundColor Yellow
 $GhcrImage = "ghcr.io/kabuki94/cloudws-bootc"
 Write-Host "  Repository: $GhcrImage" -ForegroundColor White
@@ -140,6 +157,7 @@ dnf install -y --allowerasing --nobest --skip-unavailable \
     nautilus ptyxis \
     gnome-software \
     gnome-shell-extension-appindicator gnome-shell-extension-dash-to-dock \
+    gnome-shell-extension-tiling-assistant \
     gvfs gvfs-smb gvfs-mtp gvfs-goa gvfs-afc \
     xdg-desktop-portal-gnome xdg-desktop-portal-gtk xdg-desktop-portal \
     xdg-user-dirs xdg-utils \
@@ -247,28 +265,10 @@ flatpak install --system -y --noninteractive flathub org.gnome.Platform//50 2>/d
 
 # ═══ BAKE FLATPAKS INTO IMAGE ═══
 # GNOME first-party apps: install from gnome-nightly (built against GNOME 50 / GTK4 / LibAdwaita)
-echo "[01-gnome] Installing GNOME 50 Flatpak apps (gnome-nightly)..."
+echo "[01-gnome] Installing core Flatpak apps..."
 GNOME_APPS=(
     org.gnome.Epiphany
-    org.gnome.Loupe
-    org.gnome.Showtime
-    org.gnome.Papers
-    org.gnome.Calculator
-    org.gnome.Calendar
-    org.gnome.Characters
-    org.gnome.clocks
-    org.gnome.Connections
-    org.gnome.Contacts
-    org.gnome.Maps
-    org.gnome.Weather
-    org.gnome.TextEditor
-    org.gnome.font-viewer
-    org.gnome.Logs
     org.gnome.baobab
-    org.gnome.Snapshot
-    org.gnome.Extensions
-    org.gnome.Music
-    org.gnome.Decibels
 )
 for app in "${GNOME_APPS[@]}"; do
     # Try gnome-nightly first (GNOME 50 / GTK4 / LibAdwaita latest), fall back to flathub
@@ -282,6 +282,7 @@ echo "[01-gnome] Installing third-party Flatpak apps..."
 THIRDPARTY_APPS=(
     io.podman_desktop.PodmanDesktop
     com.usebottles.bottles
+    com.vscodium.codium
 )
 for app in "${THIRDPARTY_APPS[@]}"; do
     flatpak install --system -y --noninteractive flathub "$app" 2>/dev/null \
@@ -327,7 +328,7 @@ primary-color='#241f31'
 [org/gnome/desktop/sound]
 theme-name='freedesktop'
 [org/gnome/shell]
-enabled-extensions=['dash-to-dock@micxgx.gmail.com', 'appindicatorsupport@rgcjonas.gmail.com']
+enabled-extensions=['dash-to-dock@micxgx.gmail.com', 'appindicatorsupport@rgcjonas.gmail.com', 'tiling-assistant@leleat-on-github']
 favorite-apps=['org.gnome.Epiphany.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop', 'cloudws-cockpit.desktop']
 [org/gnome/shell/extensions/dash-to-dock]
 dock-fixed=true
@@ -347,7 +348,7 @@ name='Gaming'
 apps=['steam.desktop', 'com.valvesoftware.Steam.desktop', 'net.lutris.Lutris.desktop', 'lutris.desktop', 'dosbox-staging.desktop', 'io.github.dosbox-staging.desktop', 'org.dosbox-staging.dosbox-staging.desktop', 'com.usebottles.bottles.desktop', 'gamescope.desktop']
 [org/gnome/desktop/app-folders/folders/Virt]
 name='Virtualization'
-apps=['io.podman_desktop.PodmanDesktop.desktop', 'virt-manager.desktop', 'org.gnome.Boxes.desktop', 'qemu.desktop', 'cloudws-cockpit.desktop']
+apps=['io.podman_desktop.PodmanDesktop.desktop', 'virt-manager.desktop', 'org.gnome.Boxes.desktop', 'qemu.desktop', 'cloudws-cockpit.desktop', 'waydroid.desktop']
 [org/gnome/desktop/app-folders/folders/Utilities]
 name='Utilities'
 apps=['org.gnome.Settings.desktop', 'org.gnome.SystemMonitor.desktop', 'org.gnome.Resources.desktop', 'org.gnome.DiskUtility.desktop', 'org.gnome.baobab.desktop', 'org.gnome.Extensions.desktop', 'org.gnome.Connections.desktop', 'org.gnome.Logs.desktop', 'nvidia-settings.desktop', 'nvtop.desktop', 'btop.desktop', 'virt-top.desktop', 'remote-viewer.desktop', 'org.fedoraproject.MediaWriter.desktop', 'mediawriter.desktop', 'malcontent-control.desktop', 'org.freedesktop.MalcontentControl.desktop', 'org.gnome.ParentalControls.desktop']
@@ -450,10 +451,15 @@ dnf install -y --skip-unavailable --allowerasing --nobest \
     socat nmap-ncat tcpdump iptables-nft conntrack-tools \
     nvme-cli device-mapper-multipath sg3_utils \
     chrony firewalld zram-generator \
+    fapolicyd usbguard waydroid nano \
     cdrkit xorriso genisoimage isomd5sum mediawriter squashfs-tools erofs-utils dracut-live \
     python3 python3-devel python3-pip python3-setuptools python3-wheel python3-virtualenv python3-venv \
     python3-requests python3-yaml python3-toml python3-jsonschema python3-pillow python3-tqdm \
     python3-rich python3-click python3-pytest python3-black python3-mypy python3-ruff
+# ═══ SECURITY & IPS (CrowdSec) ═══
+echo "[01-virt] Installing CrowdSec IPS..."
+curl -s https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.rpm.sh | bash
+dnf install -y --skip-unavailable --allowerasing --nobest crowdsec crowdsec-firewall-bouncer-nftables
 
 # ═══ HIGH AVAILABILITY / CLUSTERING (Pacemaker + Corosync) ═══
 dnf install -y --skip-unavailable --allowerasing --nobest \
@@ -529,6 +535,7 @@ systemctl enable cockpit.socket podman.socket osbuild-composer.socket sshd.servi
 systemctl enable podman-auto-update.timer podman-restart.service qemu-guest-agent.service hypervvssd.service hypervkvpd.service smb.service nmb.service nfs-server.service tailscaled.service 2>/dev/null||true
 systemctl enable bluetooth.service xrdp.service xrdp-sesman.service 2>/dev/null||true
 systemctl enable pcsd.service 2>/dev/null||true
+systemctl enable fapolicyd.service usbguard.service crowdsec.service crowdsec-firewall-bouncer.service 2>/dev/null||true
 systemctl enable cloud-init.service cloud-init-local.service cloud-config.service cloud-final.service 2>/dev/null||true
 systemctl enable multipathd.service chronyd.service 2>/dev/null||true
 tuned-adm profile throughput-performance 2>/dev/null||true
@@ -596,6 +603,25 @@ echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel;chmod 440 /etc/
 mkdir -p /etc/polkit-1/rules.d
 echo 'polkit.addRule(function(a,s){if(s.isInGroup("wheel")){return polkit.Result.YES;}});' > /etc/polkit-1/rules.d/49-nopasswd-wheel.rules
 echo 'polkit.addRule(function(a,s){if(a.id=="org.libvirt.unix.manage"&&s.local&&s.active&&s.isInGroup("libvirt")){return polkit.Result.YES;}});' > /etc/polkit-1/rules.d/49-nopasswd-libvirt.rules
+
+# ═══ ON-DEMAND MALWARE SCAN ALIAS ═══
+echo 'alias scan-malware="podman run --rm -v ~/.clamav:/var/lib/clamav -v /var/home:/scandir:ro docker.io/clamav/clamav:latest clamscan -r /scandir"' >> /etc/skel/.bashrc
+
+# ═══ ZERO-TRUST FIREWALL LOCKDOWN ═══
+cat > /usr/libexec/cloudws-firewall-init <<'EOFW'
+#!/bin/bash
+if command -v firewall-cmd &>/dev/null; then
+    firewall-cmd --set-default-zone=drop
+    firewall-cmd --permanent --zone=drop --add-service=cockpit
+    firewall-cmd --permanent --zone=drop --add-service=ssh
+    firewall-cmd --permanent --zone=drop --add-service=mdns
+    firewall-cmd --permanent --zone=trusted --add-interface=podman0
+    firewall-cmd --permanent --zone=trusted --add-interface=virbr0
+    firewall-cmd --permanent --zone=trusted --add-interface=waydroid0
+    firewall-cmd --reload
+fi
+EOFW
+chmod +x /usr/libexec/cloudws-firewall-init
 
 # ═══ LOCALE GENERATION ═══
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
@@ -775,8 +801,8 @@ FROM scratch AS ctx
 COPY build_files /build_files
 FROM quay.io/fedora/fedora-bootc:rawhide
 LABEL org.opencontainers.image.title="CloudWS — Cloud Workstation OS" \
-      org.opencontainers.image.description="Fedora Rawhide bootc immutable workstation: GNOME 50, Flatpak-first, KVM/QEMU GPU passthrough, Podman, NVIDIA RTX 4090" \
-      org.opencontainers.image.version="3.0.0" \
+      org.opencontainers.image.description="Fedora Rawhide bootc immutable workstation: GNOME 50, Flatpak-first, KVM/QEMU VFIO passthrough, Podman, K3s, Pacemaker HA" \
+      org.opencontainers.image.version="3.3.0" \
       org.opencontainers.image.created="$BuildDate" \
       org.opencontainers.image.authors="Kabuki94" \
       org.opencontainers.image.source="https://github.com/Kabuki94/CloudWS-bootc" \
@@ -844,6 +870,7 @@ esac
 EOREBUILD
 RUN chmod +x /usr/local/bin/cloudws-rebuild
 RUN mkdir -p /usr/lib/bootc/install && printf '[install.filesystem.root]\ntype = "xfs"\n' > /usr/lib/bootc/install/00-cloudws.toml
+RUN mkdir -p /usr/lib/bootc/install && echo '[transport]' > /usr/lib/bootc/install/01-cloudws-transport.toml && echo 'registry = "ghcr.io/kabuki94/cloudws-bootc"' >> /usr/lib/bootc/install/01-cloudws-transport.toml
 RUN bootc container lint
 "@|Out-File "$B\Containerfile" -Encoding ascii
 
@@ -851,7 +878,7 @@ RUN bootc container lint
 #  PHASE 3: BUILD OCI IMAGE
 # ════════════════════════════════════════════════════════════════════
 Write-Host "`n═══ Phase 3: Building OCI Image ═══" -ForegroundColor Cyan
-podman build --no-cache -t $I $B
+podman build --no-cache --squash-all -t $I $B
 if($LASTEXITCODE -ne 0){throw "Build failed"}
 Write-Host "  ✓ OCI image built: localhost/$I" -ForegroundColor Green
 

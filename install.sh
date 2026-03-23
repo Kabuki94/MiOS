@@ -4,49 +4,24 @@
 set -euo pipefail
 
 REPO="https://github.com/Kabuki94/CloudWS-bootc.git"
-GHCR="ghcr.io/kabuki94/cloudws-bootc:latest"
 DIR="${CLOUDWS_DIR:-$HOME/CloudWS-bootc}"
 
 echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║  CloudWS — Cloud Workstation OS Installer                   ║"
+echo "║  CloudWS v3.3 — Cloud Workstation OS                       ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo ""
 
-# Detect environment
-if [ -f /etc/os-release ]; then
-    . /etc/os-release
-    echo "  OS: $PRETTY_NAME"
-fi
+if [ -f /etc/os-release ]; then . /etc/os-release; echo "  OS: $PRETTY_NAME"; fi
 echo "  Target: $DIR"
 echo ""
 
-echo "1) Pull pre-built image from GHCR (fastest)"
-echo "2) Clone repo + build locally"
-echo "3) Clone repo only (inspect first)"
-echo "4) Install to bare metal from GHCR (bootc install)"
-read -p "Choice [1-4]: " choice
+echo "1) Clone repo + build OCI image locally"
+echo "2) Clone repo only (inspect first)"
+echo "3) Install to bare metal (requires root + target disk)"
+read -p "Choice [1-3]: " choice
 
 case "$choice" in
   1)
-    echo ""
-    echo "Pulling $GHCR ..."
-    if command -v podman &>/dev/null; then
-        podman pull "$GHCR"
-        echo ""
-        echo "✓ Image pulled. Deploy with:"
-        echo "  sudo podman run --rm -it --privileged --pid=host $GHCR bootc install to-disk /dev/sdX"
-        echo "  # Replace /dev/sdX with your target disk"
-    elif command -v docker &>/dev/null; then
-        docker pull "$GHCR"
-        echo ""
-        echo "✓ Image pulled. Deploy with:"
-        echo "  sudo docker run --rm -it --privileged --pid=host $GHCR bootc install to-disk /dev/sdX"
-    else
-        echo "✗ Neither podman nor docker found. Install one first."
-        exit 1
-    fi
-    ;;
-  2)
     echo ""
     echo "Cloning $REPO ..."
     git clone "$REPO" "$DIR" 2>/dev/null || { cd "$DIR" && git pull; }
@@ -54,59 +29,67 @@ case "$choice" in
     echo ""
     echo "Building OCI image..."
     if command -v podman &>/dev/null; then
-        podman build --no-cache -t localhost/cloudws:latest -f Containerfile .
+        podman build --no-cache --squash-all -t localhost/cloudws:latest .
         echo ""
         echo "✓ Image built: localhost/cloudws:latest"
-        echo "  Deploy: sudo podman run --rm -it --privileged --pid=host localhost/cloudws:latest bootc install to-disk /dev/sdX"
-    elif command -v docker &>/dev/null; then
-        docker build --no-cache -t localhost/cloudws:latest -f Containerfile .
         echo ""
+        echo "Deploy options:"
+        echo "  Bare metal:  sudo podman run --rm -it --privileged --pid=host localhost/cloudws:latest bootc install to-disk /dev/sdX"
+        echo "  Switch live: sudo bootc switch --transport containers-storage localhost/cloudws:latest"
+    elif command -v docker &>/dev/null; then
+        docker build --no-cache -t localhost/cloudws:latest .
         echo "✓ Image built: localhost/cloudws:latest"
     else
         echo "✗ Neither podman nor docker found."
         exit 1
     fi
     ;;
-  3)
+  2)
     echo ""
     echo "Cloning $REPO ..."
     git clone "$REPO" "$DIR" 2>/dev/null || { cd "$DIR" && git pull; }
     echo ""
     echo "✓ Repository cloned to $DIR"
     echo ""
-    echo "  Inspect:  cd $DIR && ls -la"
-    echo "  Build:    podman build --no-cache -t cloudws:latest ."
-    echo "  Deploy:   sudo bootc switch ghcr.io/kabuki94/cloudws-bootc:latest"
-    echo ""
-    echo "  Windows:  Open PowerShell as Admin → .\\cloud-ws.ps1"
+    echo "  Inspect:   cd $DIR && ls -la"
+    echo "  Build:     podman build --no-cache --squash-all -t cloudws:latest ."
+    echo "  Windows:   Open PowerShell as Admin → .\\cloud-ws.ps1"
     ;;
-  4)
+  3)
     echo ""
-    echo "Installing CloudWS directly to bare metal..."
     if [ "$(id -u)" -ne 0 ]; then
-        echo "✗ Must run as root: sudo bash -c '\$(curl -fsSL https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/install.sh)'"
+        echo "✗ Must run as root."
+        echo "  sudo bash -c '\$(curl -fsSL https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/install.sh)'"
         exit 1
     fi
-    echo ""
     echo "Available disks:"
     lsblk -d -o NAME,SIZE,MODEL,TRAN | grep -v "^NAME"
     echo ""
     read -p "Target disk (e.g., sda, nvme0n1): " disk
-    read -p "⚠ ALL DATA ON /dev/$disk WILL BE DESTROYED. Continue? (yes/no): " confirm
+    read -p "Enable LUKS encryption? (y/n): " use_luks
+    luks_flag=""
+    if [ "$use_luks" = "y" ]; then
+        while true; do
+            read -sp "LUKS passphrase: " lp1; echo
+            read -sp "Confirm passphrase: " lp2; echo
+            if [ "$lp1" = "$lp2" ]; then luks_flag="--luks-passphrase $lp1"; break
+            else echo "Passphrases do not match. Try again."; fi
+        done
+    fi
+    read -p "⚠ ALL DATA ON /dev/$disk WILL BE DESTROYED. Type 'yes' to continue: " confirm
     if [ "$confirm" = "yes" ]; then
-        if command -v podman &>/dev/null; then
-            podman run --rm -it --privileged --pid=host \
-                -v /var/lib/containers:/var/lib/containers \
-                -v /dev:/dev \
-                "$GHCR" bootc install to-disk "/dev/$disk"
-        elif command -v docker &>/dev/null; then
-            docker run --rm -it --privileged --pid=host \
-                -v /dev:/dev \
-                "$GHCR" bootc install to-disk "/dev/$disk"
-        fi
+        # Build locally first
+        echo "Building image..."
+        git clone "$REPO" /tmp/cloudws-build 2>/dev/null || true
+        cd /tmp/cloudws-build
+        podman build --no-cache --squash-all -t localhost/cloudws:latest .
+        echo "Installing to /dev/$disk ..."
+        podman run --rm -it --privileged --pid=host \
+            -v /var/lib/containers:/var/lib/containers \
+            -v /dev:/dev \
+            localhost/cloudws:latest bootc install to-disk $luks_flag "/dev/$disk"
         echo ""
-        echo "✓ CloudWS installed to /dev/$disk"
-        echo "  Reboot to start CloudWS."
+        echo "✓ CloudWS installed to /dev/$disk. Reboot to start."
     else
         echo "Aborted."
     fi
@@ -118,8 +101,8 @@ case "$choice" in
 esac
 
 echo ""
-echo "CloudWS Links:"
-echo "  Repo:    https://github.com/Kabuki94/CloudWS-bootc"
-echo "  GHCR:    ghcr.io/kabuki94/cloudws-bootc:latest"
-echo "  Update:  sudo bootc update"
-echo "  Rebuild: cloudws-rebuild"
+echo "CloudWS Commands (after deploy):"
+echo "  sudo bootc update     — Pull latest updates"
+echo "  sudo bootc rollback   — Roll back"
+echo "  cloudws-rebuild       — Rebuild from embedded sources"
+echo "  cloudws-vfio-toggle   — GPU passthrough management"
