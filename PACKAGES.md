@@ -1,4 +1,4 @@
-# CloudWS v3.3 — Complete Package Inventory
+# CloudWS v3.12 — Complete Package Inventory
 
 ## REPOSITORIES (01-repos.sh)
 
@@ -8,7 +8,7 @@
 | rpmfusion-nonfree-release-rawhide | RPMFusion nonfree (NVIDIA) |
 | fedora-workstation-repositories | Fedora workstation third-party repos |
 | dnf-plugins-core | DNF package manager plugins |
-| crowdsec repo (curl script) | CrowdSec official repository |
+| crowdsec repo (curl script) | CrowdSec official repository (sovereign mode) |
 
 ## KERNEL (02-kernel.sh)
 
@@ -31,7 +31,7 @@ gdm, gnome-shell, gnome-session, gnome-settings-daemon, gnome-control-center, mu
 nautilus, ptyxis (container-aware terminal)
 
 ### System Utilities
-gnome-software, gnome-disk-utility, gnome-system-monitor, gnome-extensions-app
+gnome-software, gnome-software-rpm-ostree, appstream-data, gnome-disk-utility, gnome-system-monitor
 
 ### Shell Extensions
 gnome-shell-extension-appindicator (system tray), gnome-shell-extension-dash-to-dock (bottom dock), gnome-shell-extension-tiling-assistant (quarter-tiling + snap assist)
@@ -52,29 +52,49 @@ flatpak
 adwaita-cursor-theme, adwaita-icon-theme, gnome-backgrounds, gsettings-desktop-schemas, colord, gnome-color-manager
 
 ### Qt Theme Bridge (dynamic GNOME theme following)
-adwaita-qt5, adwaita-qt6, qadwaitadecorations-qt5, qadwaitadecorations-qt6, qgnomeplatform-qt5, qgnomeplatform-qt6
+adwaita-qt5, adwaita-qt6, qadwaitadecorations-qt5, qadwaitadecorations-qt6, qgnomeplatform-qt5, qgnomeplatform-qt6, qt5-qtwayland, qt6-qtwayland
 
 ### Audio / Bluetooth / Power
 pipewire, pipewire-alsa, pipewire-pulseaudio, wireplumber, upower, gnome-bluetooth, bluez, bluez-tools
 
 ### Remote Desktop & Graphics
-gnome-remote-desktop, wayland-utils, vulkan-validation-layers, mesa-libEGL, mesa-libgbm
+gnome-remote-desktop, xrdp, xorgxrdp, xorg-x11-server-Xorg, wayland-utils, vulkan-validation-layers, mesa-libEGL, mesa-libgbm
 
 ### Locale & Font
-glibc-langpack-en, geist-font (git clone)
+glibc-langpack-en, geist-font (git clone — Vercel Geist family)
 
-## MULTIMEDIA (01-gnome.sh — RPMFusion)
+### Gamescope Steam Session (selectable at GDM)
+gamescope-session-steam (custom script), steam.desktop (wayland-sessions), steamos-session-select, jupiter-biosupdate, steamos-update, steamos-select-branch (dummy stubs)
+
+## MULTIMEDIA (01-gnome.sh — RPMFusion, fault-tolerant)
 ffmpeg, gstreamer1-plugins-base, gstreamer1-plugins-good, gstreamer1-plugins-bad-free, gstreamer1-plugins-bad-freeworld, gstreamer1-plugins-ugly, gstreamer1-plugins-ugly-free, gstreamer1-libav, gstreamer1-vaapi, libavcodec-freeworld
 
-## FLATPAK APPLICATIONS (Baked — 5 apps)
+## FLATPAK APPLICATIONS (Baked Into Immutable Image)
 
 | Flatpak ID | Source | Description |
 |------------|--------|-------------|
-| org.gnome.Epiphany | gnome-nightly | Web browser (handles PDFs, images, Cockpit) |
-| org.gnome.baobab | gnome-nightly | Disk Usage Analyzer (storage management) |
+| org.gnome.Epiphany | gnome-nightly | Web browser |
+| org.gnome.Loupe | gnome-nightly | Image viewer |
+| org.gnome.Showtime | gnome-nightly | Video player |
+| org.gnome.Papers | gnome-nightly | Document/PDF viewer |
+| org.gnome.Calculator | gnome-nightly | Calculator |
+| org.gnome.Calendar | gnome-nightly | Calendar |
+| org.gnome.Characters | gnome-nightly | Unicode character picker |
+| org.gnome.clocks | gnome-nightly | Clocks/alarms/timer |
+| org.gnome.Connections | gnome-nightly | Remote desktop client |
+| org.gnome.Contacts | gnome-nightly | Contact manager |
+| org.gnome.Maps | gnome-nightly | Map viewer |
+| org.gnome.Weather | gnome-nightly | Weather forecast |
+| org.gnome.TextEditor | gnome-nightly | Text editor |
+| org.gnome.font-viewer | gnome-nightly | Font previewer |
+| org.gnome.Logs | gnome-nightly | Journal viewer |
+| org.gnome.baobab | gnome-nightly | Disk Usage Analyzer |
+| org.gnome.Snapshot | gnome-nightly | Camera/webcam |
+| org.gnome.Music | gnome-nightly | Music player |
+| org.gnome.Decibels | gnome-nightly | Audio player |
 | io.podman_desktop.PodmanDesktop | flathub | Container management GUI |
-| com.usebottles.bottles | flathub | Windows app runner (Wine prefix manager) |
-| com.vscodium.codium | flathub | Code editor (VSCodium — MIT-licensed VS Code) |
+| com.usebottles.bottles | flathub | Windows app runner (Wine) |
+| com.mattjakeman.ExtensionManager | flathub | GNOME Shell extension manager |
 
 ### Flatpak Runtimes (auto-installed)
 org.gnome.Platform//master, org.gnome.Platform//50, org.freedesktop.Platform//25.08, GL drivers, i386 compat
@@ -82,7 +102,7 @@ org.gnome.Platform//master, org.gnome.Platform//50, org.freedesktop.Platform//25
 ## HARDWARE DRIVERS (01-hardware.sh)
 
 ### GPU (Mesa + NVIDIA)
-mesa-vulkan-drivers, mesa-dri-drivers, mesa-va-drivers, vulkan-loader, vulkan-tools, libva-utils, linux-firmware, microcode_ctl, rocm-opencl, rocm-hip, akmod-nvidia, xorg-x11-drv-nvidia-cuda, nvidia-container-toolkit, driverctl
+mesa-vulkan-drivers, mesa-dri-drivers, mesa-va-drivers, mesa-vdpau-drivers, vulkan-loader, vulkan-tools, libva-utils, linux-firmware, amd-ucode, microcode_ctl, rocm-opencl, rocm-hip, akmod-nvidia, xorg-x11-drv-nvidia-cuda, nvidia-container-toolkit, driverctl
 
 ## VIRTUALIZATION (01-virt.sh)
 
@@ -108,19 +128,19 @@ bootc, bootc-image-builder, osbuild, osbuild-composer, osbuild-selinux, composer
 kubernetes-client, docker-compose, etcd, helm, k3s (binary), wireguard-tools
 
 ### Cockpit Web Management
-cockpit, cockpit-system, cockpit-machines, cockpit-podman, cockpit-ostree, cockpit-storaged, cockpit-networkmanager, cockpit-selinux, cockpit-image-builder, pcp, cockpit-pcp, pcp-zeroconf, cockpit-benchmark (git), cockpit-zfs-manager (git)
+cockpit, cockpit-ws, cockpit-bridge, cockpit-system, cockpit-machines, cockpit-podman, cockpit-ostree, cockpit-storaged, cockpit-networkmanager, cockpit-selinux, cockpit-image-builder, pcp, cockpit-pcp, pcp-zeroconf, cockpit-benchmark (git), cockpit-zfs-manager (git)
 
 ### Gaming
 gamemode, mangohud, gamescope, wine, winetricks, lutris, dosbox-staging, steam, steam-devices
 
 ### Guest Agents & Remote Access
-hyperv-daemons, qemu-guest-agent, open-vm-tools, spice-vdagent, xrdp, xorgxrdp
+hyperv-daemons, qemu-guest-agent, open-vm-tools, spice-vdagent
 
 ### Storage & Networking
-cifs-utils, virtiofsd, lvm2, mdadm, samba, nfs-utils, openssh-server, tailscale
+cifs-utils, virtiofsd, lvm2, mdadm, btrfs-progs, samba, nfs-utils, openssh-server, tailscale
 
 ### System Utilities
-git, jq, make, curl, wget, nano, polkit, udisks2, clevis, lm_sensors, btop, nvtop, intel-gpu-tools
+git, jq, make, curl, wget, polkit, udisks2, clevis, lm_sensors, btop, nvtop, intel-gpu-tools
 
 ### Cloud / Deployment
 cloud-init, rsync, tmux, screen, tree
@@ -146,9 +166,9 @@ python3-devel, python3-pip, python3-setuptools, python3-wheel, python3-virtualen
 |---------|-------------|
 | fapolicyd | Blocks untrusted binaries in /var/home |
 | usbguard | USB device authorization |
-| crowdsec | Collaborative IPS (log-based IP banning) |
+| crowdsec | IPS — sovereign mode (zero outbound telemetry) |
 | crowdsec-firewall-bouncer-nftables | CrowdSec nftables enforcement |
-| firewalld | Default-deny drop zone firewall |
+| firewalld | Default-deny drop zone (K3s subnets trusted) |
 | scan-malware alias | On-demand containerized ClamAV |
 
 ## HIGH AVAILABILITY / CLUSTERING
@@ -171,19 +191,49 @@ Build deps removed after compile: cmake, gcc, gcc-c++, ~22 -devel packages
 tuned, tuned-ppd, tuned-utils, tuned-profiles-cpu-partitioning, tuned-profiles-realtime
 
 ## CUSTOM TOOLS
-cloudws-rebuild, cloudws-vfio-toggle, cloudws-cockpit.desktop, cloudws-hostname.service, cloudws-init.service, cloudws-firewall-init
+
+| Tool | Description |
+|------|-------------|
+| cloudws-rebuild | Clone from GitHub → build → push to GHCR (+ offline embedded fallback) |
+| cloudws-backup | Backup Podman volumes, K3s etcd, libvirt VMs, /var/home |
+| cloudws-vfio-toggle | GPU VFIO bind/unbind/status/list via driverctl |
+| cloudws-cockpit.desktop | Cockpit web UI launcher (xdg-open localhost:9090) |
+| cloudws-hostname.service | Hostname enforcement service |
+| cloudws-init.service | First/every-boot init (Flatpak restore, firewall, user setup) |
+| cloudws-firewall-init | Drop zone + K3s subnet trust + Waydroid/Podman/libvirt trust |
+| gamescope-session-steam | Gamescope SteamOS-mode session launcher (GDM selectable) |
 
 ## CONFIGURATION FILES
-/etc/environment.d/50-cloudws.conf, /etc/gtk-3.0/settings.ini, /etc/gtk-4.0/settings.ini, /usr/share/xdg-desktop-portal/gnome-portals.conf, /etc/dconf/db/local.d/01-cloudws, /etc/modprobe.d/nvidia.conf, /etc/modprobe.d/blacklist-nouveau.conf, /usr/lib/systemd/zram-generator.conf.d/cloudws.conf, /etc/sysctl.d/99-cloudws-vmhost.conf, /etc/multipath.conf, /etc/cloud/cloud.cfg.d/99-cloudws.cfg, /etc/libvirt/qemu.conf.d/10-cloudws.conf, /usr/lib/bootc/install/00-cloudws.toml, /etc/locale.conf, /usr/libexec/cloudws-firewall-init
+
+| File | Description |
+|------|-------------|
+| /etc/environment.d/50-cloudws.conf | Qt/Electron Wayland hints |
+| /etc/gtk-3.0/settings.ini | GTK3 Adwaita + Geist font |
+| /etc/gtk-4.0/settings.ini | GTK4 font metrics |
+| /usr/share/xdg-desktop-portal/gnome-portals.conf | Portal routing |
+| /etc/dconf/db/local.d/01-cloudws | Dark theme, fonts, dock, app folders |
+| /etc/modprobe.d/nvidia.conf | NVIDIA DRM modeset + firmware |
+| /etc/modprobe.d/blacklist-nouveau.conf | Blacklist nouveau |
+| /usr/lib/systemd/zram-generator.conf.d/cloudws.conf | ZRAM swap (50% RAM, zstd) |
+| /etc/sysctl.d/99-cloudws-vmhost.conf | VM host tuning |
+| /etc/multipath.conf | Multipath I/O |
+| /etc/cloud/cloud.cfg.d/99-cloudws.cfg | cloud-init config |
+| /etc/libvirt/qemu.conf.d/10-cloudws.conf | Libvirt root ownership |
+| /usr/lib/bootc/install/00-cloudws.toml | Bare-metal XFS root |
+| /etc/locale.conf | LANG=en_US.UTF-8 |
+| /etc/crowdsec/config.yaml.local | Sovereign mode (no CAPI) |
+| /usr/share/wayland-sessions/steam.desktop | Gamescope GDM session |
 
 ## TOTALS
 
 | Category | Count |
 |----------|-------|
-| RPM Packages (explicit) | ~210 |
-| Flatpak Apps (baked) | 5 |
+| RPM Packages (explicit) | ~215 |
+| Flatpak Apps (baked) | 22 |
 | Flatpak Runtimes (auto) | ~5 |
-| Git-cloned plugins | 3 |
+| Git-cloned plugins | 3 (cockpit-benchmark, cockpit-zfs-manager, geist-font) |
 | Binary installs | 1 (K3s) |
-| Custom tools | 6 |
-| Config files | 15 |
+| Custom tools | 8 |
+| Config files | 16 |
+| GDM sessions | 2 (GNOME Wayland, Steam Gamescope) |
+| Looking Glass build deps | ~25 (removed after compile) |

@@ -2,7 +2,7 @@
 
 **Self-replicating, immutable, cloud-native workstation OS built on Fedora Rawhide bootc.**
 
-GNOME 50 • Flatpak-first • KVM/QEMU/VFIO Passthrough • Podman/K3s • Pacemaker HA • Waydroid • CrowdSec
+GNOME 50 • Gamescope Steam Session • KVM/QEMU/VFIO • Podman/K3s • Pacemaker HA • CrowdSec (Sovereign)
 
 ---
 
@@ -18,6 +18,14 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercont
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/install.sh | bash
+```
+
+### Direct bare-metal install (from any Linux live USB)
+
+```bash
+sudo podman run --rm -it --privileged --pid=host \
+  ghcr.io/kabuki94/cloudws-bootc:latest \
+  bootc install to-disk /dev/sdX
 ```
 
 ---
@@ -48,39 +56,56 @@ irm https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/preflight.ps1 
 | WSL Tarball | WSL2 + WSLg import |
 | Anaconda ISO | Installer for bare-metal |
 | Live USB ISO | Bootable live environment |
+| GHCR | `ghcr.io/kabuki94/cloudws-bootc` (auto-update) |
 
 ## Architecture
 
 ```
-Fedora Rawhide fc45 | Kernel 7.0 | GNOME 50 | Wayland-only
+Fedora Rawhide fc45 | Kernel 7.0 | GNOME 50 "Tokyo" | Wayland-only
 ├── ComposeFS + XFS (bare-metal) / ext4 (images)
 ├── bootc (immutable, atomic upgrades, rollback)
-├── Flatpak-first (5 baked apps, GNOME Software for more)
-├── KVM/QEMU/Libvirt + VFIO GPU Passthrough + Looking Glass
+├── Flatpak-first (22 baked apps + Extension Manager)
+├── Gamescope Steam Session (SteamOS-mode, selectable at GDM)
+├── KVM/QEMU/Libvirt + VFIO GPU Passthrough + Looking Glass B7
 ├── Podman + K3s + Pacemaker/Corosync HA Clustering
 ├── Waydroid (Android — native Wayland windows)
-├── Multi-GPU (Mesa + NVIDIA akmod + driverctl VFIO)
-├── CrowdSec IPS + fapolicyd + USBGuard + firewalld
+├── Multi-GPU (Mesa + NVIDIA akmod + driverctl VFIO toggle)
+├── CrowdSec IPS (sovereign/offline — zero outbound telemetry)
+├── fapolicyd + USBGuard + firewalld (default-deny drop zone)
 ├── cloud-init (autonomous deployment anywhere)
-└── Self-replication (cloudws-rebuild → push → pull → update)
+└── Self-replication (cloudws-rebuild → clone → build → push)
 ```
 
 ## Desktop
 
+**GDM Sessions:**
+- **GNOME (Wayland)** — Full desktop environment
+- **Steam (Gamescope)** — Fullscreen SteamOS-mode gaming session
+
 **RPM layer:** GNOME Shell, Nautilus, Ptyxis, GNOME Software, System Monitor, Disk Utility, virt-manager
 
-**Baked Flatpaks:** Epiphany (browser), Baobab (disk usage), Podman Desktop, Bottles (Wine), VSCodium
+**Baked Flatpaks:** Epiphany, Loupe, Showtime, Papers, Calculator, Calendar, Characters, Clocks, Connections, Contacts, Maps, Weather, Text Editor, Font Viewer, Logs, Baobab, Snapshot, Music, Decibels, Podman Desktop, Bottles, Extension Manager
 
-**Extensions:** Dash to Dock, AppIndicator, Tiling Assistant
-
-All theming follows GNOME Settings (dark/light) dynamically via xdg-desktop-portal. No hardcoded themes.
+**Extensions:** Dash to Dock, AppIndicator, Tiling Assistant (managed via Extension Manager Flatpak)
 
 ## Self-Update
 
 ```bash
-sudo bootc update        # Pull latest
-sudo bootc rollback      # Revert
-cloudws-rebuild          # Rebuild from embedded sources
+sudo bootc update              # Pull latest from GHCR
+sudo bootc rollback            # Revert to previous deployment
+cloudws-rebuild                # Clone from GitHub → build → push
+cloudws-backup                 # Backup volumes, K3s, VMs, home
+cloudws-vfio-toggle list       # Show GPUs + IOMMU groups
+```
+
+## WSL2 Backup
+
+```powershell
+# From Windows PowerShell
+wsl --export CloudWS C:\Backups\cloudws-backup.tar
+
+# Or copy the VHDX directly
+Copy-Item "$env:USERPROFILE\WSL\CloudWS\ext4.vhdx" C:\Backups\
 ```
 
 ## Security
@@ -90,13 +115,28 @@ cloudws-rebuild          # Rebuild from embedded sources
 | Immutable root | composefs + fs-verity |
 | Execution block | fapolicyd (blocks untrusted /var/home binaries) |
 | USB protection | USBGuard |
-| Network IPS | CrowdSec (collaborative IP banning) |
+| Network IPS | CrowdSec (sovereign — no outbound telemetry) |
 | Firewall | firewalld default-deny drop zone |
 | App sandbox | Flatpak + Bubblewrap |
 | AV scan | `scan-malware` (containerized ClamAV) |
 | VM isolation | SELinux sVirt |
-| Encryption | LUKS2 (optional, prompted at build) |
+| Encryption | LUKS2 (optional, prompted at install) |
 | Boot trust | TPM2 + Secure Boot compatible |
+
+## Repo Structure
+
+```
+CloudWS-bootc/
+├── cloud-ws.ps1      # Main build script (Windows, builds all targets)
+├── install.ps1       # Windows one-line bootstrap
+├── install.sh        # Linux one-line installer
+├── preflight.ps1     # Windows prerequisite checker
+├── push-to-github.ps1# Push all files to GitHub
+├── PACKAGES.md       # Complete package inventory
+├── README.md         # This file
+├── .gitignore        # Excludes build output
+└── LICENSE           # MIT
+```
 
 ## Legal
 
@@ -107,7 +147,7 @@ CloudWS assembles open-source and select proprietary components under their resp
 - **NVIDIA drivers:** Proprietary (RPMFusion nonfree, user-accepted)
 - **Steam:** Proprietary (Valve Corporation, user-accepted SSA)
 - **CrowdSec:** MIT | **K3s:** Apache-2.0 | **Looking Glass:** GPL-2.0
-- **Flatpak apps:** Per-app (GNOME: GPL, Bottles: GPL-3.0, VSCodium: MIT, Podman Desktop: Apache-2.0)
+- **Flatpak apps:** Per-app (GNOME: GPL, Bottles: GPL-3.0, Podman Desktop: Apache-2.0)
 
 Build scripts: **MIT License**. Users are responsible for license compliance when redistributing.
 

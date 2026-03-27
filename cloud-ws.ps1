@@ -1,23 +1,24 @@
 #Requires -RunAsAdministrator
 <#
-.SYNOPSIS  CloudWS v3.3 — Cloud Workstation OS Builder
+.SYNOPSIS  CloudWS v3.12 — Cloud Workstation OS Builder
 .DESCRIPTION
-    Architecture: XFS root (composefs) + /var/home on same FS
-    Desktop:      GNOME 50 (Wayland-only) + Geist font + Flatpak-first
-    RPM Layer:    Nautilus, Ptyxis, virt-manager, Wine/Steam/Lutris, KVM/QEMU/Libvirt, Podman
-    Flatpak:      Epiphany, Baobab, Podman Desktop, Bottles, VSCodium — baked into image
-    Hardware:     Multi-GPU (Mesa + NVIDIA akmod) + driverctl VFIO toggle
-    Security:     CrowdSec IPS, fapolicyd, USBGuard, firewalld drop-zone, SELinux
-    Android:      Waydroid (LXC container, native Wayland windows)
-    Targets:      RAW, Hyper-V VHDX, WSL2, Anaconda ISO, Live USB, OCI
-    Self-repl:    Embedded at /usr/share/cloudws/ — cloudws-rebuild
+    Architecture: XFS root (composefs, fills entire disk) + /var/home on same FS
+    Desktop:      GNOME 50 Tokyo (Wayland-only) + Geist font + Flatpak-first app delivery
+    RPM Layer:    Nautilus, Ptyxis, Wine/Steam/Proton/Lutris, KVM/QEMU/Libvirt, Podman, XRDP
+    Flatpak:      ALL GNOME apps + Podman Desktop + Bottles + Extension Manager — BAKED INTO IMMUTABLE IMAGE
+    Gaming:       Gamescope SteamOS-mode fullscreen session selectable at GDM login
+    Hardware:     AMD RDNA2 iGPU + NVIDIA RTX 4090 (akmod) + driverctl VFIO toggle
+    Security:     Waydroid, CrowdSec IPS (sovereign/offline), Fapolicyd, USBGuard, Firewalld Lockdown
+    HA/Cluster:   K3s, Pacemaker/Corosync, Longhorn, Velero, HAProxy, Keepalived
+    Targets:      RAW disk, Hyper-V VHDX, WSL2 tarball, Anaconda ISO, Live USB ISO, local OCI
+    Self-repl:    cloudws-rebuild clones from GitHub, builds, pushes — full CI/CD from any running instance
 #>
 $ErrorActionPreference="Stop";Set-StrictMode -Version Latest
 $I="cloudws:latest";$O="$PWD\cloudws-deploy-out";$B="$env:TEMP\cws-build"
 $R_Img="$O\cloudws-bootable.raw";$T_V="$O\cloudws-hyperv.vhdx";$T_W="$O\cloudws-wsl.tar";$T_I="$O\cloudws-installer.iso";$T_L="$O\cloudws-live.iso"
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  TIMEOUT READ HELPER (defaults to 'n' after 5 minutes)
+#  TIMEOUT READ HELPER (defaults after 5 minutes)
 # ══════════════════════════════════════════════════════════════════════════════
 function Read-TimedHost($prompt, $default = 'n', $seconds = 300) {
     Write-Host "$prompt " -NoNewline -ForegroundColor Yellow
@@ -32,7 +33,7 @@ function Read-TimedHost($prompt, $default = 'n', $seconds = 300) {
 #  PHASE 0: ALL QUESTIONS UPFRONT
 # ══════════════════════════════════════════════════════════════════════════════
 Write-Host "`n╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║         CloudWS v3.3 — Build Configuration                  ║" -ForegroundColor Cyan
+Write-Host "║         CloudWS v3.12 — Build Configuration                 ║" -ForegroundColor Cyan
 Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 
@@ -58,21 +59,6 @@ $deployHyperV = if ($buildVhdx -eq 'y') { Read-TimedHost "  Create Hyper-V VM af
 $startVm = if ($deployHyperV -eq 'y') { Read-TimedHost "    Start VM immediately? (y/n)" 'n' } else { 'n' }
 
 # ── GHCR (absolute last step) ──
-# ── Encryption ──
-Write-Host "`n═══ Encryption ═══" -ForegroundColor Yellow
-$enableLuks = Read-TimedHost "  Enable LUKS encryption for Hyper-V/ISO/Live builds? (y/n)" 'n'
-$luksPass = ""
-if ($enableLuks -eq 'y') {
-    while ($true) {
-        $lp1 = Read-Host "  LUKS passphrase" -AsSecureString
-        $lp2 = Read-Host "  Confirm passphrase" -AsSecureString
-        $lp1p = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($lp1))
-        $lp2p = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($lp2))
-        if ($lp1p -eq $lp2p) { $luksPass = $lp1p; Write-Host "  ✓ LUKS passphrase confirmed" -ForegroundColor Green; break }
-        else { Write-Host "  ✗ Passphrases do not match. Try again." -ForegroundColor Red }
-    }
-}
-
 Write-Host "`n═══ GitHub Container Registry ═══" -ForegroundColor Yellow
 $GhcrImage = "ghcr.io/kabuki94/cloudws-bootc"
 Write-Host "  Repository: $GhcrImage" -ForegroundColor White
@@ -108,7 +94,6 @@ wsl --shutdown 2>$null;Start-Sleep 2
 if((podman machine inspect podman-machine-default 2>&1)-match "not found"){podman machine init --rootful --cpus $c --memory $r --disk-size 150}else{podman machine stop 2>$null;Start-Sleep 2;podman machine set --cpus $c --memory $r 2>$null}
 podman machine start;if($LASTEXITCODE -ne 0){throw "Podman fail"}
 
-# Login to GHCR now that Podman is running
 if ($ghcrReady) {
     Write-Host "Logging into GHCR..." -ForegroundColor Cyan
     $ghTokenPlain | podman login ghcr.io -u $ghUser --password-stdin
@@ -124,7 +109,9 @@ if(Test-Path $B){rm -Recurse -Force $B};"base","desktop","hardware","virtualizat
 @'
 #!/bin/bash
 set -euo pipefail
-dnf install -y https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-rawhide.noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-rawhide.noarch.rpm
+dnf install -y \
+    https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-rawhide.noarch.rpm \
+    https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-rawhide.noarch.rpm
 dnf install -y fedora-workstation-repositories dnf-plugins-core
 echo "[01-repos] RPMFusion + Workstation repos enabled."
 '@|Out-File "$B\build_files\base\01-repos.sh" -Encoding ascii
@@ -136,26 +123,32 @@ echo "[01-repos] RPMFusion + Workstation repos enabled."
 #!/bin/bash
 set -euo pipefail
 dnf upgrade -y --refresh --allowerasing --nobest kernel kernel-core kernel-modules
-dnf install -y --allowerasing --nobest kernel-devel kernel-headers kernel-modules-extra kernel-tools glibc-headers glibc-devel python3
-curl -sL https://raw.githubusercontent.com/torvalds/linux/master/include/uapi/linux/ntsync.h -o /usr/include/linux/ntsync.h 2>/dev/null||true
+dnf install -y --allowerasing --nobest \
+    kernel-devel kernel-headers kernel-modules-extra kernel-tools \
+    glibc-headers glibc-devel python3
+curl -sL https://raw.githubusercontent.com/torvalds/linux/master/include/uapi/linux/ntsync.h \
+    -o /usr/include/linux/ntsync.h 2>/dev/null || true
 echo "[02-kernel] Kernel secured: $(ls /lib/modules|sort -V|tail -1)"
 '@|Out-File "$B\build_files\base\02-kernel.sh" -Encoding ascii
 
 # ════════════════════════════════════════════════════════════════════
-#  01-gnome.sh — NAKED CORE: Minimal RPM shell + Flatpak-first
+#  01-gnome.sh — GNOME 50 Desktop + Flatpak bake + Gamescope session
 # ════════════════════════════════════════════════════════════════════
 @'
 #!/bin/bash
 set -euo pipefail
 mkdir -p /var/roothome
 
-# ═══ NAKED CORE RPM LAYER ═══
-# Shell + file manager + terminal as RPMs. ALL apps = Flatpak (gnome-nightly for GNOME 50 GTK4/LibAdwaita).
-dnf install -y --allowerasing --nobest --skip-unavailable \
+# ═══════════════════════════════════════════════════════════════════════
+#  GNOME CORE RPM LAYER — SINGLE ATOMIC INSTALL
+#  Every RPM package from the spec is here. No --skip-unavailable.
+#  If a desktop package fails, the build MUST crash.
+# ═══════════════════════════════════════════════════════════════════════
+dnf install -y --allowerasing --nobest \
     gdm gnome-shell gnome-session gnome-settings-daemon gnome-control-center \
     mutter gjs gnome-keyring polkit \
     nautilus ptyxis \
-    gnome-software \
+    gnome-software gnome-software-rpm-ostree appstream-data \
     gnome-shell-extension-appindicator gnome-shell-extension-dash-to-dock \
     gnome-shell-extension-tiling-assistant \
     gvfs gvfs-smb gvfs-mtp gvfs-goa gvfs-afc \
@@ -165,13 +158,16 @@ dnf install -y --allowerasing --nobest --skip-unavailable \
     flatpak adwaita-cursor-theme adwaita-icon-theme \
     gnome-backgrounds gsettings-desktop-schemas \
     upower gnome-bluetooth bluez bluez-tools \
-    gnome-remote-desktop gnome-color-manager \
-    gnome-disk-utility gnome-system-monitor gnome-extensions-app \
-    git colord wayland-utils glibc-langpack-en \
+    gnome-remote-desktop gnome-color-manager colord \
+    gnome-disk-utility gnome-system-monitor \
+    git wayland-utils glibc-langpack-en \
     pipewire pipewire-alsa pipewire-pulseaudio wireplumber \
     vulkan-validation-layers mesa-libEGL mesa-libgbm \
-    adwaita-qt5 adwaita-qt6 qadwaitadecorations-qt5 qadwaitadecorations-qt6 \
-    qgnomeplatform-qt5 qgnomeplatform-qt6
+    qt5-qtwayland qt6-qtwayland \
+    adwaita-qt5 adwaita-qt6 \
+    qadwaitadecorations-qt5 qadwaitadecorations-qt6 \
+    qgnomeplatform-qt5 qgnomeplatform-qt6 \
+    xrdp xorgxrdp xorg-x11-server-Xorg
 
 # ═══ FAULT-TOLERANT MULTIMEDIA (RPMFusion desync protection) ═══
 dnf install -y --skip-unavailable --skip-broken --allowerasing --nobest \
@@ -182,11 +178,91 @@ dnf install -y --skip-unavailable --skip-broken --allowerasing --nobest \
 
 # ═══ GEIST FONT ═══
 git clone --depth=1 https://github.com/vercel/geist-font.git /tmp/geist
-mkdir -p /usr/share/fonts/geist;find /tmp/geist -name "*.ttf" -exec cp {} /usr/share/fonts/geist/ \;
-fc-cache -f;rm -rf /tmp/geist
+mkdir -p /usr/share/fonts/geist
+find /tmp/geist -name "*.ttf" -exec cp {} /usr/share/fonts/geist/ \;
+fc-cache -f; rm -rf /tmp/geist
+
+# ═══ GAMESCOPE STEAM SESSION (selectable at GDM login) ═══
+# Creates a full SteamOS-mode Gamescope session visible in GDM session picker
+mkdir -p /usr/share/wayland-sessions /usr/bin
+
+cat > /usr/bin/gamescope-session-steam <<'EOGSS'
+#!/bin/bash
+# CloudWS Gamescope Steam Session — launched by GDM
+export HOMETEST_DESKTOP_USER="${USER}"
+export SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS=0
+export STEAM_USE_MANGOAPP=1
+export MANGOHUD=1
+export ENABLE_GAMESCOPE_WSI=1
+export STEAM_GAMESCOPE_HAS_TEARING_SUPPORT=1
+export STEAM_GAMESCOPE_COLOR_MANAGED=1
+
+# Detect primary display resolution
+if command -v wlr-randr &>/dev/null; then
+    RES=$(wlr-randr 2>/dev/null | grep -oP '\d+x\d+' | head -1)
+elif [ -d /sys/class/drm ]; then
+    for conn in /sys/class/drm/card*/card*-*; do
+        [ "$(cat "$conn/status" 2>/dev/null)" = "connected" ] && \
+            RES=$(head -1 "$conn/modes" 2>/dev/null) && break
+    done
+fi
+W="${RES%%x*}"; H="${RES##*x}"
+W="${W:-1920}"; H="${H:-1080}"
+
+exec gamescope -e \
+    -W "$W" -H "$H" \
+    -w "$W" -h "$H" \
+    --adaptive-sync \
+    --xwayland-count 2 \
+    --default-touch-mode 4 \
+    --hide-cursor-delay 3000 \
+    --fade-out-duration 200 \
+    -- steam -gamepadui -steamos3 -steampal
+EOGSS
+chmod +x /usr/bin/gamescope-session-steam
+
+# Dummy scripts Steam expects on SteamOS
+for script in steamos-update jupiter-biosupdate steamos-select-branch; do
+    cat > /usr/bin/$script <<EODUMMY
+#!/bin/bash
+# CloudWS stub — $script
+exit 0
+EODUMMY
+    chmod +x /usr/bin/$script
+done
+
+cat > /usr/bin/steamos-session-select <<'EOSESS'
+#!/bin/bash
+# CloudWS session switcher — returns to GDM
+case "${1:-}" in
+    desktop|gnome) ;;
+    *) ;;
+esac
+# Signal Steam to exit cleanly, GDM will present the login screen
+steam -shutdown 2>/dev/null || true
+sleep 2
+loginctl terminate-session "$XDG_SESSION_ID" 2>/dev/null || true
+EOSESS
+chmod +x /usr/bin/steamos-session-select
+
+# Polkit helpers Steam expects
+mkdir -p /usr/bin/steamos-polkit-helpers
+for h in steamos-update steamos-set-timezone steamos-select-branch; do
+    ln -sf /usr/bin/$h /usr/bin/steamos-polkit-helpers/$h
+done
+
+cat > /usr/share/wayland-sessions/steam.desktop <<'EOSD'
+[Desktop Entry]
+Encoding=UTF-8
+Name=Steam (Gamescope)
+Comment=SteamOS-mode fullscreen gaming session
+Exec=/usr/bin/gamescope-session-steam
+Type=Application
+DesktopNames=gamescope
+EOSD
 
 # ═══ COCKPIT WEBAPP ═══
-mkdir -p /usr/share/applications
+mkdir -p /usr/share/applications /etc/cockpit
 cat > /usr/share/applications/cloudws-cockpit.desktop <<'EODESKTOP'
 [Desktop Entry]
 Name=CloudWS Cockpit
@@ -198,40 +274,26 @@ Type=Application
 Categories=System;
 StartupNotify=true
 EODESKTOP
-mkdir -p /etc/cockpit
 cat > /etc/cockpit/cockpit.conf <<'EOCOCKPIT'
 [WebService]
 AllowUnencrypted = true
 Origins = http://localhost:9090 https://localhost:9090 wss://localhost:9090
 EOCOCKPIT
 
-systemctl enable gdm.service NetworkManager.service;systemctl set-default graphical.target
+systemctl enable gdm.service NetworkManager.service xrdp.service
+systemctl set-default graphical.target
 
-# ═══ ENVIRONMENT: Portal-Driven Theming + HDR + VRR + DXVK ═══
-# ALL theming flows through one chain:
-#   dconf color-scheme → xdg-desktop-portal-gnome → {GTK4, GTK3, Qt, Electron, Flatpak}
-# NO hardcoded dark/light. User toggles in GNOME Settings → everything follows instantly.
+# ═══ ENVIRONMENT ═══
 mkdir -p /etc/environment.d /etc/gtk-3.0 /etc/gtk-4.0
 
 cat > /etc/environment.d/50-cloudws.conf <<'EOENV'
-# Qt: qgnomeplatform reads gsettings → follows GNOME color scheme in real-time
 QT_QPA_PLATFORMTHEME=gnome
-# Qt Wayland: Adwaita CSD decorations (follows system theme dynamically)
 QT_WAYLAND_DECORATION=adwaita
-# Portal: enable LibAdwaita portal integration
 ADW_DISABLE_PORTAL=0
-# Electron: native Wayland + reads prefers-color-scheme from portal
 ELECTRON_OZONE_PLATFORM_HINT=auto
-# Desktop identity for portal routing
 XDG_CURRENT_DESKTOP=GNOME
-# Graphics / Gaming
-MUTTER_EXPERIMENTAL_FEATURES=hdr,variable-refresh-rate
-DXVK_HDR=1
-ENABLE_HDR_WSI=1
-WINE_FULLSCREEN_FSR=1
 EOENV
 
-# GTK3: base theme only (gnome-settings-daemon auto-switches Adwaita↔Adwaita-dark)
 cat > /etc/gtk-3.0/settings.ini <<'EOGTK3'
 [Settings]
 gtk-theme-name=Adwaita
@@ -240,67 +302,52 @@ gtk-cursor-theme-name=Adwaita
 gtk-font-name=Geist 11
 EOGTK3
 
-# GTK4: font metrics only (LibAdwaita handles ALL theming via portal — zero override)
 cat > /etc/gtk-4.0/settings.ini <<'EOGTK4'
 [Settings]
 gtk-hint-font-metrics=1
 EOGTK4
 
-# XDG Desktop Portal config: route ALL portals through GNOME implementation
 mkdir -p /usr/share/xdg-desktop-portal
 cat > /usr/share/xdg-desktop-portal/gnome-portals.conf <<'EOPORTAL'
 [preferred]
 default=gnome;gtk;
 EOPORTAL
 
-# ═══ FLATPAK REMOTES ═══
+# ═══ TRUE OFFLINE FLATPAK PRE-BAKING ═══
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 flatpak remote-add --if-not-exists flathub-beta https://flathub.org/beta-repo/flathub-beta.flatpakrepo
 flatpak remote-add --if-not-exists gnome-nightly https://nightly.gnome.org/gnome-nightly.flatpakrepo
 
-# ═══ FORCE GNOME 50 PLATFORM RUNTIME ═══
-echo "[01-gnome] Installing GNOME 50 platform runtime..."
 flatpak install --system -y --noninteractive gnome-nightly org.gnome.Platform//master 2>/dev/null || true
 flatpak install --system -y --noninteractive flathub org.gnome.Platform//50 2>/dev/null || true
 
-# ═══ BAKE FLATPAKS INTO IMAGE ═══
-# GNOME first-party apps: install from gnome-nightly (built against GNOME 50 / GTK4 / LibAdwaita)
-echo "[01-gnome] Installing core Flatpak apps..."
-GNOME_APPS=(
-    org.gnome.Epiphany
-    org.gnome.baobab
+# ALL Flatpak apps — baked into immutable image
+FLATPAK_APPS=(
+    org.gnome.Epiphany org.gnome.Loupe org.gnome.Showtime org.gnome.Papers
+    org.gnome.Calculator org.gnome.Calendar org.gnome.Characters org.gnome.clocks
+    org.gnome.Connections org.gnome.Contacts org.gnome.Maps org.gnome.Weather
+    org.gnome.TextEditor org.gnome.font-viewer org.gnome.Logs org.gnome.baobab
+    org.gnome.Snapshot org.gnome.Music org.gnome.Decibels
+    io.podman_desktop.PodmanDesktop com.usebottles.bottles
+    com.mattjakeman.ExtensionManager
 )
-for app in "${GNOME_APPS[@]}"; do
-    # Try gnome-nightly first (GNOME 50 / GTK4 / LibAdwaita latest), fall back to flathub
+
+for app in "${FLATPAK_APPS[@]}"; do
     flatpak install --system -y --noninteractive gnome-nightly "$app" 2>/dev/null \
-        || flatpak install --system -y --noninteractive flathub "$app" 2>/dev/null \
-        || echo "  [SKIP] $app"
+    || flatpak install --system -y --noninteractive flathub "$app" 2>/dev/null || true
 done
 
-# Third-party apps: flathub only
-echo "[01-gnome] Installing third-party Flatpak apps..."
-THIRDPARTY_APPS=(
-    io.podman_desktop.PodmanDesktop
-    com.usebottles.bottles
-    com.vscodium.codium
-)
-for app in "${THIRDPARTY_APPS[@]}"; do
-    flatpak install --system -y --noninteractive flathub "$app" 2>/dev/null \
-        || echo "  [SKIP] $app"
-done
+flatpak override --system --env=ELECTRON_OZONE_PLATFORM_HINT=auto 2>/dev/null || true
+flatpak override --system --env=ADW_DISABLE_PORTAL=0 2>/dev/null || true
+flatpak override --system --filesystem=xdg-config/gtk-3.0:ro 2>/dev/null || true
+flatpak override --system --filesystem=xdg-config/gtk-4.0:ro 2>/dev/null || true
+flatpak override --system --filesystem=/usr/share/themes:ro 2>/dev/null || true
+flatpak override --system --filesystem=/usr/share/icons:ro 2>/dev/null || true
+flatpak override --system --filesystem=/usr/share/fonts:ro 2>/dev/null || true
 
-# ═══ SYSTEM-WIDE FLATPAK OVERRIDES (dynamic theming — follows GNOME Settings) ═══
-# No hardcoded dark/light — apps follow dconf color-scheme via xdg-desktop-portal
-flatpak override --system --env=ELECTRON_OZONE_PLATFORM_HINT=auto 2>/dev/null||true
-flatpak override --system --env=ADW_DISABLE_PORTAL=0 2>/dev/null||true
-# Filesystem access so Flatpaks can read system themes/icons/fonts dynamically
-flatpak override --system --filesystem=xdg-config/gtk-3.0:ro 2>/dev/null||true
-flatpak override --system --filesystem=xdg-config/gtk-4.0:ro 2>/dev/null||true
-flatpak override --system --filesystem=/usr/share/themes:ro 2>/dev/null||true
-flatpak override --system --filesystem=/usr/share/icons:ro 2>/dev/null||true
-flatpak override --system --filesystem=/usr/share/fonts:ro 2>/dev/null||true
-
-echo "[01-gnome] Flatpak apps baked with GNOME 50 runtime + dynamic theming."
+echo "[01-gnome] Duplicating Flatpak data to immutable vault..."
+mkdir -p /usr/share/cloudws-flatpak-prebake
+cp -a /var/lib/flatpak/* /usr/share/cloudws-flatpak-prebake/ || true
 
 # ═══ DCONF: Theme + Dock + Folders ═══
 mkdir -p /etc/dconf/profile /etc/dconf/db/local.d /etc/dconf/db/local.d/locks
@@ -316,6 +363,7 @@ document-font-name='Geist 11'
 monospace-font-name='Geist Mono 10'
 enable-animations=true
 [org/gnome/desktop/wm/preferences]
+theme='Adwaita'
 titlebar-font='Geist Bold 11'
 [org/gnome/desktop/background]
 picture-uri='file:///usr/share/backgrounds/gnome/blobs-l.svg'
@@ -342,16 +390,16 @@ folder-children=['Wine', 'Gaming', 'Virt', 'Utilities', 'Media', 'Tools']
 [org/gnome/desktop/app-folders/folders/Wine]
 name='Wine'
 categories=['Wine']
-apps=['wine.desktop', 'wine-browsedrive.desktop', 'wine-notepad.desktop', 'wine-regedit.desktop', 'wine-uninstaller.desktop', 'wine-winecfg.desktop', 'wine-wineboot.desktop', 'wine-winefile.desktop', 'wine-winehelp.desktop', 'wine-oleview.desktop', 'wine-wordpad.desktop', 'wine-winemine.desktop', 'winetricks.desktop', 'wine-mime-msi.desktop', 'wine-extension-txt.desktop', 'wine-help.desktop', 'wine64.desktop', 'wine64-preloader.desktop']
+apps=['wine.desktop', 'wine-browsedrive.desktop', 'wine-notepad.desktop', 'wine-regedit.desktop', 'wine-uninstaller.desktop', 'wine-winecfg.desktop', 'wine-wineboot.desktop', 'wine-winefile.desktop', 'wine-winehelp.desktop', 'wine-oleview.desktop', 'wine-wordpad.desktop', 'wine-winemine.desktop', 'winetricks.desktop', 'wine-mime-msi.desktop', 'wine-extension-txt.desktop', 'wine-help.desktop', 'Wine Help.desktop', 'net.winehq.Wine.desktop', 'net.winehq.Wine.Help.desktop', 'wine64.desktop', 'wine64-preloader.desktop']
 [org/gnome/desktop/app-folders/folders/Gaming]
 name='Gaming'
-apps=['steam.desktop', 'com.valvesoftware.Steam.desktop', 'net.lutris.Lutris.desktop', 'lutris.desktop', 'dosbox-staging.desktop', 'io.github.dosbox-staging.desktop', 'org.dosbox-staging.dosbox-staging.desktop', 'com.usebottles.bottles.desktop', 'gamescope.desktop']
+apps=['steam.desktop', 'com.valvesoftware.Steam.desktop', 'net.lutris.Lutris.desktop', 'lutris.desktop', 'dosbox-staging.desktop', 'io.github.dosbox-staging.desktop', 'org.dosbox-staging.dosbox-staging.desktop', 'com.usebottles.bottles.desktop', 'gamescope.desktop', 'gamemode.desktop', 'gamemoderun.desktop']
 [org/gnome/desktop/app-folders/folders/Virt]
 name='Virtualization'
-apps=['io.podman_desktop.PodmanDesktop.desktop', 'virt-manager.desktop', 'org.gnome.Boxes.desktop', 'qemu.desktop', 'cloudws-cockpit.desktop', 'waydroid.desktop']
+apps=['io.podman_desktop.PodmanDesktop.desktop', 'virt-manager.desktop', 'org.gnome.Boxes.desktop', 'qemu.desktop', 'cloudws-cockpit.desktop', 'Waydroid.desktop', 'waydroid.desktop']
 [org/gnome/desktop/app-folders/folders/Utilities]
 name='Utilities'
-apps=['org.gnome.Settings.desktop', 'org.gnome.SystemMonitor.desktop', 'org.gnome.Resources.desktop', 'org.gnome.DiskUtility.desktop', 'org.gnome.baobab.desktop', 'org.gnome.Extensions.desktop', 'org.gnome.Connections.desktop', 'org.gnome.Logs.desktop', 'nvidia-settings.desktop', 'nvtop.desktop', 'btop.desktop', 'virt-top.desktop', 'remote-viewer.desktop', 'org.fedoraproject.MediaWriter.desktop', 'mediawriter.desktop', 'malcontent-control.desktop', 'org.freedesktop.MalcontentControl.desktop', 'org.gnome.ParentalControls.desktop']
+apps=['org.gnome.Settings.desktop', 'org.gnome.SystemMonitor.desktop', 'org.gnome.Resources.desktop', 'org.gnome.DiskUtility.desktop', 'org.gnome.baobab.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.Connections.desktop', 'org.gnome.Logs.desktop', 'nvidia-settings.desktop', 'nvtop.desktop', 'btop.desktop', 'virt-top.desktop', 'remote-viewer.desktop', 'org.fedoraproject.MediaWriter.desktop', 'mediawriter.desktop']
 [org/gnome/desktop/app-folders/folders/Media]
 name='Media'
 apps=['org.gnome.Music.desktop', 'org.gnome.Showtime.desktop', 'org.gnome.Snapshot.desktop', 'org.gnome.Loupe.desktop', 'org.gnome.Decibels.desktop', 'simple-scan.desktop']
@@ -364,7 +412,7 @@ cat > /etc/dconf/db/local.d/locks/cloudws <<'EOF'
 /org/gnome/shell/favorite-apps
 EOF
 dconf update
-echo "[01-gnome] Naked Core GNOME 50 + Flatpak-first initialized."
+echo "[01-gnome] GNOME 50 + Gamescope Steam Session + Offline Flatpaks initialized."
 '@|Out-File "$B\build_files\desktop\01-gnome.sh" -Encoding ascii
 
 # ════════════════════════════════════════════════════════════════════
@@ -377,8 +425,8 @@ dnf install -y --skip-unavailable --allowerasing --nobest \
     mesa-vulkan-drivers mesa-dri-drivers mesa-va-drivers mesa-vdpau-drivers \
     vulkan-loader vulkan-tools libva-utils linux-firmware amd-ucode microcode_ctl \
     rocm-opencl rocm-hip akmod-nvidia xorg-x11-drv-nvidia-cuda nvidia-container-toolkit driverctl
-akmods --force --kernels "$(ls /lib/modules|sort -V|tail -n 1)"||true
-nvidia-ctk cdi generate --output=/etc/cdi/nvidia.json 2>/dev/null||true
+akmods --force --kernels "$(ls /lib/modules|sort -V|tail -n 1)" || true
+nvidia-ctk cdi generate --output=/etc/cdi/nvidia.json 2>/dev/null || true
 mkdir -p /etc/modprobe.d /etc/modules-load.d
 cat > /etc/modprobe.d/nvidia.conf <<'EOF'
 options nvidia_drm modeset=1 fbdev=1
@@ -388,7 +436,6 @@ EOF
 echo -e "blacklist nouveau\noptions nouveau modeset=0" > /etc/modprobe.d/blacklist-nouveau.conf
 echo -e "ntsync\nvfio-pci" > /etc/modules-load.d/cloudws.conf
 
-# ═══ cloudws-vfio-toggle: GPU detach/attach via driverctl ═══
 cat > /usr/local/bin/cloudws-vfio-toggle <<'EOVFIO'
 #!/bin/bash
 set -euo pipefail
@@ -396,15 +443,11 @@ if [ $# -eq 0 ]; then
     echo "CloudWS VFIO GPU Toggle"
     echo "Usage:  cloudws-vfio-toggle <PCI_ID> [bind|unbind|status]"
     echo "        cloudws-vfio-toggle list"
-    echo "Examples:"
-    echo "  cloudws-vfio-toggle 0000:01:00.0 bind   # Bind to vfio-pci"
-    echo "  cloudws-vfio-toggle 0000:01:00.0 unbind  # Restore driver"
-    echo "  cloudws-vfio-toggle list                  # Show GPUs + IOMMU"
     exit 0
 fi
 if [ "$1" = "list" ]; then
     echo -e "\033[1;36m═══ GPU Devices ═══\033[0m"
-    lspci -nnk|grep -A2 -E "VGA|3D"
+    lspci -nnk | grep -A2 -E "VGA|3D"
     echo -e "\n\033[1;36m═══ IOMMU Groups ═══\033[0m"
     shopt -s nullglob
     for g in $(find /sys/kernel/iommu_groups/* -maxdepth 0 -type d 2>/dev/null|sort -V); do
@@ -412,14 +455,14 @@ if [ "$1" = "list" ]; then
         for d in $g/devices/*; do echo "  $(lspci -nns ${d##*/})"; done
     done; exit 0
 fi
-PCI_ID="$1";ACTION="${2:-toggle}"
-CUR=$(driverctl -b pci display "$PCI_ID" 2>/dev/null||echo "none")
+PCI_ID="$1"; ACTION="${2:-toggle}"
+CUR=$(driverctl -b pci display "$PCI_ID" 2>/dev/null || echo "none")
 case "$ACTION" in
-    bind)   driverctl set-override "$PCI_ID" vfio-pci;echo "$PCI_ID → vfio-pci";;
-    unbind) driverctl unset-override "$PCI_ID";echo "$PCI_ID → restored";;
+    bind)   driverctl set-override "$PCI_ID" vfio-pci; echo "$PCI_ID → vfio-pci";;
+    unbind) driverctl unset-override "$PCI_ID"; echo "$PCI_ID → restored";;
     status) echo "$PCI_ID → $CUR";;
-    toggle) if [[ "$CUR" == *"vfio-pci"* ]]; then driverctl unset-override "$PCI_ID";echo "$PCI_ID → restored"
-            else driverctl set-override "$PCI_ID" vfio-pci;echo "$PCI_ID → vfio-pci"; fi;;
+    toggle) if [[ "$CUR" == *"vfio-pci"* ]]; then driverctl unset-override "$PCI_ID"; echo "$PCI_ID → restored"
+            else driverctl set-override "$PCI_ID" vfio-pci; echo "$PCI_ID → vfio-pci"; fi;;
 esac
 EOVFIO
 chmod +x /usr/local/bin/cloudws-vfio-toggle
@@ -427,74 +470,115 @@ echo "[01-hardware] AMD+NVIDIA+driverctl VFIO toggle installed."
 '@|Out-File "$B\build_files\hardware\01-hardware.sh" -Encoding ascii
 
 # ════════════════════════════════════════════════════════════════════
-#  01-virt.sh — Full KVM/Podman/Gaming/Cockpit + Looking Glass B7
+#  01-virt.sh — Full KVM/Podman/Gaming/Cockpit/HA/Security + LG B7
 # ════════════════════════════════════════════════════════════════════
 @'
 #!/bin/bash
 set -euo pipefail
+
+# ═══════════════════════════════════════════════════════════════════════
+#  SINGLE ATOMIC INSTALL — All virtualization, container, gaming,
+#  cockpit, HA, storage, networking, security, and tooling packages.
+#  Minimizes dead files by installing everything in one transaction.
+# ═══════════════════════════════════════════════════════════════════════
 dnf install -y --skip-unavailable --allowerasing --nobest \
-    qemu-kvm qemu-img qemu-user-static libvirt libvirt-daemon libvirt-daemon-kvm libvirt-daemon-qemu \
-    libvirt-client libvirt-nss libvirt-dbus virt-install virt-manager virt-viewer spice-gtk virt-top \
-    edk2-ovmf edk2-qosb swtpm swtpm-tools dnsmasq mdevctl libguestfs libguestfs-tools guestfs-tools \
-    nbdkit libnbd lm_sensors btop nvtop intel-gpu-tools shim-x64 mokutil sbsigntools pesign efitools \
-    podman podman-compose podman-remote kubernetes-client docker-compose buildah skopeo toolbox distrobox \
+    qemu-kvm qemu-img qemu-user-static \
+    libvirt libvirt-daemon libvirt-daemon-kvm libvirt-daemon-qemu \
+    libvirt-client libvirt-nss libvirt-dbus \
+    virt-install virt-manager virt-viewer spice-gtk virt-top \
+    edk2-ovmf edk2-qosb swtpm swtpm-tools dnsmasq mdevctl \
+    libguestfs libguestfs-tools guestfs-tools nbdkit libnbd \
+    lm_sensors btop nvtop intel-gpu-tools \
+    shim-x64 mokutil sbsigntools pesign efitools \
+    podman podman-compose podman-remote kubernetes-client docker-compose \
+    buildah skopeo toolbox distrobox \
     bootc bootc-image-builder osbuild osbuild-composer osbuild-selinux composer-cli rpm-ostree \
     crun netavark aardvark-dns slirp4netns composefs \
-    cockpit cockpit-system cockpit-machines cockpit-podman cockpit-ostree cockpit-storaged \
-    cockpit-networkmanager cockpit-selinux cockpit-image-builder pcp cockpit-pcp pcp-zeroconf \
+    cockpit cockpit-ws cockpit-bridge \
+    cockpit-system cockpit-machines cockpit-podman cockpit-ostree cockpit-storaged \
+    cockpit-networkmanager cockpit-selinux cockpit-image-builder \
+    pcp cockpit-pcp pcp-zeroconf \
     gamemode mangohud gamescope wine winetricks lutris dosbox-staging steam steam-devices \
+    waydroid \
     hyperv-daemons qemu-guest-agent open-vm-tools spice-vdagent \
-    xrdp xorgxrdp \
-    cifs-utils virtiofsd lvm2 mdadm samba nfs-utils openssh-server tailscale \
+    cifs-utils virtiofsd lvm2 mdadm btrfs-progs samba nfs-utils openssh-server tailscale \
     git jq make curl wget polkit udisks2 clevis \
     cloud-init rsync tmux screen tree \
     socat nmap-ncat tcpdump iptables-nft conntrack-tools \
     nvme-cli device-mapper-multipath sg3_utils \
     chrony firewalld zram-generator \
-    fapolicyd usbguard waydroid nano \
+    fapolicyd usbguard \
     cdrkit xorriso genisoimage isomd5sum mediawriter squashfs-tools erofs-utils dracut-live \
     python3 python3-devel python3-pip python3-setuptools python3-wheel python3-virtualenv python3-venv \
     python3-requests python3-yaml python3-toml python3-jsonschema python3-pillow python3-tqdm \
     python3-rich python3-click python3-pytest python3-black python3-mypy python3-ruff
-# ═══ SECURITY & IPS (CrowdSec) ═══
-echo "[01-virt] Installing CrowdSec IPS..."
-curl -s https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.rpm.sh | bash
-dnf install -y --skip-unavailable --allowerasing --nobest crowdsec crowdsec-firewall-bouncer-nftables
 
-# ═══ HIGH AVAILABILITY / CLUSTERING (Pacemaker + Corosync) ═══
+# ═══ HIGH AVAILABILITY / CLUSTERING ═══
 dnf install -y --skip-unavailable --allowerasing --nobest \
     corosync pacemaker pcs fence-agents-all resource-agents \
     keepalived haproxy \
-    sanlock libvirt-lock-sanlock
-
-# ═══ SHARED/DISTRIBUTED STORAGE ═══
-dnf install -y --skip-unavailable --allowerasing --nobest \
-    iscsi-initiator-utils targetcli \
-    ceph-common \
-    glusterfs glusterfs-server glusterfs-fuse glusterfs-cli
-
-# ═══ KUBERNETES + ORCHESTRATION ═══
-dnf install -y --skip-unavailable --allowerasing --nobest \
+    sanlock libvirt-lock-sanlock \
+    iscsi-initiator-utils targetcli ceph-common \
+    glusterfs glusterfs-server glusterfs-fuse glusterfs-cli \
     etcd helm wireguard-tools
 
-# K3s — not in Fedora repos, install binary directly
+# ═══ CROWDSEC IPS — SOVEREIGN MODE (no outbound telemetry) ═══
+echo "[01-virt] Installing CrowdSec IPS (sovereign/offline mode)..."
+curl -s https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.rpm.sh | os=fedora dist=40 bash
+dnf install -y --skip-unavailable --allowerasing --nobest crowdsec crowdsec-firewall-bouncer-nftables
+
+# Enforce sovereign operation — disable ALL outbound reporting
+mkdir -p /etc/crowdsec
+cat > /etc/crowdsec/config.yaml.local <<'EOCSC'
+# CloudWS Sovereign Mode — CrowdSec sends NOTHING outbound
+api:
+  server:
+    online_client:
+      credentials_path: ""
+cscli:
+  output: human
+crowdsec_service:
+  enable: true
+plugin_config:
+  user: nobody
+  group: nogroup
+EOCSC
+
+# Also disable the online API enrollment entirely
+mkdir -p /etc/crowdsec/local_api_credentials.yaml.d
+cat > /etc/crowdsec/local_api_credentials.yaml.d/sovereign.yaml <<'EOSOV'
+# Sovereign override — no CAPI registration
+url: http://127.0.0.1:8080/
+login: ""
+password: ""
+EOSOV
+
+mkdir -p /etc/systemd/system/crowdsec-hubupdate.service.d
+cat > /etc/systemd/system/crowdsec-hubupdate.service.d/override.conf <<'EOF'
+[Unit]
+After=network-online.target
+Wants=network-online.target
+EOF
+
+# ═══ TUNED POWER MANAGEMENT (replaces power-profiles-daemon) ═══
+dnf remove -y power-profiles-daemon 2>/dev/null || true
+dnf install -y --allowerasing --nobest \
+    tuned tuned-ppd tuned-utils tuned-profiles-cpu-partitioning tuned-profiles-realtime
+
+# ═══ K3s LIGHTWEIGHT KUBERNETES ═══
 echo "[01-virt] Installing K3s..."
 curl -sfL https://get.k3s.io -o /usr/local/bin/k3s-install.sh
 chmod +x /usr/local/bin/k3s-install.sh
-# Download K3s binary (don't start — user activates when ready)
 curl -sfL "https://github.com/k3s-io/k3s/releases/latest/download/k3s" -o /usr/local/bin/k3s 2>/dev/null || true
 chmod +x /usr/local/bin/k3s 2>/dev/null || true
-# Symlinks for kubectl/crictl if K3s is present
 [ -f /usr/local/bin/k3s ] && {
     ln -sf /usr/local/bin/k3s /usr/local/bin/kubectl 2>/dev/null || true
     ln -sf /usr/local/bin/k3s /usr/local/bin/crictl 2>/dev/null || true
     ln -sf /usr/local/bin/k3s /usr/local/bin/ctr 2>/dev/null || true
 }
-# K3s systemd unit (disabled — user enables with: systemctl enable --now k3s)
 cat > /usr/lib/systemd/system/k3s.service <<'K3SVC'
 [Unit]
 Description=Lightweight Kubernetes
-Documentation=https://k3s.io
 After=network-online.target
 Wants=network-online.target
 [Service]
@@ -514,10 +598,7 @@ RestartSec=5s
 WantedBy=multi-user.target
 K3SVC
 
-dnf remove -y power-profiles-daemon 2>/dev/null||true
-dnf install -y --allowerasing --nobest tuned tuned-ppd
-dnf install -y --skip-unavailable --allowerasing --nobest tuned-utils tuned-profiles-cpu-partitioning tuned-profiles-realtime
-
+# ═══ SERVICE ENABLEMENT ═══
 mkdir -p /etc/systemd/system-preset
 cat > /etc/systemd/system-preset/50-cloudws.preset <<'EOF'
 enable libvirtd.service
@@ -529,39 +610,56 @@ enable tuned.service
 enable pmcd.service
 enable pmlogger.service
 enable pmproxy.service
+enable firewalld.service
+enable fapolicyd.service
+enable usbguard.service
+enable crowdsec.service
+enable crowdsec-firewall-bouncer.service
+enable waydroid-container.service
 EOF
 systemctl enable libvirtd.service virtqemud.socket virtnetworkd.socket virtstoraged.socket
 systemctl enable cockpit.socket podman.socket osbuild-composer.socket sshd.service tuned.service pmcd.service pmlogger.service pmproxy.service
-systemctl enable podman-auto-update.timer podman-restart.service qemu-guest-agent.service hypervvssd.service hypervkvpd.service smb.service nmb.service nfs-server.service tailscaled.service 2>/dev/null||true
-systemctl enable bluetooth.service xrdp.service xrdp-sesman.service 2>/dev/null||true
-systemctl enable pcsd.service 2>/dev/null||true
-systemctl enable fapolicyd.service usbguard.service crowdsec.service crowdsec-firewall-bouncer.service 2>/dev/null||true
-systemctl enable cloud-init.service cloud-init-local.service cloud-config.service cloud-final.service 2>/dev/null||true
-systemctl enable multipathd.service chronyd.service 2>/dev/null||true
-tuned-adm profile throughput-performance 2>/dev/null||true
+systemctl enable podman-auto-update.timer podman-restart.service qemu-guest-agent.service hypervvssd.service hypervkvpd.service smb.service nmb.service nfs-server.service tailscaled.service 2>/dev/null || true
+systemctl enable bluetooth.service xrdp.service xrdp-sesman.service 2>/dev/null || true
+systemctl enable pcsd.service cloud-init.service cloud-init-local.service cloud-config.service cloud-final.service multipathd.service chronyd.service 2>/dev/null || true
+tuned-adm profile throughput-performance 2>/dev/null || true
 mkdir -p /etc/libvirt/qemu.conf.d
 echo -e "user = \"root\"\ngroup = \"root\"\ndynamic_ownership = 1\nremember_owner = 0" > /etc/libvirt/qemu.conf.d/10-cloudws.conf
 
+# ═══ COCKPIT PLUGINS (git) ═══
 git clone --depth=1 https://github.com/45Drives/cockpit-benchmark.git /tmp/bench && make -C /tmp/bench install && rm -rf /tmp/bench || true
 git clone --depth=1 https://github.com/optimans/cockpit-zfs-manager.git /tmp/zfs && cp -r /tmp/zfs/zfs /usr/share/cockpit/ && rm -rf /tmp/zfs || true
+
+# ═══ VIRTIO-WIN ISO ═══
 mkdir -p /var/lib/libvirt/images
-curl -Lo /var/lib/libvirt/images/virtio-win.iso 'https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.271-1/virtio-win-0.1.271.iso' || true
+curl -Lo /var/lib/libvirt/images/virtio-win.iso \
+    'https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.271-1/virtio-win-0.1.271.iso' || true
 
-# Looking Glass B7
-dnf install -y --skip-unavailable --allowerasing --nobest cmake gcc gcc-c++ make pkgconf binutils binutils-devel \
-    libX11-devel nettle-devel libXi-devel libXinerama-devel libXcursor-devel libXpresent-devel libxkbcommon-devel \
-    wayland-devel wayland-protocols-devel libsamplerate-devel pulseaudio-libs-devel pipewire-devel spice-protocol \
-    fontconfig-devel freetype-devel libXScrnSaver-devel libXrandr-devel libdecor-devel libepoxy-devel mesa-libEGL-devel
-cd /tmp;rm -rf LookingGlass;git clone --recursive https://github.com/gnif/LookingGlass.git;cd LookingGlass;git checkout B7;git submodule update --init --recursive
-mkdir -p client/build;cd client/build;if cmake ../ && make -j$(nproc);then install -Dm755 looking-glass-client /usr/local/bin/looking-glass-client;fi;rm -rf /tmp/LookingGlass
+# ═══ LOOKING GLASS B7 ═══
+dnf install -y --skip-unavailable --allowerasing --nobest \
+    cmake gcc gcc-c++ make pkgconf binutils binutils-devel \
+    libX11-devel nettle-devel libXi-devel libXinerama-devel libXcursor-devel libXpresent-devel \
+    libxkbcommon-devel wayland-devel wayland-protocols-devel \
+    libsamplerate-devel pulseaudio-libs-devel pipewire-devel spice-protocol \
+    fontconfig-devel freetype-devel libXScrnSaver-devel libXrandr-devel \
+    libdecor-devel libepoxy-devel mesa-libEGL-devel
+cd /tmp; rm -rf LookingGlass
+git clone --recursive https://github.com/gnif/LookingGlass.git
+cd LookingGlass; git checkout B7; git submodule update --init --recursive
+mkdir -p client/build; cd client/build
+if cmake ../ && make -j$(nproc); then
+    install -Dm755 looking-glass-client /usr/local/bin/looking-glass-client
+fi
+rm -rf /tmp/LookingGlass
 
-# Clean up Looking Glass build deps (not needed at runtime — saves ~150 packages)
+# Remove Looking Glass build deps
 dnf remove -y --noautoremove cmake gcc gcc-c++ pkgconf binutils-devel \
     libX11-devel nettle-devel libXi-devel libXinerama-devel libXcursor-devel libXpresent-devel \
-    libxkbcommon-devel wayland-devel wayland-protocols-devel libsamplerate-devel \
-    pulseaudio-libs-devel pipewire-devel spice-protocol fontconfig-devel freetype-devel \
-    libXScrnSaver-devel libXrandr-devel libdecor-devel libepoxy-devel mesa-libEGL-devel \
-    2>/dev/null || true
+    libxkbcommon-devel wayland-devel wayland-protocols-devel \
+    libsamplerate-devel pulseaudio-libs-devel pipewire-devel spice-protocol \
+    fontconfig-devel freetype-devel libXScrnSaver-devel libXrandr-devel \
+    libdecor-devel libepoxy-devel mesa-libEGL-devel 2>/dev/null || true
+
 echo 'SUBSYSTEM=="kvmfr", OWNER="root", GROUP="kvm", MODE="0660"' > /etc/udev/rules.d/99-kvmfr.rules
 echo "f /dev/shm/looking-glass 0660 root kvm -" > /etc/tmpfiles.d/10-looking-glass.conf
 cat > /usr/local/bin/looking-glass-start <<'EOF'
@@ -570,24 +668,22 @@ while [[ ! -e /dev/shm/looking-glass ]]; do sleep 1; done
 exec /usr/local/bin/looking-glass-client -F -f /dev/shm/looking-glass
 EOF
 chmod +x /usr/local/bin/looking-glass-start
-echo "[01-virt] Full KVM/Podman/Gaming/Cockpit + Looking Glass B7 installed."
+echo "[01-virt] Full KVM/Podman/Gaming/Cockpit/HA/CrowdSec + Looking Glass B7 installed."
 '@|Out-File "$B\build_files\virtualization\01-virt.sh" -Encoding ascii
 
 # ════════════════════════════════════════════════════════════════════
-#  99-overrides.sh — User, hostname, self-embed (Flatpaks baked into 01-gnome.sh)
+#  99-overrides.sh — User, hostname, self-embed, security, backup
 # ════════════════════════════════════════════════════════════════════
 $Ovr=@'
 #!/bin/bash
 set -euo pipefail
 
-# bootc: /home → /var/home symlink. Create home at /var/home explicitly.
+# ═══ USER SETUP (bootc: /home → /var/home symlink) ═══
 mkdir -p /var/home
-useradd -m -d /var/home/INJ_U -s /bin/bash INJ_U 2>/dev/null||true
-# Ensure home exists with correct ownership even if useradd skipped
+useradd -m -d /var/home/INJ_U -s /bin/bash INJ_U 2>/dev/null || true
 mkdir -p /var/home/INJ_U
 chown INJ_U:INJ_U /var/home/INJ_U
 chmod 700 /var/home/INJ_U
-# Create XDG user directories
 for d in Desktop Documents Downloads Music Pictures Public Templates Videos; do
     mkdir -p "/var/home/INJ_U/$d"
 done
@@ -597,33 +693,18 @@ cat <<'EOF'|chpasswd
 INJ_U:INJ_P
 root:INJ_P
 EOF
-for g in wheel libvirt kvm video render input dialout;do groupadd -f "$g" 2>/dev/null||true;usermod -aG "$g" INJ_U 2>/dev/null||true;done
+for g in wheel libvirt kvm video render input dialout; do
+    groupadd -f "$g" 2>/dev/null || true
+    usermod -aG "$g" INJ_U 2>/dev/null || true
+done
 sed -i 's/^# %wheel\s*ALL=(ALL)\s*NOPASSWD:\s*ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
-echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel;chmod 440 /etc/sudoers.d/wheel
+echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel; chmod 440 /etc/sudoers.d/wheel
 mkdir -p /etc/polkit-1/rules.d
 echo 'polkit.addRule(function(a,s){if(s.isInGroup("wheel")){return polkit.Result.YES;}});' > /etc/polkit-1/rules.d/49-nopasswd-wheel.rules
 echo 'polkit.addRule(function(a,s){if(a.id=="org.libvirt.unix.manage"&&s.local&&s.active&&s.isInGroup("libvirt")){return polkit.Result.YES;}});' > /etc/polkit-1/rules.d/49-nopasswd-libvirt.rules
 
-# ═══ ON-DEMAND MALWARE SCAN ALIAS ═══
 echo 'alias scan-malware="podman run --rm -v ~/.clamav:/var/lib/clamav -v /var/home:/scandir:ro docker.io/clamav/clamav:latest clamscan -r /scandir"' >> /etc/skel/.bashrc
 
-# ═══ ZERO-TRUST FIREWALL LOCKDOWN ═══
-cat > /usr/libexec/cloudws-firewall-init <<'EOFW'
-#!/bin/bash
-if command -v firewall-cmd &>/dev/null; then
-    firewall-cmd --set-default-zone=drop
-    firewall-cmd --permanent --zone=drop --add-service=cockpit
-    firewall-cmd --permanent --zone=drop --add-service=ssh
-    firewall-cmd --permanent --zone=drop --add-service=mdns
-    firewall-cmd --permanent --zone=trusted --add-interface=podman0
-    firewall-cmd --permanent --zone=trusted --add-interface=virbr0
-    firewall-cmd --permanent --zone=trusted --add-interface=waydroid0
-    firewall-cmd --reload
-fi
-EOFW
-chmod +x /usr/libexec/cloudws-firewall-init
-
-# ═══ LOCALE GENERATION ═══
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
 echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
 localedef -i en_US -f UTF-8 en_US.UTF-8 2>/dev/null || true
@@ -631,7 +712,7 @@ localedef -i en_US -f UTF-8 en_US.UTF-8 2>/dev/null || true
 echo "CloudWS" > /etc/hostname
 echo -e "127.0.0.1 localhost\n127.0.1.1 CloudWS CloudWS.local\n::1 localhost" > /etc/hosts
 echo -e "PRETTY_HOSTNAME=\"CloudWS\"\nICON_NAME=\"computer\"\nCHASSIS=\"server\"" > /etc/machine-info
-mkdir -p /etc/NetworkManager/conf.d;echo -e "[main]\nhostname-mode=none" > /etc/NetworkManager/conf.d/hostname.conf
+mkdir -p /etc/NetworkManager/conf.d; echo -e "[main]\nhostname-mode=none" > /etc/NetworkManager/conf.d/hostname.conf
 cat > /usr/lib/systemd/system/cloudws-hostname.service <<'EOSVC'
 [Unit]
 Description=Enforce CloudWS Hostname
@@ -646,10 +727,29 @@ WantedBy=sysinit.target
 EOSVC
 systemctl enable cloudws-hostname.service
 
-# ═══ CLOUD-INIT CONFIG (autonomous cloud/hypervisor deployment) ═══
+# ═══ FIREWALL INIT (cloudws-firewall-init) ═══
+cat > /usr/libexec/cloudws-firewall-init <<'EOFW'
+#!/bin/bash
+if command -v firewall-cmd &>/dev/null; then
+    firewall-cmd --set-default-zone=drop
+    firewall-cmd --permanent --zone=drop --add-service=cockpit
+    firewall-cmd --permanent --zone=drop --add-service=ssh
+    firewall-cmd --permanent --zone=drop --add-service=mdns
+    firewall-cmd --permanent --zone=trusted --add-interface=podman0
+    firewall-cmd --permanent --zone=trusted --add-interface=virbr0
+    firewall-cmd --permanent --zone=trusted --add-interface=waydroid0
+    # K3s pod/service subnets
+    firewall-cmd --permanent --zone=trusted --add-source=10.42.0.0/16
+    firewall-cmd --permanent --zone=trusted --add-source=10.43.0.0/16
+    firewall-cmd --permanent --zone=drop --add-port=6443/tcp
+    firewall-cmd --reload
+fi
+EOFW
+chmod +x /usr/libexec/cloudws-firewall-init
+
+# ═══ CLOUD-INIT ═══
 mkdir -p /etc/cloud/cloud.cfg.d
 cat > /etc/cloud/cloud.cfg.d/99-cloudws.cfg <<'EOCI'
-# CloudWS cloud-init overrides
 preserve_hostname: true
 manage_etc_hosts: false
 ssh_pwauth: true
@@ -665,7 +765,7 @@ system_info:
 datasource_list: [NoCloud, ConfigDrive, OpenStack, Ec2, GCE, Azure, None]
 EOCI
 
-# ═══ MULTIPATH CONFIG (SAN/NAS failover) ═══
+# ═══ MULTIPATH / ZRAM / SYSCTL ═══
 mkdir -p /etc/multipath
 cat > /etc/multipath.conf <<'EOMP'
 defaults {
@@ -675,7 +775,6 @@ defaults {
 }
 EOMP
 
-# ═══ ZRAM SWAP (compressed RAM — VM host optimized) ═══
 mkdir -p /usr/lib/systemd/zram-generator.conf.d
 cat > /usr/lib/systemd/zram-generator.conf.d/cloudws.conf <<'EOZRAM'
 [zram0]
@@ -685,21 +784,13 @@ swap-priority = 100
 fs-type = swap
 EOZRAM
 
-# ═══ VM HOST SYSCTL TUNING ═══
 mkdir -p /etc/sysctl.d
 cat > /etc/sysctl.d/99-cloudws-vmhost.conf <<'EOSYSCTL'
-# Swap behavior — prefer keeping VM memory in RAM, use zram as safety net
 vm.swappiness = 10
 vm.vfs_cache_pressure = 50
-
-# Dirty page writeback — prevent IO stalls during heavy VM disk activity
 vm.dirty_ratio = 10
 vm.dirty_background_ratio = 5
-
-# Overcommit — allow libvirt/QEMU to allocate large memory regions
 vm.overcommit_memory = 1
-
-# Network — high-throughput for VM bridging + K8s + iSCSI
 net.core.somaxconn = 65535
 net.core.netdev_max_backlog = 65535
 net.ipv4.tcp_max_syn_backlog = 65535
@@ -708,23 +799,17 @@ net.ipv4.conf.all.forwarding = 1
 net.ipv6.conf.all.forwarding = 1
 net.bridge.bridge-nf-call-iptables = 1
 net.bridge.bridge-nf-call-ip6tables = 1
-
-# Hugepages — let VMs request transparent hugepages for performance
 vm.nr_hugepages = 0
 vm.hugetlb_shm_group = 36
-
-# inotify — Podman/K8s/Flatpak all consume watches heavily
 fs.inotify.max_user_watches = 1048576
 fs.inotify.max_user_instances = 8192
 fs.inotify.max_queued_events = 1048576
-
-# ARP — prevent flux on busy cluster networks
 net.ipv4.neigh.default.gc_thresh1 = 4096
 net.ipv4.neigh.default.gc_thresh2 = 8192
 net.ipv4.neigh.default.gc_thresh3 = 16384
 EOSYSCTL
 
-# ═══ XRDP VSOCK FOR HYPER-V ENHANCED SESSION ═══
+# ═══ XRDP VSOCK + HYPER-V ═══
 echo "hv_sock" > /etc/modules-load.d/hv_sock.conf
 if [ -f /etc/xrdp/xrdp.ini ]; then
     sed -i 's/^port=3389/port=vsock:\/\/-1:3389/' /etc/xrdp/xrdp.ini
@@ -737,7 +822,55 @@ fi
 mkdir -p /etc/X11
 echo "allowed_users=anybody" > /etc/X11/Xwrapper.config
 
-# ═══ FIRST-BOOT SYSTEM INIT ═══
+# ═══ CLOUDWS BACKUP HELPER (works on bare metal, WSL, containers) ═══
+cat > /usr/local/bin/cloudws-backup <<'EOBAK'
+#!/bin/bash
+set -euo pipefail
+echo "CloudWS Backup Utility"
+echo "======================"
+echo "1) Export WSL2 instance (from Windows host: wsl --export CloudWS backup.tar)"
+echo "2) Backup Podman volumes"
+echo "3) Backup K3s etcd snapshot"
+echo "4) Backup libvirt VMs (XML + disks)"
+echo "5) Full /var/home backup (tar.zst)"
+echo ""
+read -p "Choice [1-5]: " choice
+STAMP=$(date +%Y%m%d-%H%M%S)
+BDIR="/var/home/backups/cloudws-$STAMP"
+mkdir -p "$BDIR"
+case "$choice" in
+  1) echo "Run from Windows PowerShell:"
+     echo "  wsl --export CloudWS C:\\Backups\\cloudws-$STAMP.tar"
+     echo "  # Or copy the VHDX directly from: %USERPROFILE%\\WSL\\CloudWS\\";;
+  2) echo "Exporting Podman volumes..."
+     for vol in $(podman volume ls -q 2>/dev/null); do
+         podman volume export "$vol" > "$BDIR/podman-vol-$vol.tar"
+         echo "  ✓ $vol"
+     done;;
+  3) echo "Snapshotting K3s etcd..."
+     if [ -f /usr/local/bin/k3s ]; then
+         k3s etcd-snapshot save --name "cloudws-$STAMP" 2>/dev/null || \
+             cp -a /var/lib/rancher/k3s/server/db "$BDIR/k3s-db/" 2>/dev/null || true
+         cp /var/lib/rancher/k3s/server/token "$BDIR/k3s-token" 2>/dev/null || true
+         echo "  ✓ K3s state saved to $BDIR"
+     else echo "  K3s not installed"; fi;;
+  4) echo "Backing up libvirt VMs..."
+     for vm in $(virsh list --all --name 2>/dev/null | grep -v "^$"); do
+         virsh dumpxml "$vm" > "$BDIR/$vm.xml"
+         echo "  ✓ $vm XML dumped"
+     done
+     echo "  Disk images at /var/lib/libvirt/images/ — copy separately for full backup.";;
+  5) echo "Creating /var/home archive..."
+     tar -cf - -C /var home | zstd -T0 -3 > "$BDIR/var-home.tar.zst"
+     echo "  ✓ $BDIR/var-home.tar.zst";;
+  *) echo "Invalid choice.";;
+esac
+echo ""
+echo "Backups stored in: $BDIR"
+EOBAK
+chmod +x /usr/local/bin/cloudws-backup
+
+# ═══ FIRST-BOOT SYSTEM INIT (OFFLINE FLATPAK RESTORE + SECURITY) ═══
 cat > /usr/lib/systemd/system/cloudws-init.service <<'EOSVC'
 [Unit]
 Description=CloudWS System Init
@@ -752,9 +885,18 @@ EOSVC
 cat > /usr/libexec/cloudws-init <<'EOINIT'
 #!/bin/bash
 set -euo pipefail
-hostnamectl set-hostname CloudWS 2>/dev/null||true
+hostnamectl set-hostname CloudWS 2>/dev/null || true
 
-# Ensure home directory exists on first boot (bootc /var/home)
+# OFFLINE FLATPAK RESTORE
+if [ -d /usr/share/cloudws-flatpak-prebake ] && [ ! -d /var/lib/flatpak/repo ]; then
+    echo "[cloudws-init] Restoring baked Flatpaks to /var/lib/flatpak..."
+    mkdir -p /var/lib/flatpak
+    cp -a /usr/share/cloudws-flatpak-prebake/* /var/lib/flatpak/
+    echo "[cloudws-init] Flatpaks restored successfully."
+fi
+
+/usr/libexec/cloudws-firewall-init || true
+
 for u in $(awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd); do
     home=$(getent passwd "$u" | cut -d: -f6)
     if [ ! -d "$home" ]; then
@@ -765,35 +907,31 @@ for u in $(awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd); do
         done
         chown -R "$u:$u" "$home"
         chmod 700 "$home"
-        echo "[cloudws-init] Created home for $u at $home"
     fi
-done
-
-# Run xdg-user-dirs-update for each user
-for u in $(awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd); do
     su - "$u" -c "xdg-user-dirs-update" 2>/dev/null || true
 done
 
-for g in wheel libvirt kvm video render input dialout;do groupadd -f "$g" 2>/dev/null||true
+for g in wheel libvirt kvm video render input dialout; do
+    groupadd -f "$g" 2>/dev/null || true
     for u in $(awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd); do
-        usermod -aG "$g" "$u" 2>/dev/null||true
+        usermod -aG "$g" "$u" 2>/dev/null || true
     done
 done
-if command -v pmlogger_check &>/dev/null;then mkdir -p /var/log/pcp/pmlogger;systemctl restart pmcd pmlogger pmproxy 2>/dev/null||true;fi
-bootc status 2>/dev/null||true
+
+if command -v pmlogger_check &>/dev/null; then
+    mkdir -p /var/log/pcp/pmlogger
+    systemctl restart pmcd pmlogger pmproxy 2>/dev/null || true
+fi
+bootc status 2>/dev/null || true
 echo "[cloudws-init] System initialization complete."
 EOINIT
-chmod +x /usr/libexec/cloudws-init;systemctl enable cloudws-init.service
-echo "[99-overrides] User + hostname + self-embed configured."
+chmod +x /usr/libexec/cloudws-init; systemctl enable cloudws-init.service
+echo "[99-overrides] User + hostname + security + backup configured."
 '@
 $Ovr.Replace('INJ_U',$U).Replace('INJ_P',$P)|Out-File "$B\build_files\system\99-overrides.sh" -Encoding ascii
 
-# No config.toml needed — bib auto-sizes to content.
-# /home → /var/home lives on the same filesystem. No LVM needed.
-# bootc-image-builder auto-creates: EFI (200MB) + /boot (1GB) + / (fills rest)
-
 # ════════════════════════════════════════════════════════════════════
-#  Containerfile — OCI labels + self-embed + bootc lint
+#  Containerfile — OCI labels + GitHub-based cloudws-rebuild + lint
 # ════════════════════════════════════════════════════════════════════
 $BuildDate = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssZ'
 @"
@@ -801,59 +939,70 @@ FROM scratch AS ctx
 COPY build_files /build_files
 FROM quay.io/fedora/fedora-bootc:rawhide
 LABEL org.opencontainers.image.title="CloudWS — Cloud Workstation OS" \
-      org.opencontainers.image.description="Fedora Rawhide bootc immutable workstation: GNOME 50, Flatpak-first, KVM/QEMU VFIO passthrough, Podman, K3s, Pacemaker HA" \
-      org.opencontainers.image.version="3.3.0" \
+      org.opencontainers.image.description="Fedora Rawhide bootc immutable workstation: GNOME 50, Flatpak-first, KVM/QEMU GPU passthrough, Podman, K3s HA, NVIDIA RTX 4090, Gamescope Steam Session" \
+      org.opencontainers.image.version="3.12.0" \
       org.opencontainers.image.created="$BuildDate" \
       org.opencontainers.image.authors="Kabuki94" \
       org.opencontainers.image.source="https://github.com/Kabuki94/CloudWS-bootc" \
       org.opencontainers.image.vendor="CloudWS" \
       org.opencontainers.image.licenses="MIT" \
       containers.bootc=1
-RUN dnf upgrade -y --refresh --allowerasing --nobest
+RUN dnf upgrade -y --refresh --allowerasing --nobest && dnf clean all
 RUN --mount=type=bind,from=ctx,source=/build_files,target=/tmp/staging \
     mkdir -p /tmp/scripts && cp -r /tmp/staging/* /tmp/scripts/ && \
-    find /tmp/scripts -name "*.sh" -exec sed -i 's/\r`$$//' {} + && chmod +x /tmp/scripts/*/*.sh && \
-    bash /tmp/scripts/base/01-repos.sh && bash /tmp/scripts/base/02-kernel.sh && \
-    bash /tmp/scripts/desktop/01-gnome.sh && bash /tmp/scripts/hardware/01-hardware.sh && \
-    bash /tmp/scripts/virtualization/01-virt.sh && bash /tmp/scripts/system/99-overrides.sh && \
+    find /tmp/scripts -name "*.sh" -exec sed -i 's/\r//g' {} + && chmod +x /tmp/scripts/*/*.sh && \
+    bash /tmp/scripts/base/01-repos.sh && \
+    bash /tmp/scripts/base/02-kernel.sh && \
+    bash /tmp/scripts/desktop/01-gnome.sh && \
+    bash /tmp/scripts/hardware/01-hardware.sh && \
+    bash /tmp/scripts/virtualization/01-virt.sh && \
+    bash /tmp/scripts/system/99-overrides.sh && \
     mkdir -p /usr/share/cloudws/build_files && cp -r /tmp/staging/* /usr/share/cloudws/build_files/ && \
-    dnf upgrade -y --refresh --allowerasing --nobest && \
-    dnf clean all && \
-    rm -rf /var/cache/dnf /var/cache/yum /var/log/dnf* /var/log/akmods /tmp/scripts /tmp/geist /tmp/bench /tmp/zfs /tmp/LookingGlass && \
-    rm -rf /var/lib/dnf/history* /var/lib/dnf/repos /usr/share/doc /usr/share/man /usr/share/info && \
-    rm -rf /root/.cache /root/.npm /root/.cargo && \
-    find /var/log -type f -name "*.log" -delete 2>/dev/null || true && \
-    find /tmp -mindepth 1 -delete 2>/dev/null || true
+    dnf clean all && rm -rf /var/cache/dnf /tmp/scripts /tmp/*.log /var/tmp/* && \
+    rm -rf /var/cache/pip /root/.cache 2>/dev/null || true
 COPY Containerfile /usr/share/cloudws/Containerfile
 COPY <<'EOREBUILD' /usr/local/bin/cloudws-rebuild
 #!/bin/bash
 set -euo pipefail
+REPO="https://github.com/Kabuki94/CloudWS-bootc.git"
 GHCR="ghcr.io/kabuki94/cloudws-bootc"
-echo "CloudWS Self-Replication Engine"
-echo "==============================="
-echo "1) Rebuild locally from embedded sources"
-echo "2) Rebuild + push to GHCR"
-echo "3) Push existing local image to GHCR"
-echo "4) Pull latest from GHCR (bootc switch)"
-echo "5) Update in-place from GHCR (bootc update)"
-echo "6) Show bootc status"
-read -p "Choice [1-6]: " choice
+WORKDIR="/tmp/cloudws-rebuild-`$(date +%s)"
+echo ""
+echo "  CloudWS Self-Replication Engine v3.12"
+echo "  ======================================"
+echo "  1) Clone from GitHub → Build → local image"
+echo "  2) Clone from GitHub → Build → Push to GHCR"
+echo "  3) Push existing local image to GHCR"
+echo "  4) Pull latest from GHCR (bootc switch)"
+echo "  5) Update in-place from GHCR (bootc update)"
+echo "  6) Rollback to previous deployment"
+echo "  7) Show bootc status"
+echo "  8) Rebuild from embedded sources (offline)"
+echo ""
+read -p "  Choice [1-8]: " choice
 case "`$choice" in
-  1) cd /usr/share/cloudws
-     podman build --no-cache -t localhost/cloudws:latest -f Containerfile .
-     echo "Done. Deploy with: sudo bootc switch --transport containers-storage localhost/cloudws:latest";;
-  2) cd /usr/share/cloudws
-     podman build --no-cache -t localhost/cloudws:latest -f Containerfile .
-     read -p "GitHub username: " ghu
-     read -sp "GitHub PAT (write:packages): " ghp; echo
+  1) echo ""; echo "Cloning `$REPO..."
+     rm -rf "`$WORKDIR"; git clone --depth=1 "`$REPO" "`$WORKDIR"
+     cd "`$WORKDIR"
+     podman build --no-cache -t localhost/cloudws:latest .
+     rm -rf "`$WORKDIR"
+     echo ""; echo "Done. Deploy with:"
+     echo "  sudo bootc switch --transport containers-storage localhost/cloudws:latest";;
+  2) echo ""; echo "Cloning `$REPO..."
+     rm -rf "`$WORKDIR"; git clone --depth=1 "`$REPO" "`$WORKDIR"
+     cd "`$WORKDIR"
+     podman build --no-cache -t localhost/cloudws:latest .
+     rm -rf "`$WORKDIR"
+     read -p "  GitHub username: " ghu
+     read -sp "  GitHub PAT (write:packages): " ghp; echo
      echo "`$ghp" | podman login ghcr.io -u "`$ghu" --password-stdin
      podman tag localhost/cloudws:latest "`$GHCR:latest"
      podman tag localhost/cloudws:latest "`$GHCR:`$(date +%Y%m%d)"
      podman push "`$GHCR:latest"
      podman push "`$GHCR:`$(date +%Y%m%d)"
-     echo "Pushed to `$GHCR:latest and `$GHCR:`$(date +%Y%m%d)";;
-  3) read -p "GitHub username: " ghu
-     read -sp "GitHub PAT (write:packages): " ghp; echo
+     echo ""; echo "Pushed to `$GHCR:latest and `$GHCR:`$(date +%Y%m%d)";;
+  3) read -p "  GitHub username: " ghu
+     read -sp "  GitHub PAT (write:packages): " ghp; echo
      echo "`$ghp" | podman login ghcr.io -u "`$ghu" --password-stdin
      podman tag localhost/cloudws:latest "`$GHCR:latest"
      podman push "`$GHCR:latest"
@@ -864,13 +1013,20 @@ case "`$choice" in
   5) echo "Checking for updates..."
      sudo bootc update
      echo "Done. Reboot if updates were staged.";;
-  6) bootc status;;
+  6) echo "Rolling back..."
+     sudo bootc rollback
+     echo "Rolled back. Reboot to apply.";;
+  7) bootc status;;
+  8) echo "Rebuilding from embedded sources..."
+     cd /usr/share/cloudws
+     podman build --no-cache -t localhost/cloudws:latest -f Containerfile .
+     echo "Done. Deploy with:"
+     echo "  sudo bootc switch --transport containers-storage localhost/cloudws:latest";;
   *) echo "Invalid choice.";;
 esac
 EOREBUILD
 RUN chmod +x /usr/local/bin/cloudws-rebuild
 RUN mkdir -p /usr/lib/bootc/install && printf '[install.filesystem.root]\ntype = "xfs"\n' > /usr/lib/bootc/install/00-cloudws.toml
-RUN mkdir -p /usr/lib/bootc/install && echo '[transport]' > /usr/lib/bootc/install/01-cloudws-transport.toml && echo 'registry = "ghcr.io/kabuki94/cloudws-bootc"' >> /usr/lib/bootc/install/01-cloudws-transport.toml
 RUN bootc container lint
 "@|Out-File "$B\Containerfile" -Encoding ascii
 
@@ -878,17 +1034,13 @@ RUN bootc container lint
 #  PHASE 3: BUILD OCI IMAGE
 # ════════════════════════════════════════════════════════════════════
 Write-Host "`n═══ Phase 3: Building OCI Image ═══" -ForegroundColor Cyan
-podman build --no-cache --squash-all -t $I $B
+podman build --no-cache -t $I $B
 if($LASTEXITCODE -ne 0){throw "Build failed"}
 Write-Host "  ✓ OCI image built: localhost/$I" -ForegroundColor Green
 
 # ════════════════════════════════════════════════════════════════════
 #  PHASE 4: EXPORT TARGETS (conditional)
 # ════════════════════════════════════════════════════════════════════
-# No config.toml — bib auto-sizes disk images to content + headroom.
-# OCI image on GHCR is compressed layers only (~8-12GB).
-# RAW/VHDX/ISO expand to fit content at export time.
-
 $bib="quay.io/centos-bootc/bootc-image-builder:latest"
 $bibV=@("--rm","-it","--privileged","--security-opt","label=type:unconfined_t","-v","/var/lib/containers/storage:/var/lib/containers/storage","-v","${O}:/output:z")
 
@@ -951,14 +1103,10 @@ if ($deployWsl -eq 'y' -and (Test-Path $T_W)) {
 
     wsl --import $wslName $wslPath $T_W --version 2
     if ($LASTEXITCODE -eq 0) {
-        # Write comprehensive wsl.conf
         $wslConf = "[user]`ndefault=$U`n`n[boot]`nsystemd=true`n`n[interop]`nappendWindowsPath=false`n`n[automount]`nenabled=true`nmountFsTab=true"
         wsl -d $wslName -- bash -c "echo '$wslConf' > /etc/wsl.conf"
-        # Mask services that fail in WSL (no audit subsystem, no bootloader)
         wsl -d $wslName -- bash -c "systemctl mask auditd.service audit-rules.service bootloader-update.service 2>/dev/null; true"
-        # Ensure locale is generated
         wsl -d $wslName -- bash -c "localedef -i en_US -f UTF-8 en_US.UTF-8 2>/dev/null; true"
-        # Restart to apply wsl.conf
         wsl --terminate $wslName 2>$null
         Write-Host "  ✓ CloudWS deployed to WSL2 as '$wslName'" -ForegroundColor Green
         Write-Host "    wsl.conf: systemd=true, appendWindowsPath=false" -ForegroundColor Gray
@@ -1023,11 +1171,19 @@ if ($ghcrReady) {
 Write-Host "`n═══ All Done ═══" -ForegroundColor Green
 Write-Host ""
 Write-Host "  CloudWS Self-Management (from a running CloudWS system):" -ForegroundColor Cyan
-Write-Host "    cloudws-rebuild          — Menu: rebuild, push, pull, update, status" -ForegroundColor White
+Write-Host "    cloudws-rebuild          — Clone from GitHub, build, push, pull, update, rollback" -ForegroundColor White
+Write-Host "    cloudws-backup           — Backup Podman volumes, K3s state, VMs, home dirs" -ForegroundColor White
 Write-Host "    cloudws-vfio-toggle list — Show GPUs + IOMMU groups for passthrough" -ForegroundColor White
 Write-Host "    sudo bootc update        — Pull latest image from GHCR" -ForegroundColor White
 Write-Host "    sudo bootc switch $GhcrImage`:latest — Switch to GHCR image" -ForegroundColor White
 Write-Host "    sudo bootc rollback      — Roll back to previous deployment" -ForegroundColor White
+Write-Host ""
+Write-Host "  GDM Session Selection:" -ForegroundColor Cyan
+Write-Host "    GNOME (Wayland)          — Full desktop environment" -ForegroundColor White
+Write-Host "    Steam (Gamescope)        — Fullscreen SteamOS-mode gaming session" -ForegroundColor White
+Write-Host ""
+Write-Host "  WSL2 Backup (from Windows):" -ForegroundColor Cyan
+Write-Host "    wsl --export CloudWS backup.tar" -ForegroundColor White
 Write-Host ""
 Write-Host "  GitHub Setup (one-time):" -ForegroundColor Yellow
 Write-Host "    1. https://github.com/settings/tokens/new (write:packages, read:packages)" -ForegroundColor Gray

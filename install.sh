@@ -7,7 +7,7 @@ REPO="https://github.com/Kabuki94/CloudWS-bootc.git"
 DIR="${CLOUDWS_DIR:-$HOME/CloudWS-bootc}"
 
 echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║  CloudWS v3.3 — Cloud Workstation OS                       ║"
+echo "║  CloudWS v3.12 — Cloud Workstation OS                      ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -78,7 +78,6 @@ case "$choice" in
     fi
     read -p "⚠ ALL DATA ON /dev/$disk WILL BE DESTROYED. Type 'yes' to continue: " confirm
     if [ "$confirm" = "yes" ]; then
-        # Build locally first
         echo "Building image..."
         git clone "$REPO" /tmp/cloudws-build 2>/dev/null || true
         cd /tmp/cloudws-build
@@ -104,5 +103,6 @@ echo ""
 echo "CloudWS Commands (after deploy):"
 echo "  sudo bootc update     — Pull latest updates"
 echo "  sudo bootc rollback   — Roll back"
-echo "  cloudws-rebuild       — Rebuild from embedded sources"
+echo "  cloudws-rebuild       — Clone from GitHub, build, push"
+echo "  cloudws-backup        — Backup volumes, K3s state, VMs"
 echo "  cloudws-vfio-toggle   — GPU passthrough management"
