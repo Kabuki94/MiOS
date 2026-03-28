@@ -158,7 +158,7 @@ dnf install -y --allowerasing --nobest \
     upower gnome-bluetooth bluez bluez-tools \
     gnome-remote-desktop gnome-color-manager colord \
     gnome-disk-utility gnome-system-monitor \
-    git wayland-utils glibc-langpack-en \
+    git nano fastfetch wayland-utils glibc-langpack-en \
     pipewire pipewire-alsa pipewire-pulseaudio wireplumber \
     vulkan-validation-layers mesa-libEGL mesa-libgbm \
     qt5-qtwayland qt6-qtwayland \
@@ -169,6 +169,7 @@ dnf install -y --allowerasing --nobest \
 dnf install -y --skip-unavailable --skip-broken --allowerasing --nobest \
     gnome-software-rpm-ostree appstream-data \
     gnome-shell-extension-tiling-assistant \
+    gnome-shell-extension-caffeine \
     adwaita-qt5 adwaita-qt6 \
     qadwaitadecorations-qt5 qadwaitadecorations-qt6 \
     qgnomeplatform-qt5 qgnomeplatform-qt6 \
@@ -326,14 +327,12 @@ flatpak remote-add --if-not-exists gnome-nightly https://nightly.gnome.org/gnome
 flatpak install --system -y --noninteractive gnome-nightly org.gnome.Platform//master 2>/dev/null || true
 flatpak install --system -y --noninteractive flathub org.gnome.Platform//50 2>/dev/null || true
 
-# ALL Flatpak apps — baked into immutable image
+# CloudWS Flatpak apps — ONLY these 5, everything else is browser/terminal/VM/container
 FLATPAK_APPS=(
-    org.gnome.Epiphany org.gnome.Loupe org.gnome.Showtime org.gnome.Papers
-    org.gnome.Calculator org.gnome.Calendar org.gnome.Characters org.gnome.clocks
-    org.gnome.Connections org.gnome.Contacts org.gnome.Maps org.gnome.Weather
-    org.gnome.TextEditor org.gnome.font-viewer org.gnome.Logs org.gnome.baobab
-    org.gnome.Snapshot org.gnome.Music org.gnome.Decibels
-    io.podman_desktop.PodmanDesktop com.usebottles.bottles
+    org.gnome.Epiphany
+    org.gnome.Logs
+    io.podman_desktop.PodmanDesktop
+    com.usebottles.bottles
     com.mattjakeman.ExtensionManager
 )
 
@@ -381,7 +380,7 @@ primary-color='#241f31'
 [org/gnome/desktop/sound]
 theme-name='freedesktop'
 [org/gnome/shell]
-enabled-extensions=['dash-to-dock@micxgx.gmail.com', 'appindicatorsupport@rgcjonas.gmail.com', 'tiling-assistant@leleat-on-github']
+enabled-extensions=['dash-to-dock@micxgx.gmail.com', 'appindicatorsupport@rgcjonas.gmail.com', 'tiling-assistant@leleat-on-github', 'caffeine@patapon.info']
 favorite-apps=['org.gnome.Epiphany.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop', 'cloudws-cockpit.desktop']
 [org/gnome/shell/extensions/dash-to-dock]
 dock-fixed=true
@@ -395,19 +394,19 @@ folder-children=['Wine', 'Gaming', 'Virt', 'Utilities', 'Media', 'Tools']
 [org/gnome/desktop/app-folders/folders/Wine]
 name='Wine'
 categories=['Wine']
-apps=['wine.desktop', 'wine-browsedrive.desktop', 'wine-notepad.desktop', 'wine-regedit.desktop', 'wine-uninstaller.desktop', 'wine-winecfg.desktop', 'wine-wineboot.desktop', 'wine-winefile.desktop', 'wine-winehelp.desktop', 'wine-oleview.desktop', 'wine-wordpad.desktop', 'wine-winemine.desktop', 'winetricks.desktop', 'wine-mime-msi.desktop', 'wine-extension-txt.desktop', 'wine-help.desktop', 'Wine Help.desktop', 'net.winehq.Wine.desktop', 'net.winehq.Wine.Help.desktop', 'wine64.desktop', 'wine64-preloader.desktop']
+apps=['wine.desktop', 'wine-browsedrive.desktop', 'wine-notepad.desktop', 'wine-regedit.desktop', 'wine-uninstaller.desktop', 'wine-winecfg.desktop', 'wine-wineboot.desktop', 'wine-winefile.desktop', 'wine-winehelp.desktop', 'wine-oleview.desktop', 'wine-wordpad.desktop', 'wine-winemine.desktop', 'winetricks.desktop', 'wine-mime-msi.desktop', 'wine-extension-txt.desktop', 'wine-help.desktop', 'Wine Help.desktop', 'wine64.desktop', 'wine64-preloader.desktop', 'net.winehq.Wine.desktop', 'net.winehq.Wine.Help.desktop', 'wine-winhelp.desktop', 'wine-winhlp32.desktop']
 [org/gnome/desktop/app-folders/folders/Gaming]
 name='Gaming'
 apps=['steam.desktop', 'com.valvesoftware.Steam.desktop', 'net.lutris.Lutris.desktop', 'lutris.desktop', 'dosbox-staging.desktop', 'io.github.dosbox-staging.desktop', 'org.dosbox-staging.dosbox-staging.desktop', 'com.usebottles.bottles.desktop', 'gamescope.desktop', 'gamemode.desktop', 'gamemoderun.desktop']
 [org/gnome/desktop/app-folders/folders/Virt]
 name='Virtualization'
-apps=['io.podman_desktop.PodmanDesktop.desktop', 'virt-manager.desktop', 'org.gnome.Boxes.desktop', 'qemu.desktop', 'cloudws-cockpit.desktop', 'Waydroid.desktop', 'waydroid.desktop']
+apps=['io.podman_desktop.PodmanDesktop.desktop', 'virt-manager.desktop', 'org.gnome.Boxes.desktop', 'qemu.desktop', 'cloudws-cockpit.desktop', 'Waydroid.desktop', 'waydroid.desktop', 'gamt.desktop', 'remote-viewer.desktop']
 [org/gnome/desktop/app-folders/folders/Utilities]
 name='Utilities'
-apps=['org.gnome.Settings.desktop', 'org.gnome.SystemMonitor.desktop', 'org.gnome.Resources.desktop', 'org.gnome.DiskUtility.desktop', 'org.gnome.baobab.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.Connections.desktop', 'org.gnome.Logs.desktop', 'nvidia-settings.desktop', 'nvtop.desktop', 'btop.desktop', 'virt-top.desktop', 'remote-viewer.desktop', 'org.fedoraproject.MediaWriter.desktop', 'mediawriter.desktop']
+apps=['org.gnome.Settings.desktop', 'org.gnome.SystemMonitor.desktop', 'org.gnome.Resources.desktop', 'org.gnome.DiskUtility.desktop', 'org.gnome.baobab.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.Connections.desktop', 'org.gnome.Logs.desktop', 'nvidia-settings.desktop', 'nvtop.desktop', 'btop.desktop', 'virt-top.desktop', 'org.fedoraproject.MediaWriter.desktop', 'mediawriter.desktop', 'malcontent-control.desktop', 'org.freedesktop.MalcontentControl.desktop', 'org.gnome.ParentalControls.desktop']
 [org/gnome/desktop/app-folders/folders/Media]
 name='Media'
-apps=['org.gnome.Music.desktop', 'org.gnome.Showtime.desktop', 'org.gnome.Snapshot.desktop', 'org.gnome.Loupe.desktop', 'org.gnome.Decibels.desktop', 'simple-scan.desktop']
+apps=['org.gnome.Music.desktop', 'org.gnome.Showtime.desktop', 'org.gnome.Snapshot.desktop', 'org.gnome.Loupe.desktop', 'org.gnome.Decibels.desktop', 'simple-scan.desktop', 'org.gnome.SoundRecorder.desktop']
 [org/gnome/desktop/app-folders/folders/Tools]
 name='Tools'
 apps=['org.gnome.Maps.desktop', 'org.gnome.Contacts.desktop', 'org.gnome.Weather.desktop', 'org.gnome.clocks.desktop', 'org.gnome.Calendar.desktop', 'org.gnome.Calculator.desktop', 'org.gnome.Characters.desktop', 'org.gnome.font-viewer.desktop', 'org.gnome.Papers.desktop', 'org.gnome.TextEditor.desktop', 'org.gnome.Tour.desktop', 'yelp.desktop']
@@ -513,6 +512,7 @@ dnf install -y --skip-unavailable --allowerasing --nobest \
     nvme-cli device-mapper-multipath sg3_utils \
     chrony firewalld zram-generator \
     fapolicyd usbguard \
+    checkpolicy selinux-policy-devel \
     cdrkit xorriso genisoimage isomd5sum mediawriter squashfs-tools erofs-utils dracut-live \
     python3 python3-devel python3-pip python3-setuptools python3-wheel python3-virtualenv python3-venv \
     python3-requests python3-yaml python3-toml python3-jsonschema python3-pillow python3-tqdm \
@@ -751,6 +751,54 @@ if command -v firewall-cmd &>/dev/null; then
 fi
 EOFW
 chmod +x /usr/libexec/cloudws-firewall-init
+
+# ═══ SELINUX POLICY FIXES (bootc image compatibility) ═══
+# These resolve the common SELinux denials seen in bootc-deployed images
+if command -v setsebool &>/dev/null; then
+    # Allow cockpit-ws to access filesystem root
+    setsebool -P cockpit_manage_all_files 1 2>/dev/null || true
+    # Allow systemd-resolved to write to its socket
+    setsebool -P domain_can_mmap_files 1 2>/dev/null || true
+fi
+
+# Create a targeted policy module for bootc-specific denials
+if command -v semodule &>/dev/null && command -v checkmodule &>/dev/null; then
+    cat > /tmp/cloudws-selinux.te <<'EOSE'
+module cloudws 1.0;
+
+require {
+    type bootupd_t;
+    type cockpit_ws_t;
+    type accountsd_t;
+    type init_t;
+    type boot_t;
+    type fs_t;
+    type var_run_t;
+    class file { read open getattr };
+    class dir { watch };
+    class filesystem { getattr };
+    class sock_file { write };
+    class capability { mac_admin };
+}
+
+# Allow bootupctl to read its state file
+allow bootupd_t boot_t:file { read open getattr };
+
+# Allow cockpit-ws to stat the root filesystem
+allow cockpit_ws_t fs_t:filesystem getattr;
+
+# Allow accounts-daemon directory watches
+allow accountsd_t accountsd_t:dir watch;
+
+# Allow systemd-resolved socket write
+allow init_t var_run_t:sock_file write;
+EOSE
+    checkmodule -M -m -o /tmp/cloudws-selinux.mod /tmp/cloudws-selinux.te 2>/dev/null && \
+    semodule_package -o /tmp/cloudws-selinux.pp -m /tmp/cloudws-selinux.mod 2>/dev/null && \
+    semodule -i /tmp/cloudws-selinux.pp 2>/dev/null || \
+    echo "[WARN] Custom SELinux module failed to compile — denials may persist until audit2allow is run post-boot."
+    rm -f /tmp/cloudws-selinux.{te,mod,pp}
+fi
 
 # ═══ CLOUD-INIT ═══
 mkdir -p /etc/cloud/cloud.cfg.d

@@ -34,7 +34,7 @@ nautilus, ptyxis (container-aware terminal)
 gnome-software, gnome-software-rpm-ostree, appstream-data, gnome-disk-utility, gnome-system-monitor
 
 ### Shell Extensions
-gnome-shell-extension-appindicator (system tray), gnome-shell-extension-dash-to-dock (bottom dock), gnome-shell-extension-tiling-assistant (quarter-tiling + snap assist)
+gnome-shell-extension-appindicator (system tray), gnome-shell-extension-dash-to-dock (bottom dock), gnome-shell-extension-tiling-assistant (quarter-tiling + snap assist), gnome-shell-extension-caffeine (prevent auto-suspend)
 
 ### Virtual Filesystem
 gvfs, gvfs-smb, gvfs-mtp, gvfs-goa, gvfs-afc
@@ -73,28 +73,11 @@ ffmpeg, gstreamer1-plugins-base, gstreamer1-plugins-good, gstreamer1-plugins-bad
 
 | Flatpak ID | Source | Description |
 |------------|--------|-------------|
-| org.gnome.Epiphany | gnome-nightly | Web browser |
-| org.gnome.Loupe | gnome-nightly | Image viewer |
-| org.gnome.Showtime | gnome-nightly | Video player |
-| org.gnome.Papers | gnome-nightly | Document/PDF viewer |
-| org.gnome.Calculator | gnome-nightly | Calculator |
-| org.gnome.Calendar | gnome-nightly | Calendar |
-| org.gnome.Characters | gnome-nightly | Unicode character picker |
-| org.gnome.clocks | gnome-nightly | Clocks/alarms/timer |
-| org.gnome.Connections | gnome-nightly | Remote desktop client |
-| org.gnome.Contacts | gnome-nightly | Contact manager |
-| org.gnome.Maps | gnome-nightly | Map viewer |
-| org.gnome.Weather | gnome-nightly | Weather forecast |
-| org.gnome.TextEditor | gnome-nightly | Text editor |
-| org.gnome.font-viewer | gnome-nightly | Font previewer |
-| org.gnome.Logs | gnome-nightly | Journal viewer |
-| org.gnome.baobab | gnome-nightly | Disk Usage Analyzer |
-| org.gnome.Snapshot | gnome-nightly | Camera/webcam |
-| org.gnome.Music | gnome-nightly | Music player |
-| org.gnome.Decibels | gnome-nightly | Audio player |
+| org.gnome.Epiphany | gnome-nightly | Web browser (handles PDFs, Cockpit, web apps) |
+| org.gnome.Logs | gnome-nightly | systemd journal viewer |
 | io.podman_desktop.PodmanDesktop | flathub | Container management GUI |
-| com.usebottles.bottles | flathub | Windows app runner (Wine) |
-| com.mattjakeman.ExtensionManager | flathub | GNOME Shell extension manager |
+| com.usebottles.bottles | flathub | Windows app runner (Wine prefix manager) |
+| com.mattjakeman.ExtensionManager | flathub | GNOME Shell extension manager (install extensions directly) |
 
 ### Flatpak Runtimes (auto-installed)
 org.gnome.Platform//master, org.gnome.Platform//50, org.freedesktop.Platform//25.08, GL drivers, i386 compat
@@ -140,7 +123,7 @@ hyperv-daemons, qemu-guest-agent, open-vm-tools, spice-vdagent
 cifs-utils, virtiofsd, lvm2, mdadm, btrfs-progs, samba, nfs-utils, openssh-server, tailscale
 
 ### System Utilities
-git, jq, make, curl, wget, polkit, udisks2, clevis, lm_sensors, btop, nvtop, intel-gpu-tools
+git, jq, make, curl, wget, nano, fastfetch, polkit, udisks2, clevis, lm_sensors, btop, nvtop, intel-gpu-tools
 
 ### Cloud / Deployment
 cloud-init, rsync, tmux, screen, tree
@@ -169,6 +152,9 @@ python3-devel, python3-pip, python3-setuptools, python3-wheel, python3-virtualen
 | crowdsec | IPS — sovereign mode (zero outbound telemetry) |
 | crowdsec-firewall-bouncer-nftables | CrowdSec nftables enforcement |
 | firewalld | Default-deny drop zone (K3s subnets trusted) |
+| checkpolicy | SELinux policy compiler (build custom modules) |
+| selinux-policy-devel | SELinux policy development headers |
+| cloudws SELinux module | Custom policy for bootc/cockpit/accounts-daemon |
 | scan-malware alias | On-demand containerized ClamAV |
 
 ## HIGH AVAILABILITY / CLUSTERING
@@ -223,17 +209,18 @@ tuned, tuned-ppd, tuned-utils, tuned-profiles-cpu-partitioning, tuned-profiles-r
 | /etc/locale.conf | LANG=en_US.UTF-8 |
 | /etc/crowdsec/config.yaml.local | Sovereign mode (no CAPI) |
 | /usr/share/wayland-sessions/steam.desktop | Gamescope GDM session |
+| cloudws SELinux module (semodule) | Custom policy for bootc/cockpit/accounts-daemon denials |
 
 ## TOTALS
 
 | Category | Count |
 |----------|-------|
-| RPM Packages (explicit) | ~215 |
-| Flatpak Apps (baked) | 22 |
+| RPM Packages (explicit) | ~220 |
+| Flatpak Apps (baked) | 5 |
 | Flatpak Runtimes (auto) | ~5 |
 | Git-cloned plugins | 3 (cockpit-benchmark, cockpit-zfs-manager, geist-font) |
 | Binary installs | 1 (K3s) |
 | Custom tools | 8 |
-| Config files | 16 |
+| Config files | 17 |
 | GDM sessions | 2 (GNOME Wayland, Steam Gamescope) |
 | Looking Glass build deps | ~25 (removed after compile) |

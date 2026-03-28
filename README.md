@@ -64,7 +64,7 @@ irm https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/preflight.ps1 
 Fedora Rawhide fc45 | Kernel 7.0 | GNOME 50 "Tokyo" | Wayland-only
 ├── ComposeFS + XFS (bare-metal) / ext4 (images)
 ├── bootc (immutable, atomic upgrades, rollback)
-├── Flatpak-first (22 baked apps + Extension Manager)
+├── Flatpak-first (5 baked apps + Extension Manager + GNOME Software for more)
 ├── Gamescope Steam Session (SteamOS-mode, selectable at GDM)
 ├── KVM/QEMU/Libvirt + VFIO GPU Passthrough + Looking Glass B7
 ├── Podman + K3s + Pacemaker/Corosync HA Clustering
@@ -84,9 +84,9 @@ Fedora Rawhide fc45 | Kernel 7.0 | GNOME 50 "Tokyo" | Wayland-only
 
 **RPM layer:** GNOME Shell, Nautilus, Ptyxis, GNOME Software, System Monitor, Disk Utility, virt-manager
 
-**Baked Flatpaks:** Epiphany, Loupe, Showtime, Papers, Calculator, Calendar, Characters, Clocks, Connections, Contacts, Maps, Weather, Text Editor, Font Viewer, Logs, Baobab, Snapshot, Music, Decibels, Podman Desktop, Bottles, Extension Manager
+**Baked Flatpaks:** Epiphany (browser), Logs, Podman Desktop, Bottles, Extension Manager
 
-**Extensions:** Dash to Dock, AppIndicator, Tiling Assistant (managed via Extension Manager Flatpak)
+**Extensions:** Dash to Dock, AppIndicator, Tiling Assistant, Caffeine (managed via Extension Manager Flatpak)
 
 ## Self-Update
 
@@ -119,7 +119,7 @@ Copy-Item "$env:USERPROFILE\WSL\CloudWS\ext4.vhdx" C:\Backups\
 | Firewall | firewalld default-deny drop zone |
 | App sandbox | Flatpak + Bubblewrap |
 | AV scan | `scan-malware` (containerized ClamAV) |
-| VM isolation | SELinux sVirt |
+| VM isolation | SELinux sVirt + custom cloudws policy module |
 | Encryption | LUKS2 (optional, prompted at install) |
 | Boot trust | TPM2 + Secure Boot compatible |
 
