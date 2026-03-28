@@ -70,6 +70,7 @@ Fedora Rawhide fc45 | Kernel 7.0 | GNOME 50 "Tokyo" | Wayland-only
 ├── Podman + K3s + Pacemaker/Corosync HA Clustering
 ├── Waydroid (Android — native Wayland windows)
 ├── Multi-GPU (Mesa + NVIDIA akmod + driverctl VFIO toggle)
+├── GPU Auto-Detect (blocks NVIDIA in VMs, enables virtual GPU — boots everywhere)
 ├── CrowdSec IPS (sovereign/offline — zero outbound telemetry)
 ├── fapolicyd + USBGuard + firewalld (default-deny drop zone)
 ├── cloud-init (autonomous deployment anywhere)

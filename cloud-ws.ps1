@@ -301,6 +301,27 @@ EOCKSOCK
 systemctl enable gdm.service NetworkManager.service xrdp.service
 systemctl set-default graphical.target
 
+# ═══ GDM WAYLAND-NATIVE CONFIGURATION ═══
+mkdir -p /etc/gdm
+cat > /etc/gdm/custom.conf <<'EOGDM'
+[daemon]
+WaylandEnable=true
+AutomaticLoginEnable=false
+
+[security]
+
+[xdmcp]
+
+[chooser]
+
+[debug]
+EOGDM
+
+# Ensure GDM uses Wayland even without NVIDIA (VM environments)
+# GDM checks for /etc/udev/rules.d/61-gdm.rules to decide Wayland eligibility
+# Remove any rule that forces X11 when NVIDIA is detected
+rm -f /usr/lib/udev/rules.d/61-gdm.rules 2>/dev/null || true
+
 # ═══ ENVIRONMENT ═══
 mkdir -p /etc/environment.d /etc/gtk-3.0 /etc/gtk-4.0
 
@@ -911,6 +932,7 @@ cat > /usr/lib/systemd/system/cloudws-init.service <<'EOSVC'
 [Unit]
 Description=CloudWS System Init
 After=network.target
+Before=gdm.service display-manager.service
 [Service]
 Type=oneshot
 ExecStart=/usr/libexec/cloudws-init
@@ -962,7 +984,79 @@ bootc status 2>/dev/null || true
 echo "[cloudws-init] System initialization complete."
 EOINIT
 chmod +x /usr/libexec/cloudws-init; systemctl enable cloudws-init.service
-echo "[99-overrides] User + hostname + security + backup configured."
+
+# ═══ GPU AUTO-DETECT (blocks NVIDIA in VMs, runs BEFORE GDM) ═══
+cat > /usr/lib/systemd/system/cloudws-gpu-detect.service <<'EOGPUSVC'
+[Unit]
+Description=CloudWS GPU Environment Detection
+DefaultDependencies=no
+Before=gdm.service display-manager.service systemd-modules-load.service
+After=local-fs.target systemd-udevd.service
+ConditionPathExists=!/run/cloudws-gpu-detected
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/cloudws-gpu-detect
+RemainAfterExit=yes
+
+[Install]
+WantedBy=sysinit.target
+EOGPUSVC
+
+cat > /usr/libexec/cloudws-gpu-detect <<'EOGPU'
+#!/bin/bash
+set -euo pipefail
+
+VIRT=$(systemd-detect-virt 2>/dev/null || echo "none")
+echo "[cloudws-gpu-detect] Virtualization: $VIRT"
+
+NVIDIA_CONF="/etc/modprobe.d/99-cloudws-virt-gpu.conf"
+
+if [ "$VIRT" != "none" ]; then
+    echo "[cloudws-gpu-detect] Virtual machine detected ($VIRT) — blocking NVIDIA modules"
+
+    # Block all NVIDIA kernel modules (no physical GPU in VM)
+    cat > "$NVIDIA_CONF" <<'EOMOD'
+# CloudWS auto-generated: VM detected, no physical NVIDIA GPU
+install nvidia /bin/false
+install nvidia_drm /bin/false
+install nvidia_modeset /bin/false
+install nvidia_uvm /bin/false
+EOMOD
+
+    # Unload NVIDIA modules if somehow already loaded
+    for mod in nvidia_uvm nvidia_drm nvidia_modeset nvidia; do
+        modprobe -r "$mod" 2>/dev/null || true
+    done
+
+    # Ensure virtual GPU driver is available
+    case "$VIRT" in
+        microsoft)
+            modprobe hyperv_drm 2>/dev/null || true
+            echo "[cloudws-gpu-detect] Hyper-V: hyperv_drm active"
+            ;;
+        kvm|qemu)
+            modprobe virtio-gpu 2>/dev/null || true
+            echo "[cloudws-gpu-detect] KVM/QEMU: virtio-gpu active"
+            ;;
+        vmware)
+            modprobe vmwgfx 2>/dev/null || true
+            echo "[cloudws-gpu-detect] VMware: vmwgfx active"
+            ;;
+    esac
+else
+    echo "[cloudws-gpu-detect] Bare metal — NVIDIA modules enabled"
+    # Remove any VM override from a previous boot (e.g. migrated disk)
+    rm -f "$NVIDIA_CONF" 2>/dev/null || true
+fi
+
+touch /run/cloudws-gpu-detected
+echo "[cloudws-gpu-detect] GPU environment configured."
+EOGPU
+chmod +x /usr/libexec/cloudws-gpu-detect
+systemctl enable cloudws-gpu-detect.service
+
+echo "[99-overrides] User + hostname + security + GPU-detect + backup configured."
 '@
 $Ovr.Replace('INJ_U',$U).Replace('INJ_P',$P)|Out-File "$B\build_files\system\99-overrides.sh" -Encoding ascii
 

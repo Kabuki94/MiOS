@@ -182,9 +182,11 @@ tuned, tuned-ppd, tuned-utils, tuned-profiles-cpu-partitioning, tuned-profiles-r
 | cloudws-rebuild | Clone from GitHub → build → push to GHCR (+ offline embedded fallback) |
 | cloudws-backup | Backup Podman volumes, K3s etcd, libvirt VMs, /var/home |
 | cloudws-vfio-toggle | GPU VFIO bind/unbind/status/list via driverctl |
+| cloudws-gpu-detect | Auto-detects VM vs bare metal, blocks NVIDIA modules in VMs (runs before GDM) |
 | cloudws-cockpit.desktop | Cockpit web UI launcher (xdg-open localhost:9090) |
 | cloudws-hostname.service | Hostname enforcement service |
 | cloudws-init.service | First/every-boot init (Flatpak restore, firewall, user setup) |
+| cloudws-gpu-detect.service | Pre-GDM GPU environment detection (VM vs bare metal) |
 | cloudws-firewall-init | Drop zone + K3s subnet trust + Waydroid/Podman/libvirt trust |
 | gamescope-session-steam | Gamescope SteamOS-mode session launcher (GDM selectable) |
 
@@ -199,6 +201,7 @@ tuned, tuned-ppd, tuned-utils, tuned-profiles-cpu-partitioning, tuned-profiles-r
 | /etc/dconf/db/local.d/01-cloudws | Dark theme, fonts, dock, app folders |
 | /etc/modprobe.d/nvidia.conf | NVIDIA DRM modeset + firmware |
 | /etc/modprobe.d/blacklist-nouveau.conf | Blacklist nouveau |
+| /etc/gdm/custom.conf | GDM Wayland-native configuration |
 | /usr/lib/systemd/zram-generator.conf.d/cloudws.conf | ZRAM swap (50% RAM, zstd) |
 | /etc/sysctl.d/99-cloudws-vmhost.conf | VM host tuning |
 | /etc/multipath.conf | Multipath I/O |
@@ -220,7 +223,7 @@ tuned, tuned-ppd, tuned-utils, tuned-profiles-cpu-partitioning, tuned-profiles-r
 | Flatpak Runtimes (auto) | ~5 |
 | Git-cloned plugins | 3 (cockpit-benchmark, cockpit-zfs-manager, geist-font) |
 | Binary installs | 1 (K3s) |
-| Custom tools | 8 |
-| Config files | 18 |
+| Custom tools | 9 |
+| Config files | 20 |
 | GDM sessions | 2 (GNOME Wayland, Steam Gamescope) |
 | Looking Glass build deps | ~25 (removed after compile) |
