@@ -152,9 +152,8 @@ python3-devel, python3-pip, python3-setuptools, python3-wheel, python3-virtualen
 | crowdsec | IPS — sovereign mode (zero outbound telemetry) |
 | crowdsec-firewall-bouncer-nftables | CrowdSec nftables enforcement |
 | firewalld | Default-deny drop zone (K3s subnets trusted) |
-| checkpolicy | SELinux policy compiler (build custom modules) |
-| selinux-policy-devel | SELinux policy development headers |
-| cloudws SELinux module | Custom policy for bootc/cockpit/accounts-daemon |
+| /.autorelabel | Triggers full SELinux relabel on first boot |
+| restorecon + setsebool | Build-time file context fixes for bootc |
 | scan-malware alias | On-demand containerized ClamAV |
 
 ## HIGH AVAILABILITY / CLUSTERING
@@ -209,7 +208,8 @@ tuned, tuned-ppd, tuned-utils, tuned-profiles-cpu-partitioning, tuned-profiles-r
 | /etc/locale.conf | LANG=en_US.UTF-8 |
 | /etc/crowdsec/config.yaml.local | Sovereign mode (no CAPI) |
 | /usr/share/wayland-sessions/steam.desktop | Gamescope GDM session |
-| cloudws SELinux module (semodule) | Custom policy for bootc/cockpit/accounts-daemon denials |
+| /etc/systemd/system/cockpit.socket.d/listen.conf | Cockpit listen on all interfaces |
+| /.autorelabel | Trigger full SELinux relabel on first boot |
 
 ## TOTALS
 
@@ -221,6 +221,6 @@ tuned, tuned-ppd, tuned-utils, tuned-profiles-cpu-partitioning, tuned-profiles-r
 | Git-cloned plugins | 3 (cockpit-benchmark, cockpit-zfs-manager, geist-font) |
 | Binary installs | 1 (K3s) |
 | Custom tools | 8 |
-| Config files | 17 |
+| Config files | 18 |
 | GDM sessions | 2 (GNOME Wayland, Steam Gamescope) |
 | Looking Glass build deps | ~25 (removed after compile) |

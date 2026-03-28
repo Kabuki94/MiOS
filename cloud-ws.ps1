@@ -283,8 +283,20 @@ EODESKTOP
 cat > /etc/cockpit/cockpit.conf <<'EOCOCKPIT'
 [WebService]
 AllowUnencrypted = true
-Origins = http://localhost:9090 https://localhost:9090 wss://localhost:9090
+LoginTitle = CloudWS
+MaxStartups = 10
+AllowMultiHost = true
+ProtocolHeader = X-Forwarded-Proto
 EOCOCKPIT
+
+# Cockpit must listen on ALL interfaces for host→VM access
+mkdir -p /etc/systemd/system/cockpit.socket.d
+cat > /etc/systemd/system/cockpit.socket.d/listen.conf <<'EOCKSOCK'
+[Socket]
+ListenStream=
+ListenStream=9090
+FreeBind=yes
+EOCKSOCK
 
 systemctl enable gdm.service NetworkManager.service xrdp.service
 systemctl set-default graphical.target
@@ -349,9 +361,10 @@ flatpak override --system --filesystem=/usr/share/themes:ro 2>/dev/null || true
 flatpak override --system --filesystem=/usr/share/icons:ro 2>/dev/null || true
 flatpak override --system --filesystem=/usr/share/fonts:ro 2>/dev/null || true
 
-echo "[01-gnome] Duplicating Flatpak data to immutable vault..."
+echo "[01-gnome] Moving Flatpak data to immutable vault (eliminates duplication)..."
 mkdir -p /usr/share/cloudws-flatpak-prebake
 cp -a /var/lib/flatpak/* /usr/share/cloudws-flatpak-prebake/ || true
+rm -rf /var/lib/flatpak/*
 
 # ═══ DCONF: Theme + Dock + Folders ═══
 mkdir -p /etc/dconf/profile /etc/dconf/db/local.d /etc/dconf/db/local.d/locks
@@ -512,7 +525,6 @@ dnf install -y --skip-unavailable --allowerasing --nobest \
     nvme-cli device-mapper-multipath sg3_utils \
     chrony firewalld zram-generator \
     fapolicyd usbguard \
-    checkpolicy selinux-policy-devel \
     cdrkit xorriso genisoimage isomd5sum mediawriter squashfs-tools erofs-utils dracut-live \
     python3 python3-devel python3-pip python3-setuptools python3-wheel python3-virtualenv python3-venv \
     python3-requests python3-yaml python3-toml python3-jsonschema python3-pillow python3-tqdm \
@@ -752,53 +764,24 @@ fi
 EOFW
 chmod +x /usr/libexec/cloudws-firewall-init
 
-# ═══ SELINUX POLICY FIXES (bootc image compatibility) ═══
-# These resolve the common SELinux denials seen in bootc-deployed images
+# ═══ SELINUX FIXES (bootc image compatibility) ═══
+# The bootupd-state.json denial is a known bootc issue — fix file contexts at build time
+if command -v restorecon &>/dev/null; then
+    restorecon -R /boot 2>/dev/null || true
+    restorecon -R /etc 2>/dev/null || true
+    restorecon -R /usr 2>/dev/null || true
+    restorecon -R /var 2>/dev/null || true
+fi
+
+# Set booleans for cockpit/accounts-daemon access
 if command -v setsebool &>/dev/null; then
-    # Allow cockpit-ws to access filesystem root
     setsebool -P cockpit_manage_all_files 1 2>/dev/null || true
-    # Allow systemd-resolved to write to its socket
     setsebool -P domain_can_mmap_files 1 2>/dev/null || true
+    setsebool -P daemons_dump_core 1 2>/dev/null || true
 fi
 
-# Create a targeted policy module for bootc-specific denials
-if command -v semodule &>/dev/null && command -v checkmodule &>/dev/null; then
-    cat > /tmp/cloudws-selinux.te <<'EOSE'
-module cloudws 1.0;
-
-require {
-    type bootupd_t;
-    type cockpit_ws_t;
-    type accountsd_t;
-    type init_t;
-    type boot_t;
-    type fs_t;
-    type var_run_t;
-    class file { read open getattr };
-    class dir { watch };
-    class filesystem { getattr };
-    class sock_file { write };
-    class capability { mac_admin };
-}
-
-# Allow bootupctl to read its state file
-allow bootupd_t boot_t:file { read open getattr };
-
-# Allow cockpit-ws to stat the root filesystem
-allow cockpit_ws_t fs_t:filesystem getattr;
-
-# Allow accounts-daemon directory watches
-allow accountsd_t accountsd_t:dir watch;
-
-# Allow systemd-resolved socket write
-allow init_t var_run_t:sock_file write;
-EOSE
-    checkmodule -M -m -o /tmp/cloudws-selinux.mod /tmp/cloudws-selinux.te 2>/dev/null && \
-    semodule_package -o /tmp/cloudws-selinux.pp -m /tmp/cloudws-selinux.mod 2>/dev/null && \
-    semodule -i /tmp/cloudws-selinux.pp 2>/dev/null || \
-    echo "[WARN] Custom SELinux module failed to compile — denials may persist until audit2allow is run post-boot."
-    rm -f /tmp/cloudws-selinux.{te,mod,pp}
-fi
+# Schedule a full relabel on first boot to catch anything bootc missed
+touch /.autorelabel 2>/dev/null || true
 
 # ═══ CLOUD-INIT ═══
 mkdir -p /etc/cloud/cloud.cfg.d
@@ -1010,8 +993,14 @@ RUN --mount=type=bind,from=ctx,source=/build_files,target=/tmp/staging \
     bash /tmp/scripts/hardware/01-hardware.sh && \
     bash /tmp/scripts/virtualization/01-virt.sh && \
     bash /tmp/scripts/system/99-overrides.sh && \
-    mkdir -p /usr/share/cloudws/build_files && cp -r /tmp/staging/* /usr/share/cloudws/build_files/
-RUN dnf clean all && rm -rf /var/cache/dnf /tmp/scripts /tmp/*.log /var/tmp/* /var/cache/pip /root/.cache 2>/dev/null; true
+    mkdir -p /usr/share/cloudws/build_files && cp -r /tmp/staging/* /usr/share/cloudws/build_files/ && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf /var/cache/libdnf5 /var/cache/pip /var/lib/dnf/repos /tmp/scripts /tmp/*.log /var/tmp/* /root/.cache && \
+    rm -rf /var/log/dnf* /var/log/hawkey* /var/log/anaconda 2>/dev/null && \
+    rm -rf /usr/share/doc /usr/share/man /usr/share/info /usr/share/gtk-doc 2>/dev/null && \
+    rm -rf /usr/share/locale/!(en|en_US|locale.alias) 2>/dev/null && \
+    rm -rf /tmp/* /var/tmp/* 2>/dev/null && \
+    find /var/log -type f -name "*.log" -delete 2>/dev/null; true
 COPY Containerfile /usr/share/cloudws/Containerfile
 COPY <<'EOREBUILD' /usr/local/bin/cloudws-rebuild
 #!/bin/bash
@@ -1036,14 +1025,14 @@ case "`$choice" in
   1) echo ""; echo "Cloning `$REPO..."
      rm -rf "`$WORKDIR"; git clone --depth=1 "`$REPO" "`$WORKDIR"
      cd "`$WORKDIR"
-     podman build --no-cache -t localhost/cloudws:latest .
+     podman build --no-cache --squash-all -t localhost/cloudws:latest .
      rm -rf "`$WORKDIR"
      echo ""; echo "Done. Deploy with:"
      echo "  sudo bootc switch --transport containers-storage localhost/cloudws:latest";;
   2) echo ""; echo "Cloning `$REPO..."
      rm -rf "`$WORKDIR"; git clone --depth=1 "`$REPO" "`$WORKDIR"
      cd "`$WORKDIR"
-     podman build --no-cache -t localhost/cloudws:latest .
+     podman build --no-cache --squash-all -t localhost/cloudws:latest .
      rm -rf "`$WORKDIR"
      read -p "  GitHub username: " ghu
      read -sp "  GitHub PAT (write:packages): " ghp; echo
@@ -1071,7 +1060,7 @@ case "`$choice" in
   7) bootc status;;
   8) echo "Rebuilding from embedded sources..."
      cd /usr/share/cloudws
-     podman build --no-cache -t localhost/cloudws:latest -f Containerfile .
+     podman build --no-cache --squash-all -t localhost/cloudws:latest -f Containerfile .
      echo "Done. Deploy with:"
      echo "  sudo bootc switch --transport containers-storage localhost/cloudws:latest";;
   *) echo "Invalid choice.";;
@@ -1086,7 +1075,7 @@ RUN bootc container lint
 #  PHASE 3: BUILD OCI IMAGE
 # ════════════════════════════════════════════════════════════════════
 Write-Host "`n═══ Phase 3: Building OCI Image ═══" -ForegroundColor Cyan
-podman build --no-cache -t $I $B
+podman build --no-cache --squash-all -t $I $B
 if($LASTEXITCODE -ne 0){throw "Build failed"}
 Write-Host "  ✓ OCI image built: localhost/$I" -ForegroundColor Green
 
