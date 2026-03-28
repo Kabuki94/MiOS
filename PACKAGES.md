@@ -152,7 +152,6 @@ python3-devel, python3-pip, python3-setuptools, python3-wheel, python3-virtualen
 | crowdsec | IPS — sovereign mode (zero outbound telemetry) |
 | crowdsec-firewall-bouncer-nftables | CrowdSec nftables enforcement |
 | firewalld | Default-deny drop zone (K3s subnets trusted) |
-| /.autorelabel | Triggers full SELinux relabel on first boot |
 | restorecon + setsebool | Build-time file context fixes for bootc |
 | scan-malware alias | On-demand containerized ClamAV |
 
@@ -212,7 +211,6 @@ tuned, tuned-ppd, tuned-utils, tuned-profiles-cpu-partitioning, tuned-profiles-r
 | /etc/crowdsec/config.yaml.local | Sovereign mode (no CAPI) |
 | /usr/share/wayland-sessions/steam.desktop | Gamescope GDM session |
 | /etc/systemd/system/cockpit.socket.d/listen.conf | Cockpit listen on all interfaces |
-| /.autorelabel | Trigger full SELinux relabel on first boot |
 
 ## TOTALS
 

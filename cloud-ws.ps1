@@ -786,7 +786,8 @@ EOFW
 chmod +x /usr/libexec/cloudws-firewall-init
 
 # ═══ SELINUX FIXES (bootc image compatibility) ═══
-# The bootupd-state.json denial is a known bootc issue — fix file contexts at build time
+# Fix file contexts at BUILD TIME — never use /.autorelabel on bootc/composefs
+# because / is read-only and the file can never be removed, causing infinite reboot loops
 if command -v restorecon &>/dev/null; then
     restorecon -R /boot 2>/dev/null || true
     restorecon -R /etc 2>/dev/null || true
@@ -801,8 +802,9 @@ if command -v setsebool &>/dev/null; then
     setsebool -P daemons_dump_core 1 2>/dev/null || true
 fi
 
-# Schedule a full relabel on first boot to catch anything bootc missed
-touch /.autorelabel 2>/dev/null || true
+# NOTE: /.autorelabel is NEVER used — bootc root is read-only composefs,
+# the file cannot be removed after relabel, causing infinite boot loops.
+# Build-time restorecon above is sufficient.
 
 # ═══ CLOUD-INIT ═══
 mkdir -p /etc/cloud/cloud.cfg.d

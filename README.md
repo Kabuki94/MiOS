@@ -120,7 +120,7 @@ Copy-Item "$env:USERPROFILE\WSL\CloudWS\ext4.vhdx" C:\Backups\
 | Firewall | firewalld default-deny drop zone |
 | App sandbox | Flatpak + Bubblewrap |
 | AV scan | `scan-malware` (containerized ClamAV) |
-| VM isolation | SELinux sVirt + autorelabel on first boot |
+| VM isolation | SELinux sVirt (build-time context enforcement) |
 | Encryption | LUKS2 (optional, prompted at install) |
 | Boot trust | TPM2 + Secure Boot compatible |
 
