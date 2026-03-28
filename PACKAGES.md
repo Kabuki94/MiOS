@@ -60,8 +60,8 @@ pipewire, pipewire-alsa, pipewire-pulseaudio, wireplumber, upower, gnome-bluetoo
 ### Remote Desktop & Graphics
 gnome-remote-desktop, xrdp, xorgxrdp, xorg-x11-server-Xorg, wayland-utils, vulkan-validation-layers, mesa-libEGL, mesa-libgbm
 
-### Locale & Font
-glibc-langpack-en, geist-font (git clone — Vercel Geist family)
+### Locale, Font & Cursor
+glibc-langpack-en, geist-font (git clone — Vercel Geist family), Bibata-Modern-Classic (cursor theme, GitHub release)
 
 ### Gamescope Steam Session (selectable at GDM)
 gamescope-session-steam (custom script), steam.desktop (wayland-sessions), steamos-session-select, jupiter-biosupdate, steamos-update, steamos-select-branch (dummy stubs)
@@ -78,6 +78,7 @@ ffmpeg, gstreamer1-plugins-base, gstreamer1-plugins-good, gstreamer1-plugins-bad
 | io.podman_desktop.PodmanDesktop | flathub | Container management GUI |
 | com.usebottles.bottles | flathub | Windows app runner (Wine prefix manager) |
 | com.mattjakeman.ExtensionManager | flathub | GNOME Shell extension manager (install extensions directly) |
+| com.vscodium.codium | flathub | VSCodium — open-source VS Code editor |
 
 ### Flatpak Runtimes (auto-installed)
 org.gnome.Platform//master, org.gnome.Platform//50, org.freedesktop.Platform//25.08, GL drivers, i386 compat
@@ -123,7 +124,10 @@ hyperv-daemons, qemu-guest-agent, open-vm-tools, spice-vdagent
 cifs-utils, virtiofsd, lvm2, mdadm, btrfs-progs, samba, nfs-utils, openssh-server, tailscale
 
 ### System Utilities
-git, jq, make, curl, wget, nano, fastfetch, polkit, udisks2, clevis, lm_sensors, btop, nvtop, intel-gpu-tools
+git, jq, make, curl, wget, nano, fastfetch, polkit, udisks2, clevis, lm_sensors, btop, nvtop, intel-gpu-tools, oddjob-mkhomedir
+
+### UPS / Power Protection
+nut, nut-client
 
 ### Cloud / Deployment
 cloud-init, rsync, tmux, screen, tree
@@ -216,8 +220,8 @@ tuned, tuned-ppd, tuned-utils, tuned-profiles-cpu-partitioning, tuned-profiles-r
 
 | Category | Count |
 |----------|-------|
-| RPM Packages (explicit) | ~220 |
-| Flatpak Apps (baked) | 5 |
+| RPM Packages (explicit) | ~225 |
+| Flatpak Apps (pre-installed) | 6 |
 | Flatpak Runtimes (auto) | ~5 |
 | Git-cloned plugins | 3 (cockpit-benchmark, cockpit-zfs-manager, geist-font) |
 | Binary installs | 1 (K3s) |

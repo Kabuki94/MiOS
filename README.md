@@ -85,7 +85,7 @@ Fedora Rawhide fc45 | Kernel 7.0 | GNOME 50 "Tokyo" | Wayland-only
 
 **RPM layer:** GNOME Shell, Nautilus, Ptyxis, GNOME Software, System Monitor, Disk Utility, virt-manager
 
-**Pre-installed Flatpaks:** Epiphany (browser), Logs, Podman Desktop, Bottles, Extension Manager
+**Pre-installed Flatpaks:** Epiphany (browser), Logs, Podman Desktop, Bottles, Extension Manager, VSCodium
 
 **Extensions:** Dash to Dock, AppIndicator, Tiling Assistant, Caffeine (managed via Extension Manager Flatpak)
 

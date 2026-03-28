@@ -5,7 +5,7 @@
     Architecture: XFS root (composefs, fills entire disk) + /var/home on same FS
     Desktop:      GNOME 50 Tokyo (Wayland-only) + Geist font + Flatpak-first app delivery
     RPM Layer:    Nautilus, Ptyxis, Wine/Steam/Proton/Lutris, KVM/QEMU/Libvirt, Podman, XRDP
-    Flatpak:      Epiphany + Podman Desktop + Bottles + Extension Manager + Logs — PRE-INSTALLED, USER-REMOVABLE
+    Flatpak:      Epiphany + Podman Desktop + Bottles + VSCodium + Extension Manager + Logs — PRE-INSTALLED, USER-REMOVABLE
     Gaming:       Gamescope SteamOS-mode fullscreen session selectable at GDM login
     Hardware:     AMD RDNA2 iGPU + NVIDIA RTX 4090 (akmod) + driverctl VFIO toggle
     Security:     Waydroid, CrowdSec IPS (sovereign/offline), Fapolicyd, USBGuard, Firewalld Lockdown
@@ -188,6 +188,17 @@ mkdir -p /usr/share/fonts/geist
 find /tmp/geist -name "*.ttf" -exec cp {} /usr/share/fonts/geist/ \;
 fc-cache -f; rm -rf /tmp/geist
 
+# ═══ BIBATA CURSOR THEME (Modern Classic — dark native) ═══
+BIBATA_VER="2.0.7"
+curl -sL "https://github.com/ful1e5/Bibata_Cursor/releases/download/v${BIBATA_VER}/Bibata-Modern-Classic.tar.xz" -o /tmp/bibata.tar.xz
+mkdir -p /usr/share/icons
+tar -xf /tmp/bibata.tar.xz -C /usr/share/icons/
+rm -f /tmp/bibata.tar.xz
+# Set as system default cursor
+update-alternatives --install /usr/share/icons/default/index.theme x-cursor-theme \
+    /usr/share/icons/Bibata-Modern-Classic/cursor.theme 90 2>/dev/null || true
+echo "[01-gnome] Bibata Modern Classic cursor installed."
+
 # ═══ GAMESCOPE STEAM SESSION (selectable at GDM login) ═══
 # Creates a full SteamOS-mode Gamescope session visible in GDM session picker
 mkdir -p /usr/share/wayland-sessions /usr/bin
@@ -331,13 +342,15 @@ QT_WAYLAND_DECORATION=adwaita
 ADW_DISABLE_PORTAL=0
 ELECTRON_OZONE_PLATFORM_HINT=auto
 XDG_CURRENT_DESKTOP=GNOME
+XCURSOR_THEME=Bibata-Modern-Classic
+XCURSOR_SIZE=24
 EOENV
 
 cat > /etc/gtk-3.0/settings.ini <<'EOGTK3'
 [Settings]
 gtk-theme-name=Adwaita
 gtk-icon-theme-name=Adwaita
-gtk-cursor-theme-name=Adwaita
+gtk-cursor-theme-name=Bibata-Modern-Classic
 gtk-font-name=Geist 11
 EOGTK3
 
@@ -355,13 +368,10 @@ EOPORTAL
 # ═══ FLATPAK — FULL BUILD-TIME INSTALL (offline-ready, user-removable) ═══
 # Apps install into /var/lib/flatpak during build. bootc seeds /var on first
 # deploy, so they're available day one — fully offline, fully removable.
+# Runtimes are auto-pulled as dependencies — do NOT install them separately.
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 flatpak remote-add --if-not-exists flathub-beta https://flathub.org/beta-repo/flathub-beta.flatpakrepo
 flatpak remote-add --if-not-exists gnome-nightly https://nightly.gnome.org/gnome-nightly.flatpakrepo
-
-# Install runtimes first (dependency base)
-flatpak install --system -y --noninteractive gnome-nightly org.gnome.Platform//master 2>/dev/null || true
-flatpak install --system -y --noninteractive flathub org.gnome.Platform//50 2>/dev/null || true
 
 # CloudWS core Flatpak apps — all pre-installed, all user-removable
 FLATPAK_APPS=(
@@ -370,6 +380,7 @@ FLATPAK_APPS=(
     io.podman_desktop.PodmanDesktop
     com.usebottles.bottles
     com.mattjakeman.ExtensionManager
+    com.vscodium.codium
 )
 
 for app in "${FLATPAK_APPS[@]}"; do
@@ -382,11 +393,17 @@ done
 # Global overrides (Wayland, theme integration)
 flatpak override --system --env=ELECTRON_OZONE_PLATFORM_HINT=auto 2>/dev/null || true
 flatpak override --system --env=ADW_DISABLE_PORTAL=0 2>/dev/null || true
+flatpak override --system --env=XCURSOR_THEME=Bibata-Modern-Classic 2>/dev/null || true
+flatpak override --system --env=XCURSOR_SIZE=24 2>/dev/null || true
 flatpak override --system --filesystem=xdg-config/gtk-3.0:ro 2>/dev/null || true
 flatpak override --system --filesystem=xdg-config/gtk-4.0:ro 2>/dev/null || true
 flatpak override --system --filesystem=/usr/share/themes:ro 2>/dev/null || true
 flatpak override --system --filesystem=/usr/share/icons:ro 2>/dev/null || true
 flatpak override --system --filesystem=/usr/share/fonts:ro 2>/dev/null || true
+
+# Clean unused flatpak refs + reduce image bloat
+flatpak uninstall --system --unused -y 2>/dev/null || true
+rm -rf /var/tmp/flatpak-cache-* 2>/dev/null || true
 
 echo "[01-gnome] Flatpaks installed: $(flatpak list --system --app --columns=application | wc -l) apps"
 
@@ -398,7 +415,7 @@ cat > /etc/dconf/db/local.d/01-cloudws <<'EOF'
 color-scheme='prefer-dark'
 accent-color='blue'
 icon-theme='Adwaita'
-cursor-theme='Adwaita'
+cursor-theme='Bibata-Modern-Classic'
 font-name='Geist 11'
 document-font-name='Geist 11'
 monospace-font-name='Geist Mono 10'
@@ -540,7 +557,8 @@ dnf install -y --skip-unavailable --allowerasing --nobest \
     waydroid \
     hyperv-daemons qemu-guest-agent open-vm-tools spice-vdagent \
     cifs-utils virtiofsd lvm2 mdadm btrfs-progs samba nfs-utils openssh-server tailscale \
-    git jq make curl wget polkit udisks2 clevis \
+    git jq make curl wget polkit udisks2 clevis oddjob-mkhomedir \
+    nut nut-client \
     cloud-init rsync tmux screen tree \
     socat nmap-ncat tcpdump iptables-nft conntrack-tools \
     nvme-cli device-mapper-multipath sg3_utils \
@@ -656,7 +674,7 @@ enable crowdsec-firewall-bouncer.service
 enable waydroid-container.service
 EOF
 systemctl enable libvirtd.service virtqemud.socket virtnetworkd.socket virtstoraged.socket
-systemctl enable cockpit.socket podman.socket osbuild-composer.socket sshd.service tuned.service pmcd.service pmlogger.service pmproxy.service
+systemctl enable cockpit.socket podman.socket osbuild-composer.socket sshd.service tuned.service pmcd.service pmlogger.service pmproxy.service oddjobd.service
 systemctl enable podman-auto-update.timer podman-restart.service qemu-guest-agent.service hypervvssd.service hypervkvpd.service smb.service nmb.service nfs-server.service tailscaled.service 2>/dev/null || true
 systemctl enable bluetooth.service xrdp.service xrdp-sesman.service 2>/dev/null || true
 systemctl enable pcsd.service cloud-init.service cloud-init-local.service cloud-config.service cloud-final.service multipathd.service chronyd.service 2>/dev/null || true
@@ -717,6 +735,9 @@ $Ovr=@'
 set -euo pipefail
 
 # ═══ USER SETUP (bootc: /home → /var/home symlink) ═══
+# pam_mkhomedir ensures home dirs are created on login even if /var wasn't seeded
+authselect select sssd with-mkhomedir --force 2>/dev/null || \
+    echo "session optional pam_mkhomedir.so skel=/etc/skel umask=077" >> /etc/pam.d/system-auth
 mkdir -p /var/home
 useradd -m -d /var/home/INJ_U -s /bin/bash INJ_U 2>/dev/null || true
 mkdir -p /var/home/INJ_U
