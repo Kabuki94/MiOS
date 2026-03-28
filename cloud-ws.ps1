@@ -5,7 +5,7 @@
     Architecture: XFS root (composefs, fills entire disk) + /var/home on same FS
     Desktop:      GNOME 50 Tokyo (Wayland-only) + Geist font + Flatpak-first app delivery
     RPM Layer:    Nautilus, Ptyxis, Wine/Steam/Proton/Lutris, KVM/QEMU/Libvirt, Podman, XRDP
-    Flatpak:      ALL GNOME apps + Podman Desktop + Bottles + Extension Manager — BAKED INTO IMMUTABLE IMAGE
+    Flatpak:      Epiphany + Podman Desktop + Bottles + Extension Manager + Logs — PRE-INSTALLED, USER-REMOVABLE
     Gaming:       Gamescope SteamOS-mode fullscreen session selectable at GDM login
     Hardware:     AMD RDNA2 iGPU + NVIDIA RTX 4090 (akmod) + driverctl VFIO toggle
     Security:     Waydroid, CrowdSec IPS (sovereign/offline), Fapolicyd, USBGuard, Firewalld Lockdown
@@ -352,15 +352,18 @@ cat > /usr/share/xdg-desktop-portal/gnome-portals.conf <<'EOPORTAL'
 default=gnome;gtk;
 EOPORTAL
 
-# ═══ TRUE OFFLINE FLATPAK PRE-BAKING ═══
+# ═══ FLATPAK — FULL BUILD-TIME INSTALL (offline-ready, user-removable) ═══
+# Apps install into /var/lib/flatpak during build. bootc seeds /var on first
+# deploy, so they're available day one — fully offline, fully removable.
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 flatpak remote-add --if-not-exists flathub-beta https://flathub.org/beta-repo/flathub-beta.flatpakrepo
 flatpak remote-add --if-not-exists gnome-nightly https://nightly.gnome.org/gnome-nightly.flatpakrepo
 
+# Install runtimes first (dependency base)
 flatpak install --system -y --noninteractive gnome-nightly org.gnome.Platform//master 2>/dev/null || true
 flatpak install --system -y --noninteractive flathub org.gnome.Platform//50 2>/dev/null || true
 
-# CloudWS Flatpak apps — ONLY these 5, everything else is browser/terminal/VM/container
+# CloudWS core Flatpak apps — all pre-installed, all user-removable
 FLATPAK_APPS=(
     org.gnome.Epiphany
     org.gnome.Logs
@@ -370,10 +373,13 @@ FLATPAK_APPS=(
 )
 
 for app in "${FLATPAK_APPS[@]}"; do
+    echo "[01-gnome] Installing Flatpak: $app"
     flatpak install --system -y --noninteractive gnome-nightly "$app" 2>/dev/null \
-    || flatpak install --system -y --noninteractive flathub "$app" 2>/dev/null || true
+    || flatpak install --system -y --noninteractive flathub "$app" 2>/dev/null \
+    || echo "[WARN] Flatpak $app unavailable — skipping."
 done
 
+# Global overrides (Wayland, theme integration)
 flatpak override --system --env=ELECTRON_OZONE_PLATFORM_HINT=auto 2>/dev/null || true
 flatpak override --system --env=ADW_DISABLE_PORTAL=0 2>/dev/null || true
 flatpak override --system --filesystem=xdg-config/gtk-3.0:ro 2>/dev/null || true
@@ -382,10 +388,7 @@ flatpak override --system --filesystem=/usr/share/themes:ro 2>/dev/null || true
 flatpak override --system --filesystem=/usr/share/icons:ro 2>/dev/null || true
 flatpak override --system --filesystem=/usr/share/fonts:ro 2>/dev/null || true
 
-echo "[01-gnome] Moving Flatpak data to immutable vault (eliminates duplication)..."
-mkdir -p /usr/share/cloudws-flatpak-prebake
-cp -a /var/lib/flatpak/* /usr/share/cloudws-flatpak-prebake/ || true
-rm -rf /var/lib/flatpak/*
+echo "[01-gnome] Flatpaks installed: $(flatpak list --system --app --columns=application | wc -l) apps"
 
 # ═══ DCONF: Theme + Dock + Folders ═══
 mkdir -p /etc/dconf/profile /etc/dconf/db/local.d /etc/dconf/db/local.d/locks
@@ -424,7 +427,7 @@ transparency-mode='DYNAMIC'
 running-indicator-style='DOTS'
 apply-custom-theme=true
 [org/gnome/desktop/app-folders]
-folder-children=['Wine', 'Gaming', 'Virt', 'Utilities', 'Media', 'Tools']
+folder-children=['Wine', 'Gaming', 'Virt', 'Utilities', 'Media']
 [org/gnome/desktop/app-folders/folders/Wine]
 name='Wine'
 categories=['Wine']
@@ -441,16 +444,13 @@ apps=['org.gnome.Settings.desktop', 'org.gnome.SystemMonitor.desktop', 'org.gnom
 [org/gnome/desktop/app-folders/folders/Media]
 name='Media'
 apps=['org.gnome.Music.desktop', 'org.gnome.Showtime.desktop', 'org.gnome.Snapshot.desktop', 'org.gnome.Loupe.desktop', 'org.gnome.Decibels.desktop', 'simple-scan.desktop', 'org.gnome.SoundRecorder.desktop']
-[org/gnome/desktop/app-folders/folders/Tools]
-name='Tools'
-apps=['org.gnome.Maps.desktop', 'org.gnome.Contacts.desktop', 'org.gnome.Weather.desktop', 'org.gnome.clocks.desktop', 'org.gnome.Calendar.desktop', 'org.gnome.Calculator.desktop', 'org.gnome.Characters.desktop', 'org.gnome.font-viewer.desktop', 'org.gnome.Papers.desktop', 'org.gnome.TextEditor.desktop', 'org.gnome.Tour.desktop', 'yelp.desktop']
 EOF
 cat > /etc/dconf/db/local.d/locks/cloudws <<'EOF'
 /org/gnome/desktop/app-folders/folder-children
 /org/gnome/shell/favorite-apps
 EOF
 dconf update
-echo "[01-gnome] GNOME 50 + Gamescope Steam Session + Offline Flatpaks initialized."
+echo "[01-gnome] GNOME 50 + Gamescope Steam Session + Flatpaks initialized."
 '@|Out-File "$B\build_files\desktop\01-gnome.sh" -Encoding ascii
 
 # ════════════════════════════════════════════════════════════════════
@@ -929,7 +929,7 @@ echo "Backups stored in: $BDIR"
 EOBAK
 chmod +x /usr/local/bin/cloudws-backup
 
-# ═══ FIRST-BOOT SYSTEM INIT (OFFLINE FLATPAK RESTORE + SECURITY) ═══
+# ═══ FIRST-BOOT SYSTEM INIT (SECURITY + USER SETUP) ═══
 cat > /usr/lib/systemd/system/cloudws-init.service <<'EOSVC'
 [Unit]
 Description=CloudWS System Init
@@ -947,13 +947,8 @@ cat > /usr/libexec/cloudws-init <<'EOINIT'
 set -euo pipefail
 hostnamectl set-hostname CloudWS 2>/dev/null || true
 
-# OFFLINE FLATPAK RESTORE
-if [ -d /usr/share/cloudws-flatpak-prebake ] && [ ! -d /var/lib/flatpak/repo ]; then
-    echo "[cloudws-init] Restoring baked Flatpaks to /var/lib/flatpak..."
-    mkdir -p /var/lib/flatpak
-    cp -a /usr/share/cloudws-flatpak-prebake/* /var/lib/flatpak/
-    echo "[cloudws-init] Flatpaks restored successfully."
-fi
+# Flatpak health check (apps are pre-installed in /var/lib/flatpak from build)
+echo "[cloudws-init] Flatpaks available: $(flatpak list --system --app --columns=application 2>/dev/null | wc -l) apps"
 
 /usr/libexec/cloudws-firewall-init || true
 

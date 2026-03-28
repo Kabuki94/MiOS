@@ -69,7 +69,7 @@ gamescope-session-steam (custom script), steam.desktop (wayland-sessions), steam
 ## MULTIMEDIA (01-gnome.sh — RPMFusion, fault-tolerant)
 ffmpeg, gstreamer1-plugins-base, gstreamer1-plugins-good, gstreamer1-plugins-bad-free, gstreamer1-plugins-bad-freeworld, gstreamer1-plugins-ugly, gstreamer1-plugins-ugly-free, gstreamer1-libav, gstreamer1-vaapi, libavcodec-freeworld
 
-## FLATPAK APPLICATIONS (Baked Into Immutable Image)
+## FLATPAK APPLICATIONS (Pre-installed, User-removable)
 
 | Flatpak ID | Source | Description |
 |------------|--------|-------------|
