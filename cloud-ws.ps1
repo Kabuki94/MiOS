@@ -1194,12 +1194,19 @@ Write-Host "  ✓ OCI image built: localhost/$I" -ForegroundColor Green
 # ════════════════════════════════════════════════════════════════════
 #  PHASE 4: EXPORT TARGETS (conditional)
 # ════════════════════════════════════════════════════════════════════
+# config.toml — minimum root partition (VHDX dynamic format only uses actual space)
+@"
+[[customizations.filesystem]]
+mountpoint = "/"
+minsize = "60 GiB"
+"@ | Out-File "$O\config.toml" -Encoding ascii
+
 $bib="quay.io/centos-bootc/bootc-image-builder:latest"
-$bibV=@("--rm","-it","--privileged","--security-opt","label=type:unconfined_t","-v","/var/lib/containers/storage:/var/lib/containers/storage","-v","${O}:/output:z")
+$bibV=@("--rm","-it","--privileged","--security-opt","label=type:unconfined_t","-v","/var/lib/containers/storage:/var/lib/containers/storage","-v","${O}:/output:z","-v","${O}/config.toml:/config.toml:z")
 
 if ($buildRaw -eq 'y') {
     Write-Host "Building RAW disk image..." -ForegroundColor Cyan
-    podman run @bibV $bib build --type raw --rootfs ext4 "localhost/$I"
+    podman run @bibV $bib build --type raw --rootfs ext4 --config /config.toml "localhost/$I"
     if ($LASTEXITCODE -ne 0) {
         Write-Host "  ✗ RAW disk build failed (exit $LASTEXITCODE)" -ForegroundColor Red
         $buildVhdx = 'n'
@@ -1223,7 +1230,7 @@ if ($buildWsl -eq 'y') {
 
 if ($buildIso -eq 'y') {
     Write-Host "Building Anaconda installer ISO..." -ForegroundColor Cyan
-    podman run @bibV $bib build --type anaconda-iso --rootfs ext4 "localhost/$I"
+    podman run @bibV $bib build --type anaconda-iso --rootfs ext4 --config /config.toml "localhost/$I"
     if ($LASTEXITCODE -ne 0) {
         Write-Host "  ✗ Anaconda ISO build failed (exit $LASTEXITCODE)" -ForegroundColor Red
     } else {
@@ -1234,7 +1241,7 @@ if ($buildIso -eq 'y') {
 
 if ($buildLive -eq 'y') {
     Write-Host "Building Live USB ISO..." -ForegroundColor Cyan
-    podman run @bibV $bib build --type iso --rootfs ext4 "localhost/$I"
+    podman run @bibV $bib build --type iso --rootfs ext4 --config /config.toml "localhost/$I"
     if ($LASTEXITCODE -ne 0) {
         Write-Host "  ✗ Live ISO build failed (exit $LASTEXITCODE)" -ForegroundColor Red
     } else {
