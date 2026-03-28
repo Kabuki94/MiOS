@@ -367,7 +367,7 @@ EOGDM
 rm -f /usr/lib/udev/rules.d/61-gdm.rules 2>/dev/null || true
 
 # ═══ ENVIRONMENT ═══
-mkdir -p /etc/environment.d /etc/gtk-3.0 /etc/gtk-4.0
+mkdir -p /etc/environment.d /etc/gtk-3.0 /etc/gtk-4.0 /etc/profile.d
 
 cat > /etc/environment.d/50-cloudws.conf <<'EOENV'
 QT_QPA_PLATFORMTHEME=gnome
@@ -378,6 +378,35 @@ XDG_CURRENT_DESKTOP=GNOME
 XCURSOR_THEME=Bibata-Modern-Classic
 XCURSOR_SIZE=24
 EOENV
+
+# WSLg environment setup — detect WSL and configure display
+cat > /etc/profile.d/cloudws-wsl.sh <<'EOWSL'
+# CloudWS WSL2/WSLg detection
+if [ -n "$WSL_DISTRO_NAME" ] || [ -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
+    # WSLg Wayland socket
+    if [ -S /mnt/wslg/runtime-dir/wayland-0 ]; then
+        export WAYLAND_DISPLAY=wayland-0
+        export XDG_RUNTIME_DIR="/mnt/wslg/runtime-dir"
+        export XDG_SESSION_TYPE=wayland
+        export GDK_BACKEND=wayland,x11
+        export QT_QPA_PLATFORM=wayland
+    fi
+    # WSLg X11 fallback
+    if [ -n "$DISPLAY" ] || [ -S /tmp/.X11-unix/X0 ]; then
+        export DISPLAY="${DISPLAY:-:0}"
+        export GDK_BACKEND="${GDK_BACKEND:-x11}"
+        export XDG_SESSION_TYPE="${XDG_SESSION_TYPE:-x11}"
+    fi
+    # Pulse audio via WSLg
+    if [ -S /mnt/wslg/PulseServer ]; then
+        export PULSE_SERVER="unix:/mnt/wslg/PulseServer"
+    fi
+    # Session desktop
+    export XDG_CURRENT_DESKTOP="${XDG_CURRENT_DESKTOP:-GNOME}"
+    export XDG_SESSION_DESKTOP="${XDG_SESSION_DESKTOP:-gnome}"
+fi
+EOWSL
+chmod +x /etc/profile.d/cloudws-wsl.sh
 
 cat > /etc/gtk-3.0/settings.ini <<'EOGTK3'
 [Settings]
@@ -715,12 +744,20 @@ systemctl enable pcsd.service cloud-init.service cloud-init-local.service cloud-
 tuned-adm profile throughput-performance 2>/dev/null || true
 
 # ═══ WAYDROID PRE-CONFIGURATION (defaults for one-click init) ═══
-mkdir -p /var/lib/waydroid /etc/waydroid
+mkdir -p /var/lib/waydroid /var/lib/waydroid/images /etc/waydroid
 cat > /etc/waydroid/waydroid.cfg <<'EOWAYDROID'
 [waydroid]
 system_ota = https://ota.waydro.id/system
 vendor_ota = https://ota.waydro.id/vendor
 system_type = GAPPS
+
+[properties]
+persist.waydroid.multi_windows = true
+persist.waydroid.cursor_on_subsurface = true
+persist.waydroid.fake_wifi = *
+persist.waydroid.uevent = true
+ro.hardware.gralloc = default
+ro.build.characteristics = tablet
 EOWAYDROID
 mkdir -p /etc/libvirt/qemu.conf.d
 echo -e "user = \"root\"\ngroup = \"root\"\ndynamic_ownership = 1\nremember_owner = 0" > /etc/libvirt/qemu.conf.d/10-cloudws.conf
@@ -854,6 +891,10 @@ systemctl enable cloudws-hostname.service
 # ═══ FIREWALL INIT (cloudws-firewall-init) ═══
 cat > /usr/libexec/cloudws-firewall-init <<'EOFW'
 #!/bin/bash
+# Skip if firewalld isn't running (e.g. WSL, containers)
+if ! systemctl is-active --quiet firewalld 2>/dev/null; then
+    exit 0
+fi
 if command -v firewall-cmd &>/dev/null; then
     firewall-cmd --set-default-zone=drop
     firewall-cmd --permanent --zone=drop --add-service=cockpit
@@ -903,32 +944,43 @@ if command -v setsebool &>/dev/null; then
 fi
 
 # Build custom policy module for remaining bootc-specific denials
-# (systemd-resolved socket, bootupctl, chcon mac_admin)
-if command -v audit2allow &>/dev/null; then
+# (bootupd unlabeled_t, accountsd lnk_file, systemd-resolved sock_file, chcon mac_admin)
+if command -v checkmodule &>/dev/null; then
     mkdir -p /tmp/selinux-fixes
     cat > /tmp/selinux-fixes/cloudws-bootc.te <<'EOTE'
-module cloudws-bootc 1.0;
+module cloudws-bootc 2.0;
 
 require {
     type bootupd_t;
+    type unlabeled_t;
     type boot_t;
     type init_t;
     type accountsd_t;
+    type accountsd_var_lib_t;
     type usr_t;
-    type chcon_t;
+    type unconfined_service_t;
+    type systemd_resolved_t;
+    type systemd_machined_var_run_t;
     class file { read open getattr };
+    class lnk_file { read getattr };
     class dir { watch };
-    class capability { mac_admin };
+    class sock_file { write };
+    class capability2 { mac_admin };
 }
 
-# Allow bootupctl to read bootupd-state.json in /boot
+# Allow bootupctl to read bootupd-state.json (arrives as unlabeled_t on /boot partition)
+allow bootupd_t unlabeled_t:file { read open getattr };
 allow bootupd_t boot_t:file { read open getattr };
 
-# Allow accounts-daemon to watch its interfaces directory
+# Allow accounts-daemon to read symlinks in its interfaces dir
+allow accountsd_t accountsd_var_lib_t:lnk_file { read getattr };
 allow accountsd_t usr_t:dir { watch };
 
-# Allow chcon mac_admin capability (needed for SELinux relabeling)
-allow chcon_t self:capability { mac_admin };
+# Allow systemd-resolved to write to machined socket (resolve.hook/io.systemd.Machine)
+allow systemd_resolved_t systemd_machined_var_run_t:sock_file { write };
+
+# Allow chcon/services mac_admin capability (needed for SELinux relabeling at runtime)
+allow unconfined_service_t self:capability2 { mac_admin };
 EOTE
     checkmodule -M -m -o /tmp/selinux-fixes/cloudws-bootc.mod /tmp/selinux-fixes/cloudws-bootc.te 2>/dev/null && \
     semodule_package -o /tmp/selinux-fixes/cloudws-bootc.pp -m /tmp/selinux-fixes/cloudws-bootc.mod 2>/dev/null && \
@@ -1404,8 +1456,9 @@ if ($deployWsl -eq 'y' -and (Test-Path $T_W)) {
     if ($LASTEXITCODE -eq 0) {
         $wslConf = "[user]`ndefault=$U`n`n[boot]`nsystemd=true`n`n[interop]`nappendWindowsPath=false`n`n[automount]`nenabled=true`nmountFsTab=true"
         wsl -d $wslName -- bash -c "echo '$wslConf' > /etc/wsl.conf"
-        wsl -d $wslName -- bash -c "systemctl mask auditd.service audit-rules.service bootloader-update.service 2>/dev/null; true"
+        wsl -d $wslName -- bash -c "systemctl mask auditd.service audit-rules.service bootloader-update.service dev-binderfs.mount gdm.service waydroid-container.service nvidia-powerd.service firewalld.service crowdsec.service crowdsec-firewall-bouncer.service 2>/dev/null; true"
         wsl -d $wslName -- bash -c "localedef -i en_US -f UTF-8 en_US.UTF-8 2>/dev/null; true"
+        wsl -d $wslName -- bash -c "loginctl enable-linger $U 2>/dev/null; true"
         wsl --terminate $wslName 2>$null
         Write-Host "  ✓ CloudWS deployed to WSL2 as '$wslName'" -ForegroundColor Green
         Write-Host "    wsl.conf: systemd=true, appendWindowsPath=false" -ForegroundColor Gray
@@ -1454,15 +1507,44 @@ if ($deployHyperV -eq 'y' -and (Test-Path $T_V)) {
 if ($ghcrReady) {
     Write-Host "`n═══ Phase 6: Pushing to GHCR ═══" -ForegroundColor Cyan
     $dateTag = Get-Date -Format 'yyyyMMdd'
-    podman tag "localhost/$I" "${GhcrImage}:latest"
-    podman tag "localhost/$I" "${GhcrImage}:${dateTag}"
-    podman push "${GhcrImage}:latest"
-    if ($LASTEXITCODE -eq 0) {
-        podman push "${GhcrImage}:${dateTag}"
-        Write-Host "  ✓ Pushed ${GhcrImage}:latest" -ForegroundColor Green
-        Write-Host "  ✓ Pushed ${GhcrImage}:${dateTag}" -ForegroundColor Green
+
+    # Login to GHCR
+    Write-Host "  Logging in to ghcr.io..." -ForegroundColor Gray
+    $ghTokenPlain | podman login ghcr.io -u $ghUser --password-stdin
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "  ✗ GHCR login failed — check your PAT scopes (write:packages)" -ForegroundColor Red
     } else {
-        Write-Host "  ✗ GHCR push failed" -ForegroundColor Red
+        Write-Host "  ✓ Logged in to ghcr.io" -ForegroundColor Green
+
+        podman tag "localhost/$I" "${GhcrImage}:latest"
+        podman tag "localhost/$I" "${GhcrImage}:${dateTag}"
+        podman push "${GhcrImage}:latest"
+        if ($LASTEXITCODE -eq 0) {
+            podman push "${GhcrImage}:${dateTag}"
+            Write-Host "  ✓ Pushed ${GhcrImage}:latest" -ForegroundColor Green
+            Write-Host "  ✓ Pushed ${GhcrImage}:${dateTag}" -ForegroundColor Green
+
+            # Make the GHCR package public so deployed systems can pull without auth
+            Write-Host "  Making GHCR package public (required for bootc update)..." -ForegroundColor Gray
+            try {
+                $headers = @{
+                    'Authorization' = "Bearer $ghTokenPlain"
+                    'Accept' = 'application/vnd.github+json'
+                    'X-GitHub-Api-Version' = '2022-11-28'
+                }
+                $body = '{"visibility":"public"}'
+                $apiUrl = "https://api.github.com/user/packages/container/cloudws-bootc"
+                Invoke-RestMethod -Uri $apiUrl -Method Patch -Headers $headers -Body $body -ContentType 'application/json' -ErrorAction Stop
+                Write-Host "  ✓ GHCR package set to public" -ForegroundColor Green
+            } catch {
+                Write-Host "  ⚠ Could not auto-set package to public." -ForegroundColor Yellow
+                Write-Host "    Manually set it at: https://github.com/Kabuki94?tab=packages" -ForegroundColor Cyan
+                Write-Host "    Package Settings → Change Visibility → Public" -ForegroundColor Cyan
+                Write-Host "    (Without this, bootc update will fail with 'unauthorized')" -ForegroundColor Yellow
+            }
+        } else {
+            Write-Host "  ✗ GHCR push failed" -ForegroundColor Red
+        }
     }
 }
 
@@ -1470,6 +1552,7 @@ if ($ghcrReady) {
 Write-Host "`n═══ All Done ═══" -ForegroundColor Green
 Write-Host ""
 Write-Host "  CloudWS Self-Management (from a running CloudWS system):" -ForegroundColor Cyan
+Write-Host "    cloudws-update           — One-command update from GHCR" -ForegroundColor White
 Write-Host "    cloudws-rebuild          — Clone from GitHub, build, push, pull, update, rollback" -ForegroundColor White
 Write-Host "    cloudws-backup           — Backup Podman volumes, K3s state, VMs, home dirs" -ForegroundColor White
 Write-Host "    cloudws-vfio-toggle list — Show GPUs + IOMMU groups for passthrough" -ForegroundColor White

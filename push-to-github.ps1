@@ -36,7 +36,7 @@ if (-not (Test-Path (Join-Path $SourceDir "cloud-ws.ps1"))) {
 # ── GitHub Authentication ──
 Write-Host ""
 Write-Host "  ═══ GitHub Authentication ═══" -ForegroundColor Yellow
-Write-Host "  PAT needs scopes: repo (full control)" -ForegroundColor Gray
+Write-Host "  PAT needs scopes: repo + write:packages (for GHCR)" -ForegroundColor Gray
 Write-Host "  Create at: https://github.com/settings/tokens/new" -ForegroundColor Cyan
 Write-Host ""
 $ghUser  = Read-Host "  GitHub username"

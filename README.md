@@ -111,15 +111,21 @@ cloudws-backup                 # Backup volumes, K3s, VMs, home
 cloudws-vfio-toggle list       # Show GPUs + IOMMU groups
 ```
 
-## WSL2 Backup
+> **Important:** The GHCR package must be set to **public** for `bootc update` to work without authentication.
+> The build script attempts to do this automatically via the GitHub API. If it fails, manually set visibility at:
+> `https://github.com/Kabuki94?tab=packages` → Package Settings → Change Visibility → **Public**
+
+## WSL2
 
 ```powershell
-# From Windows PowerShell
-wsl --export CloudWS C:\Backups\cloudws-backup.tar
+# Deploy
+wsl --import CloudWS $env:USERPROFILE\WSL\CloudWS cloudws-wsl.tar --version 2
 
-# Or copy the VHDX directly
-Copy-Item "$env:USERPROFILE\WSL\CloudWS\ext4.vhdx" C:\Backups\
+# Backup
+wsl --export CloudWS C:\Backups\cloudws-backup.tar
 ```
+
+**WSL2 limitations:** GUI apps require WSLg (Windows 11 22H2+). GDM, Waydroid, and firewalld are automatically masked in WSL. Some apps may need `source /etc/profile.d/cloudws-wsl.sh` in your shell for proper Wayland/X11 display setup.
 
 ## Security
 
