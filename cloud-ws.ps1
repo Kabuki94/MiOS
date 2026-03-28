@@ -998,7 +998,7 @@ RUN --mount=type=bind,from=ctx,source=/build_files,target=/tmp/staging \
     rm -rf /var/cache/dnf /var/cache/libdnf5 /var/cache/pip /var/lib/dnf/repos /tmp/scripts /tmp/*.log /var/tmp/* /root/.cache && \
     rm -rf /var/log/dnf* /var/log/hawkey* /var/log/anaconda 2>/dev/null && \
     rm -rf /usr/share/doc /usr/share/man /usr/share/info /usr/share/gtk-doc 2>/dev/null && \
-    rm -rf /usr/share/locale/!(en|en_US|locale.alias) 2>/dev/null && \
+    find /usr/share/locale -mindepth 1 -maxdepth 1 -type d ! -name 'en' ! -name 'en_US' -exec rm -rf {} + 2>/dev/null && \
     rm -rf /tmp/* /var/tmp/* 2>/dev/null && \
     find /var/log -type f -name "*.log" -delete 2>/dev/null; true
 COPY Containerfile /usr/share/cloudws/Containerfile
