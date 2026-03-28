@@ -186,6 +186,7 @@ tuned, tuned-ppd, tuned-utils, tuned-profiles-cpu-partitioning, tuned-profiles-r
 | Tool | Description |
 |------|-------------|
 | cloudws-rebuild | Clone from GitHub → build → push to GHCR (+ offline embedded fallback) |
+| cloudws-update | One-command system update from GHCR (bootc update + fallback switch) |
 | cloudws-backup | Backup Podman volumes, K3s etcd, libvirt VMs, /var/home |
 | cloudws-vfio-toggle | GPU VFIO bind/unbind/status/list via driverctl |
 | cloudws-gpu-detect | Auto-detects VM vs bare metal, blocks NVIDIA modules in VMs (runs before GDM) |
@@ -229,7 +230,7 @@ tuned, tuned-ppd, tuned-utils, tuned-profiles-cpu-partitioning, tuned-profiles-r
 | Flatpak Runtimes (auto) | ~5 |
 | Git-cloned plugins | 3 (cockpit-benchmark, cockpit-zfs-manager, geist-font) |
 | Binary installs | 1 (K3s) |
-| Custom tools | 9 |
+| Custom tools | 10 |
 | Config files | 20 |
 | GDM sessions | 2 (GNOME Wayland, Steam Gamescope) |
 | Looking Glass build deps | ~25 (removed after compile) |

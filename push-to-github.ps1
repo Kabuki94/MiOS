@@ -214,6 +214,19 @@ Write-Host "  ═══ Next Steps ═══" -ForegroundColor Cyan
 Write-Host "    1. Verify: https://github.com/Kabuki94/CloudWS-bootc" -ForegroundColor White
 Write-Host "    2. Make GHCR package public:" -ForegroundColor White
 Write-Host "       https://github.com/Kabuki94?tab=packages" -ForegroundColor Gray
-Write-Host "    3. Test one-line install:" -ForegroundColor White
-Write-Host "       irm https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/install.ps1 | iex" -ForegroundColor Gray
+Write-Host ""
+
+$runBuild = Read-Host "  Run full build now? (y/n) [n]"
+if ($runBuild -eq 'y') {
+    $buildScript = Join-Path $SourceDir "cloud-ws.ps1"
+    if (Test-Path $buildScript) {
+        Write-Host "`n  Launching cloud-ws.ps1 (GitHub credentials will be reused)..." -ForegroundColor Cyan
+        # Pass GHCR credentials via environment so cloud-ws.ps1 can skip the GHCR prompt
+        $env:CLOUDWS_GHCR_USER = $ghUser
+        $env:CLOUDWS_GHCR_TOKEN = $ghTokenPlain
+        & $buildScript
+    } else {
+        Write-Host "  ✗ cloud-ws.ps1 not found in $SourceDir" -ForegroundColor Red
+    }
+}
 Write-Host ""

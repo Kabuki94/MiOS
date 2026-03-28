@@ -37,10 +37,14 @@ Write-Host "║         CloudWS v3.13 — Build Configuration                 �
 Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 
-# ── OS Credentials ──
-$U = Read-Host "CloudWS username"
-$P = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
-    [Runtime.InteropServices.Marshal]::SecureStringToBSTR((Read-Host "CloudWS password" -AsSecureString)))
+# ── OS Credentials (defaults: cloudws/cloudws for pre-built images) ──
+Write-Host "  Defaults: cloudws / cloudws (press Enter to accept)" -ForegroundColor Gray
+$U = Read-Host "CloudWS username [cloudws]"
+if (-not $U) { $U = "cloudws" }
+$pInput = Read-Host "CloudWS password [cloudws]" -AsSecureString
+$pPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
+    [Runtime.InteropServices.Marshal]::SecureStringToBSTR($pInput))
+$P = if ($pPlain) { $pPlain } else { "cloudws" }
 
 # ── Build Targets ──
 Write-Host "`n═══ Build Targets ═══" -ForegroundColor Yellow
@@ -50,6 +54,20 @@ $buildVhdx = if ($buildRaw -eq 'y') { Read-TimedHost "  Convert RAW → VHDX (Hy
 $buildWsl  = Read-TimedHost "  Export WSL2 + WSLg tarball? (y/n)" 'y'
 $buildIso  = Read-TimedHost "  Build Anaconda installer ISO? (y/n)" 'y'
 $buildLive = Read-TimedHost "  Build Live USB ISO? (y/n)" 'n'
+
+# ── LUKS Encryption (RAW/ISO only) ──
+$enableLuks = 'n'
+$luksPass = ''
+if ($buildRaw -eq 'y' -or $buildIso -eq 'y') {
+    Write-Host "`n═══ Disk Encryption ═══" -ForegroundColor Yellow
+    Write-Host "  LUKS2 encryption applies to RAW disk + ISO targets only." -ForegroundColor Gray
+    $enableLuks = Read-TimedHost "  Enable LUKS2 encryption? (y/n)" 'n'
+    if ($enableLuks -eq 'y') {
+        $lp1 = Read-Host "  LUKS passphrase" -AsSecureString
+        $luksPass = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
+            [Runtime.InteropServices.Marshal]::SecureStringToBSTR($lp1))
+    }
+}
 
 # ── Deployment Options ──
 Write-Host "`n═══ Post-Build Deployment ═══" -ForegroundColor Yellow
@@ -62,23 +80,38 @@ $startVm = if ($deployHyperV -eq 'y') { Read-TimedHost "    Start VM immediately
 Write-Host "`n═══ GitHub Container Registry ═══" -ForegroundColor Yellow
 $GhcrImage = "ghcr.io/kabuki94/cloudws-bootc"
 Write-Host "  Repository: $GhcrImage" -ForegroundColor White
-$pushToGhcr = Read-TimedHost "  Push to GHCR after everything? (y/n)" 'n'
 $ghcrReady = $false
-if ($pushToGhcr -eq 'y') {
-    Write-Host "  PAT needs scopes: write:packages, read:packages" -ForegroundColor Gray
-    Write-Host "  Create at: https://github.com/settings/tokens/new" -ForegroundColor Cyan
-    $ghUser = Read-Host "  GitHub username"
-    $ghToken = Read-Host "  GitHub PAT" -AsSecureString
-    $ghTokenPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
-        [Runtime.InteropServices.Marshal]::SecureStringToBSTR($ghToken))
+
+# Check if credentials were passed from push-to-github.ps1
+if ($env:CLOUDWS_GHCR_USER -and $env:CLOUDWS_GHCR_TOKEN) {
+    $ghUser = $env:CLOUDWS_GHCR_USER
+    $ghTokenPlain = $env:CLOUDWS_GHCR_TOKEN
     $ghcrReady = $true
+    $pushToGhcr = 'y'
+    Write-Host "  ✓ GHCR credentials inherited from push-to-github" -ForegroundColor Green
+    # Clean up env vars
+    $env:CLOUDWS_GHCR_USER = $null
+    $env:CLOUDWS_GHCR_TOKEN = $null
+} else {
+    $pushToGhcr = Read-TimedHost "  Push to GHCR after everything? (y/n)" 'n'
+    if ($pushToGhcr -eq 'y') {
+        Write-Host "  PAT needs scopes: write:packages, read:packages" -ForegroundColor Gray
+        Write-Host "  Create at: https://github.com/settings/tokens/new" -ForegroundColor Cyan
+        $ghUser = Read-Host "  GitHub username"
+        $ghToken = Read-Host "  GitHub PAT" -AsSecureString
+        $ghTokenPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
+            [Runtime.InteropServices.Marshal]::SecureStringToBSTR($ghToken))
+        $ghcrReady = $true
+    }
 }
 
 # ── Summary ──
 Write-Host "`n═══ Build Plan ═══" -ForegroundColor Cyan
 Write-Host "  User:     $U" -ForegroundColor White
 Write-Host "  Targets:  OCI$(if($buildRaw -eq 'y'){' + RAW'})$(if($buildVhdx -eq 'y'){' + VHDX'})$(if($buildWsl -eq 'y'){' + WSL'})$(if($buildIso -eq 'y'){' + ISO'})$(if($buildLive -eq 'y'){' + LIVE'})" -ForegroundColor White
+Write-Host "  LUKS:     $(if($enableLuks -eq 'y'){'Enabled (RAW/ISO)'}else{'Disabled'})" -ForegroundColor White
 Write-Host "  Deploy:   $(if($deployWsl -eq 'y'){'WSL '}else{''})$(if($deployHyperV -eq 'y'){'Hyper-V '}else{''})$(if($deployWsl -ne 'y' -and $deployHyperV -ne 'y'){'None'})" -ForegroundColor White
+Write-Host "  Updates:  $GhcrImage`:latest (bootc update target)" -ForegroundColor White
 Write-Host "  GHCR:     $(if($ghcrReady){'Yes (last step)'}else{'No'})" -ForegroundColor White
 Write-Host ""
 Write-Host "  All questions answered. Build is now fully unattended." -ForegroundColor Green
@@ -774,6 +807,28 @@ echo 'polkit.addRule(function(a,s){if(a.id=="org.libvirt.unix.manage"&&s.local&&
 
 echo 'alias scan-malware="podman run --rm -v ~/.clamav:/var/lib/clamav -v /var/home:/scandir:ro docker.io/clamav/clamav:latest clamscan -r /scandir"' >> /etc/skel/.bashrc
 
+# cloudws-update — one-command system update
+cat > /usr/local/bin/cloudws-update <<'EOUPDATE'
+#!/bin/bash
+set -euo pipefail
+GHCR="ghcr.io/kabuki94/cloudws-bootc:latest"
+echo ""
+echo "  CloudWS Update — pulling from $GHCR"
+echo "  ====================================="
+echo ""
+sudo bootc update
+STATUS=$?
+if [ $STATUS -eq 0 ]; then
+    echo ""
+    echo "  ✓ Update staged. Reboot to apply: sudo systemctl reboot"
+else
+    echo ""
+    echo "  Trying bootc switch to GHCR..."
+    sudo bootc switch "$GHCR" || echo "  ✗ Update failed. Check network connectivity."
+fi
+EOUPDATE
+chmod +x /usr/local/bin/cloudws-update
+
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
 echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
 localedef -i en_US -f UTF-8 en_US.UTF-8 2>/dev/null || true
@@ -1250,6 +1305,11 @@ podman build --no-cache -t $I $B
 if($LASTEXITCODE -ne 0){throw "Build failed"}
 Write-Host "  ✓ OCI image built: localhost/$I" -ForegroundColor Green
 
+# Tag as GHCR so bootc update knows where to pull from (even if not pushing yet)
+$GhcrRef = "${GhcrImage}:latest"
+podman tag "localhost/$I" $GhcrRef
+Write-Host "  ✓ Tagged as $GhcrRef (bootc update target)" -ForegroundColor Green
+
 # ════════════════════════════════════════════════════════════════════
 #  PHASE 4: EXPORT TARGETS (conditional)
 # ════════════════════════════════════════════════════════════════════
@@ -1265,7 +1325,10 @@ $bibV=@("--rm","-it","--privileged","--security-opt","label=type:unconfined_t","
 
 if ($buildRaw -eq 'y') {
     Write-Host "Building RAW disk image..." -ForegroundColor Cyan
-    podman run @bibV $bib build --type raw --rootfs ext4 --config /config.toml "localhost/$I"
+    $bibArgs = @("build","--type","raw","--rootfs","ext4","--config","/config.toml")
+    if ($enableLuks -eq 'y' -and $luksPass) { $bibArgs += @("--luks-passphrase",$luksPass) }
+    $bibArgs += $GhcrRef
+    podman run @bibV $bib @bibArgs
     if ($LASTEXITCODE -ne 0) {
         Write-Host "  ✗ RAW disk build failed (exit $LASTEXITCODE)" -ForegroundColor Red
         $buildVhdx = 'n'
@@ -1289,7 +1352,10 @@ if ($buildWsl -eq 'y') {
 
 if ($buildIso -eq 'y') {
     Write-Host "Building Anaconda installer ISO..." -ForegroundColor Cyan
-    podman run @bibV $bib build --type anaconda-iso --rootfs ext4 --config /config.toml "localhost/$I"
+    $bibIsoArgs = @("build","--type","anaconda-iso","--rootfs","ext4","--config","/config.toml")
+    if ($enableLuks -eq 'y' -and $luksPass) { $bibIsoArgs += @("--luks-passphrase",$luksPass) }
+    $bibIsoArgs += $GhcrRef
+    podman run @bibV $bib @bibIsoArgs
     if ($LASTEXITCODE -ne 0) {
         Write-Host "  ✗ Anaconda ISO build failed (exit $LASTEXITCODE)" -ForegroundColor Red
     } else {
@@ -1300,7 +1366,7 @@ if ($buildIso -eq 'y') {
 
 if ($buildLive -eq 'y') {
     Write-Host "Building Live USB ISO..." -ForegroundColor Cyan
-    podman run @bibV $bib build --type iso --rootfs ext4 --config /config.toml "localhost/$I"
+    podman run @bibV $bib build --type iso --rootfs ext4 --config /config.toml $GhcrRef
     if ($LASTEXITCODE -ne 0) {
         Write-Host "  ✗ Live ISO build failed (exit $LASTEXITCODE)" -ForegroundColor Red
     } else {

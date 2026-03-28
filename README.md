@@ -6,6 +6,17 @@ GNOME 50 • Gamescope Steam Session • KVM/QEMU/VFIO • Podman/K3s • Pacema
 
 ---
 
+## Default Credentials
+
+| | |
+|---|---|
+| **Username** | `cloudws` |
+| **Password** | `cloudws` |
+
+Pre-built images from GHCR use these defaults. Custom builds prompt for credentials (press Enter to accept defaults).
+
+---
+
 ## Quick Start
 
 ### Windows (PowerShell as Administrator)
@@ -92,7 +103,8 @@ Fedora Rawhide fc45 | Kernel 7.0 | GNOME 50 "Tokyo" | Wayland-only
 ## Self-Update
 
 ```bash
-sudo bootc update              # Pull latest from GHCR
+cloudws-update                 # One-command update from GHCR (recommended)
+sudo bootc update              # Pull latest from GHCR directly
 sudo bootc rollback            # Revert to previous deployment
 cloudws-rebuild                # Clone from GitHub → build → push
 cloudws-backup                 # Backup volumes, K3s, VMs, home
