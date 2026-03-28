@@ -153,6 +153,9 @@ python3-devel, python3-pip, python3-setuptools, python3-wheel, python3-virtualen
 |---------|-------------|
 | fapolicyd | Blocks untrusted binaries in /var/home |
 | usbguard | USB device authorization |
+| policycoreutils-python-utils | semanage, audit2allow SELinux tools |
+| checkpolicy | SELinux policy module compiler |
+| cloudws-bootc.pp | Custom SELinux policy (bootupd, accountsd, chcon fixes) |
 | crowdsec | IPS — sovereign mode (zero outbound telemetry) |
 | crowdsec-firewall-bouncer-nftables | CrowdSec nftables enforcement |
 | firewalld | Default-deny drop zone (K3s subnets trusted) |
@@ -215,6 +218,7 @@ tuned, tuned-ppd, tuned-utils, tuned-profiles-cpu-partitioning, tuned-profiles-r
 | /etc/crowdsec/config.yaml.local | Sovereign mode (no CAPI) |
 | /usr/share/wayland-sessions/steam.desktop | Gamescope GDM session |
 | /etc/systemd/system/cockpit.socket.d/listen.conf | Cockpit listen on all interfaces |
+| /etc/waydroid/waydroid.cfg | Waydroid OTA URLs + GAPPS default |
 
 ## TOTALS
 

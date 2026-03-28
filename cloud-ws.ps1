@@ -564,6 +564,7 @@ dnf install -y --skip-unavailable --allowerasing --nobest \
     nvme-cli device-mapper-multipath sg3_utils \
     chrony firewalld zram-generator \
     fapolicyd usbguard \
+    policycoreutils-python-utils checkpolicy \
     cdrkit xorriso genisoimage isomd5sum mediawriter squashfs-tools erofs-utils dracut-live \
     python3 python3-devel python3-pip python3-setuptools python3-wheel python3-virtualenv python3-venv \
     python3-requests python3-yaml python3-toml python3-jsonschema python3-pillow python3-tqdm \
@@ -679,6 +680,15 @@ systemctl enable podman-auto-update.timer podman-restart.service qemu-guest-agen
 systemctl enable bluetooth.service xrdp.service xrdp-sesman.service 2>/dev/null || true
 systemctl enable pcsd.service cloud-init.service cloud-init-local.service cloud-config.service cloud-final.service multipathd.service chronyd.service 2>/dev/null || true
 tuned-adm profile throughput-performance 2>/dev/null || true
+
+# ═══ WAYDROID PRE-CONFIGURATION (defaults for one-click init) ═══
+mkdir -p /var/lib/waydroid /etc/waydroid
+cat > /etc/waydroid/waydroid.cfg <<'EOWAYDROID'
+[waydroid]
+system_ota = https://ota.waydro.id/system
+vendor_ota = https://ota.waydro.id/vendor
+system_type = GAPPS
+EOWAYDROID
 mkdir -p /etc/libvirt/qemu.conf.d
 echo -e "user = \"root\"\ngroup = \"root\"\ndynamic_ownership = 1\nremember_owner = 0" > /etc/libvirt/qemu.conf.d/10-cloudws.conf
 
@@ -816,16 +826,61 @@ if command -v restorecon &>/dev/null; then
     restorecon -R /var 2>/dev/null || true
 fi
 
-# Set booleans for cockpit/accounts-daemon access
+# Fix specific SELinux denials reported on bootc deployments
+if command -v semanage &>/dev/null; then
+    # bootupd-state.json — needs boot_t label
+    semanage fcontext -a -t boot_t '/boot/bootupd-state.json' 2>/dev/null || true
+    restorecon -v /boot/bootupd-state.json 2>/dev/null || true
+
+    # accountsservice interfaces — needs accountsd_var_lib_t
+    semanage fcontext -a -t accountsd_var_lib_t '/usr/share/accountsservice/interfaces(/.*)?' 2>/dev/null || true
+    restorecon -R /usr/share/accountsservice 2>/dev/null || true
+fi
+
+# Set booleans for cockpit, accounts-daemon, virt, NIS/rpcbind
 if command -v setsebool &>/dev/null; then
     setsebool -P cockpit_manage_all_files 1 2>/dev/null || true
     setsebool -P domain_can_mmap_files 1 2>/dev/null || true
     setsebool -P daemons_dump_core 1 2>/dev/null || true
+    setsebool -P virt_sandbox_use_all_caps 1 2>/dev/null || true
+    setsebool -P virt_use_nfs 1 2>/dev/null || true
+    setsebool -P nis_enabled 1 2>/dev/null || true
 fi
 
-# NOTE: /.autorelabel is NEVER used — bootc root is read-only composefs,
-# the file cannot be removed after relabel, causing infinite boot loops.
-# Build-time restorecon above is sufficient.
+# Build custom policy module for remaining bootc-specific denials
+# (systemd-resolved socket, bootupctl, chcon mac_admin)
+if command -v audit2allow &>/dev/null; then
+    mkdir -p /tmp/selinux-fixes
+    cat > /tmp/selinux-fixes/cloudws-bootc.te <<'EOTE'
+module cloudws-bootc 1.0;
+
+require {
+    type bootupd_t;
+    type boot_t;
+    type init_t;
+    type accountsd_t;
+    type usr_t;
+    type chcon_t;
+    class file { read open getattr };
+    class dir { watch };
+    class capability { mac_admin };
+}
+
+# Allow bootupctl to read bootupd-state.json in /boot
+allow bootupd_t boot_t:file { read open getattr };
+
+# Allow accounts-daemon to watch its interfaces directory
+allow accountsd_t usr_t:dir { watch };
+
+# Allow chcon mac_admin capability (needed for SELinux relabeling)
+allow chcon_t self:capability { mac_admin };
+EOTE
+    checkmodule -M -m -o /tmp/selinux-fixes/cloudws-bootc.mod /tmp/selinux-fixes/cloudws-bootc.te 2>/dev/null && \
+    semodule_package -o /tmp/selinux-fixes/cloudws-bootc.pp -m /tmp/selinux-fixes/cloudws-bootc.mod 2>/dev/null && \
+    semodule -X 300 -i /tmp/selinux-fixes/cloudws-bootc.pp 2>/dev/null || \
+    echo "[WARN] Custom SELinux policy module failed — denials may persist on first boot."
+    rm -rf /tmp/selinux-fixes
+fi
 
 # ═══ CLOUD-INIT ═══
 mkdir -p /etc/cloud/cloud.cfg.d
@@ -968,8 +1023,12 @@ cat > /usr/libexec/cloudws-init <<'EOINIT'
 set -euo pipefail
 hostnamectl set-hostname CloudWS 2>/dev/null || true
 
-# Flatpak health check (apps are pre-installed in /var/lib/flatpak from build)
-echo "[cloudws-init] Flatpaks available: $(flatpak list --system --app --columns=application 2>/dev/null | wc -l) apps"
+# Flatpak remotes — re-ensure they're present (bootc /var seeding may miss metadata)
+flatpak remote-add --if-not-exists --system flathub https://dl.flathub.org/repo/flathub.flatpakrepo 2>/dev/null || true
+flatpak remote-add --if-not-exists --system flathub-beta https://flathub.org/beta-repo/flathub-beta.flatpakrepo 2>/dev/null || true
+flatpak remote-add --if-not-exists --system gnome-nightly https://nightly.gnome.org/gnome-nightly.flatpakrepo 2>/dev/null || true
+echo "[cloudws-init] Flatpak remotes: $(flatpak remotes --system --columns=name | tr '\n' ' ')"
+echo "[cloudws-init] Flatpak apps: $(flatpak list --system --app --columns=application 2>/dev/null | wc -l)"
 
 /usr/libexec/cloudws-firewall-init || true
 

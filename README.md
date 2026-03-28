@@ -68,7 +68,7 @@ Fedora Rawhide fc45 | Kernel 7.0 | GNOME 50 "Tokyo" | Wayland-only
 ├── Gamescope Steam Session (SteamOS-mode, selectable at GDM)
 ├── KVM/QEMU/Libvirt + VFIO GPU Passthrough + Looking Glass B7
 ├── Podman + K3s + Pacemaker/Corosync HA Clustering
-├── Waydroid (Android — native Wayland windows)
+├── Waydroid (Android — GAPPS pre-configured, native Wayland windows)
 ├── Multi-GPU (Mesa + NVIDIA akmod + driverctl VFIO toggle)
 ├── GPU Auto-Detect (blocks NVIDIA in VMs, enables virtual GPU — boots everywhere)
 ├── CrowdSec IPS (sovereign/offline — zero outbound telemetry)
