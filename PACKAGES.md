@@ -1,4 +1,4 @@
-# CloudWS v3.12 — Complete Package Inventory
+# CloudWS v3.13 — Complete Package Inventory
 
 ## REPOSITORIES (01-repos.sh)
 

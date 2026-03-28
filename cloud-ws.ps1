@@ -1,6 +1,6 @@
 #Requires -RunAsAdministrator
 <#
-.SYNOPSIS  CloudWS v3.12 — Cloud Workstation OS Builder
+.SYNOPSIS  CloudWS v3.13 — Cloud Workstation OS Builder
 .DESCRIPTION
     Architecture: XFS root (composefs, fills entire disk) + /var/home on same FS
     Desktop:      GNOME 50 Tokyo (Wayland-only) + Geist font + Flatpak-first app delivery
@@ -33,7 +33,7 @@ function Read-TimedHost($prompt, $default = 'n', $seconds = 300) {
 #  PHASE 0: ALL QUESTIONS UPFRONT
 # ══════════════════════════════════════════════════════════════════════════════
 Write-Host "`n╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║         CloudWS v3.12 — Build Configuration                 ║" -ForegroundColor Cyan
+Write-Host "║         CloudWS v3.13 — Build Configuration                 ║" -ForegroundColor Cyan
 Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 
@@ -976,7 +976,7 @@ COPY build_files /build_files
 FROM quay.io/fedora/fedora-bootc:rawhide
 LABEL org.opencontainers.image.title="CloudWS — Cloud Workstation OS" \
       org.opencontainers.image.description="Fedora Rawhide bootc immutable workstation: GNOME 50, Flatpak-first, KVM/QEMU GPU passthrough, Podman, K3s HA, NVIDIA RTX 4090, Gamescope Steam Session" \
-      org.opencontainers.image.version="3.12.0" \
+      org.opencontainers.image.version="3.13.0" \
       org.opencontainers.image.created="$BuildDate" \
       org.opencontainers.image.authors="Kabuki94" \
       org.opencontainers.image.source="https://github.com/Kabuki94/CloudWS-bootc" \
@@ -1009,7 +1009,7 @@ REPO="https://github.com/Kabuki94/CloudWS-bootc.git"
 GHCR="ghcr.io/kabuki94/cloudws-bootc"
 WORKDIR="/tmp/cloudws-rebuild-`$(date +%s)"
 echo ""
-echo "  CloudWS Self-Replication Engine v3.12"
+echo "  CloudWS Self-Replication Engine v3.13"
 echo "  ======================================"
 echo "  1) Clone from GitHub → Build → local image"
 echo "  2) Clone from GitHub → Build → Push to GHCR"
@@ -1025,14 +1025,14 @@ case "`$choice" in
   1) echo ""; echo "Cloning `$REPO..."
      rm -rf "`$WORKDIR"; git clone --depth=1 "`$REPO" "`$WORKDIR"
      cd "`$WORKDIR"
-     podman build --no-cache --squash-all -t localhost/cloudws:latest .
+     podman build --no-cache -t localhost/cloudws:latest .
      rm -rf "`$WORKDIR"
      echo ""; echo "Done. Deploy with:"
      echo "  sudo bootc switch --transport containers-storage localhost/cloudws:latest";;
   2) echo ""; echo "Cloning `$REPO..."
      rm -rf "`$WORKDIR"; git clone --depth=1 "`$REPO" "`$WORKDIR"
      cd "`$WORKDIR"
-     podman build --no-cache --squash-all -t localhost/cloudws:latest .
+     podman build --no-cache -t localhost/cloudws:latest .
      rm -rf "`$WORKDIR"
      read -p "  GitHub username: " ghu
      read -sp "  GitHub PAT (write:packages): " ghp; echo
@@ -1060,7 +1060,7 @@ case "`$choice" in
   7) bootc status;;
   8) echo "Rebuilding from embedded sources..."
      cd /usr/share/cloudws
-     podman build --no-cache --squash-all -t localhost/cloudws:latest -f Containerfile .
+     podman build --no-cache -t localhost/cloudws:latest -f Containerfile .
      echo "Done. Deploy with:"
      echo "  sudo bootc switch --transport containers-storage localhost/cloudws:latest";;
   *) echo "Invalid choice.";;
@@ -1075,7 +1075,7 @@ RUN bootc container lint
 #  PHASE 3: BUILD OCI IMAGE
 # ════════════════════════════════════════════════════════════════════
 Write-Host "`n═══ Phase 3: Building OCI Image ═══" -ForegroundColor Cyan
-podman build --no-cache --squash-all -t $I $B
+podman build --no-cache -t $I $B
 if($LASTEXITCODE -ne 0){throw "Build failed"}
 Write-Host "  ✓ OCI image built: localhost/$I" -ForegroundColor Green
 
@@ -1088,14 +1088,20 @@ $bibV=@("--rm","-it","--privileged","--security-opt","label=type:unconfined_t","
 if ($buildRaw -eq 'y') {
     Write-Host "Building RAW disk image..." -ForegroundColor Cyan
     podman run @bibV $bib build --type raw --rootfs ext4 "localhost/$I"
-    $Raw=(Get-ChildItem $O -Filter "disk.raw" -Recurse|Sort LastWriteTime -Desc|Select -First 1)
-    if($Raw){if(Test-Path $R_Img){rm $R_Img -Force};$z=0;while($z -lt 12){try{Move-Item $Raw.FullName $R_Img -Force;break}catch{Start-Sleep 5;$z++}}}
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "  ✗ RAW disk build failed (exit $LASTEXITCODE)" -ForegroundColor Red
+        $buildVhdx = 'n'
+    } else {
+        $Raw=(Get-ChildItem $O -Filter "disk.raw" -Recurse|Sort LastWriteTime -Desc|Select -First 1)
+        if($Raw){if(Test-Path $R_Img){rm $R_Img -Force};$z=0;while($z -lt 12){try{Move-Item $Raw.FullName $R_Img -Force;break}catch{Start-Sleep 5;$z++}}}
+    }
 }
 
 if ($buildVhdx -eq 'y' -and (Test-Path $R_Img)) {
     Write-Host "Converting RAW → VHDX..." -ForegroundColor Cyan
     if(Test-Path $T_V){rm $T_V -Force}
     podman run --rm -v "${O}:/data:z" docker.io/alpine:latest sh -c "apk add --no-cache qemu-img && qemu-img convert -p -f raw -O vhdx -o subformat=dynamic /data/$(Split-Path $R_Img -Leaf) /data/cloudws-hyperv.vhdx"
+    if ($LASTEXITCODE -ne 0) { Write-Host "  ✗ VHDX conversion failed (exit $LASTEXITCODE)" -ForegroundColor Red }
 }
 
 if ($buildWsl -eq 'y') {
@@ -1106,15 +1112,23 @@ if ($buildWsl -eq 'y') {
 if ($buildIso -eq 'y') {
     Write-Host "Building Anaconda installer ISO..." -ForegroundColor Cyan
     podman run @bibV $bib build --type anaconda-iso --rootfs ext4 "localhost/$I"
-    $Iso=(Get-ChildItem $O -Filter "*.iso" -Recurse|?{$_.Name -ne "cloudws-installer.iso" -and $_.Name -ne "cloudws-live.iso"}|Sort LastWriteTime -Desc|Select -First 1)
-    if($Iso){if(Test-Path $T_I){rm $T_I -Force};$z=0;while($z -lt 12){try{Move-Item $Iso.FullName $T_I -Force;break}catch{Start-Sleep 5;$z++}}}
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "  ✗ Anaconda ISO build failed (exit $LASTEXITCODE)" -ForegroundColor Red
+    } else {
+        $Iso=(Get-ChildItem $O -Filter "*.iso" -Recurse|?{$_.Name -ne "cloudws-installer.iso" -and $_.Name -ne "cloudws-live.iso"}|Sort LastWriteTime -Desc|Select -First 1)
+        if($Iso){if(Test-Path $T_I){rm $T_I -Force};$z=0;while($z -lt 12){try{Move-Item $Iso.FullName $T_I -Force;break}catch{Start-Sleep 5;$z++}}}
+    }
 }
 
 if ($buildLive -eq 'y') {
     Write-Host "Building Live USB ISO..." -ForegroundColor Cyan
     podman run @bibV $bib build --type iso --rootfs ext4 "localhost/$I"
-    $Live=(Get-ChildItem $O -Filter "*.iso" -Recurse|?{$_.Name -ne "cloudws-installer.iso" -and $_.Name -ne "cloudws-live.iso"}|Sort LastWriteTime -Desc|Select -First 1)
-    if($Live){if(Test-Path $T_L){rm $T_L -Force};$z=0;while($z -lt 12){try{Move-Item $Live.FullName $T_L -Force;break}catch{Start-Sleep 5;$z++}}}
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "  ✗ Live ISO build failed (exit $LASTEXITCODE)" -ForegroundColor Red
+    } else {
+        $Live=(Get-ChildItem $O -Filter "*.iso" -Recurse|?{$_.Name -ne "cloudws-installer.iso" -and $_.Name -ne "cloudws-live.iso"}|Sort LastWriteTime -Desc|Select -First 1)
+        if($Live){if(Test-Path $T_L){rm $T_L -Force};$z=0;while($z -lt 12){try{Move-Item $Live.FullName $T_L -Force;break}catch{Start-Sleep 5;$z++}}}
+    }
 }
 
 Write-Host "`n═══ Export Summary ═══" -ForegroundColor Green

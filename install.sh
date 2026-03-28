@@ -7,7 +7,7 @@ REPO="https://github.com/Kabuki94/CloudWS-bootc.git"
 DIR="${CLOUDWS_DIR:-$HOME/CloudWS-bootc}"
 
 echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║  CloudWS v3.12 — Cloud Workstation OS                      ║"
+echo "║  CloudWS v3.13 — Cloud Workstation OS                      ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -29,7 +29,7 @@ case "$choice" in
     echo ""
     echo "Building OCI image..."
     if command -v podman &>/dev/null; then
-        podman build --no-cache --squash-all -t localhost/cloudws:latest .
+        podman build --no-cache -t localhost/cloudws:latest .
         echo ""
         echo "✓ Image built: localhost/cloudws:latest"
         echo ""
@@ -52,7 +52,7 @@ case "$choice" in
     echo "✓ Repository cloned to $DIR"
     echo ""
     echo "  Inspect:   cd $DIR && ls -la"
-    echo "  Build:     podman build --no-cache --squash-all -t cloudws:latest ."
+    echo "  Build:     podman build --no-cache -t cloudws:latest ."
     echo "  Windows:   Open PowerShell as Admin → .\\cloud-ws.ps1"
     ;;
   3)
@@ -81,7 +81,7 @@ case "$choice" in
         echo "Building image..."
         git clone "$REPO" /tmp/cloudws-build 2>/dev/null || true
         cd /tmp/cloudws-build
-        podman build --no-cache --squash-all -t localhost/cloudws:latest .
+        podman build --no-cache -t localhost/cloudws:latest .
         echo "Installing to /dev/$disk ..."
         podman run --rm -it --privileged --pid=host \
             -v /var/lib/containers:/var/lib/containers \

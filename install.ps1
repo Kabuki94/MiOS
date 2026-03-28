@@ -11,7 +11,7 @@ $Dir = Join-Path $PWD "CloudWS-bootc"
 
 Write-Host ""
 Write-Host "  ╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "  ║  CloudWS v3.12 — Cloud Workstation OS Builder (Windows)     ║" -ForegroundColor Cyan
+Write-Host "  ║  CloudWS v3.13 — Cloud Workstation OS Builder (Windows)     ║" -ForegroundColor Cyan
 Write-Host "  ╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  1) Run preflight check first (recommended)" -ForegroundColor White
