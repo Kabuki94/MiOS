@@ -140,17 +140,15 @@ set -euo pipefail
 mkdir -p /var/roothome
 
 # ═══════════════════════════════════════════════════════════════════════
-#  GNOME CORE RPM LAYER — SINGLE ATOMIC INSTALL
-#  Every RPM package from the spec is here. No --skip-unavailable.
-#  If a desktop package fails, the build MUST crash.
+#  GNOME CORE RPM LAYER — STRICT (build CRASHES if these fail)
+#  These are the guaranteed Fedora Rawhide packages.
 # ═══════════════════════════════════════════════════════════════════════
 dnf install -y --allowerasing --nobest \
     gdm gnome-shell gnome-session gnome-settings-daemon gnome-control-center \
     mutter gjs gnome-keyring polkit \
     nautilus ptyxis \
-    gnome-software gnome-software-rpm-ostree appstream-data \
+    gnome-software \
     gnome-shell-extension-appindicator gnome-shell-extension-dash-to-dock \
-    gnome-shell-extension-tiling-assistant \
     gvfs gvfs-smb gvfs-mtp gvfs-goa gvfs-afc \
     xdg-desktop-portal-gnome xdg-desktop-portal-gtk xdg-desktop-portal \
     xdg-user-dirs xdg-utils \
@@ -164,10 +162,17 @@ dnf install -y --allowerasing --nobest \
     pipewire pipewire-alsa pipewire-pulseaudio wireplumber \
     vulkan-validation-layers mesa-libEGL mesa-libgbm \
     qt5-qtwayland qt6-qtwayland \
+    xrdp xorgxrdp xorg-x11-server-Xorg
+
+# ═══ OPTIONAL RPM PACKAGES (skip if not in Rawhide yet) ═══
+# Qt theme bridge, ostree backend, tiling — these packages rotate in/out of Rawhide
+dnf install -y --skip-unavailable --skip-broken --allowerasing --nobest \
+    gnome-software-rpm-ostree appstream-data \
+    gnome-shell-extension-tiling-assistant \
     adwaita-qt5 adwaita-qt6 \
     qadwaitadecorations-qt5 qadwaitadecorations-qt6 \
     qgnomeplatform-qt5 qgnomeplatform-qt6 \
-    xrdp xorgxrdp xorg-x11-server-Xorg
+    || echo "[WARN] Some optional desktop packages unavailable in Rawhide — continuing."
 
 # ═══ FAULT-TOLERANT MULTIMEDIA (RPMFusion desync protection) ═══
 dnf install -y --skip-unavailable --skip-broken --allowerasing --nobest \
@@ -957,9 +962,8 @@ RUN --mount=type=bind,from=ctx,source=/build_files,target=/tmp/staging \
     bash /tmp/scripts/hardware/01-hardware.sh && \
     bash /tmp/scripts/virtualization/01-virt.sh && \
     bash /tmp/scripts/system/99-overrides.sh && \
-    mkdir -p /usr/share/cloudws/build_files && cp -r /tmp/staging/* /usr/share/cloudws/build_files/ && \
-    dnf clean all && rm -rf /var/cache/dnf /tmp/scripts /tmp/*.log /var/tmp/* && \
-    rm -rf /var/cache/pip /root/.cache 2>/dev/null || true
+    mkdir -p /usr/share/cloudws/build_files && cp -r /tmp/staging/* /usr/share/cloudws/build_files/
+RUN dnf clean all && rm -rf /var/cache/dnf /tmp/scripts /tmp/*.log /var/tmp/* /var/cache/pip /root/.cache 2>/dev/null; true
 COPY Containerfile /usr/share/cloudws/Containerfile
 COPY <<'EOREBUILD' /usr/local/bin/cloudws-rebuild
 #!/bin/bash
