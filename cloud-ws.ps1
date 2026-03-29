@@ -19,9 +19,11 @@
 
 .NOTES
     v1.0.0 — First stable release.
-    - FIXED: GDM password auth — `authselect select local` configures PAM for
-             pure /etc/shadow auth. The `sssd` and `minimal` profiles both fail
-             on Fedora Rawhide bootc without a running sssd daemon.
+    - FIXED: GDM password auth — `authselect select local --force` configures PAM
+             with ONLY pam_unix.so. The with-silent-lastlog, with-mkhomedir, and
+             with-pam-gnome-keyring features all reference PAM modules that may be
+             missing on Rawhide (pam_lastlog.so removed in F43+), causing the entire
+             PAM chain to fail and GDM to reject all passwords.
     - FIXED: User home at /var/home (bootc symlinks /home → /var/home).
     - FIXED: CrowdSec service enablement gated on `command -v crowdsec`.
     - FIXED: CrowdSec repo adds Fedora 40 fallback when dist=42 unavailable.
@@ -841,19 +843,27 @@ $Ovr = @'
 set -euo pipefail
 
 # ═══ 0. PAM AUTHENTICATION FIX — MUST BE BEFORE USER CREATION ═══
-# The Fedora bootc base image lacks a properly initialized authselect profile.
-# Without this, GDM's PAM stack references pam_sss.so (requires sssd) or
-# missing modules, causing "password authentication didn't work" on every login.
-# The 'local' profile uses only pam_unix.so — pure /etc/shadow auth.
-authselect select local with-silent-lastlog with-mkhomedir with-pam-gnome-keyring --force
-echo "[99-overrides] authselect: local profile configured (pam_unix + mkhomedir + gnome-keyring)"
+# The Fedora bootc base image defaults to the 'sssd' authselect profile.
+# Without sssd running, GDM's PAM stack fails → "password didn't work".
+#
+# CRITICAL: Use ONLY 'authselect select local --force' with NO extra features.
+# - with-silent-lastlog → references pam_lastlog.so (REMOVED in Fedora 43+, breaks PAM)
+# - with-mkhomedir → references pam_oddjob_mkhomedir.so (needs oddjobd running, fails if missing)
+# - with-pam-gnome-keyring → references pam_gnome_keyring.so (fails if not installed)
+# If ANY referenced .so is missing, the ENTIRE PAM chain fails and GDM rejects all passwords.
+# The bare 'local' profile uses ONLY pam_unix.so — always present, always works.
+authselect select local --force
+echo "[99-overrides] authselect: local profile configured (pam_unix only — guaranteed to work)"
 
 # ═══ 1. CREATE USER ═══
-# bootc symlinks /home → /var/home — use /var/home explicitly
+# bootc symlinks /home → /var/home — ensure directory exists first
+mkdir -p /var/home /var/roothome
 useradd -m -d /var/home/INJ_U -s /bin/bash INJ_U 2>/dev/null || true
-echo "INJ_U:INJ_P" | chpasswd || true
-echo "root:INJ_P" | chpasswd || true
+echo "INJ_U:INJ_P" | chpasswd
+echo "root:INJ_P" | chpasswd
 passwd -u INJ_U 2>/dev/null || true
+# Verify password hash was written (debug — remove once confirmed working)
+echo "[99-overrides] shadow check: $(getent shadow INJ_U | cut -d: -f1-2 | cut -c1-30)..."
 
 # ═══ 2. INDESTRUCTIBLE GROUP INJECTION ═══
 for g in wheel libvirt kvm video render input dialout; do
