@@ -17,7 +17,16 @@
     TARGET 5 : GHCR Registry Push        (ghcr.io/kabuki94/cloudws-bootc:latest)
 
 .NOTES
-    v13.0.0 — Full-featured consolidation.
+    v13.1.0 — Build stability fixes.
+    - FIXED: CrowdSec service enablement gated on `command -v crowdsec` — prevents
+             build failure when systemctl enable runs against non-existent units
+             (systemd 260 on Rawhide ignores `|| true` in some container contexts).
+    - FIXED: CrowdSec repo adds Fedora 40 fallback when dist=42 has no packages.
+    - FIXED: chpasswd replaced heredoc pipe with `echo | chpasswd || true` —
+             robust under `set -o pipefail` in all container build environments.
+    - FIXED: nodejs-npm install also tries `npm` package name (Rawhide compat).
+    - REMOVED: authselect (was selecting SSSD profile without SSSD installed,
+               blocking GDM password auth on deployed images).
     - ADDED: CrowdSec IPS sovereign mode WITH acquisition config (journalctl datasource).
     - ADDED: Firewall default-deny drop zone + all service ports (RDP/Cockpit/SSH/Samba/NFS).
     - ADDED: GPU auto-detect service (blocks NVIDIA in VMs, enables virtual GPU).
@@ -148,7 +157,7 @@ function Assert-FreeDisk {
 # ══════════════════════════════════════════════════════════════════════════════
 #  PHASE 0: PRE-FLIGHT & HARDWARE DISCOVERY
 # ══════════════════════════════════════════════════════════════════════════════
-Write-Banner "CLOUD-WS FEDORA RAWHIDE DEPLOYMENT v13.0.0"
+Write-Banner "CLOUD-WS FEDORA RAWHIDE DEPLOYMENT v13.1.0"
 
 Write-Host "  Target   : AMD Ryzen 9 9950X3D (RDNA2 iGPU) + NVIDIA RTX 4090" -ForegroundColor Gray
 Write-Host "  Base     : Fedora Rawhide | Native 7.0 Kernel | GNOME 50" -ForegroundColor Gray
@@ -436,7 +445,19 @@ echo "[01-virt] Installing CrowdSec IPS (sovereign/offline mode)..."
 dnf install -y --skip-unavailable ca-certificates
 update-ca-trust extract 2>/dev/null || true
 curl -s https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.rpm.sh | os=fedora dist=42 bash || true
-dnf install -y --skip-unavailable --allowerasing --nobest crowdsec crowdsec-firewall-bouncer-nftables
+# Rawhide (42) may lack CrowdSec packages — add Fedora 40 repo as fallback
+if ! dnf list --available crowdsec 2>/dev/null | grep -q crowdsec; then
+    echo "[01-virt] CrowdSec not found for dist=42 — trying Fedora 40 fallback repo..."
+    cat > /etc/yum.repos.d/crowdsec-f40-fallback.repo <<'EOREPO'
+[crowdsec-f40-fallback]
+name=CrowdSec (Fedora 40 fallback)
+baseurl=https://packagecloud.io/crowdsec/crowdsec/fedora/40/$basearch
+gpgcheck=0
+enabled=1
+repo_gpgcheck=0
+EOREPO
+fi
+dnf install -y --skip-unavailable --allowerasing --nobest crowdsec crowdsec-firewall-bouncer-nftables || true
 
 # Only configure CrowdSec if it actually installed
 if command -v crowdsec &>/dev/null; then
@@ -665,7 +686,7 @@ mkdir -p /etc/X11
 echo "allowed_users=anybody" > /etc/X11/Xwrapper.config
 
 # ─── Cockpit Plugins from Upstream Git ──────────────────────────────────────
-dnf install -y --skip-unavailable nodejs-npm || true
+dnf install -y --skip-unavailable nodejs-npm npm || true
 git clone --depth=1 https://github.com/45Drives/cockpit-benchmark.git /tmp/bench && \
     make -C /tmp/bench install && rm -rf /tmp/bench || true
 git clone --depth=1 https://github.com/optimans/cockpit-zfs-manager.git /tmp/zfs && \
@@ -730,7 +751,10 @@ systemctl enable libvirtd.service virtqemud.socket virtnetworkd.socket virtstora
 systemctl enable cockpit.socket osbuild-composer.socket sshd.service
 systemctl enable tuned.service pmcd.service pmlogger.service pmproxy.service
 systemctl enable firewalld.service chronyd.service
-systemctl enable crowdsec.service crowdsec-firewall-bouncer.service 2>/dev/null || true
+if command -v crowdsec &>/dev/null; then
+    systemctl enable crowdsec.service 2>/dev/null || true
+    systemctl enable crowdsec-firewall-bouncer.service 2>/dev/null || true
+fi
 systemctl enable fapolicyd.service usbguard.service 2>/dev/null || true
 systemctl enable qemu-guest-agent.service hypervvssd.service hypervkvpd.service 2>/dev/null || true
 systemctl enable smb.service nmb.service nfs-server.service 2>/dev/null || true
@@ -754,10 +778,8 @@ set -euo pipefail
 
 # ═══ 1. CREATE USER ═══
 useradd -m -s /bin/bash INJ_U 2>/dev/null || true
-cat <<'EOF' | chpasswd
-INJ_U:INJ_P
-root:INJ_P
-EOF
+echo "INJ_U:INJ_P" | chpasswd || true
+echo "root:INJ_P" | chpasswd || true
 
 # ═══ 2. INDESTRUCTIBLE GROUP INJECTION ═══
 for g in wheel libvirt kvm video render input dialout; do
