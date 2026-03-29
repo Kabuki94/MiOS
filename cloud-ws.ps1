@@ -33,6 +33,10 @@
     - ADDED: SELinux build-time fixes (bootupd, accountsd, homed).
     - ADDED: Cockpit listen on all interfaces + all Cockpit plugins.
     - ADDED: cloudws-rebuild, cloudws-vfio-toggle, scan-malware tools.
+    - FIXED: CrowdSec repo SSL cert failure in container — CA certs updated before curl.
+    - FIXED: CrowdSec service enablement made non-fatal when package unavailable.
+    - FIXED: CrowdSec config writes wrapped in install-check conditional.
+    - FIXED: Cockpit Benchmark build — nodejs-npm now installed before make.
     - FIXED: CrowdSec "no datasource enabled" crash loop.
     - FIXED: cloudws-init runs every boot (not just first boot).
     - FIXED: Firewall opens RDP 3389/3390, Cockpit 9090, Samba, NFS, libvirt.
@@ -428,12 +432,19 @@ dnf install -y --skip-unavailable \
 
 # ─── CrowdSec IPS — Sovereign Mode (no outbound telemetry) ──────────────────
 echo "[01-virt] Installing CrowdSec IPS (sovereign/offline mode)..."
+# Ensure CA certs are current before fetching external repo
+dnf install -y --skip-unavailable ca-certificates
+update-ca-trust extract 2>/dev/null || true
 curl -s https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.rpm.sh | os=fedora dist=42 bash || true
 dnf install -y --skip-unavailable --allowerasing --nobest crowdsec crowdsec-firewall-bouncer-nftables
 
-# CrowdSec sovereign mode config
-mkdir -p /etc/crowdsec
-cat > /etc/crowdsec/config.yaml.local <<'EOCSC'
+# Only configure CrowdSec if it actually installed
+if command -v crowdsec &>/dev/null; then
+    echo "[01-virt] CrowdSec installed — configuring sovereign mode..."
+
+    # CrowdSec sovereign mode config
+    mkdir -p /etc/crowdsec
+    cat > /etc/crowdsec/config.yaml.local <<'EOCSC'
 # CloudWS Sovereign Mode — CrowdSec sends NOTHING outbound
 api:
   server:
@@ -448,9 +459,9 @@ plugin_config:
   group: nogroup
 EOCSC
 
-# *** THE FIX: CrowdSec ACQUISITION CONFIG — without this, agent refuses to start ***
-mkdir -p /etc/crowdsec/acquis.d
-cat > /etc/crowdsec/acquis.d/journalctl.yaml <<'EOACQ'
+    # CrowdSec ACQUISITION CONFIG — without this, agent refuses to start
+    mkdir -p /etc/crowdsec/acquis.d
+    cat > /etc/crowdsec/acquis.d/journalctl.yaml <<'EOACQ'
 # CloudWS — Monitor SSH via journalctl
 source: journalctl
 journalctl_filter:
@@ -474,26 +485,29 @@ labels:
   type: syslog
 EOACQ
 
-# Disable CAPI enrollment
-mkdir -p /etc/crowdsec/local_api_credentials.yaml.d
-cat > /etc/crowdsec/local_api_credentials.yaml.d/sovereign.yaml <<'EOSOV'
+    # Disable CAPI enrollment
+    mkdir -p /etc/crowdsec/local_api_credentials.yaml.d
+    cat > /etc/crowdsec/local_api_credentials.yaml.d/sovereign.yaml <<'EOSOV'
 url: http://127.0.0.1:8080/
 login: ""
 password: ""
 EOSOV
 
-# Hub update timer needs network
-mkdir -p /etc/systemd/system/crowdsec-hubupdate.service.d
-cat > /etc/systemd/system/crowdsec-hubupdate.service.d/override.conf <<'EOF'
+    # Hub update timer needs network
+    mkdir -p /etc/systemd/system/crowdsec-hubupdate.service.d
+    cat > /etc/systemd/system/crowdsec-hubupdate.service.d/override.conf <<'EOF'
 [Unit]
 After=network-online.target
 Wants=network-online.target
 EOF
 
-# Install detection collections at build time
-cscli hub update 2>/dev/null || true
-cscli collections install crowdsecurity/sshd 2>/dev/null || true
-cscli collections install crowdsecurity/linux 2>/dev/null || true
+    # Install detection collections at build time
+    cscli hub update 2>/dev/null || true
+    cscli collections install crowdsecurity/sshd 2>/dev/null || true
+    cscli collections install crowdsecurity/linux 2>/dev/null || true
+else
+    echo "[01-virt] WARN: CrowdSec unavailable (repo/SSL issue) — skipping config (non-fatal)"
+fi
 
 # ─── Performance & Gaming ───────────────────────────────────────────────────
 dnf install -y --skip-unavailable \
@@ -651,6 +665,7 @@ mkdir -p /etc/X11
 echo "allowed_users=anybody" > /etc/X11/Xwrapper.config
 
 # ─── Cockpit Plugins from Upstream Git ──────────────────────────────────────
+dnf install -y --skip-unavailable nodejs-npm || true
 git clone --depth=1 https://github.com/45Drives/cockpit-benchmark.git /tmp/bench && \
     make -C /tmp/bench install && rm -rf /tmp/bench || true
 git clone --depth=1 https://github.com/optimans/cockpit-zfs-manager.git /tmp/zfs && \
@@ -715,7 +730,7 @@ systemctl enable libvirtd.service virtqemud.socket virtnetworkd.socket virtstora
 systemctl enable cockpit.socket osbuild-composer.socket sshd.service
 systemctl enable tuned.service pmcd.service pmlogger.service pmproxy.service
 systemctl enable firewalld.service chronyd.service
-systemctl enable crowdsec.service crowdsec-firewall-bouncer.service
+systemctl enable crowdsec.service crowdsec-firewall-bouncer.service 2>/dev/null || true
 systemctl enable fapolicyd.service usbguard.service 2>/dev/null || true
 systemctl enable qemu-guest-agent.service hypervvssd.service hypervkvpd.service 2>/dev/null || true
 systemctl enable smb.service nmb.service nfs-server.service 2>/dev/null || true
