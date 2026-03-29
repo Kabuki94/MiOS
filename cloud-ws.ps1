@@ -1,58 +1,43 @@
 <#
 .SYNOPSIS
-    Cloud-WS: Full Deployment Architecture (Fedora Rawhide 7.0 Edition)
+    CloudWS v1.0 — Cloud Workstation OS Build Orchestrator
 .DESCRIPTION
-    The definitive orchestrator for the Cloud-WS immutable operating system.
-    Builds a hardware-optimized Fedora Rawhide OCI image with full GNOME 50+,
-    dual-GPU support (AMD iGPU + NVIDIA dGPU), and exports to all target formats.
+    The definitive orchestrator for CloudWS, a self-replicating immutable
+    cloud-native workstation OS built on Fedora Rawhide bootc.
 
-    Target Hardware  : AMD Ryzen 9 9950X3D (RDNA2 iGPU) + NVIDIA RTX 4090
-    OS Architecture  : Fedora Rawhide | Native 7.0 Kernel | GNOME 50
-    Deployment Core  : Native Fedora Bootc + ComposeFS + OSTree
-    
+    Fully portable — supports AMD, Intel, and NVIDIA CPUs and GPUs out of the box.
+    GPU auto-detection at boot adjusts for bare metal, Hyper-V, QEMU, or VMware.
+
+    OS Architecture  : Fedora Rawhide | GNOME 50 | Wayland-only
+    Deployment Core  : Fedora bootc + ComposeFS + OSTree (immutable, atomic)
+
     TARGET 1 : Bare Metal RAW Image      (cloudws-bootable.raw)
     TARGET 2 : Hyper-V Gen2 VHDX         (cloudws-hyperv.vhdx)
     TARGET 3 : WSL2 + WSLg Tarball       (cloudws-wsl.tar)
     TARGET 4 : Anaconda Installer ISO    (cloudws-installer.iso)
-    TARGET 5 : GHCR Registry Push        (ghcr.io/kabuki94/cloudws-bootc:latest)
+    TARGET 5 : OCI Registry Push         (configurable — defaults to GHCR)
 
 .NOTES
-    v13.1.0 — Build stability fixes.
-    - FIXED: CrowdSec service enablement gated on `command -v crowdsec` — prevents
-             build failure when systemctl enable runs against non-existent units
-             (systemd 260 on Rawhide ignores `|| true` in some container contexts).
-    - FIXED: CrowdSec repo adds Fedora 40 fallback when dist=42 has no packages.
-    - FIXED: chpasswd replaced heredoc pipe with `echo | chpasswd || true` —
-             robust under `set -o pipefail` in all container build environments.
-    - FIXED: nodejs-npm install also tries `npm` package name (Rawhide compat).
-    - REMOVED: authselect (was selecting SSSD profile without SSSD installed,
-               blocking GDM password auth on deployed images).
-    - ADDED: CrowdSec IPS sovereign mode WITH acquisition config (journalctl datasource).
-    - ADDED: Firewall default-deny drop zone + all service ports (RDP/Cockpit/SSH/Samba/NFS).
-    - ADDED: GPU auto-detect service (blocks NVIDIA in VMs, enables virtual GPU).
-    - ADDED: Looking Glass B7 (low-latency GPU passthrough display).
-    - ADDED: xRDP with Hyper-V Enhanced Session (vsock transport).
-    - ADDED: Waydroid (Android with GAPPS, native Wayland windows).
-    - ADDED: K3s lightweight Kubernetes.
-    - ADDED: HA clustering (Corosync/Pacemaker/PCS).
-    - ADDED: fapolicyd + USBGuard security hardening.
-    - ADDED: ZRAM swap, sysctl VM host tuning, environment variables.
-    - ADDED: Gamescope SteamOS-mode GDM session.
-    - ADDED: cloud-init autonomous deployment config.
-    - ADDED: SELinux build-time fixes (bootupd, accountsd, homed).
-    - ADDED: Cockpit listen on all interfaces + all Cockpit plugins.
-    - ADDED: cloudws-rebuild, cloudws-vfio-toggle, scan-malware tools.
-    - FIXED: CrowdSec repo SSL cert failure in container — CA certs updated before curl.
-    - FIXED: CrowdSec service enablement made non-fatal when package unavailable.
-    - FIXED: CrowdSec config writes wrapped in install-check conditional.
-    - FIXED: Cockpit Benchmark build — nodejs-npm now installed before make.
-    - FIXED: CrowdSec "no datasource enabled" crash loop.
-    - FIXED: cloudws-init runs every boot (not just first boot).
-    - FIXED: Firewall opens RDP 3389/3390, Cockpit 9090, Samba, NFS, libvirt.
-    - INCLUDES: cockpit-image-builder, osbuild-composer, AMD RDNA2 iGPU, NTSync.
-    - INCLUDES: Cockpit Benchmark + ZFS Manager plugins from upstream git.
-    - INCLUDES: Polkit passwordless wheel + libvirt rules.
-    - INCLUDES: Indestructible /etc/group injection for Fedora NSS container desync.
+    v1.0.0 — First stable release.
+    - FIXED: GDM password auth — `authselect select local` configures PAM for
+             pure /etc/shadow auth. The `sssd` and `minimal` profiles both fail
+             on Fedora Rawhide bootc without a running sssd daemon.
+    - FIXED: User home at /var/home (bootc symlinks /home → /var/home).
+    - FIXED: CrowdSec service enablement gated on `command -v crowdsec`.
+    - FIXED: CrowdSec repo adds Fedora 40 fallback when dist=42 unavailable.
+    - FIXED: chpasswd uses robust `echo | chpasswd || true` (pipefail-safe).
+    - FIXED: nodejs-npm also tries `npm` package name (Rawhide compat).
+    - ADDED: Dedicated `cloudws-builder` Podman machine — never touches user default.
+    - ADDED: Pre-build questions with 30s timeout defaults (user, pass, LUKS, registry).
+    - ADDED: User-configurable registry push (defaults to origin GHCR with override).
+    - ADDED: `bootc-base-imagectl rechunk` post-build for optimized OCI layers.
+    - ADDED: `cloudws --help` terminal alias + fastfetch auto-display in terminal.
+    - ADDED: PXE/network boot documentation and Anaconda kickstart ostreecontainer support.
+    - ADDED: VHD→VHDX conversion via qemu-img (BIB outputs VHD, not VHDX natively).
+    - REMOVED: Hardware-specific references (fully portable across AMD/Intel/NVIDIA).
+    - INCLUDES: Full GNOME 50 desktop, Gamescope Steam session, KVM/QEMU/VFIO,
+                Podman/K3s, Pacemaker HA, CrowdSec IPS, Looking Glass B7,
+                Waydroid, xRDP, Cockpit, cloud-init, SELinux hardening.
 #>
 
 #Requires -RunAsAdministrator
@@ -64,10 +49,11 @@ Set-StrictMode -Version Latest
 # ══════════════════════════════════════════════════════════════════════════════
 $ImageName      = "cloudws"
 $ImageTag       = "latest"
-$U              = "cloudws"   # Default username (injected into scripts)
-$P              = "cloudws"   # Default password (injected into scripts)
+$DefUser        = "cloudws"   # Default username
+$DefPass        = "cloudws"   # Default password
+$DefRegistry    = "ghcr.io/kabuki94/cloudws-bootc"  # Default registry (origin)
+$BuilderMachine = "cloudws-builder"
 $LocalImage     = "localhost/${ImageName}:${ImageTag}"
-$GhcrImage      = "ghcr.io/kabuki94/cloudws-bootc:latest"
 $OutputFolder   = Join-Path $PWD "cloudws-deploy-out"
 $B              = Join-Path $env:TEMP "cloudws-full-build"
 $LogFile        = Join-Path $OutputFolder "build-$(Get-Date -Format 'yyyyMMdd-HHmmss').log"
@@ -79,6 +65,7 @@ $TargetIso      = Join-Path $OutputFolder "cloudws-installer.iso"
 
 $RAW_DISK_GB    = 20
 $MIN_FREE_GB    = 60
+$QuestionTimeout = 30  # Seconds before auto-accepting defaults
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  UI & LOGGING ENGINE
@@ -155,16 +142,92 @@ function Assert-FreeDisk {
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  PHASE 0: PRE-FLIGHT & HARDWARE DISCOVERY
+#  PHASE 0: PRE-FLIGHT & BUILD CONFIGURATION
 # ══════════════════════════════════════════════════════════════════════════════
-Write-Banner "CLOUD-WS FEDORA RAWHIDE DEPLOYMENT v13.1.0"
+Write-Banner "CLOUDWS v1.0 — CLOUD WORKSTATION OS"
 
-Write-Host "  Target   : AMD Ryzen 9 9950X3D (RDNA2 iGPU) + NVIDIA RTX 4090" -ForegroundColor Gray
-Write-Host "  Base     : Fedora Rawhide | Native 7.0 Kernel | GNOME 50" -ForegroundColor Gray
+Write-Host "  Base     : Fedora Rawhide bootc | GNOME 50 | Wayland-only" -ForegroundColor Gray
+Write-Host "  Hardware : AMD / Intel / NVIDIA (auto-detected at boot)" -ForegroundColor Gray
 Write-Host "  Bootc    : ComposeFS + OSTree (immutable, atomic upgrades)" -ForegroundColor Gray
-Write-Host "  Targets  : RAW → VHDX → WSL2 → ISO → GHCR" -ForegroundColor Gray
+Write-Host "  Targets  : RAW → VHDX → WSL2 → ISO → Registry" -ForegroundColor Gray
 
-Write-Phase 0 "Hardware Assessment & Validation"
+Write-Phase 0 "Build Configuration"
+
+# ── Timed input helper ────────────────────────────────────────────────────────
+function Read-TimedInput {
+    param([string]$Prompt, [string]$Default, [int]$Seconds = $QuestionTimeout, [switch]$Secret)
+    Write-Host ""
+    if ($Secret) {
+        Write-Host "      $Prompt" -ForegroundColor Cyan -NoNewline
+        Write-Host " [default: ****] " -ForegroundColor DarkGray -NoNewline
+    } else {
+        Write-Host "      $Prompt" -ForegroundColor Cyan -NoNewline
+        Write-Host " [default: $Default] " -ForegroundColor DarkGray -NoNewline
+    }
+    Write-Host "(${Seconds}s timeout)" -ForegroundColor DarkGray
+
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    $input = ""
+    while ($sw.Elapsed.TotalSeconds -lt $Seconds) {
+        if ([Console]::KeyAvailable) {
+            $key = [Console]::ReadKey($true)
+            if ($key.Key -eq 'Enter') { break }
+            if ($key.Key -eq 'Backspace' -and $input.Length -gt 0) {
+                $input = $input.Substring(0, $input.Length - 1)
+                Write-Host "`b `b" -NoNewline
+            } else {
+                $input += $key.KeyChar
+                if ($Secret) { Write-Host "*" -NoNewline } else { Write-Host $key.KeyChar -NoNewline }
+            }
+        }
+        Start-Sleep -Milliseconds 50
+    }
+    Write-Host ""
+    if ([string]::IsNullOrWhiteSpace($input)) { return $Default }
+    return $input
+}
+
+# ── Ask build configuration ──────────────────────────────────────────────────
+Write-Host ""
+Write-Host "  ┌──────────────────────────────────────────────────────────────┐" -ForegroundColor DarkCyan
+Write-Host "  │  Configure your CloudWS build (press Enter to accept defaults) │" -ForegroundColor DarkCyan
+Write-Host "  └──────────────────────────────────────────────────────────────┘" -ForegroundColor DarkCyan
+
+$U = Read-TimedInput "CloudWS username:" $DefUser
+$P = Read-TimedInput "CloudWS password:" $DefPass -Secret
+
+# LUKS encryption (applies to RAW and ISO targets only)
+$luksInput = Read-TimedInput "Enable LUKS disk encryption? (y/N):" "N"
+$UseLuks = $luksInput -match "^[yY]"
+$LuksPass = ""
+if ($UseLuks) {
+    $LuksPass = Read-TimedInput "LUKS passphrase:" "cloudws" -Secret
+}
+
+# Registry configuration
+$RegistryUrl = Read-TimedInput "Registry URL:" $DefRegistry
+$GhcrImage   = "${RegistryUrl}:${ImageTag}"
+
+# Registry credentials (check env vars first)
+$RegistryUser = $env:CLOUDWS_GHCR_USER
+$RegistryToken = $env:CLOUDWS_GHCR_TOKEN
+if (-not $RegistryUser) {
+    $RegistryUser = Read-TimedInput "Registry username (for push):" "kabuki94"
+}
+if (-not $RegistryToken) {
+    $RegistryToken = Read-TimedInput "Registry token/PAT (for push):" "" -Secret
+}
+
+Write-Host ""
+Write-OK "Username    : $U"
+Write-OK "Password    : ****"
+Write-OK "LUKS        : $(if ($UseLuks) { 'Enabled' } else { 'Disabled' })"
+Write-OK "Registry    : $GhcrImage"
+Write-OK "Registry User: $RegistryUser"
+Write-Host ""
+
+# ── System validation ─────────────────────────────────────────────────────────
+Write-Phase 0.5 "System Validation"
 
 if (-not (Test-Path $OutputFolder)) { New-Item -ItemType Directory -Path $OutputFolder -Force | Out-Null }
 Assert-FreeDisk $MIN_FREE_GB
@@ -187,34 +250,35 @@ Write-OK "Processor : $cpuCount logical cores detected"
 Write-OK "Memory    : $ramMB MB physical RAM"
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  PHASE 1: PODMAN BACKEND INITIALIZATION
+#  PHASE 1: DEDICATED PODMAN BUILDER MACHINE
 # ══════════════════════════════════════════════════════════════════════════════
-Write-Phase 1 "Podman Machine — Allocating $cpuCount Threads / $ramMB MB RAM"
+Write-Phase 1 "Podman Builder Machine — $cpuCount Threads / $ramMB MB RAM"
 
 $ErrorActionPreference = "Continue"
-Write-Step "Shutting down WSL for clean state..."
-& wsl --shutdown 2>$null
-Start-Sleep -Seconds 3
 
-$vmStatus = & podman machine inspect podman-machine-default 2>&1
+# Check for existing cloudws-builder machine
+$vmStatus = & podman machine inspect $BuilderMachine 2>&1
 if ($LASTEXITCODE -ne 0 -or "$vmStatus" -match "does not exist|not found") {
-    Write-Step "Initializing new rootful Podman machine (150 GB disk)..."
-    & podman machine init --rootful --cpus $cpuCount --memory $ramMB --disk-size 150
+    Write-Step "Creating dedicated '$BuilderMachine' machine (won't touch your default)..."
+    & podman machine init $BuilderMachine --rootful --cpus $cpuCount --memory $ramMB --disk-size 150
+    if ($LASTEXITCODE -ne 0) { Write-Fatal "Failed to create $BuilderMachine machine." }
 } else {
-    Write-Step "Reconfiguring existing machine for maximum resources..."
-    & podman machine stop 2>$null
+    Write-Step "Found existing '$BuilderMachine' machine — reusing..."
+    & podman machine stop $BuilderMachine 2>$null
     Start-Sleep -Seconds 3
-    & podman machine set --cpus $cpuCount --memory $ramMB 2>&1 | ForEach-Object {
-        if ($_ -match "not supported") { Write-Warn $_ } else { Write-Host "        $_" -ForegroundColor DarkGray }
-    }
 }
 
-& podman machine start
+Write-Step "Starting '$BuilderMachine' machine..."
+& podman machine start $BuilderMachine
 if ($LASTEXITCODE -ne 0) {
-    Write-Fatal "Podman machine failed to start. Verify WSL2 is functional."
+    Write-Fatal "$BuilderMachine failed to start. Verify WSL2 is functional."
 }
+
+# Target the builder machine for all subsequent operations
+$env:CONTAINER_CONNECTION = "${BuilderMachine}-root"
+Write-OK "Builder machine '$BuilderMachine' running (connection: ${BuilderMachine}-root)"
+Write-OK "Your default Podman machine is untouched"
 $ErrorActionPreference = "Stop"
-Write-OK "Rootful Podman backend running"
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  PHASE 2: STAGING ARCHITECTURE SCRIPTS
@@ -355,22 +419,22 @@ echo "[01-gnome] GNOME 50 + Flatpaks + dark theme + environment initialized."
 '@ | Out-File -FilePath "$B\build_files\desktop\01-gnome.sh" -Encoding ascii
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  01-hardware.sh — AMD iGPU + NVIDIA dGPU + kernel modules
+#  01-hardware.sh — Universal GPU drivers (AMD + Intel + NVIDIA)
 # ══════════════════════════════════════════════════════════════════════════════
 @'
 #!/bin/bash
 set -euo pipefail
 
-# ─── AMD iGPU (RDNA2 — Ryzen 9 9950X3D integrated graphics) ─────────────────
+# ─── Mesa GPU drivers (AMD / Intel / software fallback) ────────────────────
 dnf install -y --skip-unavailable \
     mesa-vulkan-drivers mesa-dri-drivers mesa-va-drivers mesa-vdpau-drivers \
     vulkan-loader vulkan-tools libva-utils \
-    linux-firmware amd-ucode microcode_ctl
+    linux-firmware amd-ucode intel-ucode microcode_ctl
 
-# ROCm OpenCL / HIP for compute workloads on the iGPU
-dnf install -y --skip-unavailable rocm-opencl rocm-hip
+# ROCm OpenCL / HIP for AMD compute workloads
+dnf install -y --skip-unavailable rocm-opencl rocm-hip 2>/dev/null || true
 
-# ─── NVIDIA dGPU (RTX 4090 — Ada Lovelace, GSP Firmware) ────────────────────
+# ─── NVIDIA dGPU (akmod — builds kmod at image time for any NVIDIA card) ──
 dnf install -y --skip-unavailable \
     akmod-nvidia xorg-x11-drv-nvidia-cuda nvidia-container-toolkit
 
@@ -402,7 +466,7 @@ vfio-pci
 hv_sock
 EOF
 
-echo "[01-hardware] AMD iGPU + NVIDIA dGPU + NTSync + VFIO initialized on $KVER."
+echo "[01-hardware] Universal GPU drivers (Mesa + NVIDIA akmod) + NTSync + VFIO initialized on $KVER."
 '@ | Out-File -FilePath "$B\build_files\hardware\01-hardware.sh" -Encoding ascii
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -416,7 +480,7 @@ set -euo pipefail
 dnf install -y --skip-unavailable \
     qemu-kvm libvirt virt-install virt-manager \
     edk2-ovmf swtpm swtpm-tools dnsmasq mdevctl libguestfs-tools \
-    lm_sensors btop nvtop intel-gpu-tools
+    lm_sensors btop nvtop intel-gpu-tools fastfetch
 
 # ─── Container & Image Forge Toolchain ───────────────────────────────────────
 dnf install -y --skip-unavailable \
@@ -776,10 +840,20 @@ $Ovr = @'
 #!/bin/bash
 set -euo pipefail
 
+# ═══ 0. PAM AUTHENTICATION FIX — MUST BE BEFORE USER CREATION ═══
+# The Fedora bootc base image lacks a properly initialized authselect profile.
+# Without this, GDM's PAM stack references pam_sss.so (requires sssd) or
+# missing modules, causing "password authentication didn't work" on every login.
+# The 'local' profile uses only pam_unix.so — pure /etc/shadow auth.
+authselect select local with-silent-lastlog with-mkhomedir with-pam-gnome-keyring --force
+echo "[99-overrides] authselect: local profile configured (pam_unix + mkhomedir + gnome-keyring)"
+
 # ═══ 1. CREATE USER ═══
-useradd -m -s /bin/bash INJ_U 2>/dev/null || true
+# bootc symlinks /home → /var/home — use /var/home explicitly
+useradd -m -d /var/home/INJ_U -s /bin/bash INJ_U 2>/dev/null || true
 echo "INJ_U:INJ_P" | chpasswd || true
 echo "root:INJ_P" | chpasswd || true
+passwd -u INJ_U 2>/dev/null || true
 
 # ═══ 2. INDESTRUCTIBLE GROUP INJECTION ═══
 for g in wheel libvirt kvm video render input dialout; do
@@ -794,8 +868,53 @@ done
 sed -i 's/^# %wheel\s*ALL=(ALL)\s*NOPASSWD:\s*ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
 echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel; chmod 440 /etc/sudoers.d/wheel
 
-# ═══ 4. SHELL ALIASES ═══
-echo 'alias scan-malware="podman run --rm -v ~/.clamav:/var/lib/clamav -v /var/home:/scandir:ro docker.io/clamav/clamav:latest clamscan -r /scandir"' >> /etc/skel/.bashrc
+# ═══ 4. SHELL ALIASES & TERMINAL CUSTOMIZATION ═══
+cat >> /etc/skel/.bashrc <<'EOBASHRC'
+alias scan-malware="podman run --rm -v ~/.clamav:/var/lib/clamav -v /var/home:/scandir:ro docker.io/clamav/clamav:latest clamscan -r /scandir"
+
+# cloudws --help: quick reference
+cloudws() {
+    case "${1:-}" in
+        --help|-h|help)
+            echo "╔══════════════════════════════════════════════════════════════╗"
+            echo "║  CloudWS v1.0 — Cloud Workstation OS                       ║"
+            echo "╚══════════════════════════════════════════════════════════════╝"
+            echo ""
+            echo "  System Commands:"
+            echo "    cloudws-update          Update OS from registry (bootc update)"
+            echo "    cloudws-rebuild         Clone from GitHub → build → push"
+            echo "    cloudws-backup          Backup volumes, K3s, VMs, home"
+            echo "    cloudws-vfio-toggle     GPU VFIO bind/unbind/status/list"
+            echo "    iommu-groups            Show IOMMU group assignments"
+            echo "    scan-malware            On-demand ClamAV scan"
+            echo ""
+            echo "  System Info:"
+            echo "    sudo bootc status       Current deployment info"
+            echo "    sudo bootc rollback     Revert to previous deployment"
+            echo "    sudo bootc upgrade      Pull latest from registry"
+            echo "    fastfetch               System overview"
+            echo ""
+            echo "  Management:"
+            echo "    https://localhost:9090   Cockpit web dashboard"
+            echo "    virt-manager            Virtual machine manager"
+            echo "    podman ps               Running containers"
+            echo "    kubectl get pods        K3s workloads"
+            echo ""
+            ;;
+        *) echo "Usage: cloudws --help" ;;
+    esac
+}
+
+# fastfetch on terminal open
+if command -v fastfetch &>/dev/null && [ -t 0 ] && [ -z "${CLOUDWS_NO_FASTFETCH:-}" ]; then
+    fastfetch
+fi
+EOBASHRC
+# Also install to existing user home if it exists
+if [ -d /var/home/INJ_U ]; then
+    cp /etc/skel/.bashrc /var/home/INJ_U/.bashrc 2>/dev/null || true
+    chown INJ_U:INJ_U /var/home/INJ_U/.bashrc 2>/dev/null || true
+fi
 
 # ═══ 5. LOCALE ═══
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
@@ -1072,6 +1191,85 @@ Icon=utilities-system-monitor
 Categories=System;
 EOCOCK
 
+# cloudws-update — one-command system update
+cat > /usr/local/bin/cloudws-update <<'EOUPD'
+#!/bin/bash
+set -euo pipefail
+echo "╔══════════════════════════════════════════════════════════════╗"
+echo "║  CloudWS Update — Pulling latest from registry              ║"
+echo "╚══════════════════════════════════════════════════════════════╝"
+if bootc update 2>/dev/null; then
+    echo "✓ Update staged. Reboot to apply."
+    echo "  To revert: sudo bootc rollback"
+else
+    echo "⚠ bootc update failed — trying bootc switch..."
+    REF=$(bootc status --json 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin)['spec']['image']['image'])" 2>/dev/null || echo "")
+    if [ -n "$REF" ]; then
+        bootc switch "$REF" && echo "✓ Switch complete. Reboot to apply." || echo "✗ Switch also failed."
+    else
+        echo "✗ Could not determine image reference. Check: sudo bootc status"
+    fi
+fi
+EOUPD
+chmod +x /usr/local/bin/cloudws-update
+
+# cloudws-rebuild — clone → build → push
+cat > /usr/local/bin/cloudws-rebuild <<'EORBD'
+#!/bin/bash
+set -euo pipefail
+REPO="${CLOUDWS_REPO:-https://github.com/Kabuki94/CloudWS-bootc.git}"
+WORK="/tmp/cloudws-rebuild-$$"
+echo "╔══════════════════════════════════════════════════════════════╗"
+echo "║  CloudWS Rebuild — Clone → Build → Push                     ║"
+echo "╚══════════════════════════════════════════════════════════════╝"
+echo "  Repo: $REPO"
+git clone --depth=1 "$REPO" "$WORK" || { echo "✗ Clone failed"; exit 1; }
+cd "$WORK"
+podman build --no-cache -t localhost/cloudws:latest .
+echo ""
+read -p "Push to registry? (y/N): " push
+if [ "$push" = "y" ]; then
+    read -p "Registry image ref [ghcr.io/kabuki94/cloudws-bootc:latest]: " ref
+    ref="${ref:-ghcr.io/kabuki94/cloudws-bootc:latest}"
+    podman tag localhost/cloudws:latest "$ref"
+    podman push "$ref"
+    echo "✓ Pushed to $ref"
+fi
+rm -rf "$WORK"
+echo "✓ Rebuild complete. Run: sudo bootc update"
+EORBD
+chmod +x /usr/local/bin/cloudws-rebuild
+
+# cloudws-backup — backup volumes, K3s, VMs, home
+cat > /usr/local/bin/cloudws-backup <<'EOBAK'
+#!/bin/bash
+set -euo pipefail
+DEST="${1:-/var/backup/cloudws-$(date +%Y%m%d-%H%M%S)}"
+echo "╔══════════════════════════════════════════════════════════════╗"
+echo "║  CloudWS Backup → $DEST"
+echo "╚══════════════════════════════════════════════════════════════╝"
+mkdir -p "$DEST"
+echo "  Backing up Podman volumes..."
+podman volume ls --format '{{.Name}}' | while read v; do
+    podman volume export "$v" > "$DEST/podman-vol-${v}.tar" 2>/dev/null || true
+done
+echo "  Backing up K3s state..."
+if [ -d /var/lib/rancher/k3s ]; then
+    tar czf "$DEST/k3s-state.tar.gz" -C /var/lib/rancher k3s 2>/dev/null || true
+fi
+echo "  Backing up libvirt VMs..."
+if [ -d /var/lib/libvirt ]; then
+    for dom in $(virsh list --all --name 2>/dev/null); do
+        virsh dumpxml "$dom" > "$DEST/vm-${dom}.xml" 2>/dev/null || true
+    done
+fi
+echo "  Backing up /var/home..."
+tar czf "$DEST/var-home.tar.gz" -C /var home 2>/dev/null || true
+echo "✓ Backup complete: $DEST"
+ls -lh "$DEST/"
+EOBAK
+chmod +x /usr/local/bin/cloudws-backup
+
 # ═══ 13. SELINUX BUILD-TIME FIXES ═══
 if command -v restorecon &>/dev/null; then
     restorecon -R /boot /etc /usr /var 2>/dev/null || true
@@ -1100,7 +1298,7 @@ Hidden=false
 X-GNOME-Autostart-enabled=true
 DESK
 
-echo "[99-overrides] CloudWS fully configured — user, hostname, firewall, GPU detect, CrowdSec, tools."
+echo "[99-overrides] CloudWS v1.0 fully configured — authselect, user, hostname, firewall, GPU detect, CrowdSec, tools."
 '@
 $Ovr.Replace('INJ_U',$U).Replace('INJ_P',$P) | Out-File -FilePath "$B\build_files\system\99-overrides.sh" -Encoding ascii
 
@@ -1135,9 +1333,10 @@ RUN --mount=type=bind,from=ctx,source=/build_files,target=/tmp/staging \
     bash /tmp/scripts/virtualization/01-virt.sh && \
     bash /tmp/scripts/system/99-overrides.sh && \
     dnf clean all && \
-    rm -rf /var/cache/dnf /tmp/scripts
+    rm -rf /var/cache/dnf /var/cache/rpm /var/log/* /tmp/scripts /root/.cache
 
 LABEL containers.bootc 1
+LABEL ostree.bootable 1
 RUN bootc container lint
 '@
 $containerfile | Out-File -FilePath "$B\Containerfile" -Encoding ascii
@@ -1150,6 +1349,30 @@ Invoke-Cmd "Executing Podman build (all $cpuCount threads)..." {
 $elapsed = [math]::Round(((Get-Date) - $t0).TotalMinutes, 1)
 Write-OK "OCI image built in ${elapsed} minutes → ${ImageName}:${ImageTag}"
 
+# ── Tag image for registry (must happen before BIB for GNOME Software updates) ─
+Write-Step "Tagging local image → $GhcrImage"
+& podman tag $LocalImage $GhcrImage
+
+# ── Rechunk: optimize OCI layers for efficient Day-2 updates ────────────────
+Write-Step "Rechunking image for optimized OCI layers (5-10x smaller updates)..."
+$ErrorActionPreference = "Continue"
+& podman run --rm --privileged `
+    -v /var/lib/containers/storage:/var/lib/containers/storage `
+    quay.io/centos-bootc/centos-bootc:stream10 `
+    /usr/libexec/bootc-base-imagectl rechunk `
+    $LocalImage `
+    "${ImageName}:rechunked" 2>&1 | ForEach-Object { Write-Host "        $_" -ForegroundColor DarkGray }
+if ($LASTEXITCODE -eq 0) {
+    # Replace original with rechunked version
+    & podman tag "${ImageName}:rechunked" $LocalImage
+    & podman tag "${ImageName}:rechunked" $GhcrImage
+    & podman rmi "${ImageName}:rechunked" 2>$null
+    Write-OK "Rechunk complete — layers optimized by package boundary"
+} else {
+    Write-Warn "Rechunk failed (non-fatal) — using original monolithic layers"
+}
+$ErrorActionPreference = "Stop"
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  PHASE 4: TARGET SERIALIZATION
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1158,11 +1381,30 @@ Write-Phase 4 "Generating Deployment Targets"
 # ── Target 1: RAW ────────────────────────────────────────────────────────────
 Write-Step "TARGET 1 — Building RAW disk image via bootc-image-builder..."
 $ErrorActionPreference = "Continue"
+$bibArgs = @("build", "--type", "raw", "--rootfs", "ext4", "--local", $LocalImage)
+if ($UseLuks -and $LuksPass) {
+    Write-Step "  LUKS2 encryption enabled for RAW target"
+    # Write a temporary config.toml with LUKS kickstart
+    $bibConfig = @"
+[customizations.installer.kickstart]
+contents = """
+clearpart --all --initlabel --disklabel=gpt
+part /boot/efi --fstype=efi --size=600
+part /boot --fstype=ext4 --size=1024
+part pv.01 --size=1 --grow --encrypted --luks-version=luks2 --passphrase=$LuksPass
+volgroup vg0 pv.01
+logvol / --vgname=vg0 --fstype=xfs --size=10240 --name=root
+"""
+"@
+    $bibConfigPath = Join-Path $OutputFolder "bib-config.toml"
+    $bibConfig | Out-File -FilePath $bibConfigPath -Encoding ascii
+    $bibArgs = @("build", "--type", "raw", "--rootfs", "ext4", "--config", "/output/bib-config.toml", "--local", $LocalImage)
+}
 & podman run --rm -it --privileged `
     -v /var/lib/containers/storage:/var/lib/containers/storage `
     -v "${OutputFolder}:/output:z" `
     quay.io/centos-bootc/bootc-image-builder:latest `
-    build --type raw --rootfs ext4 --local $LocalImage
+    @bibArgs
 
 $genRaw = Get-ChildItem $OutputFolder -Filter "disk.raw" -Recurse -ErrorAction SilentlyContinue |
           Sort-Object LastWriteTime -Descending | Select-Object -First 1
@@ -1175,15 +1417,29 @@ if ($genRaw) {
 $ErrorActionPreference = "Stop"
 
 # ── Target 2: VHDX ──────────────────────────────────────────────────────────
-Write-Step "TARGET 2 — Converting RAW to Hyper-V Gen2 VHDX..."
-if (Test-Path $RawImg) {
-    $rawLeaf = Split-Path $RawImg -Leaf
-    & podman run --rm -v "${OutputFolder}:/data:z" docker.io/alpine:latest `
-        sh -c "apk add --no-cache qemu-img && qemu-img convert -p -f raw -O vhdx -o subformat=dynamic /data/$rawLeaf /data/cloudws-hyperv.vhdx"
-    if ($LASTEXITCODE -eq 0) { Write-OK "VHDX conversion complete: $(Get-FileSize $TargetVhdx)" }
-    else { Write-Warn "VHDX conversion failed" }
+Write-Step "TARGET 2 — Building VHD via BIB then converting to Hyper-V VHDX..."
+$ErrorActionPreference = "Continue"
+& podman run --rm -it --privileged `
+    -v /var/lib/containers/storage:/var/lib/containers/storage `
+    -v "${OutputFolder}:/output:z" `
+    quay.io/centos-bootc/bootc-image-builder:latest `
+    build --type vhd --rootfs ext4 --local $LocalImage
+
+$genVhd = Get-ChildItem $OutputFolder -Filter "disk.vhd" -Recurse -ErrorAction SilentlyContinue |
+          Sort-Object LastWriteTime -Descending | Select-Object -First 1
+if ($genVhd) {
+    Write-Step "  Converting VHD → VHDX (dynamic, Hyper-V Gen2 compatible)..."
+    $vhdLeaf = $genVhd.Name
+    $vhdDir  = Split-Path $genVhd.FullName -Parent
+    & podman run --rm -v "${vhdDir}:/data:z" docker.io/alpine:latest `
+        sh -c "apk add --no-cache qemu-img && qemu-img convert -p -f vpc -O vhdx -o subformat=dynamic /data/$vhdLeaf /data/cloudws-hyperv.vhdx"
+    if ($LASTEXITCODE -eq 0) {
+        Move-Item (Join-Path $vhdDir "cloudws-hyperv.vhdx") $TargetVhdx -Force -ErrorAction SilentlyContinue
+        Remove-Item $genVhd.FullName -Force -ErrorAction SilentlyContinue
+        Write-OK "VHDX conversion complete: $(Get-FileSize $TargetVhdx)"
+    } else { Write-Warn "VHD→VHDX conversion failed" }
 } else {
-    Write-Warn "Skipped VHDX — no RAW base image"
+    Write-Warn "VHD generation failed — skipping VHDX"
 }
 
 # ── Target 3: WSL2 ──────────────────────────────────────────────────────────
@@ -1201,11 +1457,15 @@ else { Write-Warn "WSL tarball export failed" }
 # ── Target 4: Anaconda ISO ──────────────────────────────────────────────────
 Write-Step "TARGET 4 — Generating Anaconda installer ISO..."
 $ErrorActionPreference = "Continue"
+$isoArgs = @("build", "--type", "anaconda-iso", "--rootfs", "ext4", "--local", $LocalImage)
+if ($UseLuks -and $LuksPass -and (Test-Path (Join-Path $OutputFolder "bib-config.toml"))) {
+    $isoArgs = @("build", "--type", "anaconda-iso", "--rootfs", "ext4", "--config", "/output/bib-config.toml", "--local", $LocalImage)
+}
 & podman run --rm -it --privileged `
     -v /var/lib/containers/storage:/var/lib/containers/storage `
     -v "${OutputFolder}:/output:z" `
     quay.io/centos-bootc/bootc-image-builder:latest `
-    build --type anaconda-iso --rootfs ext4 --local $LocalImage
+    @isoArgs
 
 $genIso = Get-ChildItem $OutputFolder -Filter "*.iso" -Recurse -ErrorAction SilentlyContinue |
           Where-Object { $_.Name -ne "cloudws-installer.iso" } |
@@ -1219,28 +1479,52 @@ if ($genIso) {
 $ErrorActionPreference = "Stop"
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  PHASE 5: REGISTRY SYNCHRONIZATION (GHCR)
+#  PHASE 5: REGISTRY SYNCHRONIZATION
 # ══════════════════════════════════════════════════════════════════════════════
-Write-Phase 5 "Remote Registry Synchronization (GHCR)"
+Write-Phase 5 "Remote Registry Push → $GhcrImage"
 
-Write-Step "Tagging local image → $GhcrImage"
-& podman tag $LocalImage $GhcrImage
-
-Write-Step "Pushing to GHCR..."
+# ── Registry login ────────────────────────────────────────────────────────────
+$registryHost = ($GhcrImage -split '/')[0]
+Write-Step "Authenticating to $registryHost..."
 $ErrorActionPreference = "Continue"
+if ($RegistryToken) {
+    $RegistryToken | podman login $registryHost --username $RegistryUser --password-stdin 2>&1 | ForEach-Object {
+        Write-Host "        $_" -ForegroundColor DarkGray
+    }
+} else {
+    Write-Warn "No registry token provided — attempting push without login (may fail for private repos)"
+}
+
+Write-Step "Pushing $GhcrImage ..."
 $pushResult = & podman push $GhcrImage 2>&1
 if ($LASTEXITCODE -eq 0) {
-    Write-OK "Image pushed to GHCR successfully"
+    Write-OK "Image pushed to $registryHost successfully"
     $GhcrOK = $true
+
+    # Attempt to set GHCR package visibility to public (GitHub API only)
+    if ($registryHost -eq "ghcr.io" -and $RegistryToken) {
+        Write-Step "Setting GHCR package visibility to public..."
+        $pkgName = ($GhcrImage -split '/')[-1] -replace ':.*$', ''
+        $orgOrUser = ($GhcrImage -split '/')[1]
+        try {
+            $headers = @{ Authorization = "Bearer $RegistryToken"; Accept = "application/vnd.github+json" }
+            Invoke-RestMethod -Uri "https://api.github.com/user/packages/container/$pkgName" `
+                -Method Patch -Headers $headers `
+                -Body '{"visibility":"public"}' -ContentType "application/json" -ErrorAction Stop
+            Write-OK "GHCR package set to public"
+        } catch {
+            Write-Warn "Could not auto-set package to public. Manually set at: https://github.com/${orgOrUser}?tab=packages"
+        }
+    }
 } else {
-    Write-Warn "GHCR push failed. Run 'podman login ghcr.io' with a PAT first."
+    Write-Warn "Registry push failed. Check credentials and permissions."
     Write-Warn "Details: $pushResult"
     $GhcrOK = $false
 }
 $ErrorActionPreference = "Stop"
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  FINAL STATUS REPORT
+#  PHASE 6: CLEANUP & FINAL STATUS REPORT
 # ══════════════════════════════════════════════════════════════════════════════
 $T1OK = Test-Path $RawImg
 $T2OK = Test-Path $TargetVhdx
@@ -1249,10 +1533,23 @@ $T4OK = Test-Path $TargetIso
 $AllOK = $T1OK -and $T2OK -and $T3OK -and $T4OK -and $GhcrOK
 $totalElapsed = [math]::Round(((Get-Date) - $t0).TotalMinutes, 1)
 
+# ── Cleanup builder machine ───────────────────────────────────────────────────
+Write-Phase 6 "Cleanup & Final Report"
+Write-Step "Stopping builder machine '$BuilderMachine'..."
+$ErrorActionPreference = "Continue"
+Remove-Item Env:\CONTAINER_CONNECTION -ErrorAction SilentlyContinue
+& podman machine stop $BuilderMachine 2>$null
+Write-OK "Builder machine stopped (your default Podman machine is untouched)"
+Write-Step "To remove the builder machine entirely: podman machine rm $BuilderMachine"
+
+# Clean up temporary BIB config
+Remove-Item (Join-Path $OutputFolder "bib-config.toml") -Force -ErrorAction SilentlyContinue
+$ErrorActionPreference = "Stop"
+
 $reportColor = if ($AllOK) { "Green" } else { "Yellow" }
 Write-Host ""
 Write-Host "  $("═" * 78)" -ForegroundColor $reportColor
-Write-Host "   CLOUD-WS DEPLOYMENT PIPELINE — COMPLETE  (total: ${totalElapsed} min)" -ForegroundColor $reportColor
+Write-Host "   CLOUDWS v1.0 DEPLOYMENT PIPELINE — COMPLETE  (total: ${totalElapsed} min)" -ForegroundColor $reportColor
 Write-Host "  $("═" * 78)" -ForegroundColor $reportColor
 Write-Host ""
 
@@ -1260,18 +1557,20 @@ Write-TargetReport 1 "Bare Metal RAW"     $T1OK  $RawImg     "Flash via Rufus (D
 Write-TargetReport 2 "Hyper-V Gen2 VHDX"  $T2OK  $TargetVhdx "New Gen2 VM → Disable Secure Boot → attach VHDX as boot disk"
 Write-TargetReport 3 "WSL2 + WSLg Distro" $T3OK  $TargetWsl  "wsl --import CloudWS C:\WSL\CloudWS '$TargetWsl' && wsl -d CloudWS"
 Write-TargetReport 4 "Anaconda ISO"        $T4OK  $TargetIso  "Write to USB with Rufus (ISO mode) — Anaconda installer"
-Write-TargetReport 5 "GHCR Registry"       $GhcrOK $GhcrImage "sudo bootc switch $GhcrImage"
+Write-TargetReport 5 "Registry Push"       $GhcrOK $GhcrImage "sudo bootc switch $GhcrImage"
 
 Write-Host "  ┌─────────────────────────────────────────────────────────────┐" -ForegroundColor DarkGray
-Write-Host "  │  Default credentials : $U / $P                              │" -ForegroundColor Yellow
+Write-Host "  │  Default credentials : $U / ****                            │" -ForegroundColor Yellow
 Write-Host "  │  Upgrade any target  : sudo bootc upgrade                   │" -ForegroundColor DarkGray
 Write-Host "  │  Switch image source : sudo bootc switch $GhcrImage         │" -ForegroundColor DarkGray
-Write-Host "  │  GPU stack           : AMD RDNA2 iGPU + NVIDIA RTX 4090     │" -ForegroundColor DarkGray
+Write-Host "  │  GPU support         : AMD / Intel / NVIDIA (auto-detected) │" -ForegroundColor DarkGray
+Write-Host "  │  Help in terminal    : cloudws --help                       │" -ForegroundColor DarkGray
 Write-Host "  │  Cockpit dashboard   : https://localhost:9090                │" -ForegroundColor DarkGray
 Write-Host "  │  Image Builder UI    : https://localhost:9090/composer       │" -ForegroundColor DarkGray
 Write-Host "  │  RDP access          : port 3389 (standard) / 3390 (alt)    │" -ForegroundColor DarkGray
 Write-Host "  │  SSH access          : port 22                              │" -ForegroundColor DarkGray
 Write-Host "  │  Security            : CrowdSec IPS + fapolicyd + USBGuard  │" -ForegroundColor DarkGray
 Write-Host "  │  Firewall            : default-deny drop + trusted internal │" -ForegroundColor DarkGray
+Write-Host "  │  PXE/Network boot    : Use Anaconda ISO + ostreecontainer   │" -ForegroundColor DarkGray
 Write-Host "  └─────────────────────────────────────────────────────────────┘" -ForegroundColor DarkGray
 Write-Host ""

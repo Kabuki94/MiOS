@@ -7,7 +7,7 @@ REPO="https://github.com/Kabuki94/CloudWS-bootc.git"
 DIR="${CLOUDWS_DIR:-$HOME/CloudWS-bootc}"
 
 echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║  CloudWS v3.13 — Cloud Workstation OS                      ║"
+echo "║  CloudWS v1.0 — Cloud Workstation OS                       ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -101,8 +101,9 @@ esac
 
 echo ""
 echo "CloudWS Commands (after deploy):"
-echo "  sudo bootc update     — Pull latest updates"
-echo "  sudo bootc rollback   — Roll back"
+echo "  cloudws --help        — Quick reference for all commands"
+echo "  cloudws-update        — Pull latest updates from registry"
+echo "  sudo bootc rollback   — Roll back to previous deployment"
 echo "  cloudws-rebuild       — Clone from GitHub, build, push"
 echo "  cloudws-backup        — Backup volumes, K3s state, VMs"
 echo "  cloudws-vfio-toggle   — GPU passthrough management"

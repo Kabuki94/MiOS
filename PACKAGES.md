@@ -1,4 +1,4 @@
-# CloudWS v3.13 — Complete Package Inventory
+# CloudWS v1.0 — Complete Package Inventory
 
 ## REPOSITORIES (01-repos.sh)
 
@@ -8,7 +8,7 @@
 | rpmfusion-nonfree-release-rawhide | RPMFusion nonfree (NVIDIA) |
 | fedora-workstation-repositories | Fedora workstation third-party repos |
 | dnf-plugins-core | DNF package manager plugins |
-| crowdsec repo (curl script) | CrowdSec official repository (sovereign mode) |
+| crowdsec repo (curl script) | CrowdSec official repository (sovereign mode, F40 fallback) |
 
 ## KERNEL (02-kernel.sh)
 
@@ -85,8 +85,8 @@ org.gnome.Platform//master, org.gnome.Platform//50, org.freedesktop.Platform//25
 
 ## HARDWARE DRIVERS (01-hardware.sh)
 
-### GPU (Mesa + NVIDIA)
-mesa-vulkan-drivers, mesa-dri-drivers, mesa-va-drivers, mesa-vdpau-drivers, vulkan-loader, vulkan-tools, libva-utils, linux-firmware, amd-ucode, microcode_ctl, rocm-opencl, rocm-hip, akmod-nvidia, xorg-x11-drv-nvidia-cuda, nvidia-container-toolkit, driverctl
+### GPU (Universal — AMD + Intel + NVIDIA)
+mesa-vulkan-drivers, mesa-dri-drivers, mesa-va-drivers, mesa-vdpau-drivers, vulkan-loader, vulkan-tools, libva-utils, linux-firmware, amd-ucode, intel-ucode, microcode_ctl, rocm-opencl, rocm-hip, akmod-nvidia, xorg-x11-drv-nvidia-cuda, nvidia-container-toolkit, driverctl
 
 ## VIRTUALIZATION (01-virt.sh)
 
@@ -151,6 +151,7 @@ python3-devel, python3-pip, python3-setuptools, python3-wheel, python3-virtualen
 
 | Package | Description |
 |---------|-------------|
+| authselect (local profile) | PAM configuration for reliable GDM password auth |
 | fapolicyd | Blocks untrusted binaries in /var/home |
 | usbguard | USB device authorization |
 | policycoreutils-python-utils | semanage, audit2allow SELinux tools |
@@ -185,24 +186,27 @@ tuned, tuned-ppd, tuned-utils, tuned-profiles-cpu-partitioning, tuned-profiles-r
 
 | Tool | Description |
 |------|-------------|
-| cloudws-rebuild | Clone from GitHub → build → push to GHCR (+ offline embedded fallback) |
-| cloudws-update | One-command system update from GHCR (bootc update + fallback switch) |
+| cloudws --help | Quick reference for all CloudWS commands (bash function) |
+| cloudws-rebuild | Clone from GitHub → build → push to registry |
+| cloudws-update | One-command system update from registry (bootc update + fallback switch) |
 | cloudws-backup | Backup Podman volumes, K3s etcd, libvirt VMs, /var/home |
 | cloudws-vfio-toggle | GPU VFIO bind/unbind/status/list via driverctl |
+| iommu-groups | Visualize IOMMU group assignments with color output |
 | cloudws-gpu-detect | Auto-detects VM vs bare metal, blocks NVIDIA modules in VMs (runs before GDM) |
 | cloudws-cockpit.desktop | Cockpit web UI launcher (xdg-open localhost:9090) |
 | cloudws-hostname.service | Hostname enforcement service |
-| cloudws-init.service | First/every-boot init (Flatpak restore, firewall, user setup) |
+| cloudws-init.service | Every-boot init (Flatpak restore, firewall, user setup, CrowdSec registration) |
 | cloudws-gpu-detect.service | Pre-GDM GPU environment detection (VM vs bare metal) |
 | cloudws-firewall-init | Drop zone + K3s subnet trust + Waydroid/Podman/libvirt trust |
 | gamescope-session-steam | Gamescope SteamOS-mode session launcher (GDM selectable) |
+| fastfetch (auto-display) | System overview shown on terminal open (disable with CLOUDWS_NO_FASTFETCH=1) |
 
 ## CONFIGURATION FILES
 
 | File | Description |
 |------|-------------|
 | /etc/environment.d/50-cloudws.conf | Qt/Electron Wayland hints |
-| /etc/gtk-3.0/settings.ini | GTK3 Adwaita + Geist font |
+| /etc/gtk-3.0/settings.ini | GTK3 Adwaita + Cantarell font |
 | /etc/gtk-4.0/settings.ini | GTK4 font metrics |
 | /usr/share/xdg-desktop-portal/gnome-portals.conf | Portal routing |
 | /etc/dconf/db/local.d/01-cloudws | Dark theme, fonts, dock, app folders |
@@ -221,6 +225,18 @@ tuned, tuned-ppd, tuned-utils, tuned-profiles-cpu-partitioning, tuned-profiles-r
 | /etc/systemd/system/cockpit.socket.d/listen.conf | Cockpit listen on all interfaces |
 | /etc/waydroid/waydroid.cfg | Waydroid OTA URLs + GAPPS default |
 
+## BUILD PIPELINE
+
+| Step | Tool | Description |
+|------|------|-------------|
+| Build | Podman | `podman build --no-cache` in dedicated `cloudws-builder` machine |
+| Rechunk | bootc-base-imagectl | Post-build layer optimization (5-10x smaller updates) |
+| RAW | bootc-image-builder | Bootable raw disk image (optional LUKS2) |
+| VHD→VHDX | qemu-img | BIB outputs VHD; converted to Hyper-V Gen2 VHDX |
+| WSL | podman export | Container rootfs tarball for `wsl --import` |
+| ISO | bootc-image-builder | Anaconda installer ISO (optional LUKS2) |
+| Push | podman push | User-configurable registry (defaults to GHCR) |
+
 ## TOTALS
 
 | Category | Count |
@@ -230,7 +246,7 @@ tuned, tuned-ppd, tuned-utils, tuned-profiles-cpu-partitioning, tuned-profiles-r
 | Flatpak Runtimes (auto) | ~5 |
 | Git-cloned plugins | 3 (cockpit-benchmark, cockpit-zfs-manager, geist-font) |
 | Binary installs | 1 (K3s) |
-| Custom tools | 10 |
+| Custom tools | 14 |
 | Config files | 20 |
 | GDM sessions | 2 (GNOME Wayland, Steam Gamescope) |
 | Looking Glass build deps | ~25 (removed after compile) |
