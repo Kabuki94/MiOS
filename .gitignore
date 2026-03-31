@@ -1,1 +1,24 @@
+# Build outputs
 cloudws-deploy-out/
+output/
+*.raw
+*.vhdx
+*.vhd
+*.iso
+*.tar
+*.qcow2
+
+# Podman / Container
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
