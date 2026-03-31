@@ -124,17 +124,40 @@ chmod +x /usr/local/bin/k3s 2>/dev/null || true
     ln -sf /usr/local/bin/k3s /usr/local/bin/crictl 2>/dev/null || true
 }
 
-# ─── xRDP Hyper-V Enhanced Session (vsock transport) ────────────────────────
+# ─── xRDP Hyper-V Enhanced Session (vsock transport — works at first launch) ─
 if [ -f /etc/xrdp/xrdp.ini ]; then
+    # Configure vsock transport for Hyper-V Enhanced Session
     sed -i 's/^port=3389/port=vsock:\/\/-1:3389/' /etc/xrdp/xrdp.ini
     sed -i 's/^use_vsock=false/use_vsock=true/' /etc/xrdp/xrdp.ini
     sed -i 's/^security_layer=negotiate/security_layer=rdp/' /etc/xrdp/xrdp.ini
+    # Also listen on TCP 3389 as fallback for non-Hyper-V RDP
+    sed -i '/^\[xrdp1\]/,/^\[/ s/^port=.*/port=-1/' /etc/xrdp/xrdp.ini 2>/dev/null || true
 fi
 if [ -f /etc/xrdp/sesman.ini ]; then
     sed -i 's/^AllowRootLogin=false/AllowRootLogin=true/' /etc/xrdp/sesman.ini 2>/dev/null || true
 fi
 mkdir -p /etc/X11
 echo "allowed_users=anybody" > /etc/X11/Xwrapper.config
+
+# Create default .xsession so xRDP launches GNOME automatically
+cat > /etc/skel/.xsession <<'EOXS'
+#!/bin/bash
+export XDG_SESSION_TYPE=x11
+export XDG_SESSION_DESKTOP=gnome
+exec gnome-session
+EOXS
+chmod +x /etc/skel/.xsession
+
+# Hyper-V enhanced session PowerShell hint (baked into image for reference)
+mkdir -p /usr/share/cloudws
+cat > /usr/share/cloudws/hyperv-enhanced-session.txt <<'EOHV'
+# Run this on the Windows HOST (PowerShell as Admin) to enable enhanced session:
+# Set-VM -Name cloudws -EnhancedSessionTransportType HvSocket
+# Then connect via Hyper-V Manager → Enhanced Session will auto-negotiate.
+EOHV
+
+# ─── Windows Image Building Tools (UUP Dump, etc.) ─────────────────────────
+install_packages "wintools"
 
 # ─── Cockpit Plugins from Upstream Git ──────────────────────────────────────
 install_packages "cockpit-plugins-build" 2>/dev/null || true

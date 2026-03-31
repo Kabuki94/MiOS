@@ -37,8 +37,9 @@ python3
 
 ## GNOME 50 Desktop
 
-Minimal GNOME installation — individual packages only (NO @gnome-desktop group).
-User-facing apps are Flatpaks. Only system RPMs here.
+MINIMAL GNOME shell — system infrastructure ONLY. NO user apps as RPMs.
+ALL user-facing apps are Flatpaks (uninstallable by user).
+Steam, Wine, virt-manager, Waydroid are RPM exceptions (need system-level access).
 
 ```packages-gnome
 gnome-shell
@@ -49,9 +50,9 @@ mutter
 gjs
 gnome-keyring
 polkit
-gnome-tweaks
-gnome-shell-extensions
-gnome-themes-extra
+gdm
+ptyxis
+nautilus
 gnome-shell-extension-appindicator
 gnome-shell-extension-dash-to-dock
 adwaita-cursor-theme
@@ -59,13 +60,6 @@ adwaita-icon-theme
 gnome-backgrounds
 gsettings-desktop-schemas
 colord
-gdm
-ptyxis
-nautilus
-file-roller
-evince
-loupe
-totem
 xdg-user-dirs
 xdg-utils
 xdg-desktop-portal
@@ -80,12 +74,9 @@ gnome-bluetooth
 bluez
 bluez-tools
 flatpak
-epiphany
 dconf
 gnome-software
 gnome-software-rpm-ostree
-gnome-system-monitor
-gnome-disk-utility
 gnome-remote-desktop
 gvfs
 gvfs-smb
@@ -233,6 +224,12 @@ gamemode
 mangohud
 steam
 gamescope
+wine
+winetricks
+lutris
+dosbox-staging
+steam-devices
+driverctl
 ```
 
 ## Guest Agents & Remote Access

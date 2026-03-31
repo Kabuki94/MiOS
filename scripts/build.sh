@@ -1,16 +1,14 @@
 #!/bin/bash
 # CloudWS — Master build runner
 # Executes all numbered scripts in order, then cleans up.
-# Called from Containerfile RUN layer.
+# Called from Containerfile RUN layer via bind mount.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export PACKAGES_MD="${PACKAGES_MD:-${SCRIPT_DIR}/../PACKAGES.md}"
-
-VERSION=$(cat "${SCRIPT_DIR}/../VERSION" 2>/dev/null || echo "1.0.0")
+export PACKAGES_MD="${PACKAGES_MD:-/ctx/PACKAGES.md}"
 
 echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║  CloudWS v${VERSION} — Building OS Image                    ║"
+echo "║  CloudWS v$(cat /ctx/VERSION 2>/dev/null || echo '1.0.0') — Building OS Image               ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo ""
 echo "  PACKAGES.MD : $PACKAGES_MD"

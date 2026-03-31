@@ -5,7 +5,16 @@ font-name='Geist 11'
 document-font-name='Geist 11'
 monospace-font-name='Geist Mono 10'
 cursor-theme='Bibata-Modern-Classic'
+
 [org/gnome/desktop/wm/preferences]
 theme='Adwaita'
+
 [org/gnome/shell]
-favorite-apps=['org.gnome.Nautilus.desktop','org.gnome.Ptyxis.desktop','epiphany.desktop','org.gnome.Software.desktop','cockpit.desktop']
+favorite-apps=['org.gnome.Nautilus.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.Epiphany.desktop', 'cloudws-cockpit.desktop', 'org.gnome.Software.desktop']
+enabled-extensions=['appindicatorsupport@rgcjonas.gmail.com', 'dash-to-dock@micxgx.gmail.com']
+
+[org/gnome/shell/extensions/dash-to-dock]
+dock-position='BOTTOM'
+dash-max-icon-size=48
+show-trash=false
+show-mounts=false
