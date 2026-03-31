@@ -98,18 +98,18 @@ glibc-langpack-en
 ## GPU Drivers — Mesa (AMD / Intel / software fallback)
 
 Universal Mesa stack supporting all AMD and Intel GPUs out of the box.
+- AMD CPU microcode is inside `linux-firmware` (not a separate `amd-ucode` package on Fedora)
+- Intel CPU microcode is inside `microcode_ctl` (not a separate `intel-ucode` package on Fedora)
+- VDPAU is legacy — modern video decode uses VA-API via `mesa-va-drivers` (NVIDIA provides its own VDPAU)
 
 ```packages-gpu-mesa
 mesa-vulkan-drivers
 mesa-dri-drivers
 mesa-va-drivers
-mesa-vdpau-drivers
 vulkan-loader
 vulkan-tools
 libva-utils
 linux-firmware
-amd-ucode
-intel-ucode
 microcode_ctl
 ```
 
