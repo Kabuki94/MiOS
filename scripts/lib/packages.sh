@@ -9,7 +9,7 @@
 
 get_packages() {
     local category="$1"
-    local packages_file="${2:-${PACKAGES_MD:-/ctx/PACKAGES.md}}"
+    local packages_file="${2:-${PACKAGES_MD:-/tmp/build/PACKAGES.md}}"
 
     if [[ ! -f "$packages_file" ]]; then
         echo "[packages.sh] ERROR: $packages_file not found" >&2
@@ -35,7 +35,7 @@ get_packages_strict() {
 
 install_packages() {
     local category="$1"
-    local packages_file="${2:-${PACKAGES_MD:-/ctx/PACKAGES.md}}"
+    local packages_file="${2:-${PACKAGES_MD:-/tmp/build/PACKAGES.md}}"
     local packages
     packages=$(get_packages "$category" "$packages_file")
     if [[ -n "$packages" ]]; then
@@ -48,7 +48,7 @@ install_packages() {
 
 install_packages_strict() {
     local category="$1"
-    local packages_file="${2:-${PACKAGES_MD:-/ctx/PACKAGES.md}}"
+    local packages_file="${2:-${PACKAGES_MD:-/tmp/build/PACKAGES.md}}"
     local packages
     packages=$(get_packages_strict "$category" "$packages_file") || return 1
     echo "[packages.sh] Installing '$category' packages (strict)..."
