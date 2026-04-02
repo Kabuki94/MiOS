@@ -1,6 +1,10 @@
 #!/bin/bash
 # CloudWS — 10-gnome: MINIMAL GNOME 50 shell + essential Flatpaks ONLY
-# NO bloat. NO user apps as RPMs. System infrastructure only.
+# NO bloat visible. NO user apps as RPMs. System infrastructure only.
+#
+# CRITICAL: NEVER use `dnf remove` on GNOME bloat — malcontent, gnome-tour, etc.
+# are hard dependencies of gnome-shell/gdm. Removing them cascades and destroys
+# the entire desktop. Instead, HIDE bloat with .desktop override files.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
@@ -8,22 +12,55 @@ source "${SCRIPT_DIR}/lib/packages.sh"
 # ═══ 1. MINIMAL GNOME SHELL (RPMs — system infrastructure only) ═══
 install_packages "gnome"
 
-# ═══ 2. STRIP BLOAT pulled in as GNOME dependencies ═══
-echo "[10-gnome] Removing bloat pulled in as dependencies..."
-dnf remove -y --noautoremove \
-    gnome-tour gnome-user-docs gnome-initial-setup \
-    malcontent malcontent-control \
-    gnome-maps gnome-weather gnome-contacts gnome-clocks \
-    gnome-calendar gnome-characters gnome-font-viewer \
-    gnome-connections gnome-text-editor gnome-calculator \
-    gnome-photos gnome-music simple-scan cheese baobab yelp \
-    totem evince loupe file-roller gnome-system-monitor \
-    gnome-tweaks snapshot gnome-console gnome-logs \
-    gnome-disk-utility gnome-camera \
-    2>/dev/null || true
-
 systemctl enable gdm.service NetworkManager.service
 systemctl set-default graphical.target
+
+# ═══ 2. HIDE BLOAT with .desktop overrides (NoDisplay=true) ═══
+# NEVER dnf remove these — they're hard deps of gnome-shell/gdm.
+# Override files in /usr/local/share/applications take priority.
+echo "[10-gnome] Hiding bloat apps via .desktop overrides..."
+mkdir -p /usr/local/share/applications
+BLOAT_APPS=(
+    org.gnome.Tour
+    org.gnome.Calendar
+    org.gnome.Clocks
+    org.gnome.Weather
+    org.gnome.Contacts
+    org.gnome.Maps
+    org.gnome.Characters
+    org.gnome.font-viewer
+    org.gnome.Connections
+    org.gnome.TextEditor
+    org.gnome.Calculator
+    org.gnome.Photos
+    org.gnome.Music
+    org.gnome.Cheese
+    org.gnome.baobab
+    org.gnome.Snapshot
+    org.gnome.Logs
+    org.gnome.DiskUtility
+    org.gnome.FileRoller
+    org.gnome.Evince
+    org.gnome.Loupe
+    org.gnome.Totem
+    org.gnome.SystemMonitor
+    org.gnome.tweaks
+    org.gnome.Console
+    org.gnome.Camera
+    simple-scan
+    yelp
+    malcontent-control
+)
+for app in "${BLOAT_APPS[@]}"; do
+    cat > "/usr/local/share/applications/${app}.desktop" <<EOHIDE
+[Desktop Entry]
+Type=Application
+Name=${app}
+NoDisplay=true
+Hidden=true
+EOHIDE
+done
+echo "[10-gnome] ${#BLOAT_APPS[@]} bloat apps hidden"
 
 # ═══ 3. GEIST FONT (Vercel) ═══
 echo "[10-gnome] Installing Geist font family..."
@@ -51,19 +88,13 @@ flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.f
 flatpak remote-add --if-not-exists flathub-beta https://flathub.org/beta-repo/flathub-beta.flatpakrepo
 flatpak remote-add --if-not-exists gnome-nightly https://nightly.gnome.org/gnome-nightly.flatpakrepo 2>/dev/null || true
 
-# ═══ 6. ESSENTIAL FLATPAKS ONLY — zero bloat, all uninstallable ═══
-echo "[10-gnome] Installing essential Flatpaks (no bloat)..."
-# Browser — used for Cockpit web app too
+# ═══ 6. ESSENTIAL FLATPAKS ONLY — zero bloat, all uninstallable by user ═══
+echo "[10-gnome] Installing essential Flatpaks..."
 flatpak install -y --noninteractive flathub org.gnome.Epiphany 2>/dev/null || true
-# Extension Manager — manage GNOME extensions
 flatpak install -y --noninteractive flathub com.mattjakeman.ExtensionManager 2>/dev/null || true
-# Podman Desktop — container management GUI
 flatpak install -y --noninteractive flathub io.podman_desktop.PodmanDesktop 2>/dev/null || true
-# VSCodium — open-source VS Code
 flatpak install -y --noninteractive flathub com.vscodium.codium 2>/dev/null || true
-# Bottles — Windows app runner (Wine prefix manager)
 flatpak install -y --noninteractive flathub-beta com.usebottles.bottles 2>/dev/null || true
-# Logs — systemd journal viewer
 flatpak install -y --noninteractive flathub org.gnome.Logs 2>/dev/null || true
 
 # ═══ 7. COCKPIT AS EPIPHANY WEB APP (pinned to dock) ═══
@@ -79,7 +110,8 @@ Categories=System;
 StartupNotify=true
 EOF
 
-# ═══ 8. DCONF: dark theme, Geist font, Bibata cursor, dock, folders ═══
+# ═══ 8. DCONF UPDATE ═══
 dconf update 2>/dev/null || true
 
-echo "[10-gnome] GNOME 50 minimal shell + Geist + Bibata + essential Flatpaks installed."
+echo "[10-gnome] GNOME 50 minimal + Geist + Bibata + Flatpaks + Cockpit web app installed."
+echo "[10-gnome] ${#BLOAT_APPS[@]} bloat apps hidden via NoDisplay=true overrides."
