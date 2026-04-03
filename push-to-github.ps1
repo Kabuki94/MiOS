@@ -31,7 +31,7 @@ if (-not (Test-Path (Join-Path $SourceDir "cloud-ws.ps1"))) {
 Write-Host "  === Step 1: Organize flat files ===" -ForegroundColor Yellow
 
 # Create directories
-$dirsNeeded = @("scripts", "scripts\lib")
+$dirsNeeded = @("scripts", "scripts\lib", "config")
 foreach ($d in $dirsNeeded) {
     $p = Join-Path $SourceDir $d
     if (-not (Test-Path $p)) { New-Item -ItemType Directory -Path $p -Force | Out-Null; Write-Host "    + Created $d\" -ForegroundColor Green }
@@ -48,6 +48,7 @@ $scriptMap = @{
     "20-services.sh"  = "scripts\20-services.sh"
     "99-overrides.sh" = "scripts\99-overrides.sh"
     "packages.sh"     = "scripts\lib\packages.sh"
+    "bib.toml"        = "config\bib.toml"
 }
 
 foreach ($entry in $scriptMap.GetEnumerator()) {
@@ -131,7 +132,7 @@ foreach ($f in @("cloud-ws.ps1","Containerfile","Justfile","PACKAGES.md","README
 }
 
 # Copy directory trees
-foreach ($d in @("scripts","system_files")) {
+foreach ($d in @("scripts","system_files","config")) {
     $src = Join-Path $SourceDir $d
     if (Test-Path $src) {
         Copy-Item $src (Join-Path $WorkDir $d) -Recurse -Force

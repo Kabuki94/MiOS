@@ -183,9 +183,20 @@ function Clean-BIBTemp {
     & podman system prune -f 2>$null | Out-Null
 }
 
+# Copy BIB config to output folder (BIB container sees /output)
+$bibConf = Join-Path $PWD "config\bib.toml"
+if (Test-Path $bibConf) {
+    Copy-Item $bibConf (Join-Path $OutputFolder "bib.toml") -Force
+    $bibConfigArg = "--config /output/bib.toml"
+    Write-OK "BIB config: 80 GiB minimum root filesystem"
+} else {
+    $bibConfigArg = ""
+    Write-Warn "config/bib.toml not found — BIB will auto-size (may be too small!)"
+}
+
 # ── RAW ──────────────────────────────────────────────────────────────────────
 Write-Step "TARGET 1 — RAW disk image..."
-& podman run --rm -it --privileged -v /var/lib/containers/storage:/var/lib/containers/storage -v "${OutputFolder}:/output:z" $BIBImage build --type raw --rootfs ext4 --local $LocalImage
+& podman run --rm -it --privileged -v /var/lib/containers/storage:/var/lib/containers/storage -v "${OutputFolder}:/output:z" $BIBImage build --type raw --rootfs ext4 $bibConfigArg --local $LocalImage
 $genRaw = Get-ChildItem $OutputFolder -Filter "disk.raw" -Recurse -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 if ($genRaw) { Move-Item $genRaw.FullName $RawImg -Force; Write-OK "RAW: $(Get-FileSize $RawImg)" }
 else { Write-Warn "RAW failed" }
@@ -193,7 +204,7 @@ Clean-BIBTemp
 
 # ── VHDX ─────────────────────────────────────────────────────────────────────
 Write-Step "TARGET 2 — VHD → VHDX (Hyper-V Gen2)..."
-& podman run --rm -it --privileged -v /var/lib/containers/storage:/var/lib/containers/storage -v "${OutputFolder}:/output:z" $BIBImage build --type vhd --rootfs ext4 --local $LocalImage
+& podman run --rm -it --privileged -v /var/lib/containers/storage:/var/lib/containers/storage -v "${OutputFolder}:/output:z" $BIBImage build --type vhd --rootfs ext4 $bibConfigArg --local $LocalImage
 $genVhd = Get-ChildItem $OutputFolder -Filter "disk.vhd" -Recurse -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 if ($genVhd) {
     $vDir = Split-Path $genVhd.FullName -Parent
@@ -217,7 +228,7 @@ else { Write-Warn "WSL failed" }
 
 # ── ISO ──────────────────────────────────────────────────────────────────────
 Write-Step "TARGET 4 — Anaconda installer ISO..."
-& podman run --rm -it --privileged -v /var/lib/containers/storage:/var/lib/containers/storage -v "${OutputFolder}:/output:z" $BIBImage build --type anaconda-iso --rootfs ext4 --local $LocalImage
+& podman run --rm -it --privileged -v /var/lib/containers/storage:/var/lib/containers/storage -v "${OutputFolder}:/output:z" $BIBImage build --type anaconda-iso --rootfs ext4 $bibConfigArg --local $LocalImage
 $genIso = Get-ChildItem $OutputFolder -Filter "*.iso" -Recurse -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 if ($genIso) { Move-Item $genIso.FullName $TargetIso -Force; Write-OK "ISO: $(Get-FileSize $TargetIso)" }
 else { Write-Warn "ISO failed" }

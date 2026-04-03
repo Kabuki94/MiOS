@@ -21,6 +21,7 @@ systemctl set-default graphical.target
 echo "[10-gnome] Hiding bloat apps via .desktop overrides..."
 mkdir -p /usr/local/share/applications
 BLOAT_APPS=(
+    # GNOME bloat (deps of gnome-shell — can't remove, only hide)
     org.gnome.Tour
     org.gnome.Calendar
     org.gnome.Clocks
@@ -50,6 +51,18 @@ BLOAT_APPS=(
     simple-scan
     yelp
     malcontent-control
+    # Wine internal tools (users use Bottles/Lutris, not raw Wine)
+    wine
+    wine-notepad
+    wine-winecfg
+    wine-regedit
+    wine-winehelp
+    wine-winefile
+    wine-uninstaller
+    wine-oleview
+    wine-wineboot
+    # Misc bloat
+    gamt
 )
 for app in "${BLOAT_APPS[@]}"; do
     cat > "/usr/local/share/applications/${app}.desktop" <<EOHIDE
