@@ -1,0 +1,544 @@
+#!/bin/bash
+# CloudWS — 99-overrides: User, PAM, hostname, firewall, GPU, tools, SELinux
+# This script uses INJ_U and INJ_P placeholders replaced by the orchestrator.
+set -euo pipefail
+
+# ═══ 0. PAM AUTHENTICATION — NUCLEAR-GRADE FIX ═══
+# The Fedora bootc base image defaults to the 'sssd' authselect profile.
+# Without sssd running, GDM rejects ALL passwords — even correct ones.
+#
+# CRITICAL: 'authselect select local --force' with NO extra features.
+# Any with-* feature references PAM .so files that may not exist on Rawhide:
+#   with-silent-lastlog → pam_lastlog.so (REMOVED in F43+)
+#   with-mkhomedir → pam_oddjob_mkhomedir.so (needs oddjobd service)
+#   with-pam-gnome-keyring → pam_gnome_keyring.so (may not be installed)
+# If ANY .so is missing, the ENTIRE PAM chain fails silently.
+authselect select local --force
+echo "[99-overrides] authselect: local profile selected"
+
+# NUCLEAR FALLBACK: If authselect somehow didn't produce a working password-auth,
+# write a minimal PAM config that is GUARANTEED to work with pam_unix.so only.
+if ! grep -q "pam_unix.so" /etc/pam.d/password-auth 2>/dev/null; then
+    echo "[99-overrides] WARNING: authselect did not produce valid password-auth — writing manual PAM config"
+    cat > /etc/pam.d/password-auth <<'EOFPAM'
+auth        required      pam_env.so
+auth        sufficient    pam_unix.so try_first_pass nullok
+auth        required      pam_deny.so
+account     required      pam_unix.so
+password    sufficient    pam_unix.so try_first_pass use_authtok nullok sha512 shadow
+password    required      pam_deny.so
+session     optional      pam_keyinit.so revoke
+session     required      pam_limits.so
+session     required      pam_unix.so
+EOFPAM
+    cp /etc/pam.d/password-auth /etc/pam.d/system-auth
+fi
+echo "[99-overrides] PAM verification: $(grep -c pam_unix /etc/pam.d/password-auth) pam_unix entries in password-auth"
+
+# ═══ 1. CREATE USER ═══
+mkdir -p /var/home /var/roothome
+useradd -m -d /var/home/INJ_U -s /bin/bash INJ_U 2>/dev/null || true
+echo "INJ_U:INJ_P" | chpasswd
+echo "root:INJ_P" | chpasswd
+passwd -u INJ_U 2>/dev/null || true
+passwd -u root 2>/dev/null || true
+echo "[99-overrides] shadow: $(getent shadow INJ_U | cut -d: -f1-2 | cut -c1-30)..."
+
+# ═══ 2. INDESTRUCTIBLE GROUP INJECTION ═══
+for g in wheel libvirt kvm video render input dialout; do
+    groupadd -f "$g" 2>/dev/null || true
+    if ! grep -q "^${g}:.*INJ_U" /etc/group; then
+        sed -i "/^${g}:/ s/$/,INJ_U/" /etc/group
+        sed -i "/^${g}:/ s/,:,/,/g; /^${g}:/ s/:,/:/g; /^${g}:/ s/,,/,/g" /etc/group
+    fi
+done
+
+# ═══ 3. SUDOERS ═══
+sed -i 's/^# %wheel\s*ALL=(ALL)\s*NOPASSWD:\s*ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
+echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel; chmod 440 /etc/sudoers.d/wheel
+
+# ═══ 4. FULL CLOUDWS CLI + FASTFETCH + ALIASES ═══
+cat >> /etc/skel/.bashrc <<'EOBASHRC'
+
+# ─── CloudWS Terminal Customization ──────────────────────────────────────────
+alias scan-malware="podman run --rm -v ~/.clamav:/var/lib/clamav -v /var/home:/scandir:ro docker.io/clamav/clamav:latest clamscan -r /scandir"
+
+cloudws() {
+    case "${1:-}" in
+        --help|-h|help)
+            echo "╔══════════════════════════════════════════════════════════════╗"
+            echo "║  CloudWS v1.0 — Cloud Workstation OS                       ║"
+            echo "╚══════════════════════════════════════════════════════════════╝"
+            echo ""
+            echo "  cloudws --help             This help message"
+            echo "  cloudws-update             Update OS from registry"
+            echo "  cloudws-rebuild            Clone repo → build → push"
+            echo "  cloudws-build              Build CloudWS locally (Linux)"
+            echo "  cloudws-backup             Backup volumes, K3s, VMs, /var/home"
+            echo "  cloudws-deploy <type>      Deploy VM or container from image"
+            echo "  cloudws-vfio-toggle        GPU VFIO bind/unbind/status/list"
+            echo "  cloudws-hostname           Show/set cluster hostname"
+            echo "  iommu-groups               Show IOMMU group assignments"
+            echo "  scan-malware               On-demand ClamAV scan"
+            echo ""
+            echo "  sudo bootc status          Deployment info"
+            echo "  sudo bootc rollback        Revert to previous image"
+            echo "  sudo bootc upgrade         Pull latest from registry"
+            echo "  fastfetch                  System overview"
+            echo ""
+            echo "  Management:"
+            echo "    https://localhost:9090    Cockpit web dashboard"
+            echo "    https://localhost:26000   iVentoy PXE server"
+            echo "    virt-manager             Virtual machine manager"
+            echo "    podman ps                Running containers"
+            echo "    kubectl get pods         K3s workloads"
+            echo "    pcs status               HA cluster status"
+            echo ""
+            echo "  Suppress fastfetch: export CLOUDWS_NO_FASTFETCH=1"
+            ;;
+        *) echo "Usage: cloudws {--help}  — try: cloudws --help" ;;
+    esac
+}
+
+# fastfetch on terminal open (suppress with CLOUDWS_NO_FASTFETCH=1)
+if command -v fastfetch &>/dev/null && [ -t 0 ] && [ -z "${CLOUDWS_NO_FASTFETCH:-}" ]; then
+    fastfetch
+fi
+EOBASHRC
+
+if [ -d /var/home/INJ_U ]; then
+    cp /etc/skel/.bashrc /var/home/INJ_U/.bashrc 2>/dev/null || true
+    chown INJ_U:INJ_U /var/home/INJ_U/.bashrc 2>/dev/null || true
+fi
+
+# ═══ 5. LOCALE ═══
+echo "LANG=en_US.UTF-8" > /etc/locale.conf
+echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
+localedef -i en_US -f UTF-8 en_US.UTF-8 2>/dev/null || true
+
+# ═══ 6. DYNAMIC HOSTNAME (HA-safe) ═══
+# Use machine-id suffix so cluster nodes get unique names:
+# CloudWS-a1b2c3 instead of all being "CloudWS"
+SHORT_ID=$(cat /etc/machine-id 2>/dev/null | head -c6 || echo "000000")
+HOSTNAME="CloudWS-${SHORT_ID}"
+echo "$HOSTNAME" > /etc/hostname
+echo -e "127.0.0.1 localhost\n127.0.1.1 $HOSTNAME ${HOSTNAME}.local\n::1 localhost" > /etc/hosts
+echo -e "PRETTY_HOSTNAME=\"CloudWS\"\nICON_NAME=\"computer\"\nCHASSIS=\"server\"" > /etc/machine-info
+mkdir -p /etc/NetworkManager/conf.d
+echo -e "[main]\nhostname-mode=none" > /etc/NetworkManager/conf.d/hostname.conf
+
+cat > /usr/lib/systemd/system/cloudws-hostname.service <<'EOSVC'
+[Unit]
+Description=Enforce CloudWS Dynamic Hostname
+After=local-fs.target
+Before=systemd-hostnamed.service
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'ID=$(cat /etc/machine-id | head -c6); HN="CloudWS-${ID}"; echo "$HN" > /etc/hostname; hostnamectl set-hostname "$HN" 2>/dev/null || true'
+RemainAfterExit=yes
+[Install]
+WantedBy=sysinit.target
+EOSVC
+systemctl enable cloudws-hostname.service
+
+# ═══ 7. CLOUD-INIT CONFIG ═══
+mkdir -p /etc/cloud/cloud.cfg.d
+cat > /etc/cloud/cloud.cfg.d/99-cloudws.cfg <<'EOCI'
+preserve_hostname: true
+manage_etc_hosts: false
+ssh_pwauth: true
+disable_root: false
+system_info:
+  default_user:
+    name: INJ_U
+    lock_passwd: false
+    gecos: CloudWS User
+    groups: [wheel, libvirt, kvm, video, render, input, dialout]
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    shell: /bin/bash
+datasource_list: [NoCloud, ConfigDrive, OpenStack, Ec2, GCE, Azure, None]
+EOCI
+
+# ═══ 8. MULTIPATH CONFIG ═══
+cat > /etc/multipath.conf <<'EOMP'
+defaults {
+    user_friendly_names yes
+    find_multipaths yes
+    polling_interval 10
+}
+EOMP
+
+# ═══ 9. FIREWALL INIT ═══
+cat > /usr/libexec/cloudws-firewall-init <<'EOFW'
+#!/bin/bash
+if ! command -v firewall-cmd &>/dev/null; then exit 0; fi
+if ! systemctl is-active firewalld &>/dev/null; then exit 0; fi
+firewall-cmd --set-default-zone=drop 2>/dev/null || true
+firewall-cmd --permanent --zone=drop --add-service=cockpit
+firewall-cmd --permanent --zone=drop --add-service=ssh
+firewall-cmd --permanent --zone=drop --add-service=mdns
+firewall-cmd --permanent --zone=drop --add-port=3389/tcp
+firewall-cmd --permanent --zone=drop --add-port=3390/tcp
+firewall-cmd --permanent --zone=drop --add-service=samba
+firewall-cmd --permanent --zone=drop --add-service=nfs
+firewall-cmd --permanent --zone=drop --add-service=rpc-bind
+firewall-cmd --permanent --zone=drop --add-service=mountd
+firewall-cmd --permanent --zone=drop --add-port=16509/tcp
+firewall-cmd --permanent --zone=drop --add-port=5900-5999/tcp
+firewall-cmd --permanent --zone=drop --add-port=6443/tcp
+firewall-cmd --permanent --zone=drop --add-port=10250/tcp
+firewall-cmd --permanent --zone=drop --add-port=2224/tcp
+firewall-cmd --permanent --zone=drop --add-port=5403-5405/udp
+firewall-cmd --permanent --zone=drop --add-port=26000/tcp
+firewall-cmd --permanent --zone=trusted --add-interface=lo
+firewall-cmd --permanent --zone=trusted --add-interface=podman0
+firewall-cmd --permanent --zone=trusted --add-interface=virbr0
+firewall-cmd --permanent --zone=trusted --add-interface=cni0
+firewall-cmd --permanent --zone=trusted --add-interface=flannel.1
+firewall-cmd --permanent --zone=trusted --add-interface=waydroid0
+firewall-cmd --permanent --zone=trusted --add-interface=docker0 2>/dev/null || true
+firewall-cmd --permanent --zone=trusted --add-source=10.42.0.0/16
+firewall-cmd --permanent --zone=trusted --add-source=10.43.0.0/16
+firewall-cmd --permanent --zone=trusted --add-source=10.88.0.0/16
+firewall-cmd --permanent --zone=trusted --add-source=192.168.122.0/24
+firewall-cmd --permanent --zone=trusted --add-source=192.168.124.0/24
+firewall-cmd --permanent --zone=trusted --add-source=127.0.0.0/8
+firewall-cmd --reload
+echo "[cloudws-firewall-init] Configured"
+EOFW
+chmod +x /usr/libexec/cloudws-firewall-init
+
+# ═══ 10. GPU AUTO-DETECT SERVICE ═══
+cat > /usr/lib/systemd/system/cloudws-gpu-detect.service <<'EOGPUSVC'
+[Unit]
+Description=CloudWS GPU Environment Detection
+DefaultDependencies=no
+Before=gdm.service display-manager.service systemd-modules-load.service
+After=local-fs.target systemd-udevd.service
+ConditionPathExists=!/run/cloudws-gpu-detected
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/cloudws-gpu-detect
+RemainAfterExit=yes
+[Install]
+WantedBy=sysinit.target
+EOGPUSVC
+
+cat > /usr/libexec/cloudws-gpu-detect <<'EOGPU'
+#!/bin/bash
+set -euo pipefail
+VIRT=$(systemd-detect-virt 2>/dev/null || echo "none")
+echo "[cloudws-gpu-detect] Virtualization: $VIRT"
+NVIDIA_CONF="/etc/modprobe.d/99-cloudws-virt-gpu.conf"
+if [ "$VIRT" != "none" ]; then
+    echo "[cloudws-gpu-detect] VM detected ($VIRT) — blocking NVIDIA"
+    cat > "$NVIDIA_CONF" <<'EOMOD'
+install nvidia /bin/false
+install nvidia_drm /bin/false
+install nvidia_modeset /bin/false
+install nvidia_uvm /bin/false
+EOMOD
+    for mod in nvidia_uvm nvidia_drm nvidia_modeset nvidia; do
+        modprobe -r "$mod" 2>/dev/null || true
+    done
+    case "$VIRT" in
+        microsoft|wsl) modprobe hyperv_drm 2>/dev/null || true ;;
+        kvm|qemu)      modprobe virtio-gpu 2>/dev/null || true ;;
+        vmware)        modprobe vmwgfx 2>/dev/null || true ;;
+    esac
+else
+    echo "[cloudws-gpu-detect] Bare metal — NVIDIA enabled"
+    rm -f "$NVIDIA_CONF"
+fi
+touch /run/cloudws-gpu-detected
+EOGPU
+chmod +x /usr/libexec/cloudws-gpu-detect
+systemctl enable cloudws-gpu-detect.service
+
+# ═══ 11. EVERY-BOOT INIT SERVICE ═══
+cat > /usr/lib/systemd/system/cloudws-init.service <<'EOSVC'
+[Unit]
+Description=CloudWS System Init
+After=network.target
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/cloudws-init
+RemainAfterExit=yes
+[Install]
+WantedBy=multi-user.target
+EOSVC
+
+cat > /usr/libexec/cloudws-init <<'EOINIT'
+#!/bin/bash
+set -euo pipefail
+
+# Dynamic hostname from machine-id
+ID=$(cat /etc/machine-id | head -c6)
+hostnamectl set-hostname "CloudWS-${ID}" 2>/dev/null || true
+
+# Ensure home directories exist (bootc /var/home)
+for u in $(awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd); do
+    home=$(getent passwd "$u" | cut -d: -f6)
+    if [ ! -d "$home" ]; then
+        mkdir -p "$home"
+        cp -a /etc/skel/. "$home/" 2>/dev/null || true
+        for d in Desktop Documents Downloads Music Pictures Public Templates Videos; do
+            mkdir -p "$home/$d"
+        done
+        chown -R "$u:$u" "$home"; chmod 700 "$home"
+    fi
+    su - "$u" -c "xdg-user-dirs-update" 2>/dev/null || true
+done
+
+# Regenerate groups
+for g in wheel libvirt kvm video render input dialout; do
+    groupadd -f "$g" 2>/dev/null || true
+    for u in $(awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd); do
+        usermod -aG "$g" "$u" 2>/dev/null || true
+    done
+done
+
+# Firewall init
+/usr/libexec/cloudws-firewall-init 2>/dev/null || true
+
+# CrowdSec first-boot registration
+if command -v cscli &>/dev/null; then
+    cscli machines add -a --force 2>/dev/null || true
+    if ! cscli bouncers list 2>/dev/null | grep -q "cs-firewall-bouncer"; then
+        BKEY=$(cscli bouncers add cs-firewall-bouncer -o raw 2>/dev/null) || true
+        if [ -n "${BKEY:-}" ] && [ -f /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml ]; then
+            sed -i "s|^api_key:.*|api_key: ${BKEY}|" /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml
+            systemctl restart crowdsec-firewall-bouncer 2>/dev/null || true
+        fi
+    fi
+fi
+
+# PCP metrics
+if command -v pmlogger_check &>/dev/null; then
+    mkdir -p /var/log/pcp/pmlogger
+    systemctl restart pmcd pmlogger pmproxy 2>/dev/null || true
+fi
+
+# Flatpak dark theme + appstream
+flatpak override --system --env=GTK_THEME=Adwaita:dark 2>/dev/null || true
+flatpak update --appstream 2>/dev/null || true
+
+# Hyper-V enhanced session auto-setup
+VIRT=$(systemd-detect-virt 2>/dev/null || echo "none")
+if [ "$VIRT" = "microsoft" ] && [ -f /etc/xrdp/xrdp.ini ]; then
+    systemctl enable --now xrdp xrdp-sesman 2>/dev/null || true
+fi
+
+bootc status 2>/dev/null || true
+echo "[cloudws-init] System initialization complete."
+EOINIT
+chmod +x /usr/libexec/cloudws-init
+systemctl enable cloudws-init.service
+
+# ═══ 12. CUSTOM TOOLS ═══
+
+# cloudws-vfio-toggle
+cat > /usr/local/bin/cloudws-vfio-toggle <<'EOVFIO'
+#!/bin/bash
+case "${1:-}" in
+    list)
+        echo "=== IOMMU Groups ==="
+        for g in /sys/kernel/iommu_groups/*/devices/*; do
+            echo "Group $(basename $(dirname $(dirname $g))): $(lspci -nns ${g##*/})"
+        done ;;
+    bind|unbind|status) driverctl "$@" ;;
+    *) echo "Usage: cloudws-vfio-toggle {list|bind|unbind|status} [device]" ;;
+esac
+EOVFIO
+chmod +x /usr/local/bin/cloudws-vfio-toggle
+
+# iommu-groups
+cat > /usr/local/bin/iommu-groups <<'EOIOMMU'
+#!/bin/bash
+shopt -s nullglob
+for g in /sys/kernel/iommu_groups/*; do
+    echo -e "\033[1;34mIOMMU Group ${g##*/}:\033[0m"
+    for d in "$g"/devices/*; do echo "  $(lspci -nns "${d##*/}")"; done
+done
+EOIOMMU
+chmod +x /usr/local/bin/iommu-groups
+
+# cloudws-update
+cat > /usr/local/bin/cloudws-update <<'EOUPD'
+#!/bin/bash
+set -euo pipefail
+echo "CloudWS Update — pulling latest from registry..."
+if bootc update 2>/dev/null; then
+    echo "✓ Update staged. Reboot to apply. Rollback: sudo bootc rollback"
+else
+    echo "⚠ bootc update failed — trying switch..."
+    REF=$(bootc status --json 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin)['spec']['image']['image'])" 2>/dev/null || echo "")
+    [ -n "$REF" ] && bootc switch "$REF" || echo "✗ Failed. Check: sudo bootc status"
+fi
+EOUPD
+chmod +x /usr/local/bin/cloudws-update
+
+# cloudws-build (Linux-native build)
+cat > /usr/local/bin/cloudws-build <<'EOBLD'
+#!/bin/bash
+set -euo pipefail
+REPO="${CLOUDWS_REPO:-https://github.com/Kabuki94/CloudWS-bootc.git}"
+WORK="${CLOUDWS_WORK:-/tmp/cloudws-build-$$}"
+echo "╔══════════════════════════════════════════════════════════════╗"
+echo "║  CloudWS Build — Linux Native                               ║"
+echo "╚══════════════════════════════════════════════════════════════╝"
+if [ -f ./Containerfile ] && [ -f ./PACKAGES.md ]; then
+    echo "  Building from current directory..."
+    podman build --no-cache -t localhost/cloudws:latest .
+else
+    echo "  Cloning $REPO ..."
+    git clone --depth=1 "$REPO" "$WORK"
+    cd "$WORK"
+    podman build --no-cache -t localhost/cloudws:latest .
+fi
+echo "✓ Image built: localhost/cloudws:latest"
+echo ""
+echo "Deploy options:"
+echo "  sudo bootc switch --transport containers-storage localhost/cloudws:latest"
+echo "  sudo podman run --rm -it --privileged --pid=host localhost/cloudws:latest bootc install to-disk /dev/sdX"
+EOBLD
+chmod +x /usr/local/bin/cloudws-build
+
+# cloudws-rebuild (clone + build + push)
+cat > /usr/local/bin/cloudws-rebuild <<'EORBD'
+#!/bin/bash
+set -euo pipefail
+REPO="${CLOUDWS_REPO:-https://github.com/Kabuki94/CloudWS-bootc.git}"
+WORK="/tmp/cloudws-rebuild-$$"
+echo "CloudWS Rebuild — clone → build → push"
+git clone --depth=1 "$REPO" "$WORK" || { echo "✗ Clone failed"; exit 1; }
+cd "$WORK"
+podman build --no-cache -t localhost/cloudws:latest .
+read -p "Push to registry? (y/N): " push
+if [ "$push" = "y" ]; then
+    read -p "Registry ref [ghcr.io/kabuki94/cloudws-bootc:latest]: " ref
+    ref="${ref:-ghcr.io/kabuki94/cloudws-bootc:latest}"
+    podman tag localhost/cloudws:latest "$ref"
+    podman push "$ref"
+    echo "✓ Pushed to $ref"
+fi
+rm -rf "$WORK"
+echo "✓ Done. Run: sudo cloudws-update"
+EORBD
+chmod +x /usr/local/bin/cloudws-rebuild
+
+# cloudws-backup
+cat > /usr/local/bin/cloudws-backup <<'EOBAK'
+#!/bin/bash
+set -euo pipefail
+DEST="${1:-/var/backup/cloudws-$(date +%Y%m%d-%H%M%S)}"
+echo "CloudWS Backup → $DEST"
+mkdir -p "$DEST"
+podman volume ls --format '{{.Name}}' 2>/dev/null | while read v; do
+    podman volume export "$v" > "$DEST/podman-vol-${v}.tar" 2>/dev/null || true
+done
+[ -d /var/lib/rancher/k3s ] && tar czf "$DEST/k3s-state.tar.gz" -C /var/lib/rancher k3s 2>/dev/null || true
+if command -v virsh &>/dev/null; then
+    for dom in $(virsh list --all --name 2>/dev/null); do
+        virsh dumpxml "$dom" > "$DEST/vm-${dom}.xml" 2>/dev/null || true
+    done
+fi
+tar czf "$DEST/var-home.tar.gz" -C /var home 2>/dev/null || true
+echo "✓ Backup: $DEST"; ls -lh "$DEST/"
+EOBAK
+chmod +x /usr/local/bin/cloudws-backup
+
+# cloudws-deploy (deploy VM or container of itself)
+cat > /usr/local/bin/cloudws-deploy <<'EODEP'
+#!/bin/bash
+set -euo pipefail
+IMAGE="${CLOUDWS_IMAGE:-ghcr.io/kabuki94/cloudws-bootc:latest}"
+case "${1:-}" in
+    container)
+        echo "Deploying CloudWS container..."
+        podman run -d --name cloudws-node --privileged --pid=host "$IMAGE"
+        echo "✓ Container running: podman exec -it cloudws-node bash" ;;
+    vm)
+        echo "Deploying CloudWS VM (requires qcow2 image)..."
+        if [ ! -f /var/lib/libvirt/images/cloudws.qcow2 ]; then
+            echo "No qcow2 found. Building..."
+            podman run --rm --privileged -v /var/lib/libvirt/images:/output:z \
+                quay.io/centos-bootc/bootc-image-builder:latest \
+                --type qcow2 --rootfs ext4 "$IMAGE"
+        fi
+        virt-install --name cloudws-vm --ram 4096 --vcpus 4 \
+            --disk /var/lib/libvirt/images/cloudws.qcow2 \
+            --osinfo detect=on --boot uefi --noautoconsole
+        echo "✓ VM created: virsh console cloudws-vm" ;;
+    bare-metal)
+        echo "Installing to bare-metal..."
+        echo "Usage: sudo podman run --rm -it --privileged --pid=host $IMAGE bootc install to-disk /dev/sdX" ;;
+    *)
+        echo "Usage: cloudws-deploy {container|vm|bare-metal}"
+        echo "  container   Run CloudWS as a privileged container"
+        echo "  vm          Create a libvirt VM from the image"
+        echo "  bare-metal  Install to a physical disk" ;;
+esac
+EODEP
+chmod +x /usr/local/bin/cloudws-deploy
+
+# cloudws-hostname (show/set for HA)
+cat > /usr/local/bin/cloudws-hostname <<'EOHN'
+#!/bin/bash
+case "${1:-}" in
+    set)
+        [ -z "${2:-}" ] && { echo "Usage: cloudws-hostname set <name>"; exit 1; }
+        echo "$2" > /etc/hostname
+        hostnamectl set-hostname "$2"
+        echo "✓ Hostname set to: $2" ;;
+    *)
+        echo "Hostname : $(hostname)"
+        echo "Machine-ID: $(cat /etc/machine-id | head -c6)"
+        echo ""
+        echo "For HA clusters, each node auto-gets: CloudWS-<machine-id>"
+        echo "Override: cloudws-hostname set <custom-name>" ;;
+esac
+EOHN
+chmod +x /usr/local/bin/cloudws-hostname
+
+# Cockpit desktop launcher
+mkdir -p /usr/share/applications
+cat > /usr/share/applications/cockpit.desktop <<'EOCOCK'
+[Desktop Entry]
+Type=Application
+Name=CloudWS Cockpit
+Comment=Web-based server management
+Exec=xdg-open https://localhost:9090
+Icon=utilities-system-monitor
+Categories=System;
+EOCOCK
+
+# ═══ 13. SELINUX BUILD-TIME FIXES ═══
+if command -v restorecon &>/dev/null; then
+    restorecon -R /boot /etc /usr /var 2>/dev/null || true
+fi
+if command -v semanage &>/dev/null; then
+    semanage fcontext -a -t boot_t '/boot/bootupd-state.json' 2>/dev/null || true
+    restorecon -v /boot/bootupd-state.json 2>/dev/null || true
+    semanage fcontext -a -t accountsd_var_lib_t '/usr/share/accountsservice/interfaces(/.*)?'  2>/dev/null || true
+    restorecon -R /usr/share/accountsservice 2>/dev/null || true
+fi
+if command -v setsebool &>/dev/null; then
+    setsebool -P daemons_dump_core on 2>/dev/null || true
+    setsebool -P domain_can_mmap_files on 2>/dev/null || true
+    setsebool -P virt_sandbox_use_all_caps on 2>/dev/null || true
+    setsebool -P virt_use_nfs on 2>/dev/null || true
+fi
+
+# ═══ 14. SKELETON AUTOSTART ═══
+mkdir -p /etc/skel/.config/autostart
+cat > /etc/skel/.config/autostart/cloudws-user-setup.desktop <<'DESK'
+[Desktop Entry]
+Type=Application
+Name=CloudWS User Setup
+Exec=bash -c "sleep 8 && flatpak install -y flathub-beta com.usebottles.bottles 2>/dev/null; rm -f ~/.config/autostart/cloudws-user-setup.desktop"
+Hidden=false
+X-GNOME-Autostart-enabled=true
+DESK
+
+echo "[99-overrides] CloudWS v1.0 fully configured."
