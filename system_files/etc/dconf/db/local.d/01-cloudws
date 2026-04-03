@@ -18,3 +18,26 @@ dock-position='BOTTOM'
 dash-max-icon-size=48
 show-trash=false
 show-mounts=false
+
+[org/gnome/desktop/app-folders]
+folder-children=['Development', 'Gaming', 'System', 'Virtualization', 'Wine']
+
+[org/gnome/desktop/app-folders/folders/Development]
+name='Development'
+apps=['com.vscodium.codium.desktop', 'org.gnome.TextEditor.desktop']
+
+[org/gnome/desktop/app-folders/folders/Gaming]
+name='Gaming'
+apps=['steam.desktop', 'net.lutris.Lutris.desktop', 'io.github.dosbox-staging.desktop', 'com.usebottles.bottles.desktop', 'org.gnome.Ptyxis.desktop']
+
+[org/gnome/desktop/app-folders/folders/System]
+name='System'
+apps=['org.gnome.Settings.desktop', 'org.gnome.tweaks.desktop', 'org.gnome.DiskUtility.desktop', 'org.gnome.SystemMonitor.desktop', 'org.gnome.Logs.desktop', 'btop.desktop', 'nvtop.desktop', 'org.gnome.baobab.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'cloudws-cockpit.desktop']
+
+[org/gnome/desktop/app-folders/folders/Virtualization]
+name='Virtualization'
+apps=['virt-manager.desktop', 'io.podman_desktop.PodmanDesktop.desktop', 'org.gnome.Connections.desktop', 'waydroid.desktop', 'remote-viewer.desktop']
+
+[org/gnome/desktop/app-folders/folders/Wine]
+name='Wine'
+apps=['wine.desktop', 'wine-notepad.desktop', 'wine-winecfg.desktop', 'wine-regedit.desktop', 'wine-winehelp.desktop', 'wine-winefile.desktop', 'wine-uninstaller.desktop', 'wine-oleview.desktop', 'wine-wineboot.desktop']

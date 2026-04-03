@@ -29,11 +29,29 @@ switch ($choice) {
     }
     "2" {
         Write-Host "`n  Cloning $Repo ..." -ForegroundColor Cyan
-        if (Test-Path $Dir) { Set-Location $Dir; git pull }
-        else { git clone $Repo $Dir; Set-Location $Dir }
+        if (Test-Path $Dir) {
+            # Try git pull; if fails, nuke and re-clone
+            Set-Location $Dir
+            $pullResult = git pull 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "  Existing directory is not a git repo — re-cloning..." -ForegroundColor Yellow
+                Set-Location (Split-Path $Dir -Parent)
+                Remove-Item $Dir -Recurse -Force
+                git clone $Repo $Dir
+                Set-Location $Dir
+            }
+        } else {
+            git clone $Repo $Dir
+            Set-Location $Dir
+        }
         Write-Host "  ✓ Repository cloned to $Dir" -ForegroundColor Green
-        Write-Host "  Launching build script..." -ForegroundColor Cyan
-        & "$Dir\cloud-ws.ps1"
+        if (Test-Path ".\cloud-ws.ps1") {
+            Write-Host "  Launching build script..." -ForegroundColor Cyan
+            & ".\cloud-ws.ps1"
+        } else {
+            Write-Host "  ✗ cloud-ws.ps1 not found in $Dir" -ForegroundColor Red
+            Write-Host "    Check: https://github.com/Kabuki94/CloudWS-bootc" -ForegroundColor Yellow
+        }
     }
     "3" {
         Write-Host "`n  Downloading cloud-ws.ps1 ..." -ForegroundColor Cyan
