@@ -49,6 +49,7 @@ $scriptMap = @{
     "99-overrides.sh" = "scripts\99-overrides.sh"
     "packages.sh"     = "scripts\lib\packages.sh"
     "bib.toml"        = "config\bib.toml"
+    "bib.json"        = "config\bib.json"
 }
 
 foreach ($entry in $scriptMap.GetEnumerator()) {

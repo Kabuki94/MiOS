@@ -20,13 +20,15 @@ rechunk: build
         /usr/libexec/bootc-base-imagectl rechunk {{LOCAL}} {{IMAGE_NAME}}:{{VERSION}}
     @echo "✓ Rechunked: {{IMAGE_NAME}}:{{VERSION}}"
 
-# Generate RAW disk image
+# Generate RAW disk image (80 GiB root via config.json → /config.toml)
 raw:
     mkdir -p output
     sudo podman run --rm -it --privileged \
         --security-opt label=type:unconfined_t \
-        -v ./output:/output -v /var/lib/containers/storage:/var/lib/containers/storage \
-        {{BIB}} --type raw --rootfs ext4 --local {{LOCAL}}
+        -v ./output:/output \
+        -v /var/lib/containers/storage:/var/lib/containers/storage \
+        -v ./config/bib.json:/config.toml:ro \
+        {{BIB}} build --type raw --rootfs ext4 --local {{LOCAL}}
     @echo "✓ RAW image in output/"
 
 # Generate Anaconda installer ISO
@@ -34,21 +36,26 @@ iso:
     mkdir -p output
     sudo podman run --rm -it --privileged \
         --security-opt label=type:unconfined_t \
-        -v ./output:/output -v /var/lib/containers/storage:/var/lib/containers/storage \
-        {{BIB}} --type anaconda-iso --rootfs ext4 --local {{LOCAL}}
+        -v ./output:/output \
+        -v /var/lib/containers/storage:/var/lib/containers/storage \
+        -v ./config/bib.json:/config.toml:ro \
+        {{BIB}} build --type anaconda-iso --rootfs ext4 --local {{LOCAL}}
     @echo "✓ ISO in output/"
 
-# Generate VHD for Hyper-V (convert to VHDX manually with qemu-img)
+# Generate VHD for Hyper-V
 vhd:
     mkdir -p output
     sudo podman run --rm -it --privileged \
         --security-opt label=type:unconfined_t \
-        -v ./output:/output -v /var/lib/containers/storage:/var/lib/containers/storage \
-        {{BIB}} --type vhd --rootfs ext4 --local {{LOCAL}}
+        -v ./output:/output \
+        -v /var/lib/containers/storage:/var/lib/containers/storage \
+        -v ./config/bib.json:/config.toml:ro \
+        {{BIB}} build --type vhd --rootfs ext4 --local {{LOCAL}}
     @echo "✓ VHD in output/"
 
 # Export WSL2 tarball
 wsl:
+    mkdir -p output
     podman create --name cloudws-wsl-tmp {{LOCAL}} 2>/dev/null || true
     podman export cloudws-wsl-tmp -o output/cloudws-wsl.tar
     podman rm cloudws-wsl-tmp

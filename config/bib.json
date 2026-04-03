@@ -1,0 +1,10 @@
+{
+  "customizations": {
+    "filesystem": [
+      {
+        "mountpoint": "/",
+        "minsize": "80 GiB"
+      }
+    ]
+  }
+}
