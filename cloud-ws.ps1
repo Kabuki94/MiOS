@@ -121,7 +121,7 @@ $ErrorActionPreference = "Continue"
 $vmCheck = & podman machine inspect $BuilderMachine 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Step "Creating dedicated '$BuilderMachine' (your default machine is safe)..."
-    & podman machine init $BuilderMachine --rootful --cpus $cpu --memory $ram --disk-size 150
+    & podman machine init $BuilderMachine --rootful --cpus $cpu --memory $ram --disk-size 250
 }
 Write-Step "Starting '$BuilderMachine'..."
 & podman machine stop $BuilderMachine 2>$null; Start-Sleep 2
@@ -175,12 +175,21 @@ $ErrorActionPreference = "Stop"
 Write-Phase "3" "Generating Deployment Targets"
 $ErrorActionPreference = "Continue"
 
+# Helper: clean BIB intermediate dirs after each target
+function Clean-BIBTemp {
+    Get-ChildItem $OutputFolder -Directory -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -match "^(image|qcow2|raw|vpc|bootiso)$" } |
+        ForEach-Object { Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }
+    & podman system prune -f 2>$null | Out-Null
+}
+
 # ── RAW ──────────────────────────────────────────────────────────────────────
 Write-Step "TARGET 1 — RAW disk image..."
 & podman run --rm -it --privileged -v /var/lib/containers/storage:/var/lib/containers/storage -v "${OutputFolder}:/output:z" $BIBImage build --type raw --rootfs ext4 --local $LocalImage
 $genRaw = Get-ChildItem $OutputFolder -Filter "disk.raw" -Recurse -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 if ($genRaw) { Move-Item $genRaw.FullName $RawImg -Force; Write-OK "RAW: $(Get-FileSize $RawImg)" }
 else { Write-Warn "RAW failed" }
+Clean-BIBTemp
 
 # ── VHDX ─────────────────────────────────────────────────────────────────────
 Write-Step "TARGET 2 — VHD → VHDX (Hyper-V Gen2)..."
@@ -191,10 +200,11 @@ if ($genVhd) {
     & podman run --rm -v "${vDir}:/d:z" docker.io/alpine:latest sh -c "apk add --no-cache qemu-img && qemu-img convert -p -f vpc -O vhdx -o subformat=dynamic /d/$($genVhd.Name) /d/cloudws-hyperv.vhdx"
     if (Test-Path (Join-Path $vDir "cloudws-hyperv.vhdx")) {
         Move-Item (Join-Path $vDir "cloudws-hyperv.vhdx") $TargetVhdx -Force -ErrorAction SilentlyContinue
-        Remove-Item $genVhd.FullName -Force -ErrorAction SilentlyContinue
         Write-OK "VHDX: $(Get-FileSize $TargetVhdx)"
     }
+    Remove-Item $genVhd.FullName -Force -ErrorAction SilentlyContinue
 } else { Write-Warn "VHD failed" }
+Clean-BIBTemp
 
 # ── WSL2 ─────────────────────────────────────────────────────────────────────
 Write-Step "TARGET 3 — WSL2 tarball..."
@@ -211,6 +221,7 @@ Write-Step "TARGET 4 — Anaconda installer ISO..."
 $genIso = Get-ChildItem $OutputFolder -Filter "*.iso" -Recurse -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 if ($genIso) { Move-Item $genIso.FullName $TargetIso -Force; Write-OK "ISO: $(Get-FileSize $TargetIso)" }
 else { Write-Warn "ISO failed" }
+Clean-BIBTemp
 
 $ErrorActionPreference = "Stop"
 
