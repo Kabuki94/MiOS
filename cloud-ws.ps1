@@ -183,12 +183,13 @@ function Clean-BIBTemp {
     & podman system prune -f 2>$null | Out-Null
 }
 
-# Copy BIB config — TOML preferred (BIB mounts as /config.toml)
-$bibSrc = Join-Path $PWD "config\bib.toml"
-if (-not (Test-Path $bibSrc)) { $bibSrc = Join-Path $PWD "config\bib.json" }
-$bibConfDest = Join-Path $OutputFolder "bib-config.toml"
-if (Test-Path $bibSrc) {
-    Copy-Item $bibSrc $bibConfDest -Force
+# Copy BIB config (JSON — avoids known TOML parser bug #577)
+# BIB auto-detects /config.toml inside container (parses both JSON and TOML)
+$bibJson = Join-Path $PWD "config\bib.json"
+if (-not (Test-Path $bibJson)) { $bibJson = Join-Path $PWD "config\bib.toml" }
+$bibConfDest = Join-Path $OutputFolder "bib-config.json"
+if (Test-Path $bibJson) {
+    Copy-Item $bibJson $bibConfDest -Force
     Write-OK "BIB config: 80 GiB minimum root (mounted as /config.toml)"
 } else {
     Write-Warn "No BIB config found — disk may auto-size too small!"

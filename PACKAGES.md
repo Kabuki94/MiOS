@@ -84,6 +84,12 @@ gvfs-mtp
 NetworkManager-wifi
 NetworkManager-openvpn-gnome
 glibc-langpack-en
+adwaita-qt5
+adwaita-qt6
+qadwaitadecorations-qt5
+qadwaitadecorations-qt6
+qgnomeplatform-qt5
+qgnomeplatform-qt6
 ```
 
 ## GNOME Core Apps (OPTIONAL — uncomment to include)

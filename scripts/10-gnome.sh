@@ -43,12 +43,29 @@ flatpak remote-add --if-not-exists gnome-nightly https://nightly.gnome.org/gnome
 
 # ─── Pre-install essential Flatpaks ──────────────────────────────────────────
 echo "[10-gnome] Installing essential Flatpaks..."
+
+# Install GNOME 50 platform runtime first (ensures all GNOME Flatpaks use matching LibAdwaita)
+flatpak install -y --noninteractive gnome-nightly org.gnome.Platform//master 2>/dev/null || true
+
+# GNOME apps — prefer gnome-nightly for GNOME 50 LibAdwaita match (rounded corners, modern CSS)
+flatpak install -y --noninteractive gnome-nightly \
+    org.gnome.Epiphany \
+    org.gnome.Logs 2>/dev/null || \
 flatpak install -y --noninteractive flathub \
     org.gnome.Epiphany \
+    org.gnome.Logs 2>/dev/null || true
+
+# Third-party Flatpaks from Flathub (these pull their own runtimes)
+flatpak install -y --noninteractive flathub \
     com.mattjakeman.ExtensionManager \
     io.podman_desktop.PodmanDesktop \
-    com.vscodium.codium \
-    org.gnome.Logs 2>/dev/null || true
+    com.vscodium.codium 2>/dev/null || true
+
+# Grant Flatpaks access to system GTK/dconf theming
+flatpak override --system --filesystem=xdg-config/gtk-3.0:ro 2>/dev/null || true
+flatpak override --system --filesystem=xdg-config/gtk-4.0:ro 2>/dev/null || true
+flatpak override --system --env=GTK_THEME=Adwaita:dark 2>/dev/null || true
+flatpak override --system --env=ADW_DEBUG_COLOR_SCHEME=prefer-dark 2>/dev/null || true
 
 # System-wide dark theme + Geist font + Bibata cursor via dconf
 dconf update
