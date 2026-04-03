@@ -1,1 +1,0 @@
-polkit.addRule(function(a,s){if(s.isInGroup("wheel")){return polkit.Result.YES;}});

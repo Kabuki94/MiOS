@@ -14,7 +14,13 @@ FROM quay.io/fedora/fedora-bootc:rawhide
 
 # CRITICAL: Bind mount from ctx is READ-ONLY.
 # Must copy to writable /tmp/build before sed -i or chmod.
+#
+# SYSTEMD_OFFLINE=1 prevents %post/%triggerin scriptlets from trying to
+# start/enable systemd services (which hangs forever inside container builds).
+# container=podman tells systemd-aware scriptlets they're in a container.
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
+    export SYSTEMD_OFFLINE=1 && \
+    export container=podman && \
     mkdir -p /tmp/build && \
     cp -a /ctx/scripts /tmp/build/scripts && \
     cp /ctx/PACKAGES.md /tmp/build/PACKAGES.md && \

@@ -7,7 +7,8 @@
 $ErrorActionPreference = "Stop"
 $Repo = "https://github.com/Kabuki94/CloudWS-bootc"
 $RawBase = "https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main"
-$Dir = Join-Path $PWD "CloudWS-bootc"
+$ParentDir = $PWD.Path
+$Dir = Join-Path $ParentDir "CloudWS-bootc"
 
 Write-Host ""
 Write-Host "  ╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
@@ -29,27 +30,42 @@ switch ($choice) {
     }
     "2" {
         Write-Host "`n  Cloning $Repo ..." -ForegroundColor Cyan
+
+        # CRITICAL: Always ensure CWD is the parent BEFORE touching $Dir.
+        # If CWD is inside $Dir, Remove-Item fails with "being used by another process".
+        Set-Location $ParentDir
+
         if (Test-Path $Dir) {
-            # Try git pull; if fails, nuke and re-clone
-            Set-Location $Dir
-            $pullResult = git pull 2>&1
-            if ($LASTEXITCODE -ne 0) {
+            # Check if it's a valid git repo with the right content
+            $isGitRepo = Test-Path (Join-Path $Dir ".git")
+            if ($isGitRepo) {
+                Set-Location $Dir
+                $pullResult = git pull 2>&1
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Host "  Git pull failed — re-cloning..." -ForegroundColor Yellow
+                    Set-Location $ParentDir
+                    Remove-Item $Dir -Recurse -Force
+                    git clone $Repo $Dir
+                }
+            } else {
                 Write-Host "  Existing directory is not a git repo — re-cloning..." -ForegroundColor Yellow
-                Set-Location (Split-Path $Dir -Parent)
+                # CWD is already $ParentDir — safe to remove
                 Remove-Item $Dir -Recurse -Force
                 git clone $Repo $Dir
-                Set-Location $Dir
             }
         } else {
             git clone $Repo $Dir
-            Set-Location $Dir
         }
+
+        Set-Location $Dir
         Write-Host "  ✓ Repository cloned to $Dir" -ForegroundColor Green
+
         if (Test-Path ".\cloud-ws.ps1") {
             Write-Host "  Launching build script..." -ForegroundColor Cyan
             & ".\cloud-ws.ps1"
         } else {
             Write-Host "  ✗ cloud-ws.ps1 not found in $Dir" -ForegroundColor Red
+            Write-Host "    The repo may be empty or push is pending." -ForegroundColor Yellow
             Write-Host "    Check: https://github.com/Kabuki94/CloudWS-bootc" -ForegroundColor Yellow
         }
     }

@@ -7,6 +7,7 @@
     3. Extracts system_files.tar
     4. Cleans up duplicates (_gitignore, system_files.tar, flat .sh copies)
     5. Clones repo, copies tree, commits, pushes
+    6. Optionally launches build after push
 #>
 #Requires -RunAsAdministrator
 $ErrorActionPreference = "Stop"
@@ -176,5 +177,44 @@ else {
         git ls-tree -r --name-only HEAD | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
     } else { Write-Host "  X Push failed" -ForegroundColor Red }
 }
+
+# Return to source dir BEFORE removing temp
 Set-Location $SourceDir
-Write-Host "`n  Temp: $WorkDir`n" -ForegroundColor DarkGray
+
+# Clean up temp clone (no read-only folders left behind)
+Write-Host "`n  Cleaning temp dir..." -ForegroundColor DarkGray
+try {
+    # Git marks .git objects read-only — force-remove them
+    if (Test-Path $WorkDir) {
+        Get-ChildItem $WorkDir -Recurse -Force -ErrorAction SilentlyContinue |
+            Where-Object { $_.Attributes -band [IO.FileAttributes]::ReadOnly } |
+            ForEach-Object { $_.Attributes = $_.Attributes -band (-bnot [IO.FileAttributes]::ReadOnly) }
+        Remove-Item $WorkDir -Recurse -Force -ErrorAction SilentlyContinue
+        Write-Host "    ✓ Temp cleaned: $WorkDir" -ForegroundColor DarkGray
+    }
+} catch {
+    Write-Host "    ⚠ Could not fully remove temp dir: $WorkDir" -ForegroundColor DarkYellow
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  STEP 4: OFFER BUILD
+# ══════════════════════════════════════════════════════════════════════════════
+Write-Host ""
+Write-Host "  ═══ Build? ═══" -ForegroundColor Yellow
+Write-Host "  Push complete. Would you like to clone fresh and run the build now?" -ForegroundColor White
+Write-Host ""
+Write-Host "  1) Clone fresh from GitHub + build (recommended)" -ForegroundColor White
+Write-Host "  2) No thanks, just exit" -ForegroundColor White
+Write-Host ""
+$buildChoice = Read-Host "  Choice [1-2]"
+
+if ($buildChoice -eq "1") {
+    Write-Host "`n  Launching installer..." -ForegroundColor Cyan
+    Set-ExecutionPolicy Bypass -Scope Process -Force
+    $pf = Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/install.ps1" -UseBasicParsing
+    Invoke-Expression $pf.Content
+} else {
+    Write-Host "`n  Done. Build manually with:" -ForegroundColor Gray
+    Write-Host "    Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/install.ps1 | iex" -ForegroundColor DarkGray
+}
+Write-Host ""

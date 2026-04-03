@@ -86,6 +86,62 @@ NetworkManager-openvpn-gnome
 glibc-langpack-en
 ```
 
+## GNOME Core Apps (OPTIONAL — uncomment to include)
+
+These are the full GNOME Core Apps suite. By default they are EXCLUDED to keep
+the image lean. To include them, remove the `#` prefix from every package line
+below. All apps listed here get sorted into GNOME Shell app folders automatically
+by 99-overrides.sh (whether included as RPMs or not — Flatpak versions also get
+folder assignments via dconf).
+
+**To enable:** uncomment the block below (remove the leading `#` from each line).
+
+```packages-gnome-core-apps
+# ── Productivity ──
+# gnome-text-editor
+# gnome-calculator
+# gnome-calendar
+# gnome-contacts
+# gnome-clocks
+# gnome-weather
+# gnome-maps
+# gnome-characters
+# gnome-font-viewer
+#
+# ── Media ──
+# loupe
+# gnome-music
+# totem
+# snapshot
+# decibels
+# cheese
+#
+# ── Utilities ──
+# gnome-disk-utility
+# gnome-system-monitor
+# gnome-logs
+# baobab
+# gnome-connections
+# gnome-tweaks
+# deja-dup
+# file-roller
+# evince
+# simple-scan
+# seahorse
+# gnome-boxes
+```
+
+**App Folder Assignments** (applied by 99-overrides.sh dconf overlay regardless of install state):
+
+| Folder | Apps |
+|--------|------|
+| Productivity | Text Editor, Calculator, Calendar, Contacts, Clocks, Weather, Maps, Characters, Fonts |
+| Media | Loupe, Music, Videos, Snapshot, Decibels, Cheese |
+| Utilities | Disks, System Monitor, Logs, Disk Usage, Connections, Tweaks, Backups, Archives, Document Viewer, Scanner, Passwords, Boxes |
+| Internet | Epiphany, Firefox (if installed via Flatpak) |
+| Development | VSCodium, Podman Desktop, Ptyxis |
+| Gaming | Steam, Lutris, Bottles, DOSBox Staging |
+
 ## GPU Drivers — Mesa (AMD / Intel / software fallback)
 
 Universal Mesa stack supporting all AMD and Intel GPUs out of the box.
@@ -381,25 +437,21 @@ These are installed via `flatpak install`, not dnf.
 
 | Flatpak ID | Source | Description |
 |------------|--------|-------------|
+| org.gnome.Epiphany | flathub | GNOME Web browser (WebKitGTK) |
+| org.gnome.Logs | flathub | systemd journal viewer |
 | com.mattjakeman.ExtensionManager | flathub | GNOME Shell extension manager |
 | io.podman_desktop.PodmanDesktop | flathub | Container management GUI |
-| com.visualstudio.code | flathub | VS Code editor |
-| com.usebottles.bottles | flathub-beta | Windows app runner (autostart) |
-
-## GNOME Desktop Group (installed via @gnome-desktop)
-
-The `@gnome-desktop` group installs the full GNOME Shell, session, settings daemon,
-control center, mutter, gjs, gnome-keyring, polkit, and all core dependencies.
-Individual packages in `packages-gnome` above are extras beyond the group.
+| com.vscodium.codium | flathub | VSCodium editor |
 
 ## Totals
 
 | Category | Count |
 |----------|-------|
 | RPM Packages (explicit) | ~225 |
-| Flatpak Apps (pre-installed) | 4 |
+| Flatpak Apps (pre-installed) | 5 |
 | Git-cloned plugins | 3 (cockpit-benchmark, cockpit-zfs-manager, geist-font) |
 | Binary installs | 1 (K3s) |
 | Custom tools | 14 |
 | Config files | 20+ |
 | GDM sessions | 2 (GNOME Wayland, Steam Gamescope) |
+| Optional GNOME Core Apps | ~30 (uncomment to enable) |
