@@ -234,7 +234,7 @@ EOMOD
         modprobe -r "$mod" 2>/dev/null || true
     done
 
-    # ── GTK4/libadwaita renderer fix for VMs without GPU ──
+    # GTK4/libadwaita renderer fix for VMs without GPU
     # Hyper-V, QEMU, VMware all lack hardware 3D. GTK4's Vulkan/NGL
     # renderers produce broken styling under llvmpipe. Force Cairo.
     cat > "$RENDERER_CONF" <<'EORENDER'
@@ -324,7 +324,6 @@ if command -v pmlogger_check &>/dev/null; then
 fi
 
 # Flatpak dark theme — use ADW_DEBUG_COLOR_SCHEME, NOT GTK_THEME
-# GTK_THEME=Adwaita:dark forces legacy GTK3 chrome on libadwaita apps
 flatpak override --system --env=ADW_DEBUG_COLOR_SCHEME=prefer-dark 2>/dev/null || true
 flatpak update --appstream 2>/dev/null || true
 
@@ -368,17 +367,50 @@ done
 EOIOMMU
 chmod +x /usr/local/bin/iommu-groups
 
-# cloudws-update
+# cloudws-update — uses bootc upgrade with proper error handling
 cat > /usr/local/bin/cloudws-update <<'EOUPD'
 #!/bin/bash
 set -euo pipefail
-echo "CloudWS Update — pulling latest from registry..."
-if bootc update 2>/dev/null; then
-    echo "✓ Update staged. Reboot to apply. Rollback: sudo bootc rollback"
+echo "╔══════════════════════════════════════════════════════════════╗"
+echo "║  CloudWS Update — Checking for new image from registry     ║"
+echo "╚══════════════════════════════════════════════════════════════╝"
+echo ""
+
+# Show current status
+echo "Current deployment:"
+bootc status 2>/dev/null | head -20
+echo ""
+
+# Try upgrade (pulls new image if digest differs)
+echo "Checking registry for updates..."
+if bootc upgrade 2>&1; then
+    echo ""
+    echo "✓ Update staged. Reboot to apply."
+    echo "  Rollback anytime: sudo bootc rollback"
 else
-    echo "⚠ bootc update failed — trying switch..."
-    REF=$(bootc status --json 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin)['spec']['image']['image'])" 2>/dev/null || echo "")
-    [ -n "$REF" ] && bootc switch "$REF" || echo "✗ Failed. Check: sudo bootc status"
+    RC=$?
+    echo ""
+    if [ $RC -eq 77 ]; then
+        echo "✓ Already up to date — no new image available."
+    else
+        echo "⚠ bootc upgrade failed (exit $RC)."
+        echo ""
+        echo "Checking image origin..."
+        REF=$(bootc status --json 2>/dev/null | python3 -c "
+import sys,json
+s=json.load(sys.stdin)
+print(s.get('spec',{}).get('image',{}).get('image',''))
+" 2>/dev/null || echo "")
+        if [ -z "$REF" ] || echo "$REF" | grep -q "localhost"; then
+            echo "✗ Image origin is '$REF' — localhost can't be reached for updates."
+            echo "  Fix: sudo bootc switch ghcr.io/kabuki94/cloudws-bootc:latest"
+            echo "  Then reboot and try again."
+        else
+            echo "  Origin: $REF"
+            echo "  Check: is the GHCR package set to public?"
+            echo "  Manual: https://github.com/Kabuki94?tab=packages"
+        fi
+    fi
 fi
 EOUPD
 chmod +x /usr/local/bin/cloudws-update
@@ -414,113 +446,89 @@ cat > /usr/local/bin/cloudws-rebuild <<'EORBD'
 #!/bin/bash
 set -euo pipefail
 REPO="${CLOUDWS_REPO:-https://github.com/Kabuki94/CloudWS-bootc.git}"
+REGISTRY="${CLOUDWS_REGISTRY:-ghcr.io/kabuki94/cloudws-bootc}"
 WORK="/tmp/cloudws-rebuild-$$"
 echo "CloudWS Rebuild — clone → build → push"
 git clone --depth=1 "$REPO" "$WORK" || { echo "✗ Clone failed"; exit 1; }
 cd "$WORK"
-podman build --no-cache -t localhost/cloudws:latest .
-read -p "Push to registry? (y/N): " push
-if [ "$push" = "y" ]; then
-    read -p "Registry ref [ghcr.io/kabuki94/cloudws-bootc:latest]: " ref
-    ref="${ref:-ghcr.io/kabuki94/cloudws-bootc:latest}"
-    podman tag localhost/cloudws:latest "$ref"
-    podman push "$ref"
-    echo "✓ Pushed to $ref"
+# Build with GHCR tag so the image origin is correct for updates
+podman build --no-cache -t "${REGISTRY}:latest" .
+echo "✓ Built: ${REGISTRY}:latest"
+if podman push "${REGISTRY}:latest" 2>/dev/null; then
+    echo "✓ Pushed to ${REGISTRY}:latest"
+else
+    echo "⚠ Push failed — login first: podman login ghcr.io"
 fi
 rm -rf "$WORK"
-echo "✓ Done. Run: sudo cloudws-update"
 EORBD
 chmod +x /usr/local/bin/cloudws-rebuild
 
 # cloudws-backup
-cat > /usr/local/bin/cloudws-backup <<'EOBAK'
+cat > /usr/local/bin/cloudws-backup <<'EOBKP'
 #!/bin/bash
 set -euo pipefail
-DEST="${1:-/var/backup/cloudws-$(date +%Y%m%d-%H%M%S)}"
-echo "CloudWS Backup → $DEST"
+TS=$(date +%Y%m%d-%H%M%S)
+DEST="${1:-/var/home/backup-${TS}}"
 mkdir -p "$DEST"
-podman volume ls --format '{{.Name}}' 2>/dev/null | while read v; do
-    podman volume export "$v" > "$DEST/podman-vol-${v}.tar" 2>/dev/null || true
+echo "CloudWS Backup → $DEST"
+# Podman volumes
+podman volume ls -q | while read v; do
+    podman volume export "$v" -o "${DEST}/podman-vol-${v}.tar" 2>/dev/null && echo "  ✓ volume: $v" || true
 done
-[ -d /var/lib/rancher/k3s ] && tar czf "$DEST/k3s-state.tar.gz" -C /var/lib/rancher k3s 2>/dev/null || true
-if command -v virsh &>/dev/null; then
-    for dom in $(virsh list --all --name 2>/dev/null); do
-        virsh dumpxml "$dom" > "$DEST/vm-${dom}.xml" 2>/dev/null || true
-    done
+# K3s
+if [ -d /var/lib/rancher/k3s ]; then
+    tar czf "${DEST}/k3s-data.tar.gz" /var/lib/rancher/k3s 2>/dev/null && echo "  ✓ K3s data" || true
 fi
-tar czf "$DEST/var-home.tar.gz" -C /var home 2>/dev/null || true
-echo "✓ Backup: $DEST"; ls -lh "$DEST/"
-EOBAK
+# VM images
+if [ -d /var/lib/libvirt/images ]; then
+    tar czf "${DEST}/libvirt-images.tar.gz" /var/lib/libvirt/images 2>/dev/null && echo "  ✓ VM images" || true
+fi
+# Home directories
+tar czf "${DEST}/home.tar.gz" /var/home 2>/dev/null && echo "  ✓ /var/home" || true
+echo "✓ Backup complete: $DEST"
+ls -lh "$DEST"
+EOBKP
 chmod +x /usr/local/bin/cloudws-backup
 
 # cloudws-deploy
 cat > /usr/local/bin/cloudws-deploy <<'EODEP'
 #!/bin/bash
-set -euo pipefail
-IMAGE="${CLOUDWS_IMAGE:-ghcr.io/kabuki94/cloudws-bootc:latest}"
 case "${1:-}" in
-    container)
-        echo "Deploying CloudWS container..."
-        podman run -d --name cloudws-node --privileged --pid=host "$IMAGE"
-        echo "✓ Container running: podman exec -it cloudws-node bash" ;;
-    vm)
-        echo "Deploying CloudWS VM (requires qcow2 image)..."
-        if [ ! -f /var/lib/libvirt/images/cloudws.qcow2 ]; then
-            echo "No qcow2 found. Building..."
-            podman run --rm --privileged -v /var/lib/libvirt/images:/output:z \
-                quay.io/centos-bootc/bootc-image-builder:latest \
-                --type qcow2 --rootfs ext4 "$IMAGE"
-        fi
-        virt-install --name cloudws-vm --ram 4096 --vcpus 4 \
-            --disk /var/lib/libvirt/images/cloudws.qcow2 \
-            --osinfo detect=on --boot uefi --noautoconsole
-        echo "✓ VM created: virsh console cloudws-vm" ;;
-    bare-metal)
-        echo "Installing to bare-metal..."
-        echo "Usage: sudo podman run --rm -it --privileged --pid=host $IMAGE bootc install to-disk /dev/sdX" ;;
-    *)
-        echo "Usage: cloudws-deploy {container|vm|bare-metal}"
-        echo "  container   Run CloudWS as a privileged container"
-        echo "  vm          Create a libvirt VM from the image"
-        echo "  bare-metal  Install to a physical disk" ;;
+    vm) echo "Creating VM from CloudWS image..."
+        virt-install --name cloudws-vm --ram 4096 --vcpus 4 --import \
+            --disk path=/var/lib/libvirt/images/cloudws.qcow2,format=qcow2 \
+            --os-variant fedora-rawhide --network default 2>/dev/null || echo "Use virt-manager for GUI setup." ;;
+    container) podman run -d --name cloudws-container localhost/cloudws:latest ;;
+    *) echo "Usage: cloudws-deploy {vm|container}" ;;
 esac
 EODEP
 chmod +x /usr/local/bin/cloudws-deploy
 
 # cloudws-hostname
-cat > /usr/local/bin/cloudws-hostname <<'EOHN'
+cat > /usr/local/bin/cloudws-hostname <<'EOHOST'
 #!/bin/bash
-case "${1:-}" in
-    set)
-        [ -z "${2:-}" ] && { echo "Usage: cloudws-hostname set <n>"; exit 1; }
-        echo "$2" > /etc/hostname
-        hostnamectl set-hostname "$2"
-        echo "✓ Hostname set to: $2" ;;
-    *)
-        echo "Hostname : $(hostname)"
-        echo "Machine-ID: $(cat /etc/machine-id | head -c6)"
-        echo ""
-        echo "For HA clusters, each node auto-gets: CloudWS-<machine-id>"
-        echo "Override: cloudws-hostname set <custom-name>" ;;
-esac
-EOHN
+if [ -n "${1:-}" ]; then
+    hostnamectl set-hostname "$1"
+    echo "Hostname set to: $1"
+else
+    echo "Current: $(hostname)"
+    echo "Set:     cloudws-hostname <name>"
+fi
+EOHOST
 chmod +x /usr/local/bin/cloudws-hostname
 
-# Cockpit desktop launcher
-mkdir -p /usr/share/applications
-cat > /usr/share/applications/cloudws-cockpit.desktop <<'EOCOCK'
+# Cockpit desktop entry
+cat > /usr/share/applications/cockpit.desktop <<'EOCD'
 [Desktop Entry]
 Type=Application
-Name=CloudWS Cockpit
-Comment=Web-based server management
+Name=Cockpit
+Comment=Server Management Dashboard
 Exec=xdg-open https://localhost:9090
 Icon=utilities-system-monitor
 Categories=System;
-EOCOCK
+EOCD
 
 # ═══ 13. DESKTOP BLOAT CLEANUP ═══
-# Cannot dnf remove malcontent/gnome-tour — they're hard deps of gnome-shell.
-# Use NoDisplay=true desktop overrides to hide them from the app grid.
 echo "[99-overrides] Hiding bloat from app grid..."
 OVERRIDE_DIR="/usr/share/applications"
 for entry in \
@@ -556,7 +564,6 @@ for entry in \
     "qvidcap.desktop" \
     "org.gnome.Epiphany.WebAppProvider.desktop" \
 ; do
-    # Only write if the .desktop file exists (or force-create to block future installs)
     cat > "${OVERRIDE_DIR}/${entry}" <<EODT
 [Desktop Entry]
 Type=Application
@@ -571,24 +578,55 @@ cat > /usr/lib/tmpfiles.d/cloudws-nfs.conf <<'EOTMP'
 d /var/lib/nfs/statd 0755 rpcuser rpcuser -
 EOTMP
 
-# ═══ 15. VM SERVICE MASKING ═══
-# Mask services that fail or are useless in virtual machines / WSL2
-# These are no-ops on bare metal (the mask files are harmless)
-# The cloudws-init every-boot service handles environment-specific unmask
-cat > /usr/lib/systemd/system/cloudws-vm-mask.service <<'EOVMMASK'
+# ═══ 15. VM-SPECIFIC SERVICE GATING (via ConditionVirtualization drop-ins) ═══
+# REPLACED: The old approach used a runtime "cloudws-vm-mask.service" that
+# ran `systemctl mask --now` during early boot. This was fragile — it raced
+# with service startup and still allowed services to begin initializing.
+#
+# NEW APPROACH: ConditionVirtualization= drop-ins in 20-services.sh handle
+# bare-metal-only services (NFS, Pacemaker, CrowdSec, etc.). They never even
+# attempt to start in VMs — zero boot delay.
+#
+# This section adds ADDITIONAL VM-specific gating for services that need
+# more nuanced handling than just "bare metal only":
+#
+#   - gdm: skip in WSL2 only (WSLg provides its own display server)
+#   - nvidia-powerd: skip in ALL VMs (no physical GPU)
+#   - waydroid-container: skip in WSL2 (no nested binder)
+#   - dev-binderfs.mount: skip in WSL2 (no binder support)
+
+# GDM: only skip in WSL2 (Hyper-V VMs with a display SHOULD run GDM)
+mkdir -p /usr/lib/systemd/system/gdm.service.d
+cat > /usr/lib/systemd/system/gdm.service.d/10-skip-wsl.conf <<'DROPIN'
 [Unit]
-Description=Mask services unsuitable for VMs
-DefaultDependencies=no
-Before=sysinit.target
-ConditionVirtualization=yes
-[Service]
-Type=oneshot
-ExecStart=/bin/bash -c 'VIRT=$(systemd-detect-virt 2>/dev/null || echo none); case "$VIRT" in microsoft|wsl) systemctl mask --now gdm firewalld waydroid-container nvidia-powerd crowdsec crowdsec-firewall-bouncer dev-binderfs.mount 2>/dev/null || true ;; kvm|qemu|vmware) systemctl mask --now nvidia-powerd crowdsec-firewall-bouncer 2>/dev/null || true ;; esac'
-RemainAfterExit=yes
-[Install]
-WantedBy=sysinit.target
-EOVMMASK
-systemctl enable cloudws-vm-mask.service
+# CloudWS: Skip GDM in WSL2 — WSLg provides display server
+# Hyper-V VMs still get GDM (they have hyperv_drm framebuffer)
+ConditionPathExists=!/proc/sys/fs/binfmt_misc/WSLInterop
+DROPIN
+
+# nvidia-powerd: skip in ALL VMs (no physical NVIDIA GPU)
+if [ -f /usr/lib/systemd/system/nvidia-powerd.service ]; then
+    mkdir -p /usr/lib/systemd/system/nvidia-powerd.service.d
+    cat > /usr/lib/systemd/system/nvidia-powerd.service.d/10-bare-metal-only.conf <<'DROPIN'
+[Unit]
+ConditionVirtualization=no
+DROPIN
+fi
+
+# Waydroid + binder: skip in WSL2 (no binder/ashmem support)
+for svc in waydroid-container dev-binderfs.mount; do
+    if [ -f "/usr/lib/systemd/system/${svc}" ] || [ -f "/usr/lib/systemd/system/${svc}.service" ]; then
+        unit="${svc}"
+        [[ "$unit" != *.* ]] && unit="${unit}.service"
+        mkdir -p "/usr/lib/systemd/system/${unit}.d"
+        cat > "/usr/lib/systemd/system/${unit}.d/10-skip-wsl.conf" <<'DROPIN'
+[Unit]
+ConditionPathExists=!/proc/sys/fs/binfmt_misc/WSLInterop
+DROPIN
+    fi
+done
+
+echo "[99-overrides] VM-specific service drop-ins installed"
 
 # ═══ 16. SELINUX BUILD-TIME FIXES ═══
 if command -v restorecon &>/dev/null; then

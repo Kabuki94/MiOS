@@ -31,6 +31,11 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     PACKAGES_MD=/tmp/build/PACKAGES.md bash /tmp/build/scripts/build.sh && \
     rm -rf /tmp/build
 
+# Ensure GNOME Software can discover OS updates via rpm-ostree D-Bus bridge.
+# Without this package, GNOME Software only shows Flatpak updates.
+# rpm-ostree acts as a bridge to bootc's update mechanism.
+RUN dnf -y install gnome-software-rpm-ostree && dnf clean all
+
 # System file overlay (configs, systemd units, modprobe.d, dconf, etc.)
 RUN --mount=type=bind,from=ctx,source=/system_files,target=/tmp/sf \
     cp -a /tmp/sf/. / && \
