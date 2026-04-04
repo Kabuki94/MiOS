@@ -529,13 +529,15 @@ Categories=System;
 EOCD
 
 # ═══ 13. DESKTOP BLOAT CLEANUP ═══
+# ONLY hide things that are genuinely unwanted in the app grid.
+# Wine utilities, duplicate entries, and system internals.
+# Do NOT hide useful GNOME apps — they either go in folders (via dconf) or
+# aren't installed at all (handled by PACKAGES.md).
 echo "[99-overrides] Hiding bloat from app grid..."
 OVERRIDE_DIR="/usr/share/applications"
 for entry in \
     "org.gnome.Tour.desktop" \
     "org.freedesktop.MalcontentControl.desktop" \
-    "gnome-color-panel.desktop" \
-    "org.gnome.ColorManager.desktop" \
     "gamemode-simulate-game.desktop" \
     "nvidia-settings.desktop" \
     "nvidia-smi.desktop" \
@@ -555,6 +557,8 @@ for entry in \
     "wine-extension-hlp.desktop" \
     "wine-extension-ini.desktop" \
     "wine-extension-vbs.desktop" \
+    "wine-wordpad.desktop" \
+    "wine-winemine.desktop" \
     "yelp.desktop" \
     "xterm.desktop" \
     "bvnc.desktop" \
@@ -644,6 +648,60 @@ if command -v setsebool &>/dev/null; then
     setsebool -P virt_sandbox_use_all_caps on 2>/dev/null || true
     setsebool -P virt_use_nfs on 2>/dev/null || true
 fi
+
+# Build custom SELinux policy module for known Fedora Rawhide denials:
+#   - bootupctl reading /boot/bootupd-state.json
+#   - accounts-daemon reading malcontent symlinks
+#   - systemd-resolved writing resolve.hook socket
+#   - fapolicyd-rpm-l writing GDM socket
+#   - chcon using mac_admin capability
+if command -v checkmodule &>/dev/null && command -v semodule_package &>/dev/null; then
+    echo "[99-overrides] Building custom SELinux policy module..."
+    cat > /tmp/cloudws-selinux.te <<'EOTE'
+module cloudws 1.0;
+
+require {
+    type boot_t;
+    type bootupd_t;
+    type accountsd_t;
+    type systemd_resolved_t;
+    type fapolicyd_t;
+    type chcon_t;
+    type xdm_t;
+    type init_var_run_t;
+    class file { read getattr open };
+    class lnk_file { read getattr };
+    class sock_file write;
+    class capability mac_admin;
+}
+
+# bootupctl needs to read /boot/bootupd-state.json
+allow bootupd_t boot_t:file { read getattr open };
+
+# accounts-daemon reads malcontent interface symlinks
+allow accountsd_t accountsd_t:lnk_file { read getattr };
+
+# systemd-resolved writes to resolve.hook socket
+allow systemd_resolved_t init_var_run_t:sock_file write;
+
+# fapolicyd RPM library writes to GDM socket (triggered during updates)
+allow fapolicyd_t xdm_t:sock_file write;
+
+# chcon needs mac_admin for SELinux relabeling during boot
+allow chcon_t self:capability mac_admin;
+EOTE
+    checkmodule -M -m -o /tmp/cloudws-selinux.mod /tmp/cloudws-selinux.te 2>/dev/null && \
+    semodule_package -o /tmp/cloudws-selinux.pp -m /tmp/cloudws-selinux.mod 2>/dev/null && \
+    semodule -i /tmp/cloudws-selinux.pp 2>/dev/null && \
+    echo "[99-overrides] Custom SELinux policy installed" || \
+    echo "[99-overrides] SELinux policy build failed (non-fatal — denials may appear in logs)"
+    rm -f /tmp/cloudws-selinux.{te,mod,pp}
+fi
+
+# ═══ 16b. MASK SERIAL CONSOLE IN VMs ═══
+# serial-getty@ttyS0 crash-loops in Hyper-V (no serial port) — noisy but harmless.
+# Mask it everywhere (bare metal can unmask if serial console is needed).
+systemctl mask serial-getty@ttyS0.service 2>/dev/null || true
 
 # ═══ 17. SKELETON AUTOSTART ═══
 mkdir -p /etc/skel/.config/autostart

@@ -44,6 +44,7 @@ BARE_METAL_SERVICES=(
     crowdsec-firewall-bouncer
     multipathd
     osbuild-composer
+    osbuild-worker@1
 )
 
 for svc in "${BARE_METAL_SERVICES[@]}"; do

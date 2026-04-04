@@ -1,4 +1,4 @@
-# CloudWS v1.0 — Package Manifest
+# CloudWS v1.1 — Package Manifest
 
 This file is both documentation and the **single source of truth** for all packages installed in CloudWS.
 Build scripts parse the fenced code blocks below using `scripts/lib/packages.sh`.
@@ -37,13 +37,9 @@ python3
 
 ## GNOME 50 Desktop
 
-MINIMAL GNOME shell — system infrastructure ONLY. NO user apps as RPMs.
-ALL user-facing apps are Flatpaks (uninstallable by user).
+MINIMAL GNOME shell — infrastructure ONLY. NO viewer/editor apps as RPMs.
+Epiphany (Flatpak browser) handles documents, photos, and media natively.
 Steam, Wine, virt-manager, Waydroid are RPM exceptions (need system-level access).
-
-The GTK4 / libadwaita / GNOME 50 replacement-app packages are REQUIRED for
-modern window decorations, rounded corners, and the current GNOME look. Without
-them the desktop falls back to legacy GTK3 chrome.
 
 ```packages-gnome
 gnome-shell
@@ -61,17 +57,6 @@ libadwaita
 gnome-desktop4
 ptyxis
 nautilus
-papers
-loupe
-showtime
-resources
-gnome-text-editor
-gnome-disk-utility
-gnome-system-monitor
-baobab
-gnome-connections
-gnome-tweaks
-file-roller
 gnome-shell-extension-appindicator
 gnome-shell-extension-dash-to-dock
 adwaita-cursor-theme
@@ -114,15 +99,24 @@ qadwaitadecorations-qt6
 ## GNOME Core Apps (OPTIONAL — uncomment to include)
 
 These are additional GNOME Core Apps. By default they are EXCLUDED to keep
-the image lean. To include them, remove the `#` prefix from every package line
-below. All apps listed here get sorted into GNOME Shell app folders automatically
-by 99-overrides.sh (whether included as RPMs or not — Flatpak versions also get
-folder assignments via dconf).
-
-**To enable:** uncomment the block below (remove the leading `#` from each line).
+the image lean. Epiphany (browser) handles documents, photos, and media.
+To include any, remove the `#` prefix from the package line.
 
 ```packages-gnome-core-apps
-# ── Productivity ──
+# ── Viewers (browser handles these — only uncomment if you want dedicated apps) ──
+# papers
+# loupe
+# showtime
+# gnome-text-editor
+#
+# ── Utilities ──
+# gnome-disk-utility
+# gnome-system-monitor
+# baobab
+# gnome-connections
+# gnome-tweaks
+# file-roller
+# resources
 # gnome-calculator
 # gnome-calendar
 # gnome-contacts
@@ -138,7 +132,7 @@ folder assignments via dconf).
 # decibels
 # cheese
 #
-# ── Utilities ──
+# ── System ──
 # gnome-logs
 # deja-dup
 # simple-scan
@@ -146,23 +140,9 @@ folder assignments via dconf).
 # gnome-boxes
 ```
 
-**App Folder Assignments** (applied by 99-overrides.sh dconf overlay regardless of install state):
-
-| Folder | Apps |
-|--------|------|
-| Productivity | Text Editor, Calculator, Calendar, Contacts, Clocks, Weather, Maps, Characters, Fonts |
-| Media | Loupe, Music, Videos, Snapshot, Decibels, Cheese |
-| Utilities | Disks, System Monitor, Logs, Disk Usage, Connections, Tweaks, Backups, Archives, Document Viewer, Scanner, Passwords, Boxes |
-| Internet | Epiphany, Firefox (if installed via Flatpak) |
-| Development | VSCodium, Podman Desktop, Ptyxis |
-| Gaming | Steam, Lutris, Bottles, DOSBox Staging |
-
 ## GPU Drivers — Mesa (AMD / Intel / software fallback)
 
 Universal Mesa stack supporting all AMD and Intel GPUs out of the box.
-- AMD CPU microcode is inside `linux-firmware` (not a separate `amd-ucode` package on Fedora)
-- Intel CPU microcode is inside `microcode_ctl` (not a separate `intel-ucode` package on Fedora)
-- VDPAU is legacy — modern video decode uses VA-API via `mesa-va-drivers` (NVIDIA provides its own VDPAU)
 
 ```packages-gpu-mesa
 mesa-vulkan-drivers
@@ -241,136 +221,131 @@ Full Cockpit ecosystem with all plugins including Image Builder.
 ```packages-cockpit
 cockpit
 cockpit-system
-cockpit-machines
-cockpit-podman
-cockpit-ostree
+cockpit-ws
+cockpit-bridge
 cockpit-storaged
 cockpit-networkmanager
+cockpit-packagekit
+cockpit-podman
+cockpit-machines
+cockpit-ostree
 cockpit-selinux
-cockpit-image-builder
-cockpit-files
-pcp
 cockpit-pcp
-pcp-zeroconf
 ```
 
-## Windows Image Building Tools
+## Windows Interop & Remote Desktop
 
-Tools for building Windows ISOs with UUP Dump (aria2c, cabextract, wimlib, chntpw).
+Tools for Hyper-V Enhanced Session, SMB, and xRDP over vsock.
 
 ```packages-wintools
-aria2
-cabextract
-wimlib-utils
-chntpw
-genisoimage
+xrdp
+xorgxrdp
+samba
+samba-client
+cifs-utils
 ```
 
-## Security & IPS
+## Security
 
-Firewall, intrusion prevention, application control, USB protection.
+Host-based IPS, application whitelisting, USB device control.
 
 ```packages-security
-firewalld
-chrony
-zram-generator
+crowdsec
+crowdsec-firewall-bouncer-nftables
 fapolicyd
 usbguard
+setroubleshoot-server
 policycoreutils-python-utils
-checkpolicy
-ca-certificates
-```
-
-## Performance & Gaming
-
-TuneD power management, Gamescope SteamOS-mode, Steam, Wine.
-
-```packages-gaming
-tuned
-tuned-ppd
-tuned-utils
-tuned-profiles-cpu-partitioning
-tuned-profiles-realtime
-gamemode
-mangohud
-steam
-gamescope
-wine
-winetricks
-lutris
-dosbox-staging
-steam-devices
+audit
 driverctl
 ```
 
-## Guest Agents & Remote Access
+## Gaming
 
-Hypervisor guest agents for portability across Hyper-V, QEMU, VMware.
-xRDP for remote desktop access.
+Steam, Wine, and Gamescope for SteamOS-mode GDM session.
+
+```packages-gaming
+steam
+gamescope
+gamescope-session-steam
+wine
+wine-mono
+winetricks
+lutris
+gamemode
+lib32-gamemode
+mangohud
+libobs
+vulkan-tools
+dosbox-staging
+protontricks
+libstrangle
+```
+
+## Guest Agents
+
+Hypervisor integration services for VMs.
 
 ```packages-guests
-hyperv-daemons
 qemu-guest-agent
+hyperv-daemons
 open-vm-tools
 spice-vdagent
-xrdp
-xorgxrdp
+spice-webdavd
+libvirt-nss
 ```
 
-## Storage & Networking
+## Storage
 
-Samba, NFS, iSCSI, multipath, network diagnostics.
+Distributed/shared storage, multipath, iSCSI.
 
 ```packages-storage
-cifs-utils
-virtiofsd
-lvm2
-mdadm
-btrfs-progs
-samba
-samba-client
 nfs-utils
-openssh-server
-tailscale
-nvme-cli
+rpcbind
+glusterfs
+glusterfs-fuse
+glusterfs-server
+ceph-common
+iscsi-initiator-utils
+targetcli
 device-mapper-multipath
 sg3_utils
-socat
-nmap-ncat
-tcpdump
-iptables-nft
-conntrack-tools
+lvm2
+stratis-cli
+stratisd
+xfsprogs
+btrfs-progs
+e2fsprogs
+mdadm
 ```
 
-## High Availability / Clustering
+## High Availability
 
-Pacemaker/Corosync HA, distributed storage, Kubernetes support.
+Pacemaker/Corosync clustering + fencing.
 
 ```packages-ha
-corosync
 pacemaker
+corosync
 pcs
 fence-agents-all
 resource-agents
-keepalived
-haproxy
-sanlock
-libvirt-lock-sanlock
-iscsi-initiator-utils
-targetcli
-ceph-common
-glusterfs
-glusterfs-server
-glusterfs-fuse
-glusterfs-cli
-etcd
-helm
-wireguard-tools
+sbd
+dlm
+booth-arbitrator
+booth-core
+booth-site
+cluster-glue
+cluster-glue-libs
+python3-pcs
+python3-pyparsing
+ruby-devel
+gcc
+make
 ```
 
-## System Utilities
+## CLI Utilities
 
-CLI tools, cloud deployment, development essentials.
+Essential command-line tools.
 
 ```packages-utils
 git
@@ -452,8 +427,7 @@ These are installed via `flatpak install`, not dnf.
 
 | Flatpak ID | Source | Description |
 |------------|--------|-------------|
-| org.gnome.Epiphany | flathub | GNOME Web browser (WebKitGTK) |
-| org.gnome.Logs | flathub | systemd journal viewer |
+| org.gnome.Epiphany | flathub | GNOME Web browser (docs, photos, media — replaces dedicated viewer apps) |
 | com.mattjakeman.ExtensionManager | flathub | GNOME Shell extension manager |
 | io.podman_desktop.PodmanDesktop | flathub | Container management GUI |
 | com.vscodium.codium | flathub | VSCodium editor |
@@ -462,11 +436,11 @@ These are installed via `flatpak install`, not dnf.
 
 | Category | Count |
 |----------|-------|
-| RPM Packages (explicit) | ~240 |
-| Flatpak Apps (pre-installed) | 5 |
+| RPM Packages (explicit) | ~220 |
+| Flatpak Apps (pre-installed) | 4 |
 | Git-cloned plugins | 3 (cockpit-benchmark, cockpit-zfs-manager, geist-font) |
 | Binary installs | 1 (K3s) |
 | Custom tools | 14 |
 | Config files | 20+ |
 | GDM sessions | 2 (GNOME Wayland, Steam Gamescope) |
-| Optional GNOME Core Apps | ~18 (uncomment to enable) |
+| Optional GNOME Core Apps | ~25 (uncomment to enable) |

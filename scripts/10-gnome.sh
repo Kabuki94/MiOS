@@ -1,6 +1,6 @@
 #!/bin/bash
 # CloudWS — 10-gnome: GNOME 50 desktop (individual packages, NO @gnome-desktop group)
-# User-facing apps are Flatpaks. Only system packages here.
+# Epiphany (browser) handles docs, photos, media. Only system packages here.
 # Optional GNOME Core Apps can be enabled by uncommenting lines in PACKAGES.md.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -44,34 +44,25 @@ flatpak remote-add --if-not-exists gnome-nightly https://nightly.gnome.org/gnome
 # ─── Pre-install essential Flatpaks ──────────────────────────────────────────
 echo "[10-gnome] Installing essential Flatpaks..."
 
-# Install GNOME 50 platform runtime first (ensures all GNOME Flatpaks use matching LibAdwaita)
-flatpak install -y --noninteractive gnome-nightly org.gnome.Platform//master 2>/dev/null || true
+# Epiphany — the universal viewer (browser + docs + photos + media)
+flatpak install -y --noninteractive flathub org.gnome.Epiphany 2>/dev/null || \
+    flatpak install -y --noninteractive gnome-nightly org.gnome.Epiphany.Devel 2>/dev/null || true
 
-# GNOME apps — prefer gnome-nightly for GNOME 50 LibAdwaita match (rounded corners, modern CSS)
-flatpak install -y --noninteractive gnome-nightly \
-    org.gnome.Epiphany \
-    org.gnome.Logs 2>/dev/null || \
-flatpak install -y --noninteractive flathub \
-    org.gnome.Epiphany \
-    org.gnome.Logs 2>/dev/null || true
+# Extension Manager
+flatpak install -y --noninteractive flathub com.mattjakeman.ExtensionManager 2>/dev/null || true
 
-# Third-party Flatpaks from Flathub (these pull their own runtimes)
-flatpak install -y --noninteractive flathub \
-    com.mattjakeman.ExtensionManager \
-    io.podman_desktop.PodmanDesktop \
-    com.vscodium.codium 2>/dev/null || true
+# Podman Desktop
+flatpak install -y --noninteractive flathub io.podman_desktop.PodmanDesktop 2>/dev/null || true
 
-# ─── Flatpak theming overrides ──────────────────────────────────────────────
-# Give Flatpaks read access to host GTK config dirs so they pick up fonts/cursors
+# VSCodium
+flatpak install -y --noninteractive flathub com.vscodium.codium 2>/dev/null || true
+
+# ─── Flatpak theming ────────────────────────────────────────────────────────
+# Grant Flatpaks read access to GTK/adwaita config dirs
 flatpak override --system --filesystem=xdg-config/gtk-3.0:ro 2>/dev/null || true
 flatpak override --system --filesystem=xdg-config/gtk-4.0:ro 2>/dev/null || true
 
-# DO NOT set GTK_THEME — it forces legacy GTK3 theming and breaks libadwaita.
-# LibAdwaita reads color-scheme from xdg-desktop-portal-gnome automatically.
-# ADW_DEBUG_COLOR_SCHEME is the correct way to ensure dark mode in sandboxes.
+# Dark mode via ADW_DEBUG_COLOR_SCHEME — NOT GTK_THEME which breaks libadwaita
 flatpak override --system --env=ADW_DEBUG_COLOR_SCHEME=prefer-dark 2>/dev/null || true
 
-# System-wide dark theme + Geist font + Bibata cursor via dconf
-dconf update
-
-echo "[10-gnome] GNOME 50 minimal + Geist + Bibata + Flatpaks installed."
+echo "[10-gnome] GNOME 50 desktop configured."
