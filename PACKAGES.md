@@ -41,9 +41,14 @@ MINIMAL GNOME shell — system infrastructure ONLY. NO user apps as RPMs.
 ALL user-facing apps are Flatpaks (uninstallable by user).
 Steam, Wine, virt-manager, Waydroid are RPM exceptions (need system-level access).
 
+The GTK4 / libadwaita / GNOME 50 replacement-app packages are REQUIRED for
+modern window decorations, rounded corners, and the current GNOME look. Without
+them the desktop falls back to legacy GTK3 chrome.
+
 ```packages-gnome
 gnome-shell
 gnome-session
+gnome-session-wayland-session
 gnome-settings-daemon
 gnome-control-center
 mutter
@@ -51,8 +56,22 @@ gjs
 gnome-keyring
 polkit
 gdm
+gtk4
+libadwaita
+gnome-desktop4
 ptyxis
 nautilus
+papers
+loupe
+showtime
+resources
+gnome-text-editor
+gnome-disk-utility
+gnome-system-monitor
+baobab
+gnome-connections
+gnome-tweaks
+file-roller
 gnome-shell-extension-appindicator
 gnome-shell-extension-dash-to-dock
 adwaita-cursor-theme
@@ -84,17 +103,17 @@ gvfs-mtp
 NetworkManager-wifi
 NetworkManager-openvpn-gnome
 glibc-langpack-en
+qt6-qtbase-gui
+qt6-qtwayland
 adwaita-qt5
 adwaita-qt6
 qadwaitadecorations-qt5
 qadwaitadecorations-qt6
-qgnomeplatform-qt5
-qgnomeplatform-qt6
 ```
 
 ## GNOME Core Apps (OPTIONAL — uncomment to include)
 
-These are the full GNOME Core Apps suite. By default they are EXCLUDED to keep
+These are additional GNOME Core Apps. By default they are EXCLUDED to keep
 the image lean. To include them, remove the `#` prefix from every package line
 below. All apps listed here get sorted into GNOME Shell app folders automatically
 by 99-overrides.sh (whether included as RPMs or not — Flatpak versions also get
@@ -104,7 +123,6 @@ folder assignments via dconf).
 
 ```packages-gnome-core-apps
 # ── Productivity ──
-# gnome-text-editor
 # gnome-calculator
 # gnome-calendar
 # gnome-contacts
@@ -115,23 +133,14 @@ folder assignments via dconf).
 # gnome-font-viewer
 #
 # ── Media ──
-# loupe
 # gnome-music
-# totem
 # snapshot
 # decibels
 # cheese
 #
 # ── Utilities ──
-# gnome-disk-utility
-# gnome-system-monitor
 # gnome-logs
-# baobab
-# gnome-connections
-# gnome-tweaks
 # deja-dup
-# file-roller
-# evince
 # simple-scan
 # seahorse
 # gnome-boxes
@@ -453,11 +462,11 @@ These are installed via `flatpak install`, not dnf.
 
 | Category | Count |
 |----------|-------|
-| RPM Packages (explicit) | ~225 |
+| RPM Packages (explicit) | ~240 |
 | Flatpak Apps (pre-installed) | 5 |
 | Git-cloned plugins | 3 (cockpit-benchmark, cockpit-zfs-manager, geist-font) |
 | Binary installs | 1 (K3s) |
 | Custom tools | 14 |
 | Config files | 20+ |
 | GDM sessions | 2 (GNOME Wayland, Steam Gamescope) |
-| Optional GNOME Core Apps | ~30 (uncomment to enable) |
+| Optional GNOME Core Apps | ~18 (uncomment to enable) |
