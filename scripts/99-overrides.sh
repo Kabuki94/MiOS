@@ -320,7 +320,7 @@ fi
 # PCP metrics
 if command -v pmlogger_check &>/dev/null; then
     mkdir -p /var/log/pcp/pmlogger
-    systemctl restart pmproxy 2>/dev/null || true
+    systemctl restart pmcd pmlogger pmproxy 2>/dev/null || true
 fi
 
 # Flatpak dark theme — use ADW_DEBUG_COLOR_SCHEME, NOT GTK_THEME
@@ -517,15 +517,16 @@ fi
 EOHOST
 chmod +x /usr/local/bin/cloudws-hostname
 
-# Cockpit desktop entry
+# Cockpit desktop entry — pinned to dock via dconf favorites
 cat > /usr/share/applications/cockpit.desktop <<'EOCD'
 [Desktop Entry]
 Type=Application
 Name=Cockpit
-Comment=Server Management Dashboard
+Comment=CloudWS Server Management Dashboard
 Exec=xdg-open https://localhost:9090
 Icon=utilities-system-monitor
 Categories=System;
+Keywords=server;management;dashboard;web;
 EOCD
 
 # ═══ 13. DESKTOP BLOAT CLEANUP ═══

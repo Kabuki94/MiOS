@@ -181,7 +181,7 @@ Write-Step "Rechunking for optimized OCI layers..."
 $ErrorActionPreference = "Continue"
 & podman run --rm --privileged `
     -v /var/lib/containers/storage:/var/lib/containers/storage `
-    $RechunkImage /usr/libexec/bootc-base-imagectl rechunk $LocalImage
+    $RechunkImage /usr/libexec/bootc-base-imagectl rechunk $LocalImage $LocalImage
 $ErrorActionPreference = "Stop"
 Write-OK "Rechunk complete"
 

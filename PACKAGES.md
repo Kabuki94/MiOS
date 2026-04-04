@@ -231,6 +231,10 @@ cockpit-machines
 cockpit-ostree
 cockpit-selinux
 cockpit-pcp
+pcp
+pcp-system-tools
+pcp
+pcp-system-tools
 ```
 
 ## Windows Interop & Remote Desktop
@@ -428,6 +432,7 @@ These are installed via `flatpak install`, not dnf.
 | Flatpak ID | Source | Description |
 |------------|--------|-------------|
 | org.gnome.Epiphany | flathub | GNOME Web browser (docs, photos, media — replaces dedicated viewer apps) |
+| org.gnome.Logs | flathub | systemd journal viewer |
 | com.mattjakeman.ExtensionManager | flathub | GNOME Shell extension manager |
 | io.podman_desktop.PodmanDesktop | flathub | Container management GUI |
 | com.vscodium.codium | flathub | VSCodium editor |
@@ -437,7 +442,7 @@ These are installed via `flatpak install`, not dnf.
 | Category | Count |
 |----------|-------|
 | RPM Packages (explicit) | ~220 |
-| Flatpak Apps (pre-installed) | 4 |
+| Flatpak Apps (pre-installed) | 5 |
 | Git-cloned plugins | 3 (cockpit-benchmark, cockpit-zfs-manager, geist-font) |
 | Binary installs | 1 (K3s) |
 | Custom tools | 14 |

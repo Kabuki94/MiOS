@@ -48,6 +48,9 @@ echo "[10-gnome] Installing essential Flatpaks..."
 flatpak install -y --noninteractive flathub org.gnome.Epiphany 2>/dev/null || \
     flatpak install -y --noninteractive gnome-nightly org.gnome.Epiphany.Devel 2>/dev/null || true
 
+# Logs — systemd journal viewer
+flatpak install -y --noninteractive flathub org.gnome.Logs 2>/dev/null || true
+
 # Extension Manager
 flatpak install -y --noninteractive flathub com.mattjakeman.ExtensionManager 2>/dev/null || true
 

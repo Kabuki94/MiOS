@@ -8,9 +8,9 @@ set -euo pipefail
 # ─── Core services (run everywhere) ──────────────────────────────────────────
 systemctl enable libvirtd.service virtqemud.socket virtnetworkd.socket virtstoraged.socket
 systemctl enable cockpit.socket sshd.service
-systemctl enable tuned.service pmproxy.service
-# NOTE: pmcd/pmlogger removed — only pmproxy is installed in the base image.
-# If pcp (Performance Co-Pilot) is added later, re-enable pmcd + pmlogger here.
+systemctl enable tuned.service
+# PCP (Performance Co-Pilot) — required for Cockpit metrics history
+systemctl enable pmcd.service pmlogger.service pmproxy.service 2>/dev/null || true
 systemctl enable firewalld.service chronyd.service
 
 # ─── Optional services (fail silently if package wasn't installed) ────────────

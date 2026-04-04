@@ -11,7 +11,7 @@ enable-animations=true
 titlebar-font='Geist Bold 11'
 
 [org/gnome/shell]
-favorite-apps=['org.gnome.Nautilus.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.Epiphany.desktop', 'cloudws-cockpit.desktop', 'org.gnome.Software.desktop']
+favorite-apps=['org.gnome.Nautilus.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.Epiphany.desktop', 'cockpit.desktop', 'org.gnome.Software.desktop']
 enabled-extensions=['appindicatorsupport@rgcjonas.gmail.com', 'dash-to-dock@micxgx.gmail.com']
 
 [org/gnome/shell/extensions/dash-to-dock]
@@ -25,15 +25,15 @@ folder-children=['Development', 'Gaming', 'System', 'Virtualization']
 
 [org/gnome/desktop/app-folders/folders/Development]
 name='Development'
-apps=['com.vscodium.codium.desktop', 'org.gnome.TextEditor.desktop', 'org.gnome.Ptyxis.desktop']
+apps=['com.vscodium.codium.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.TextEditor.desktop']
 
 [org/gnome/desktop/app-folders/folders/Gaming]
 name='Gaming'
-apps=['steam.desktop', 'net.lutris.Lutris.desktop', 'io.github.dosbox-staging.desktop', 'com.usebottles.bottles.desktop', 'gamemode-simulate-game.desktop']
+apps=['steam.desktop', 'net.lutris.Lutris.desktop', 'io.github.dosbox-staging.desktop', 'com.usebottles.bottles.desktop', 'protontricks.desktop', 'dosbox-staging.desktop']
 
 [org/gnome/desktop/app-folders/folders/System]
 name='System'
-apps=['org.gnome.Settings.desktop', 'org.gnome.tweaks.desktop', 'org.gnome.DiskUtility.desktop', 'org.gnome.SystemMonitor.desktop', 'org.gnome.Logs.desktop', 'org.gnome.baobab.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'cloudws-cockpit.desktop', 'org.gnome.Software.desktop']
+apps=['org.gnome.Settings.desktop', 'cockpit.desktop', 'org.gnome.Logs.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.Software.desktop', 'btop.desktop', 'nvtop.desktop', 'org.gnome.tweaks.desktop', 'org.gnome.DiskUtility.desktop', 'org.gnome.SystemMonitor.desktop', 'org.gnome.baobab.desktop', 'org.gnome.font-viewer.desktop', 'gamt.desktop', 'org.gnome.IconBrowser4.desktop', 'org.gnome.Characters.desktop']
 
 [org/gnome/desktop/app-folders/folders/Virtualization]
 name='Virtualization'
