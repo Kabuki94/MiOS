@@ -61,10 +61,14 @@ flatpak install -y --noninteractive flathub \
     io.podman_desktop.PodmanDesktop \
     com.vscodium.codium 2>/dev/null || true
 
-# Grant Flatpaks access to system GTK/dconf theming
+# ─── Flatpak theming overrides ──────────────────────────────────────────────
+# Give Flatpaks read access to host GTK config dirs so they pick up fonts/cursors
 flatpak override --system --filesystem=xdg-config/gtk-3.0:ro 2>/dev/null || true
 flatpak override --system --filesystem=xdg-config/gtk-4.0:ro 2>/dev/null || true
-flatpak override --system --env=GTK_THEME=Adwaita:dark 2>/dev/null || true
+
+# DO NOT set GTK_THEME — it forces legacy GTK3 theming and breaks libadwaita.
+# LibAdwaita reads color-scheme from xdg-desktop-portal-gnome automatically.
+# ADW_DEBUG_COLOR_SCHEME is the correct way to ensure dark mode in sandboxes.
 flatpak override --system --env=ADW_DEBUG_COLOR_SCHEME=prefer-dark 2>/dev/null || true
 
 # System-wide dark theme + Geist font + Bibata cursor via dconf
