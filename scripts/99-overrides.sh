@@ -56,7 +56,7 @@ cloudws() {
     case "${1:-}" in
         --help|-h|help)
             echo "╔══════════════════════════════════════════════════════════════╗"
-            echo "║  CloudWS v1.0 — Cloud Workstation OS                       ║"
+            echo "║  CloudWS v1.1 — Cloud Workstation OS                       ║"
             echo "╚══════════════════════════════════════════════════════════════╝"
             echo ""
             echo "  cloudws --help             This help message"
@@ -320,7 +320,7 @@ fi
 # PCP metrics
 if command -v pmlogger_check &>/dev/null; then
     mkdir -p /var/log/pcp/pmlogger
-    systemctl restart pmcd pmlogger pmproxy 2>/dev/null || true
+    systemctl restart pmproxy 2>/dev/null || true
 fi
 
 # Flatpak dark theme — use ADW_DEBUG_COLOR_SCHEME, NOT GTK_THEME
@@ -649,53 +649,56 @@ if command -v setsebool &>/dev/null; then
     setsebool -P virt_use_nfs on 2>/dev/null || true
 fi
 
-# Build custom SELinux policy module for known Fedora Rawhide denials:
-#   - bootupctl reading /boot/bootupd-state.json
-#   - accounts-daemon reading malcontent symlinks
-#   - systemd-resolved writing resolve.hook socket
-#   - fapolicyd-rpm-l writing GDM socket
-#   - chcon using mac_admin capability
+# Build custom SELinux policy module for known Fedora Rawhide denials.
+# Uses individual allow rules guarded by `optional_policy` to handle missing
+# types gracefully (Rawhide policy changes frequently).
 if command -v checkmodule &>/dev/null && command -v semodule_package &>/dev/null; then
     echo "[99-overrides] Building custom SELinux policy module..."
-    cat > /tmp/cloudws-selinux.te <<'EOTE'
-module cloudws 1.0;
 
-require {
-    type boot_t;
-    type bootupd_t;
-    type accountsd_t;
-    type systemd_resolved_t;
-    type fapolicyd_t;
-    type chcon_t;
-    type xdm_t;
-    type init_var_run_t;
-    class file { read getattr open };
-    class lnk_file { read getattr };
-    class sock_file write;
-    class capability mac_admin;
-}
+    # Strategy: compile individual .te files for each rule. If a type doesn't
+    # exist in the current policy, that specific module fails but others succeed.
+    SELINUX_OK=0
+    SELINUX_FAIL=0
 
-# bootupctl needs to read /boot/bootupd-state.json
-allow bootupd_t boot_t:file { read getattr open };
+    declare -A CLOUDWS_POLICIES
+    CLOUDWS_POLICIES[bootupd]='
+module cloudws_bootupd 1.0;
+require { type boot_t; type bootupd_t; class file { read getattr open }; }
+allow bootupd_t boot_t:file { read getattr open };'
 
-# accounts-daemon reads malcontent interface symlinks
-allow accountsd_t accountsd_t:lnk_file { read getattr };
+    CLOUDWS_POLICIES[accountsd]='
+module cloudws_accountsd 1.0;
+require { type accountsd_t; class lnk_file { read getattr }; }
+allow accountsd_t self:lnk_file { read getattr };'
 
-# systemd-resolved writes to resolve.hook socket
-allow systemd_resolved_t init_var_run_t:sock_file write;
+    CLOUDWS_POLICIES[resolved]='
+module cloudws_resolved 1.0;
+require { type systemd_resolved_t; type init_var_run_t; class sock_file write; }
+allow systemd_resolved_t init_var_run_t:sock_file write;'
 
-# fapolicyd RPM library writes to GDM socket (triggered during updates)
-allow fapolicyd_t xdm_t:sock_file write;
+    CLOUDWS_POLICIES[fapolicyd]='
+module cloudws_fapolicyd 1.0;
+require { type fapolicyd_t; type xdm_t; class sock_file write; }
+allow fapolicyd_t xdm_t:sock_file write;'
 
-# chcon needs mac_admin for SELinux relabeling during boot
-allow chcon_t self:capability mac_admin;
-EOTE
-    checkmodule -M -m -o /tmp/cloudws-selinux.mod /tmp/cloudws-selinux.te 2>/dev/null && \
-    semodule_package -o /tmp/cloudws-selinux.pp -m /tmp/cloudws-selinux.mod 2>/dev/null && \
-    semodule -i /tmp/cloudws-selinux.pp 2>/dev/null && \
-    echo "[99-overrides] Custom SELinux policy installed" || \
-    echo "[99-overrides] SELinux policy build failed (non-fatal — denials may appear in logs)"
-    rm -f /tmp/cloudws-selinux.{te,mod,pp}
+    CLOUDWS_POLICIES[chcon]='
+module cloudws_chcon 1.0;
+require { type chcon_t; class capability mac_admin; }
+allow chcon_t self:capability mac_admin;'
+
+    for name in "${!CLOUDWS_POLICIES[@]}"; do
+        echo "${CLOUDWS_POLICIES[$name]}" > "/tmp/cloudws_${name}.te"
+        if checkmodule -M -m -o "/tmp/cloudws_${name}.mod" "/tmp/cloudws_${name}.te" 2>/dev/null && \
+           semodule_package -o "/tmp/cloudws_${name}.pp" -m "/tmp/cloudws_${name}.mod" 2>/dev/null && \
+           semodule -i "/tmp/cloudws_${name}.pp" 2>/dev/null; then
+            ((SELINUX_OK++))
+        else
+            ((SELINUX_FAIL++))
+        fi
+        rm -f "/tmp/cloudws_${name}".{te,mod,pp}
+    done
+
+    echo "[99-overrides] SELinux: ${SELINUX_OK} policies installed, ${SELINUX_FAIL} skipped (missing types in Rawhide policy)"
 fi
 
 # ═══ 16b. MASK SERIAL CONSOLE IN VMs ═══
@@ -714,4 +717,4 @@ Hidden=false
 X-GNOME-Autostart-enabled=true
 DESK
 
-echo "[99-overrides] CloudWS v1.0 fully configured."
+echo "[99-overrides] CloudWS v1.1 fully configured."
