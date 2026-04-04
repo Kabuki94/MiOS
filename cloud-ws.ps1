@@ -29,7 +29,7 @@ Set-StrictMode -Version Latest
 # ══════════════════════════════════════════════════════════════════════════════
 #  CONFIGURATION
 # ══════════════════════════════════════════════════════════════════════════════
-$Version        = (Get-Content "VERSION" -ErrorAction SilentlyContinue) ?? "1.0.0"
+$v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "1.0.0" }
 $ImageName      = "cloudws"
 $ImageTag       = "latest"
 $DefUser        = "cloudws"
@@ -67,7 +67,7 @@ function Read-Timed {
     while ($sw.Elapsed.TotalSeconds -lt $Timeout) {
         if ([Console]::KeyAvailable) {
             $k = [Console]::ReadKey($true)
-            if ($k.Key -eq 'Enter') { Write-Host ""; return if($buf){"$buf"}else{"$Default"} }
+            if ($k.Key -eq 'Enter') { Write-Host ""; if($buf){return $buf}else{return $Default} }
             if ($k.Key -eq 'Backspace' -and $buf.Length -gt 0) { $buf = $buf.Substring(0,$buf.Length-1); Write-Host "`b `b" -NoNewline }
             elseif ($k.KeyChar -match '[\x20-\x7E]') { $buf += $k.KeyChar; Write-Host $(if($Secret){"*"}else{$k.KeyChar}) -NoNewline }
         }
