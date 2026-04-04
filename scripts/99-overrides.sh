@@ -4,20 +4,9 @@
 set -euo pipefail
 
 # ═══ 0. PAM AUTHENTICATION — NUCLEAR-GRADE FIX ═══
-# The Fedora bootc base image defaults to the 'sssd' authselect profile.
-# Without sssd running, GDM rejects ALL passwords — even correct ones.
-#
-# CRITICAL: 'authselect select local --force' with NO extra features.
-# Any with-* feature references PAM .so files that may not exist on Rawhide:
-#   with-silent-lastlog → pam_lastlog.so (REMOVED in F43+)
-#   with-mkhomedir → pam_oddjob_mkhomedir.so (needs oddjobd service)
-#   with-pam-gnome-keyring → pam_gnome_keyring.so (may not be installed)
-# If ANY .so is missing, the ENTIRE PAM chain fails silently.
 authselect select local --force
 echo "[99-overrides] authselect: local profile selected"
 
-# NUCLEAR FALLBACK: If authselect somehow didn't produce a working password-auth,
-# write a minimal PAM config that is GUARANTEED to work with pam_unix.so only.
 if ! grep -q "pam_unix.so" /etc/pam.d/password-auth 2>/dev/null; then
     echo "[99-overrides] WARNING: authselect did not produce valid password-auth — writing manual PAM config"
     cat > /etc/pam.d/password-auth <<'EOFPAM'
@@ -117,8 +106,6 @@ echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
 localedef -i en_US -f UTF-8 en_US.UTF-8 2>/dev/null || true
 
 # ═══ 6. DYNAMIC HOSTNAME (HA-safe) ═══
-# Use machine-id suffix so cluster nodes get unique names:
-# CloudWS-a1b2c3 instead of all being "CloudWS"
 SHORT_ID=$(cat /etc/machine-id 2>/dev/null | head -c6 || echo "000000")
 HOSTNAME="CloudWS-${SHORT_ID}"
 echo "$HOSTNAME" > /etc/hostname
@@ -229,7 +216,12 @@ cat > /usr/libexec/cloudws-gpu-detect <<'EOGPU'
 set -euo pipefail
 VIRT=$(systemd-detect-virt 2>/dev/null || echo "none")
 echo "[cloudws-gpu-detect] Virtualization: $VIRT"
+
 NVIDIA_CONF="/etc/modprobe.d/99-cloudws-virt-gpu.conf"
+ENV_DIR="/etc/environment.d"
+RENDERER_CONF="${ENV_DIR}/60-cloudws-renderer.conf"
+mkdir -p "$ENV_DIR"
+
 if [ "$VIRT" != "none" ]; then
     echo "[cloudws-gpu-detect] VM detected ($VIRT) — blocking NVIDIA"
     cat > "$NVIDIA_CONF" <<'EOMOD'
@@ -241,15 +233,27 @@ EOMOD
     for mod in nvidia_uvm nvidia_drm nvidia_modeset nvidia; do
         modprobe -r "$mod" 2>/dev/null || true
     done
+
+    # ── GTK4/libadwaita renderer fix for VMs without GPU ──
+    # Hyper-V, QEMU, VMware all lack hardware 3D. GTK4's Vulkan/NGL
+    # renderers produce broken styling under llvmpipe. Force Cairo.
+    cat > "$RENDERER_CONF" <<'EORENDER'
+GSK_RENDERER=cairo
+GDK_DISABLE=vulkan
+EORENDER
+    echo "[cloudws-gpu-detect] Renderer forced to Cairo (no GPU in VM)"
+
     case "$VIRT" in
         microsoft|wsl) modprobe hyperv_drm 2>/dev/null || true ;;
         kvm|qemu)      modprobe virtio-gpu 2>/dev/null || true ;;
         vmware)        modprobe vmwgfx 2>/dev/null || true ;;
     esac
 else
-    echo "[cloudws-gpu-detect] Bare metal — NVIDIA enabled"
+    echo "[cloudws-gpu-detect] Bare metal — NVIDIA enabled, hardware renderer"
     rm -f "$NVIDIA_CONF"
+    rm -f "$RENDERER_CONF"
 fi
+
 touch /run/cloudws-gpu-detected
 EOGPU
 chmod +x /usr/libexec/cloudws-gpu-detect
@@ -319,8 +323,9 @@ if command -v pmlogger_check &>/dev/null; then
     systemctl restart pmcd pmlogger pmproxy 2>/dev/null || true
 fi
 
-# Flatpak dark theme + appstream
-flatpak override --system --env=GTK_THEME=Adwaita:dark 2>/dev/null || true
+# Flatpak dark theme — use ADW_DEBUG_COLOR_SCHEME, NOT GTK_THEME
+# GTK_THEME=Adwaita:dark forces legacy GTK3 chrome on libadwaita apps
+flatpak override --system --env=ADW_DEBUG_COLOR_SCHEME=prefer-dark 2>/dev/null || true
 flatpak update --appstream 2>/dev/null || true
 
 # Hyper-V enhanced session auto-setup
@@ -448,7 +453,7 @@ echo "✓ Backup: $DEST"; ls -lh "$DEST/"
 EOBAK
 chmod +x /usr/local/bin/cloudws-backup
 
-# cloudws-deploy (deploy VM or container of itself)
+# cloudws-deploy
 cat > /usr/local/bin/cloudws-deploy <<'EODEP'
 #!/bin/bash
 set -euo pipefail
@@ -482,12 +487,12 @@ esac
 EODEP
 chmod +x /usr/local/bin/cloudws-deploy
 
-# cloudws-hostname (show/set for HA)
+# cloudws-hostname
 cat > /usr/local/bin/cloudws-hostname <<'EOHN'
 #!/bin/bash
 case "${1:-}" in
     set)
-        [ -z "${2:-}" ] && { echo "Usage: cloudws-hostname set <name>"; exit 1; }
+        [ -z "${2:-}" ] && { echo "Usage: cloudws-hostname set <n>"; exit 1; }
         echo "$2" > /etc/hostname
         hostnamectl set-hostname "$2"
         echo "✓ Hostname set to: $2" ;;
@@ -503,7 +508,7 @@ chmod +x /usr/local/bin/cloudws-hostname
 
 # Cockpit desktop launcher
 mkdir -p /usr/share/applications
-cat > /usr/share/applications/cockpit.desktop <<'EOCOCK'
+cat > /usr/share/applications/cloudws-cockpit.desktop <<'EOCOCK'
 [Desktop Entry]
 Type=Application
 Name=CloudWS Cockpit
@@ -513,14 +518,86 @@ Icon=utilities-system-monitor
 Categories=System;
 EOCOCK
 
-# ═══ 13. SELINUX BUILD-TIME FIXES ═══
+# ═══ 13. DESKTOP BLOAT CLEANUP ═══
+# Cannot dnf remove malcontent/gnome-tour — they're hard deps of gnome-shell.
+# Use NoDisplay=true desktop overrides to hide them from the app grid.
+echo "[99-overrides] Hiding bloat from app grid..."
+OVERRIDE_DIR="/usr/share/applications"
+for entry in \
+    "org.gnome.Tour.desktop" \
+    "org.freedesktop.MalcontentControl.desktop" \
+    "gnome-color-panel.desktop" \
+    "org.gnome.ColorManager.desktop" \
+    "gamemode-simulate-game.desktop" \
+    "nvidia-settings.desktop" \
+    "nvidia-smi.desktop" \
+    "wine.desktop" \
+    "wine-notepad.desktop" \
+    "wine-winecfg.desktop" \
+    "wine-regedit.desktop" \
+    "wine-winehelp.desktop" \
+    "wine-winefile.desktop" \
+    "wine-uninstaller.desktop" \
+    "wine-oleview.desktop" \
+    "wine-wineboot.desktop" \
+    "winetricks.desktop" \
+    "wine-mime-msi.desktop" \
+    "wine-browsedrive.desktop" \
+    "wine-extension-chm.desktop" \
+    "wine-extension-hlp.desktop" \
+    "wine-extension-ini.desktop" \
+    "wine-extension-vbs.desktop" \
+    "yelp.desktop" \
+    "xterm.desktop" \
+    "bvnc.desktop" \
+    "bssh.desktop" \
+    "avahi-discover.desktop" \
+    "qv4l2.desktop" \
+    "qvidcap.desktop" \
+    "org.gnome.Epiphany.WebAppProvider.desktop" \
+; do
+    # Only write if the .desktop file exists (or force-create to block future installs)
+    cat > "${OVERRIDE_DIR}/${entry}" <<EODT
+[Desktop Entry]
+Type=Application
+Name=Hidden
+NoDisplay=true
+EODT
+done
+
+# ═══ 14. NFS STATE DIRECTORY (fixes rpc.statd error) ═══
+mkdir -p /var/lib/nfs/statd
+cat > /usr/lib/tmpfiles.d/cloudws-nfs.conf <<'EOTMP'
+d /var/lib/nfs/statd 0755 rpcuser rpcuser -
+EOTMP
+
+# ═══ 15. VM SERVICE MASKING ═══
+# Mask services that fail or are useless in virtual machines / WSL2
+# These are no-ops on bare metal (the mask files are harmless)
+# The cloudws-init every-boot service handles environment-specific unmask
+cat > /usr/lib/systemd/system/cloudws-vm-mask.service <<'EOVMMASK'
+[Unit]
+Description=Mask services unsuitable for VMs
+DefaultDependencies=no
+Before=sysinit.target
+ConditionVirtualization=yes
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'VIRT=$(systemd-detect-virt 2>/dev/null || echo none); case "$VIRT" in microsoft|wsl) systemctl mask --now gdm firewalld waydroid-container nvidia-powerd crowdsec crowdsec-firewall-bouncer dev-binderfs.mount 2>/dev/null || true ;; kvm|qemu|vmware) systemctl mask --now nvidia-powerd crowdsec-firewall-bouncer 2>/dev/null || true ;; esac'
+RemainAfterExit=yes
+[Install]
+WantedBy=sysinit.target
+EOVMMASK
+systemctl enable cloudws-vm-mask.service
+
+# ═══ 16. SELINUX BUILD-TIME FIXES ═══
 if command -v restorecon &>/dev/null; then
     restorecon -R /boot /etc /usr /var 2>/dev/null || true
 fi
 if command -v semanage &>/dev/null; then
     semanage fcontext -a -t boot_t '/boot/bootupd-state.json' 2>/dev/null || true
     restorecon -v /boot/bootupd-state.json 2>/dev/null || true
-    semanage fcontext -a -t accountsd_var_lib_t '/usr/share/accountsservice/interfaces(/.*)?'  2>/dev/null || true
+    semanage fcontext -a -t accountsd_var_lib_t '/usr/share/accountsservice/interfaces(/.*)?' 2>/dev/null || true
     restorecon -R /usr/share/accountsservice 2>/dev/null || true
 fi
 if command -v setsebool &>/dev/null; then
@@ -530,7 +607,7 @@ if command -v setsebool &>/dev/null; then
     setsebool -P virt_use_nfs on 2>/dev/null || true
 fi
 
-# ═══ 14. SKELETON AUTOSTART ═══
+# ═══ 17. SKELETON AUTOSTART ═══
 mkdir -p /etc/skel/.config/autostart
 cat > /etc/skel/.config/autostart/cloudws-user-setup.desktop <<'DESK'
 [Desktop Entry]
