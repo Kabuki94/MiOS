@@ -518,13 +518,15 @@ EOHOST
 chmod +x /usr/local/bin/cloudws-hostname
 
 # Cockpit desktop entry — pinned to dock via dconf favorites
+# Uses http:// (not https://) because Epiphany blocks self-signed certs.
+# Cockpit automatically redirects http→https with its own cert acceptance page.
 cat > /usr/share/applications/cockpit.desktop <<'EOCD'
 [Desktop Entry]
 Type=Application
 Name=Cockpit
 Comment=CloudWS Server Management Dashboard
-Exec=xdg-open https://localhost:9090
-Icon=utilities-system-monitor
+Exec=gio open http://localhost:9090
+Icon=cockpit
 Categories=System;
 Keywords=server;management;dashboard;web;
 EOCD
@@ -547,6 +549,7 @@ for entry in \
     "wine-winecfg.desktop" \
     "wine-regedit.desktop" \
     "wine-winehelp.desktop" \
+    "wine-help.desktop" \
     "wine-winefile.desktop" \
     "wine-uninstaller.desktop" \
     "wine-oleview.desktop" \
@@ -568,6 +571,9 @@ for entry in \
     "qv4l2.desktop" \
     "qvidcap.desktop" \
     "org.gnome.Epiphany.WebAppProvider.desktop" \
+    "org.gnome.IconBrowser4.desktop" \
+    "gtk4-icon-browser.desktop" \
+    "gamt.desktop" \
 ; do
     cat > "${OVERRIDE_DIR}/${entry}" <<EODT
 [Desktop Entry]

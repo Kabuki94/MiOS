@@ -29,12 +29,12 @@ apps=['com.vscodium.codium.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.Text
 
 [org/gnome/desktop/app-folders/folders/Gaming]
 name='Gaming'
-apps=['steam.desktop', 'net.lutris.Lutris.desktop', 'io.github.dosbox-staging.desktop', 'com.usebottles.bottles.desktop', 'protontricks.desktop', 'dosbox-staging.desktop']
+apps=['steam.desktop', 'net.lutris.Lutris.desktop', 'com.usebottles.bottles.desktop', 'dosbox-staging.desktop', 'io.github.dosbox-staging.desktop', 'protontricks.desktop', 'net.davidotek.pupgui2.desktop']
 
 [org/gnome/desktop/app-folders/folders/System]
 name='System'
-apps=['org.gnome.Settings.desktop', 'cockpit.desktop', 'org.gnome.Logs.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.Software.desktop', 'btop.desktop', 'nvtop.desktop', 'org.gnome.tweaks.desktop', 'org.gnome.DiskUtility.desktop', 'org.gnome.SystemMonitor.desktop', 'org.gnome.baobab.desktop', 'org.gnome.font-viewer.desktop', 'gamt.desktop', 'org.gnome.IconBrowser4.desktop', 'org.gnome.Characters.desktop']
+apps=['org.gnome.Settings.desktop', 'cockpit.desktop', 'org.gnome.Logs.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.Software.desktop', 'btop.desktop', 'nvtop.desktop', 'org.gnome.tweaks.desktop', 'org.gnome.DiskUtility.desktop', 'org.gnome.SystemMonitor.desktop', 'org.gnome.baobab.desktop']
 
 [org/gnome/desktop/app-folders/folders/Virtualization]
 name='Virtualization'
-apps=['virt-manager.desktop', 'io.podman_desktop.PodmanDesktop.desktop', 'org.gnome.Connections.desktop', 'waydroid.desktop', 'remote-viewer.desktop', 'org.gnome.Boxes.desktop']
+apps=['virt-manager.desktop', 'io.podman_desktop.PodmanDesktop.desktop', 'org.gnome.Connections.desktop', 'waydroid.desktop', 'Waydroid.desktop', 'org.waydro.id.desktop', 'remote-viewer.desktop', 'org.gnome.Boxes.desktop']
