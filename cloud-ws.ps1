@@ -183,25 +183,44 @@ function Clean-BIBTemp {
     & podman system prune -f 2>$null | Out-Null
 }
 
-# Copy BIB config (JSON — avoids known TOML parser bug #577)
-# BIB auto-detects /config.toml inside container (parses both JSON and TOML)
-$bibJson = Join-Path $PWD "config\bib.json"
-if (-not (Test-Path $bibJson)) { $bibJson = Join-Path $PWD "config\bib.toml" }
+# ── BIB config ───────────────────────────────────────────────────────────────
+# BIB selects parser based on mount-path extension, NOT file content.
+# config/bib.json is JSON → must be mounted as /config.json (not /config.toml).
+$bibConf = Join-Path $PWD "config\bib.json"
+if (-not (Test-Path $bibConf)) { $bibConf = Join-Path $PWD "config\bib.toml" }
 $bibConfDest = Join-Path $OutputFolder "bib-config.json"
-if (Test-Path $bibJson) {
-    Copy-Item $bibJson $bibConfDest -Force
-    Write-OK "BIB config: 80 GiB minimum root (mounted as /config.toml)"
+# Determine the correct mount path inside the BIB container
+if ($bibConf -match '\.toml$') {
+    $bibMountPath = "/config.toml"
+} else {
+    $bibMountPath = "/config.json"
+}
+if (Test-Path $bibConf) {
+    Copy-Item $bibConf $bibConfDest -Force
+    Write-OK "BIB config: 80 GiB minimum root (mounted as $bibMountPath)"
 } else {
     Write-Warn "No BIB config found — disk may auto-size too small!"
+    $bibConfDest = $null
+}
+
+# Helper: build BIB volume args (includes config mount only if present)
+function Get-BIBArgs {
+    param([string]$Type)
+    $args = @(
+        "run", "--rm", "-it", "--privileged",
+        "-v", "/var/lib/containers/storage:/var/lib/containers/storage",
+        "-v", "${OutputFolder}:/output:z"
+    )
+    if ($bibConfDest -and (Test-Path $bibConfDest)) {
+        $args += @("-v", "${bibConfDest}:${bibMountPath}:ro")
+    }
+    $args += @($BIBImage, "build", "--type", $Type, "--rootfs", "ext4", "--local", $LocalImage)
+    return $args
 }
 
 # ── RAW ──────────────────────────────────────────────────────────────────────
 Write-Step "TARGET 1 — RAW disk image..."
-& podman run --rm -it --privileged `
-    -v /var/lib/containers/storage:/var/lib/containers/storage `
-    -v "${OutputFolder}:/output:z" `
-    -v "${bibConfDest}:/config.toml:ro" `
-    $BIBImage build --type raw --rootfs ext4 --local $LocalImage
+& podman @(Get-BIBArgs "raw")
 $genRaw = Get-ChildItem $OutputFolder -Filter "disk.raw" -Recurse -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 if ($genRaw) { Move-Item $genRaw.FullName $RawImg -Force; Write-OK "RAW: $(Get-FileSize $RawImg)" }
 else { Write-Warn "RAW failed" }
@@ -209,11 +228,7 @@ Clean-BIBTemp
 
 # ── VHDX ─────────────────────────────────────────────────────────────────────
 Write-Step "TARGET 2 — VHD → VHDX (Hyper-V Gen2)..."
-& podman run --rm -it --privileged `
-    -v /var/lib/containers/storage:/var/lib/containers/storage `
-    -v "${OutputFolder}:/output:z" `
-    -v "${bibConfDest}:/config.toml:ro" `
-    $BIBImage build --type vhd --rootfs ext4 --local $LocalImage
+& podman @(Get-BIBArgs "vhd")
 $genVhd = Get-ChildItem $OutputFolder -Filter "disk.vhd" -Recurse -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 if ($genVhd) {
     $vDir = Split-Path $genVhd.FullName -Parent
@@ -237,11 +252,7 @@ else { Write-Warn "WSL failed" }
 
 # ── ISO ──────────────────────────────────────────────────────────────────────
 Write-Step "TARGET 4 — Anaconda installer ISO..."
-& podman run --rm -it --privileged `
-    -v /var/lib/containers/storage:/var/lib/containers/storage `
-    -v "${OutputFolder}:/output:z" `
-    -v "${bibConfDest}:/config.toml:ro" `
-    $BIBImage build --type anaconda-iso --rootfs ext4 --local $LocalImage
+& podman @(Get-BIBArgs "anaconda-iso")
 $genIso = Get-ChildItem $OutputFolder -Filter "*.iso" -Recurse -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 if ($genIso) { Move-Item $genIso.FullName $TargetIso -Force; Write-OK "ISO: $(Get-FileSize $TargetIso)" }
 else { Write-Warn "ISO failed" }

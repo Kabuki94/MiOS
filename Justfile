@@ -20,14 +20,14 @@ rechunk: build
         /usr/libexec/bootc-base-imagectl rechunk {{LOCAL}} {{IMAGE_NAME}}:{{VERSION}}
     @echo "✓ Rechunked: {{IMAGE_NAME}}:{{VERSION}}"
 
-# Generate RAW disk image (80 GiB root via config.json → /config.toml)
+# Generate RAW disk image (80 GiB root via config.json mounted as /config.json)
 raw:
     mkdir -p output
     sudo podman run --rm -it --privileged \
         --security-opt label=type:unconfined_t \
         -v ./output:/output \
         -v /var/lib/containers/storage:/var/lib/containers/storage \
-        -v ./config/bib.json:/config.toml:ro \
+        -v ./config/bib.json:/config.json:ro \
         {{BIB}} build --type raw --rootfs ext4 --local {{LOCAL}}
     @echo "✓ RAW image in output/"
 
@@ -38,7 +38,7 @@ iso:
         --security-opt label=type:unconfined_t \
         -v ./output:/output \
         -v /var/lib/containers/storage:/var/lib/containers/storage \
-        -v ./config/bib.json:/config.toml:ro \
+        -v ./config/bib.json:/config.json:ro \
         {{BIB}} build --type anaconda-iso --rootfs ext4 --local {{LOCAL}}
     @echo "✓ ISO in output/"
 
@@ -49,7 +49,7 @@ vhd:
         --security-opt label=type:unconfined_t \
         -v ./output:/output \
         -v /var/lib/containers/storage:/var/lib/containers/storage \
-        -v ./config/bib.json:/config.toml:ro \
+        -v ./config/bib.json:/config.json:ro \
         {{BIB}} build --type vhd --rootfs ext4 --local {{LOCAL}}
     @echo "✓ VHD in output/"
 
