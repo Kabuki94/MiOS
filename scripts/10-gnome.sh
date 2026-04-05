@@ -24,6 +24,8 @@ if [ -d /tmp/geist-font ]; then
     find /tmp/geist-font -name "*.otf" -o -name "*.ttf" | xargs -I{} cp {} /usr/share/fonts/geist/ 2>/dev/null || true
     rm -rf /tmp/geist-font
 fi
+# Rebuild font cache so Geist is discoverable by all apps (including Flatpaks)
+fc-cache -f /usr/share/fonts/geist 2>/dev/null || true
 
 # ─── Bibata Cursor Theme ────────────────────────────────────────────────────
 echo "[10-gnome] Installing Bibata-Modern-Classic cursor..."
@@ -54,18 +56,46 @@ flatpak install -y --noninteractive flathub org.gnome.Logs 2>/dev/null || true
 # Extension Manager
 flatpak install -y --noninteractive flathub com.mattjakeman.ExtensionManager 2>/dev/null || true
 
-# Podman Desktop
+# Podman Desktop — container management GUI
 flatpak install -y --noninteractive flathub io.podman_desktop.PodmanDesktop 2>/dev/null || true
 
-# VSCodium
+# VSCodium — code editor
 flatpak install -y --noninteractive flathub com.vscodium.codium 2>/dev/null || true
 
-# ─── Flatpak theming ────────────────────────────────────────────────────────
-# Grant Flatpaks read access to GTK/adwaita config dirs
-flatpak override --system --filesystem=xdg-config/gtk-3.0:ro 2>/dev/null || true
-flatpak override --system --filesystem=xdg-config/gtk-4.0:ro 2>/dev/null || true
+# Refine — replaces deprecated gnome-tweaks (modern libadwaita interface tweaker)
+flatpak install -y --noninteractive flathub ca.andyholmes.Refine 2>/dev/null || true
 
-# Dark mode via ADW_DEBUG_COLOR_SCHEME — NOT GTK_THEME which breaks libadwaita
-flatpak override --system --env=ADW_DEBUG_COLOR_SCHEME=prefer-dark 2>/dev/null || true
+# ─── Flatpak Theming & Font Overrides ───────────────────────────────────────
+# Give all Flatpak apps access to system fonts, GTK configs, and icons
+# so Geist font, Bibata cursor, and dark theme apply universally
+flatpak override --filesystem=/usr/share/fonts:ro
+flatpak override --filesystem=/usr/share/icons:ro
+flatpak override --filesystem=xdg-config/gtk-3.0:ro
+flatpak override --filesystem=xdg-config/gtk-4.0:ro
+flatpak override --filesystem=xdg-data/fonts:ro
+# Force dark mode for Flatpak apps via portal color-scheme (NOT GTK_THEME)
+flatpak override --env=ADW_DEBUG_COLOR_SCHEME=prefer-dark
+
+# ─── Waydroid GAPPS First-Boot Init Service ──────────────────────────────────
+# Waydroid needs `waydroid init -s GAPPS` to download system images on first boot.
+# Can't run during container build (needs /dev/binder, network).
+# This oneshot service runs once, initializes GAPPS, then skips on subsequent boots.
+cat > /usr/lib/systemd/system/cloudws-waydroid-init.service <<'EOSVC'
+[Unit]
+Description=CloudWS Waydroid GAPPS Initialization (first boot)
+After=network-online.target waydroid-container.service
+Wants=network-online.target
+ConditionPathExists=!/var/lib/waydroid/images/system.img
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'waydroid init -s GAPPS -f 2>/dev/null && echo "[cloudws] Waydroid GAPPS initialized" || echo "[cloudws] Waydroid init failed (will retry next boot)"'
+RemainAfterExit=no
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target
+EOSVC
+systemctl enable cloudws-waydroid-init.service 2>/dev/null || true
 
 echo "[10-gnome] GNOME 50 desktop configured."

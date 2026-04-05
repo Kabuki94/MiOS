@@ -1,4 +1,4 @@
-# CloudWS v1.1 — Package Manifest
+# CloudWS v1.2 — Package Manifest
 
 This file is both documentation and the **single source of truth** for all packages installed in CloudWS.
 Build scripts parse the fenced code blocks below using `scripts/lib/packages.sh`.
@@ -256,6 +256,7 @@ Host-based IPS, application whitelisting, USB device control.
 ```packages-security
 crowdsec
 crowdsec-firewall-bouncer-nftables
+firewalld
 fapolicyd
 usbguard
 setroubleshoot-server
@@ -436,13 +437,14 @@ These are installed via `flatpak install`, not dnf.
 | com.mattjakeman.ExtensionManager | flathub | GNOME Shell extension manager |
 | io.podman_desktop.PodmanDesktop | flathub | Container management GUI |
 | com.vscodium.codium | flathub | VSCodium editor |
+| ca.andyholmes.Refine | flathub | Modern interface tweaker (replaces gnome-tweaks) |
 
 ## Totals
 
 | Category | Count |
 |----------|-------|
 | RPM Packages (explicit) | ~220 |
-| Flatpak Apps (pre-installed) | 5 |
+| Flatpak Apps (pre-installed) | 6 |
 | Git-cloned plugins | 3 (cockpit-benchmark, cockpit-zfs-manager, geist-font) |
 | Binary installs | 1 (K3s) |
 | Custom tools | 14 |

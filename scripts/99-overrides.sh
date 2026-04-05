@@ -56,7 +56,7 @@ cloudws() {
     case "${1:-}" in
         --help|-h|help)
             echo "╔══════════════════════════════════════════════════════════════╗"
-            echo "║  CloudWS v1.1 — Cloud Workstation OS                       ║"
+            echo "║  CloudWS v1.2 — Cloud Workstation OS                       ║"
             echo "╚══════════════════════════════════════════════════════════════╝"
             echo ""
             echo "  cloudws --help             This help message"
@@ -327,10 +327,31 @@ fi
 flatpak override --system --env=ADW_DEBUG_COLOR_SCHEME=prefer-dark 2>/dev/null || true
 flatpak update --appstream 2>/dev/null || true
 
-# Hyper-V enhanced session auto-setup
+# Hyper-V Enhanced Session auto-setup (xRDP vsock)
 VIRT=$(systemd-detect-virt 2>/dev/null || echo "none")
 if [ "$VIRT" = "microsoft" ] && [ -f /etc/xrdp/xrdp.ini ]; then
+    # Configure xRDP for vsock transport (Hyper-V Enhanced Session)
+    if ! grep -q "use_vsock=true" /etc/xrdp/xrdp.ini; then
+        sed -i 's/^use_vsock=.*/use_vsock=true/' /etc/xrdp/xrdp.ini 2>/dev/null || true
+        sed -i 's/^security_layer=.*/security_layer=rdp/' /etc/xrdp/xrdp.ini 2>/dev/null || true
+        sed -i 's/^crypt_level=.*/crypt_level=none/' /etc/xrdp/xrdp.ini 2>/dev/null || true
+        sed -i 's/^bitmap_compression=.*/bitmap_compression=true/' /etc/xrdp/xrdp.ini 2>/dev/null || true
+    fi
+    # Configure xRDP session to use GNOME Wayland
+    if [ -f /etc/xrdp/startwm.sh ]; then
+        if ! grep -q "CLOUDWS_XRDP" /etc/xrdp/startwm.sh; then
+            cat >> /etc/xrdp/startwm.sh <<'EOXRDP'
+
+# CLOUDWS_XRDP: Hyper-V Enhanced Session → GNOME
+export XDG_SESSION_TYPE=x11
+export DESKTOP_SESSION=gnome
+export GNOME_SHELL_SESSION_MODE=ubuntu
+exec gnome-session 2>/dev/null || exec gnome-session-classic 2>/dev/null || exec /etc/X11/Xsession
+EOXRDP
+        fi
+    fi
     systemctl enable --now xrdp xrdp-sesman 2>/dev/null || true
+    echo "[cloudws-init] Hyper-V Enhanced Session enabled (xRDP vsock)"
 fi
 
 bootc status 2>/dev/null || true
@@ -512,7 +533,7 @@ if [ -n "${1:-}" ]; then
     echo "Hostname set to: $1"
 else
     echo "Current: $(hostname)"
-    echo "Set:     cloudws-hostname <name>"
+    echo "Set:     cloudws-hostname <n>"
 fi
 EOHOST
 chmod +x /usr/local/bin/cloudws-hostname
@@ -532,8 +553,8 @@ Keywords=server;management;dashboard;web;
 EOCD
 
 # ═══ 13. DESKTOP BLOAT CLEANUP ═══
-# ONLY hide things that are genuinely unwanted in the app grid.
-# Wine utilities, duplicate entries, and system internals.
+# Wine utility apps are NO LONGER hidden — they go into the "Wine" dconf folder.
+# Only genuinely unwanted items (tour, malcontent, system internals, duplicates) hidden.
 # Do NOT hide useful GNOME apps — they either go in folders (via dconf) or
 # aren't installed at all (handled by PACKAGES.md).
 echo "[99-overrides] Hiding bloat from app grid..."
@@ -545,24 +566,14 @@ for entry in \
     "nvidia-settings.desktop" \
     "nvidia-smi.desktop" \
     "wine.desktop" \
-    "wine-notepad.desktop" \
-    "wine-winecfg.desktop" \
-    "wine-regedit.desktop" \
-    "wine-winehelp.desktop" \
     "wine-help.desktop" \
-    "wine-winefile.desktop" \
-    "wine-uninstaller.desktop" \
-    "wine-oleview.desktop" \
-    "wine-wineboot.desktop" \
-    "winetricks.desktop" \
+    "wine-winehelp.desktop" \
     "wine-mime-msi.desktop" \
     "wine-browsedrive.desktop" \
     "wine-extension-chm.desktop" \
     "wine-extension-hlp.desktop" \
     "wine-extension-ini.desktop" \
     "wine-extension-vbs.desktop" \
-    "wine-wordpad.desktop" \
-    "wine-winemine.desktop" \
     "yelp.desktop" \
     "xterm.desktop" \
     "bvnc.desktop" \
@@ -573,7 +584,9 @@ for entry in \
     "org.gnome.Epiphany.WebAppProvider.desktop" \
     "org.gnome.IconBrowser4.desktop" \
     "gtk4-icon-browser.desktop" \
+    "gtk4-widget-factory.desktop" \
     "gamt.desktop" \
+    "org.gnome.tweaks.desktop" \
 ; do
     cat > "${OVERRIDE_DIR}/${entry}" <<EODT
 [Desktop Entry]
@@ -590,22 +603,6 @@ d /var/lib/nfs/statd 0755 rpcuser rpcuser -
 EOTMP
 
 # ═══ 15. VM-SPECIFIC SERVICE GATING (via ConditionVirtualization drop-ins) ═══
-# REPLACED: The old approach used a runtime "cloudws-vm-mask.service" that
-# ran `systemctl mask --now` during early boot. This was fragile — it raced
-# with service startup and still allowed services to begin initializing.
-#
-# NEW APPROACH: ConditionVirtualization= drop-ins in 20-services.sh handle
-# bare-metal-only services (NFS, Pacemaker, CrowdSec, etc.). They never even
-# attempt to start in VMs — zero boot delay.
-#
-# This section adds ADDITIONAL VM-specific gating for services that need
-# more nuanced handling than just "bare metal only":
-#
-#   - gdm: skip in WSL2 only (WSLg provides its own display server)
-#   - nvidia-powerd: skip in ALL VMs (no physical GPU)
-#   - waydroid-container: skip in WSL2 (no nested binder)
-#   - dev-binderfs.mount: skip in WSL2 (no binder support)
-
 # GDM: only skip in WSL2 (Hyper-V VMs with a display SHOULD run GDM)
 mkdir -p /usr/lib/systemd/system/gdm.service.d
 cat > /usr/lib/systemd/system/gdm.service.d/10-skip-wsl.conf <<'DROPIN'
@@ -639,6 +636,72 @@ done
 
 echo "[99-overrides] VM-specific service drop-ins installed"
 
+# ═══ 15b. HYPER-V ENHANCED SESSION — FIRST-BOOT AUTO-ENABLE ═══
+# On Hyper-V VMs (systemd-detect-virt = "microsoft"), xRDP must be configured
+# for vsock transport BEFORE GDM starts. cloudws-init handles runtime setup,
+# but we also need a pre-GDM oneshot to ensure the first boot gets Enhanced Session.
+cat > /usr/lib/systemd/system/cloudws-hyperv-enhanced.service <<'EOSVC'
+[Unit]
+Description=CloudWS Hyper-V Enhanced Session Setup
+After=local-fs.target network.target
+Before=gdm.service display-manager.service
+ConditionVirtualization=microsoft
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/cloudws-hyperv-enhanced
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOSVC
+
+cat > /usr/libexec/cloudws-hyperv-enhanced <<'EOHV'
+#!/bin/bash
+set -euo pipefail
+# Only configure if xRDP is installed
+if [ ! -f /etc/xrdp/xrdp.ini ]; then
+    echo "[cloudws-hyperv] xrdp not installed, skipping"
+    exit 0
+fi
+
+echo "[cloudws-hyperv] Configuring Enhanced Session (vsock)..."
+
+# Enable vsock transport for Hyper-V
+sed -i 's/^use_vsock=.*/use_vsock=true/' /etc/xrdp/xrdp.ini 2>/dev/null || true
+sed -i 's/^security_layer=.*/security_layer=rdp/' /etc/xrdp/xrdp.ini 2>/dev/null || true
+sed -i 's/^crypt_level=.*/crypt_level=none/' /etc/xrdp/xrdp.ini 2>/dev/null || true
+sed -i 's/^bitmap_compression=.*/bitmap_compression=true/' /etc/xrdp/xrdp.ini 2>/dev/null || true
+
+# Ensure xrdp services are running
+systemctl enable --now xrdp xrdp-sesman 2>/dev/null || true
+
+echo "[cloudws-hyperv] Enhanced Session ready"
+EOHV
+chmod +x /usr/libexec/cloudws-hyperv-enhanced
+systemctl enable cloudws-hyperv-enhanced.service 2>/dev/null || true
+
+# ═══ 15c. FIX COCKPIT SOCKET DROP-IN PERMISSIONS ═══
+# Container builds sometimes leave listen.conf executable + world-writable.
+# systemd warns about this on every boot.
+if [ -f /etc/systemd/system/cockpit.socket.d/listen.conf ]; then
+    chmod 644 /etc/systemd/system/cockpit.socket.d/listen.conf
+fi
+
+# ═══ 15d. POLKIT CONTAINER WORKAROUND ═══
+# polkit fails in rootless containers (needs CAP_SYS_ADMIN for namespace setup).
+# This is expected in WSL2/Podman containers — not a bug on bare metal or Hyper-V VMs.
+# Create a drop-in to reduce restart spam in container environments.
+mkdir -p /usr/lib/systemd/system/polkit.service.d
+cat > /usr/lib/systemd/system/polkit.service.d/10-cloudws-container.conf <<'DROPIN'
+[Service]
+# Reduce restart spam when polkit can't get CAP_SYS_ADMIN in containers
+Restart=on-failure
+RestartSec=30
+StartLimitIntervalSec=300
+StartLimitBurst=3
+DROPIN
+
 # ═══ 16. SELINUX BUILD-TIME FIXES ═══
 if command -v restorecon &>/dev/null; then
     restorecon -R /boot /etc /usr /var 2>/dev/null || true
@@ -657,13 +720,9 @@ if command -v setsebool &>/dev/null; then
 fi
 
 # Build custom SELinux policy module for known Fedora Rawhide denials.
-# Uses individual allow rules guarded by `optional_policy` to handle missing
-# types gracefully (Rawhide policy changes frequently).
 if command -v checkmodule &>/dev/null && command -v semodule_package &>/dev/null; then
     echo "[99-overrides] Building custom SELinux policy module..."
 
-    # Strategy: compile individual .te files for each rule. If a type doesn't
-    # exist in the current policy, that specific module fails but others succeed.
     SELINUX_OK=0
     SELINUX_FAIL=0
 
@@ -724,4 +783,4 @@ Hidden=false
 X-GNOME-Autostart-enabled=true
 DESK
 
-echo "[99-overrides] CloudWS v1.1 fully configured."
+echo "[99-overrides] CloudWS v1.2 fully configured."

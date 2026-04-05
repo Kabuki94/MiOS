@@ -11,7 +11,15 @@ systemctl enable cockpit.socket sshd.service
 systemctl enable tuned.service
 # PCP (Performance Co-Pilot) — required for Cockpit metrics history
 systemctl enable pmcd.service pmlogger.service pmproxy.service 2>/dev/null || true
-systemctl enable firewalld.service chronyd.service
+# Firewalld — guard against missing package (not in base bootc image)
+if systemctl list-unit-files firewalld.service &>/dev/null; then
+    systemctl enable firewalld.service
+else
+    echo "[20-services] NOTICE: firewalld.service not found — installing..."
+    dnf -y install firewalld --skip-unavailable 2>/dev/null || true
+    systemctl enable firewalld.service 2>/dev/null || echo "[20-services] WARNING: firewalld still not available"
+fi
+systemctl enable chronyd.service 2>/dev/null || true
 
 # ─── Optional services (fail silently if package wasn't installed) ────────────
 systemctl enable fapolicyd.service usbguard.service 2>/dev/null || true
@@ -59,8 +67,9 @@ for svc in "${BARE_METAL_SERVICES[@]}"; do
     cat > "${DROPIN_DIR}/10-bare-metal-only.conf" <<'DROPIN'
 [Unit]
 # CloudWS: Skip this service in VMs/containers — it causes boot delays
-# or has no function without physical hardware. Remove this drop-in to
-# force-enable in VMs: rm /usr/lib/systemd/system/<service>.d/10-bare-metal-only.conf
+# or has no function without physical hardware.
+# Remove this drop-in to force-enable in VMs:
+#   rm /usr/lib/systemd/system/<service>.d/10-bare-metal-only.conf
 ConditionVirtualization=no
 DROPIN
 done

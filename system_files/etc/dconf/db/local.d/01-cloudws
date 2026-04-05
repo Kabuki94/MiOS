@@ -9,6 +9,7 @@ enable-animations=true
 
 [org/gnome/desktop/wm/preferences]
 titlebar-font='Geist Bold 11'
+button-layout='close,minimize:'
 
 [org/gnome/shell]
 favorite-apps=['org.gnome.Nautilus.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.Epiphany.desktop', 'cockpit.desktop', 'org.gnome.Software.desktop']
@@ -21,7 +22,7 @@ show-trash=false
 show-mounts=false
 
 [org/gnome/desktop/app-folders]
-folder-children=['Development', 'Gaming', 'System', 'Virtualization']
+folder-children=['Development', 'Gaming', 'System', 'Virtualization', 'Wine']
 
 [org/gnome/desktop/app-folders/folders/Development]
 name='Development'
@@ -33,8 +34,12 @@ apps=['steam.desktop', 'net.lutris.Lutris.desktop', 'com.usebottles.bottles.desk
 
 [org/gnome/desktop/app-folders/folders/System]
 name='System'
-apps=['org.gnome.Settings.desktop', 'cockpit.desktop', 'org.gnome.Logs.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.Software.desktop', 'btop.desktop', 'nvtop.desktop', 'org.gnome.tweaks.desktop', 'org.gnome.DiskUtility.desktop', 'org.gnome.SystemMonitor.desktop', 'org.gnome.baobab.desktop']
+apps=['org.gnome.Settings.desktop', 'cockpit.desktop', 'org.gnome.Logs.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'ca.andyholmes.Refine.desktop', 'org.gnome.Software.desktop', 'btop.desktop', 'nvtop.desktop', 'org.gnome.DiskUtility.desktop', 'org.gnome.SystemMonitor.desktop', 'org.gnome.baobab.desktop']
 
 [org/gnome/desktop/app-folders/folders/Virtualization]
 name='Virtualization'
 apps=['virt-manager.desktop', 'io.podman_desktop.PodmanDesktop.desktop', 'org.gnome.Connections.desktop', 'waydroid.desktop', 'Waydroid.desktop', 'org.waydro.id.desktop', 'remote-viewer.desktop', 'org.gnome.Boxes.desktop']
+
+[org/gnome/desktop/app-folders/folders/Wine]
+name='Wine'
+apps=['wine-notepad.desktop', 'wine-winecfg.desktop', 'wine-regedit.desktop', 'wine-winefile.desktop', 'wine-uninstaller.desktop', 'wine-oleview.desktop', 'wine-wineboot.desktop', 'wine-wordpad.desktop', 'wine-winemine.desktop', 'winetricks.desktop']

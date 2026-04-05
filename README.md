@@ -98,7 +98,7 @@ After building, OCI layers are optimized via `bootc-base-imagectl rechunk` for 5
 Fedora Rawhide (fc45) | GNOME 50 "Tokyo" | Wayland-only
 ├── ComposeFS + XFS (bare-metal) / ext4 (images)
 ├── bootc (immutable, atomic upgrades, rollback)
-├── Flatpak-first (5 pre-installed apps, user-removable + GNOME Software)
+├── Flatpak-first (6 pre-installed apps, user-removable + GNOME Software)
 ├── Gamescope Steam Session (SteamOS-mode, selectable at GDM)
 ├── KVM/QEMU/Libvirt + VFIO GPU Passthrough + Looking Glass B7
 ├── Podman + K3s + Pacemaker/Corosync HA Clustering
@@ -125,7 +125,7 @@ Fedora Rawhide (fc45) | GNOME 50 "Tokyo" | Wayland-only
 
 **RPM layer:** GNOME Shell, Nautilus, Ptyxis (terminal), GNOME Software, virt-manager, Wine, Steam, Waydroid
 
-**Pre-installed Flatpaks (exactly 5):**
+**Pre-installed Flatpaks (exactly 6):**
 
 | Flatpak | Description |
 |---------|-------------|
@@ -134,12 +134,13 @@ Fedora Rawhide (fc45) | GNOME 50 "Tokyo" | Wayland-only
 | Extension Manager | GNOME Shell extension manager |
 | Podman Desktop | Container management GUI |
 | VSCodium | Code editor |
+| Refine | Modern interface tweaker (replaces gnome-tweaks) |
 
 Bottles is installed on first login via a self-deleting autostart entry (from Flathub Beta).
 
 **GNOME Extensions:** Dash to Dock (bottom, 48px), AppIndicator
 
-**App Folders (dconf):** All installed apps are organized into 4 folders — Development, Gaming, System, Virtualization. No loose apps in the grid.
+**App Folders (dconf):** All installed apps are organized into 5 folders — Development, Gaming, System, Virtualization, Wine. No loose apps in the grid.
 
 ---
 
@@ -227,8 +228,8 @@ CloudWS-bootc/
 ├── Containerfile               # Two-stage OCI build (scratch context + Fedora bootc)
 ├── cloud-ws.ps1                # Windows build orchestrator (PowerShell)
 ├── Justfile                    # Linux build targets
-├── PACKAGES.md                 # Single source of truth — all packages (~240 RPMs, 5 Flatpaks)
-├── VERSION                     # Semver (1.1.0)
+├── PACKAGES.md                 # Single source of truth — all packages (~240 RPMs, 6 Flatpaks)
+├── VERSION                     # Semver (1.2.0)
 ├── README.md                   # This file
 ├── config/
 │   ├── bib.json                # BIB: 80 GiB minimum root
@@ -238,7 +239,7 @@ CloudWS-bootc/
 │   ├── lib/packages.sh         # Parser — extracts packages from PACKAGES.md fenced blocks
 │   ├── 01-repos.sh             # RPMFusion Free+Nonfree from Rawhide URLs
 │   ├── 02-kernel.sh            # Kernel + headers (for akmod-nvidia)
-│   ├── 10-gnome.sh             # GNOME 50, Geist font, Bibata cursor, 5 Flatpaks
+│   ├── 10-gnome.sh             # GNOME 50, Geist font, Bibata cursor, 6 Flatpaks
 │   ├── 11-hardware.sh          # Mesa + ROCm + NVIDIA akmod + CDI
 │   ├── 12-virt.sh              # KVM, Podman, Cockpit, CrowdSec, Gaming, K3s, Looking Glass
 │   ├── 20-services.sh          # systemd enables + bare-metal-only drop-ins
@@ -451,11 +452,11 @@ systemctl status serial-getty@ttyS0    # should show "masked"
 
 4. **PCP/Cockpit Metrics** — `pcp` and `pcp-system-tools` added to PACKAGES.md. `pmcd`, `pmlogger`, `pmproxy` enabled and restarted in cloudws-init.
 
-5. **App Folders** — All apps sorted into 4 dconf folders (Development, Gaming, System, Virtualization). No loose apps in the grid. Desktop IDs verified against actual installed .desktop filenames.
+5. **App Folders** — All apps sorted into 5 dconf folders (Development, Gaming, System, Virtualization). No loose apps in the grid. Desktop IDs verified against actual installed .desktop filenames.
 
 6. **Cockpit Dock Pin** — `cockpit.desktop` created in 99-overrides.sh, referenced correctly in dconf favorites.
 
-7. **Logs Flatpak Restored** — `org.gnome.Logs` reinstated. Exactly 5 Flatpaks as specified.
+7. **Logs Flatpak Restored** — `org.gnome.Logs` reinstated. Exactly 6 Flatpaks as specified.
 
 8. **Rechunk Fix** — `bootc-base-imagectl rechunk` now has both `from_image` and `to_image` arguments.
 
