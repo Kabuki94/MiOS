@@ -5,7 +5,10 @@
 #
 # BUILD LOG: /tmp/cloudws-build.log (available during build for debugging)
 # Each script gets timed. If a script hangs, the log shows exactly where.
-set -euo pipefail
+#
+# NOTE: We intentionally do NOT use set -e here because we want all scripts
+# to run even if one fails, and we capture exit codes explicitly below.
+set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export PACKAGES_MD="${PACKAGES_MD:-/ctx/PACKAGES.md}"
@@ -38,10 +41,7 @@ if [[ ! -f "$PACKAGES_MD" ]]; then
 fi
 
 # ── DNF performance & reliability tweaks ────────────────────────────────────
-# These prevent scriptlet hangs (some %post scriptlets try to start systemd
-# services which will fail inside a container and can sometimes block forever)
 export DNF_SETOPT="--setopt=install_weak_deps=True"
-# Tell systemd scriptlets we're in a container — prevents them blocking
 export SYSTEMD_OFFLINE=1
 export container=podman
 
@@ -59,15 +59,20 @@ for script in "$SCRIPT_DIR"/[0-9][0-9]-*.sh; do
     echo "═══════════════════════════════════════════════════════════════"
 
     STEP_START=$SECONDS
-    if bash "$script"; then
-        STEP_ELAPSED=$(( SECONDS - STEP_START ))
+
+    # Capture exit code explicitly — never rely on $? after an if/else branch
+    set +e
+    bash "$script"
+    SCRIPT_EXIT=$?
+    set -e
+
+    STEP_ELAPSED=$(( SECONDS - STEP_START ))
+
+    if [[ $SCRIPT_EXIT -eq 0 ]]; then
         log_ts "==> Completed: $SCRIPT_NAME (${STEP_ELAPSED}s)"
     else
-        STEP_ELAPSED=$(( SECONDS - STEP_START ))
-        log_ts "==> FAILED: $SCRIPT_NAME (${STEP_ELAPSED}s) — exit code $?"
+        log_ts "==> FAILED: $SCRIPT_NAME (${STEP_ELAPSED}s) — exit code $SCRIPT_EXIT"
         SCRIPT_FAIL=$((SCRIPT_FAIL + 1))
-        # Don't abort — let remaining scripts attempt to run
-        # The set -e is for within each script, not between them
     fi
 done
 
@@ -79,7 +84,6 @@ echo "════════════════════════�
 dnf clean all
 rm -rf /var/cache/dnf /var/cache/rpm /var/log/dnf* /var/log/hawkey* /root/.cache
 
-# Keep the build log until the very end
 TOTAL_ELAPSED=$(( SECONDS - TOTAL_START ))
 TOTAL_MIN=$(( TOTAL_ELAPSED / 60 ))
 TOTAL_SEC=$(( TOTAL_ELAPSED % 60 ))
@@ -90,11 +94,9 @@ echo "║  CloudWS build complete                                     ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 log_ts "Build finished: ${SCRIPT_COUNT} scripts, ${SCRIPT_FAIL} failures, ${TOTAL_MIN}m${TOTAL_SEC}s"
 
-# Copy log to persistent location before /tmp cleanup
 mkdir -p /var/log
 cp "$BUILD_LOG" /var/log/cloudws-build.log 2>/dev/null || true
 
-# Now clean /tmp (including the temp build log)
 rm -rf /tmp/*
 
 if [[ $SCRIPT_FAIL -gt 0 ]]; then
