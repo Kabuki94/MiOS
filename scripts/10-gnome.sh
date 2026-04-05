@@ -63,7 +63,9 @@ flatpak install -y --noninteractive flathub io.podman_desktop.PodmanDesktop 2>/d
 flatpak install -y --noninteractive flathub com.vscodium.codium 2>/dev/null || true
 
 # Refine — replaces deprecated gnome-tweaks (modern libadwaita interface tweaker)
-flatpak install -y --noninteractive flathub ca.andyholmes.Refine 2>/dev/null || true
+# NOTE: App ID changed from ca.andyholmes.Refine to page.tesk.Refine
+flatpak install -y --noninteractive flathub page.tesk.Refine 2>/dev/null || \
+    flatpak install -y --noninteractive flathub ca.andyholmes.Refine 2>/dev/null || true
 
 # ─── Flatpak Theming & Font Overrides ───────────────────────────────────────
 # Give all Flatpak apps access to system fonts, GTK configs, and icons

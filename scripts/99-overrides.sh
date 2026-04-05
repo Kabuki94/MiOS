@@ -415,132 +415,100 @@ else
         echo "✓ Already up to date — no new image available."
     else
         echo "⚠ bootc upgrade failed (exit $RC)."
-        echo ""
-        echo "Checking image origin..."
-        REF=$(bootc status --json 2>/dev/null | python3 -c "
-import sys,json
-s=json.load(sys.stdin)
-print(s.get('spec',{}).get('image',{}).get('image',''))
-" 2>/dev/null || echo "")
-        if [ -z "$REF" ] || echo "$REF" | grep -q "localhost"; then
-            echo "✗ Image origin is '$REF' — localhost can't be reached for updates."
-            echo "  Fix: sudo bootc switch ghcr.io/kabuki94/cloudws-bootc:latest"
-            echo "  Then reboot and try again."
-        else
-            echo "  Origin: $REF"
-            echo "  Check: is the GHCR package set to public?"
-            echo "  Manual: https://github.com/Kabuki94?tab=packages"
-        fi
+        echo "  Check: bootc status"
+        echo "  Fix origin: sudo bootc switch ghcr.io/kabuki94/cloudws-bootc:latest"
     fi
 fi
 EOUPD
 chmod +x /usr/local/bin/cloudws-update
 
-# cloudws-build (Linux-native build)
-cat > /usr/local/bin/cloudws-build <<'EOBLD'
+# cloudws-rebuild — clone, build, push from deployed system
+cat > /usr/local/bin/cloudws-rebuild <<'EOREBUILD'
 #!/bin/bash
 set -euo pipefail
-REPO="${CLOUDWS_REPO:-https://github.com/Kabuki94/CloudWS-bootc.git}"
-WORK="${CLOUDWS_WORK:-/tmp/cloudws-build-$$}"
 echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║  CloudWS Build — Linux Native                               ║"
+echo "║  CloudWS Rebuild — Clone → Build → Push                    ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
-if [ -f ./Containerfile ] && [ -f ./PACKAGES.md ]; then
-    echo "  Building from current directory..."
-    podman build --no-cache -t localhost/cloudws:latest .
-else
-    echo "  Cloning $REPO ..."
-    git clone --depth=1 "$REPO" "$WORK"
-    cd "$WORK"
-    podman build --no-cache -t localhost/cloudws:latest .
-fi
-echo "✓ Image built: localhost/cloudws:latest"
 echo ""
-echo "Deploy options:"
-echo "  sudo bootc switch --transport containers-storage localhost/cloudws:latest"
-echo "  sudo podman run --rm -it --privileged --pid=host localhost/cloudws:latest bootc install to-disk /dev/sdX"
-EOBLD
-chmod +x /usr/local/bin/cloudws-build
-
-# cloudws-rebuild (clone + build + push)
-cat > /usr/local/bin/cloudws-rebuild <<'EORBD'
-#!/bin/bash
-set -euo pipefail
-REPO="${CLOUDWS_REPO:-https://github.com/Kabuki94/CloudWS-bootc.git}"
-REGISTRY="${CLOUDWS_REGISTRY:-ghcr.io/kabuki94/cloudws-bootc}"
-WORK="/tmp/cloudws-rebuild-$$"
-echo "CloudWS Rebuild — clone → build → push"
-git clone --depth=1 "$REPO" "$WORK" || { echo "✗ Clone failed"; exit 1; }
-cd "$WORK"
-# Build with GHCR tag so the image origin is correct for updates
-podman build --no-cache -t "${REGISTRY}:latest" .
-echo "✓ Built: ${REGISTRY}:latest"
-if podman push "${REGISTRY}:latest" 2>/dev/null; then
-    echo "✓ Pushed to ${REGISTRY}:latest"
-else
-    echo "⚠ Push failed — login first: podman login ghcr.io"
-fi
-rm -rf "$WORK"
-EORBD
+TMPDIR=$(mktemp -d)
+cd "$TMPDIR"
+git clone https://github.com/Kabuki94/CloudWS-bootc.git .
+echo "Building image..."
+podman build --squash-all --no-cache -t ghcr.io/kabuki94/cloudws-bootc:latest .
+echo "Pushing to GHCR..."
+podman push ghcr.io/kabuki94/cloudws-bootc:latest
+echo "✓ Rebuild complete. Run: cloudws-update"
+cd /; rm -rf "$TMPDIR"
+EOREBUILD
 chmod +x /usr/local/bin/cloudws-rebuild
 
-# cloudws-backup
-cat > /usr/local/bin/cloudws-backup <<'EOBKP'
+# cloudws-build — local build wrapper
+cat > /usr/local/bin/cloudws-build <<'EOBUILD'
 #!/bin/bash
 set -euo pipefail
-TS=$(date +%Y%m%d-%H%M%S)
-DEST="${1:-/var/home/backup-${TS}}"
+echo "Building CloudWS image locally..."
+podman build --squash-all --no-cache -t cloudws-bootc:local .
+echo "✓ Local build complete: cloudws-bootc:local"
+EOBUILD
+chmod +x /usr/local/bin/cloudws-build
+
+# cloudws-backup — backup critical data
+cat > /usr/local/bin/cloudws-backup <<'EOBACKUP'
+#!/bin/bash
+set -euo pipefail
+STAMP=$(date +%Y%m%d-%H%M%S)
+DEST="/var/home/cloudws-backup-${STAMP}"
 mkdir -p "$DEST"
-echo "CloudWS Backup → $DEST"
-# Podman volumes
-podman volume ls -q | while read v; do
-    podman volume export "$v" -o "${DEST}/podman-vol-${v}.tar" 2>/dev/null && echo "  ✓ volume: $v" || true
-done
-# K3s
-if [ -d /var/lib/rancher/k3s ]; then
-    tar czf "${DEST}/k3s-data.tar.gz" /var/lib/rancher/k3s 2>/dev/null && echo "  ✓ K3s data" || true
+echo "Backing up to $DEST..."
+cp -a /var/home/ "$DEST/home/" 2>/dev/null || true
+podman volume export --all "$DEST/podman-volumes.tar" 2>/dev/null || true
+if command -v kubectl &>/dev/null; then
+    kubectl get all -A -o yaml > "$DEST/k3s-resources.yaml" 2>/dev/null || true
 fi
-# VM images
-if [ -d /var/lib/libvirt/images ]; then
-    tar czf "${DEST}/libvirt-images.tar.gz" /var/lib/libvirt/images 2>/dev/null && echo "  ✓ VM images" || true
-fi
-# Home directories
-tar czf "${DEST}/home.tar.gz" /var/home 2>/dev/null && echo "  ✓ /var/home" || true
 echo "✓ Backup complete: $DEST"
-ls -lh "$DEST"
-EOBKP
+EOBACKUP
 chmod +x /usr/local/bin/cloudws-backup
 
-# cloudws-deploy
-cat > /usr/local/bin/cloudws-deploy <<'EODEP'
+# cloudws-deploy — deploy VM or container from image
+cat > /usr/local/bin/cloudws-deploy <<'EODEPLOY'
 #!/bin/bash
 case "${1:-}" in
-    vm) echo "Creating VM from CloudWS image..."
-        virt-install --name cloudws-vm --ram 4096 --vcpus 4 --import \
-            --disk path=/var/lib/libvirt/images/cloudws.qcow2,format=qcow2 \
-            --os-variant fedora-rawhide --network default 2>/dev/null || echo "Use virt-manager for GUI setup." ;;
-    container) podman run -d --name cloudws-container localhost/cloudws:latest ;;
-    *) echo "Usage: cloudws-deploy {vm|container}" ;;
+    vm)
+        echo "Deploying CloudWS VM via virt-install..."
+        echo "Use: virt-install --import --disk path=/path/to/cloudws.raw --os-variant fedora-rawhide"
+        ;;
+    container)
+        echo "Running CloudWS container..."
+        podman run -d --name cloudws ghcr.io/kabuki94/cloudws-bootc:latest
+        ;;
+    *)
+        echo "Usage: cloudws-deploy {vm|container}"
+        ;;
 esac
-EODEP
+EODEPLOY
 chmod +x /usr/local/bin/cloudws-deploy
 
-# cloudws-hostname
+# cloudws-hostname — show/set cluster hostname
 cat > /usr/local/bin/cloudws-hostname <<'EOHOST'
 #!/bin/bash
-if [ -n "${1:-}" ]; then
-    hostnamectl set-hostname "$1"
-    echo "Hostname set to: $1"
-else
-    echo "Current: $(hostname)"
-    echo "Set:     cloudws-hostname <n>"
-fi
+case "${1:-}" in
+    set)
+        if [ -n "${2:-}" ]; then
+            hostnamectl set-hostname "$2"
+            echo "Hostname set to: $2"
+        else
+            echo "Usage: cloudws-hostname set <name>"
+        fi ;;
+    *)
+        echo "Hostname: $(hostname)"
+        echo "Machine ID: $(cat /etc/machine-id)"
+        bootc status 2>/dev/null | head -5
+        ;;
+esac
 EOHOST
 chmod +x /usr/local/bin/cloudws-hostname
 
-# Cockpit desktop entry — pinned to dock via dconf favorites
-# Uses http:// (not https://) because Epiphany blocks self-signed certs.
-# Cockpit automatically redirects http→https with its own cert acceptance page.
+# Cockpit .desktop entry (for app grid)
 cat > /usr/share/applications/cockpit.desktop <<'EOCD'
 [Desktop Entry]
 Type=Application
@@ -585,8 +553,18 @@ for entry in \
     "org.gnome.IconBrowser4.desktop" \
     "gtk4-icon-browser.desktop" \
     "gtk4-widget-factory.desktop" \
+    "gtk4-demo.desktop" \
+    "gtk4-print-editor.desktop" \
+    "gtk4-node-editor.desktop" \
     "gamt.desktop" \
     "org.gnome.tweaks.desktop" \
+    "ibus-setup.desktop" \
+    "setroubleshoot.desktop" \
+    "yad-icon-browser.desktop" \
+    "fluid-soundfont-gm.desktop" \
+    "lstopo.desktop" \
+    "cmake-gui.desktop" \
+    "qdbusviewer.desktop" \
 ; do
     cat > "${OVERRIDE_DIR}/${entry}" <<EODT
 [Desktop Entry]
@@ -703,25 +681,32 @@ StartLimitBurst=3
 DROPIN
 
 # ═══ 16. SELINUX BUILD-TIME FIXES ═══
+# 16a. Restorecon — fix labels for all major trees
 if command -v restorecon &>/dev/null; then
     restorecon -R /boot /etc /usr /var 2>/dev/null || true
 fi
+
+# 16b. Semanage import — atomic booleans + fcontexts (no ((var++)) under set -e)
 if command -v semanage &>/dev/null; then
-    semanage fcontext -a -t boot_t '/boot/bootupd-state.json' 2>/dev/null || true
+    echo "[99-overrides] Applying SELinux booleans and fcontexts via semanage import..."
+    semanage import <<'EOSEM' 2>/dev/null || true
+boolean -m --on daemons_dump_core
+boolean -m --on domain_can_mmap_files
+boolean -m --on virt_sandbox_use_all_caps
+boolean -m --on virt_use_nfs
+fcontext -a -t boot_t '/boot/bootupd-state.json'
+fcontext -a -t accountsd_var_lib_t '/usr/share/accountsservice/interfaces(/.*)?'
+EOSEM
     restorecon -v /boot/bootupd-state.json 2>/dev/null || true
-    semanage fcontext -a -t accountsd_var_lib_t '/usr/share/accountsservice/interfaces(/.*)?' 2>/dev/null || true
     restorecon -R /usr/share/accountsservice 2>/dev/null || true
-fi
-if command -v setsebool &>/dev/null; then
-    setsebool -P daemons_dump_core on 2>/dev/null || true
-    setsebool -P domain_can_mmap_files on 2>/dev/null || true
-    setsebool -P virt_sandbox_use_all_caps on 2>/dev/null || true
-    setsebool -P virt_use_nfs on 2>/dev/null || true
+    echo "[99-overrides] SELinux booleans and fcontexts applied"
 fi
 
-# Build custom SELinux policy module for known Fedora Rawhide denials.
+# 16c. Custom policy modules for known Fedora Rawhide denials
+# CRITICAL: Use var=$((var + 1)) NOT ((var++)) — the latter returns exit code 1
+# when the previous value is 0 under set -euo pipefail, killing the entire script.
 if command -v checkmodule &>/dev/null && command -v semodule_package &>/dev/null; then
-    echo "[99-overrides] Building custom SELinux policy module..."
+    echo "[99-overrides] Building custom SELinux policy modules..."
 
     SELINUX_OK=0
     SELINUX_FAIL=0
@@ -757,9 +742,9 @@ allow chcon_t self:capability mac_admin;'
         if checkmodule -M -m -o "/tmp/cloudws_${name}.mod" "/tmp/cloudws_${name}.te" 2>/dev/null && \
            semodule_package -o "/tmp/cloudws_${name}.pp" -m "/tmp/cloudws_${name}.mod" 2>/dev/null && \
            semodule -i "/tmp/cloudws_${name}.pp" 2>/dev/null; then
-            ((SELINUX_OK++))
+            SELINUX_OK=$((SELINUX_OK + 1))
         else
-            ((SELINUX_FAIL++))
+            SELINUX_FAIL=$((SELINUX_FAIL + 1))
         fi
         rm -f "/tmp/cloudws_${name}".{te,mod,pp}
     done
