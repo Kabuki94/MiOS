@@ -324,6 +324,30 @@ e2fsprogs
 mdadm
 ```
 
+## Ceph Distributed Storage
+
+Cephadm orchestrator + CephFS kernel client for native distributed storage.
+All Ceph server daemons (MON/OSD/MGR/MDS) run as Podman containers via cephadm.
+
+```packages-ceph
+ceph-common
+cephadm
+ceph-fuse
+ceph-selinux
+```
+
+## K3s Lightweight Kubernetes
+
+K3s binary is downloaded directly (not via dnf).
+These are the system-level prerequisites K3s needs.
+
+```packages-k3s
+container-selinux
+selinux-policy-base
+iptables
+nftables
+```
+
 ## High Availability
 
 Pacemaker/Corosync clustering + fencing.
@@ -436,7 +460,6 @@ These are installed via `flatpak install`, not dnf.
 | org.gnome.Logs | flathub | systemd journal viewer |
 | com.mattjakeman.ExtensionManager | flathub | GNOME Shell extension manager |
 | io.podman_desktop.PodmanDesktop | flathub | Container management GUI |
-| com.vscodium.codium | flathub | VSCodium editor |
 | ca.andyholmes.Refine | flathub | Modern interface tweaker (replaces gnome-tweaks) |
 
 ## Totals

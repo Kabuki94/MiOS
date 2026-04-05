@@ -12,7 +12,7 @@ titlebar-font='Geist Bold 11'
 button-layout='close,minimize:'
 
 [org/gnome/shell]
-favorite-apps=['org.gnome.Nautilus.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.Epiphany.desktop', 'cockpit.desktop', 'org.gnome.Software.desktop']
+favorite-apps=['org.gnome.Nautilus.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.Epiphany.desktop', 'cockpit.desktop', 'ceph-dashboard.desktop', 'org.gnome.Software.desktop']
 enabled-extensions=['appindicatorsupport@rgcjonas.gmail.com', 'dash-to-dock@micxgx.gmail.com']
 
 [org/gnome/shell/extensions/dash-to-dock]
@@ -22,12 +22,7 @@ show-trash=false
 show-mounts=false
 
 [org/gnome/desktop/app-folders]
-folder-children=['Development', 'Gaming', 'System', 'Virtualization', 'Wine']
-
-[org/gnome/desktop/app-folders/folders/Development]
-name='Development'
-categories=['Development', 'IDE', 'TextEditor']
-apps=['com.vscodium.codium.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.TextEditor.desktop']
+folder-children=['Gaming', 'System', 'Virtualization', 'Wine']
 
 [org/gnome/desktop/app-folders/folders/Gaming]
 name='Gaming'
@@ -37,12 +32,12 @@ apps=['steam.desktop', 'net.lutris.Lutris.desktop', 'com.usebottles.bottles.desk
 [org/gnome/desktop/app-folders/folders/System]
 name='System'
 categories=['System', 'Settings', 'Monitor', 'TerminalEmulator']
-apps=['org.gnome.Settings.desktop', 'cockpit.desktop', 'org.gnome.Logs.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.Software.desktop', 'btop.desktop', 'nvtop.desktop', 'org.gnome.DiskUtility.desktop', 'org.gnome.SystemMonitor.desktop', 'org.gnome.baobab.desktop', 'page.tesk.Refine.desktop', 'org.gnome.Nautilus.desktop', 'lm_sensors.desktop', 'nm-connection-editor.desktop', 'org.gnome.Connections.desktop']
+apps=['org.gnome.Settings.desktop', 'cockpit.desktop', 'ceph-dashboard.desktop', 'org.gnome.Logs.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.Software.desktop', 'btop.desktop', 'nvtop.desktop', 'org.gnome.DiskUtility.desktop', 'org.gnome.SystemMonitor.desktop', 'org.gnome.baobab.desktop', 'page.tesk.Refine.desktop', 'org.gnome.Nautilus.desktop', 'lm_sensors.desktop', 'nm-connection-editor.desktop', 'org.gnome.Connections.desktop']
 
 [org/gnome/desktop/app-folders/folders/Virtualization]
 name='Virtualization'
 categories=['Emulator']
-apps=['virt-manager.desktop', 'io.podman_desktop.PodmanDesktop.desktop', 'waydroid.desktop', 'remote-viewer.desktop', 'org.gnome.Boxes.desktop']
+apps=['virt-manager.desktop', 'io.podman_desktop.PodmanDesktop.desktop', 'Waydroid.desktop', 'waydroid.desktop', 'remote-viewer.desktop', 'org.gnome.Boxes.desktop']
 
 [org/gnome/desktop/app-folders/folders/Wine]
 name='Wine'

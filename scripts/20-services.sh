@@ -1,17 +1,14 @@
 #!/bin/bash
 # CloudWS — 20-services: Enable systemd services + bare-metal-only gating
-# Services that are only useful on bare metal (NFS, HA, CrowdSec, VFIO-related)
-# get ConditionVirtualization=no drop-ins so they silently skip in VMs.
-# This eliminates 60-90+ seconds of boot delays in Hyper-V/QEMU/VMware.
+# Services that are only useful on bare metal get ConditionVirtualization=no
+# drop-ins so they silently skip in VMs. Eliminates 60-90s boot delays.
 set -euo pipefail
 
 # ─── Core services (run everywhere) ──────────────────────────────────────────
 systemctl enable libvirtd.service virtqemud.socket virtnetworkd.socket virtstoraged.socket
 systemctl enable cockpit.socket sshd.service
 systemctl enable tuned.service
-# PCP (Performance Co-Pilot) — required for Cockpit metrics history
 systemctl enable pmcd.service pmlogger.service pmproxy.service 2>/dev/null || true
-# Firewalld — guard against missing package (not in base bootc image)
 if systemctl list-unit-files firewalld.service &>/dev/null; then
     systemctl enable firewalld.service
 else
@@ -29,20 +26,13 @@ systemctl enable waydroid-container.service cloud-init.service 2>/dev/null || tr
 systemctl enable podman.socket podman-auto-update.timer podman-restart.service 2>/dev/null || true
 systemctl enable xrdp.service xrdp-sesman.service 2>/dev/null || true
 
-# ─── Bare-metal-only services ────────────────────────────────────────────────
-# These services cause boot hangs or are useless in VMs:
-#   - nfs-server: waits 60s for network-online.target + RPC registration
-#   - smb/nmb: Samba file sharing, pointless in a VM
-#   - pacemaker/corosync/pcsd: HA clustering, fails without cluster interfaces
-#   - crowdsec + bouncer: IPS, needs firewalld/nftables (absent in WSL2/containers)
-#   - multipathd: SAN multipath, no physical disks in VMs
-#   - osbuild-composer: image build service, bare-metal dev tool only
-#
-# ConditionVirtualization=no means "only start when NOT in a VM/container".
-# On Hyper-V, systemd-detect-virt returns "microsoft" → condition fails → skip.
-# On bare metal, it returns empty → condition passes → service starts normally.
-# The service shows "skipped" status (not "failed") — clean journal output.
+# ─── K3s + Ceph services ─────────────────────────────────────────────────────
+systemctl enable k3s.service 2>/dev/null || true
+systemctl enable var-home.mount 2>/dev/null || true
+systemctl enable var-lib-containers.mount 2>/dev/null || true
+systemctl enable ceph-bootstrap.service 2>/dev/null || true
 
+# ─── Bare-metal-only services ────────────────────────────────────────────────
 BARE_METAL_SERVICES=(
     nfs-server
     smb
@@ -58,25 +48,45 @@ BARE_METAL_SERVICES=(
 )
 
 for svc in "${BARE_METAL_SERVICES[@]}"; do
-    # Enable the service (so it's active on bare metal)
     systemctl enable "${svc}.service" 2>/dev/null || true
-
-    # Create drop-in: only start on bare metal (ConditionVirtualization=no)
     DROPIN_DIR="/usr/lib/systemd/system/${svc}.service.d"
     mkdir -p "$DROPIN_DIR"
     cat > "${DROPIN_DIR}/10-bare-metal-only.conf" <<'DROPIN'
 [Unit]
-# CloudWS: Skip this service in VMs/containers — it causes boot delays
-# or has no function without physical hardware.
-# Remove this drop-in to force-enable in VMs:
-#   rm /usr/lib/systemd/system/<service>.d/10-bare-metal-only.conf
+# CloudWS: Skip this service in VMs/containers
 ConditionVirtualization=no
 DROPIN
 done
 
 echo "[20-services] Bare-metal-only drop-ins created for: ${BARE_METAL_SERVICES[*]}"
 
-# TuneD default profile
+# ─── WSL2-specific service masking ───────────────────────────────────────────
+# These services crash-loop or are useless in WSL2 containers
+WSL_MASK_SERVICES=(
+    gdm
+    firewalld
+    waydroid-container
+    nvidia-powerd
+    crowdsec
+    crowdsec-firewall-bouncer
+    dev-binderfs.mount
+    ceph-bootstrap
+)
+
+for svc in "${WSL_MASK_SERVICES[@]}"; do
+    unit="${svc}"
+    [[ "$unit" != *.* ]] && unit="${unit}.service"
+    if [ -f "/usr/lib/systemd/system/${unit}" ] || [ -f "/etc/systemd/system/${unit}" ]; then
+        mkdir -p "/usr/lib/systemd/system/${unit}.d"
+        cat > "/usr/lib/systemd/system/${unit}.d/10-skip-wsl.conf" <<'DROPIN'
+[Unit]
+# CloudWS: Skip in WSL2 — no binder/display/firewall support
+ConditionPathExists=!/proc/sys/fs/binfmt_misc/WSLInterop
+DROPIN
+    fi
+done
+echo "[20-services] WSL2 skip drop-ins installed"
+
 tuned-adm profile throughput-performance 2>/dev/null || true
 
-echo "[20-services] All services enabled."
+echo "[20-services] All services enabled (including K3s + Ceph stack)."

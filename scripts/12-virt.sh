@@ -114,15 +114,7 @@ install_packages "utils"
 # ─── Android ─────────────────────────────────────────────────────────────────
 install_packages "android"
 
-# ─── K3s Lightweight Kubernetes ──────────────────────────────────────────────
-echo "[12-virt] Installing K3s..."
-curl -sfL https://get.k3s.io -o /usr/local/bin/k3s-install.sh && chmod +x /usr/local/bin/k3s-install.sh || true
-curl -sfL "https://github.com/k3s-io/k3s/releases/latest/download/k3s" -o /usr/local/bin/k3s 2>/dev/null || true
-chmod +x /usr/local/bin/k3s 2>/dev/null || true
-[ -f /usr/local/bin/k3s ] && {
-    ln -sf /usr/local/bin/k3s /usr/local/bin/kubectl 2>/dev/null || true
-    ln -sf /usr/local/bin/k3s /usr/local/bin/crictl 2>/dev/null || true
-}
+# ─── K3s moved to 13-ceph-k3s.sh ─────────────────────────────────────────────
 
 # ─── xRDP Hyper-V Enhanced Session (vsock transport — works at first launch) ─
 if [ -f /etc/xrdp/xrdp.ini ]; then

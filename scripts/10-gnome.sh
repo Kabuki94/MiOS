@@ -59,9 +59,6 @@ flatpak install -y --noninteractive flathub com.mattjakeman.ExtensionManager 2>/
 # Podman Desktop — container management GUI
 flatpak install -y --noninteractive flathub io.podman_desktop.PodmanDesktop 2>/dev/null || true
 
-# VSCodium — code editor
-flatpak install -y --noninteractive flathub com.vscodium.codium 2>/dev/null || true
-
 # Refine — replaces deprecated gnome-tweaks (modern libadwaita interface tweaker)
 # NOTE: App ID changed from ca.andyholmes.Refine to page.tesk.Refine
 flatpak install -y --noninteractive flathub page.tesk.Refine 2>/dev/null || \
@@ -91,7 +88,7 @@ ConditionPathExists=!/var/lib/waydroid/images/system.img
 
 [Service]
 Type=oneshot
-ExecStart=/bin/bash -c 'waydroid init -s GAPPS -f 2>/dev/null && echo "[cloudws] Waydroid GAPPS initialized" || echo "[cloudws] Waydroid init failed (will retry next boot)"'
+ExecStart=/bin/bash -c 'waydroid init -s GAPPS -f -c https://ota.waydro.id/system -v https://ota.waydro.id/vendor 2>/dev/null && echo "[cloudws] Waydroid GAPPS initialized" || echo "[cloudws] Waydroid init failed (will retry next boot)"'
 RemainAfterExit=no
 TimeoutStartSec=300
 

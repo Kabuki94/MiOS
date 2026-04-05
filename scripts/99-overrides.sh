@@ -65,6 +65,10 @@ cloudws() {
             echo "  cloudws-build              Build CloudWS locally (Linux)"
             echo "  cloudws-backup             Backup volumes, K3s, VMs, /var/home"
             echo "  cloudws-deploy <type>      Deploy VM or container from image"
+            echo "  cloudws-ceph status        Ceph cluster status"
+            echo "  cloudws-ceph dashboard     Ceph Dashboard URL"
+            echo "  cloudws-ceph bootstrap     Manual Ceph bootstrap"
+            echo "  cloudws-k3s-join           Show K3s join instructions"
             echo "  cloudws-vfio-toggle        GPU VFIO bind/unbind/status/list"
             echo "  cloudws-hostname           Show/set cluster hostname"
             echo "  iommu-groups               Show IOMMU group assignments"
@@ -75,7 +79,7 @@ cloudws() {
             echo "  sudo bootc upgrade         Pull latest from registry"
             echo "  fastfetch                  System overview"
             echo ""
-            echo "  Management:"
+            echo "    https://localhost:8443    Ceph Dashboard"
             echo "    https://localhost:9090    Cockpit web dashboard"
             echo "    https://localhost:26000   iVentoy PXE server"
             echo "    virt-manager             Virtual machine manager"
@@ -177,6 +181,13 @@ firewall-cmd --permanent --zone=drop --add-port=10250/tcp
 firewall-cmd --permanent --zone=drop --add-port=2224/tcp
 firewall-cmd --permanent --zone=drop --add-port=5403-5405/udp
 firewall-cmd --permanent --zone=drop --add-port=26000/tcp
+# Ceph ports (MON msgr1/msgr2, OSD/MDS daemon range, Dashboard)
+firewall-cmd --permanent --zone=drop --add-port=3300/tcp
+firewall-cmd --permanent --zone=drop --add-port=6789/tcp
+firewall-cmd --permanent --zone=drop --add-port=6800-7300/tcp
+firewall-cmd --permanent --zone=drop --add-port=8443/tcp
+# K3s Flannel VXLAN
+firewall-cmd --permanent --zone=drop --add-port=8472/udp
 firewall-cmd --permanent --zone=trusted --add-interface=lo
 firewall-cmd --permanent --zone=trusted --add-interface=podman0
 firewall-cmd --permanent --zone=trusted --add-interface=virbr0
@@ -508,6 +519,82 @@ esac
 EOHOST
 chmod +x /usr/local/bin/cloudws-hostname
 
+# cloudws-ceph — Ceph cluster status and management
+cat > /usr/local/bin/cloudws-ceph <<'EOCEPH'
+#!/bin/bash
+case "${1:-}" in
+    status)
+        if [ -f /var/lib/ceph/.bootstrapped ]; then
+            echo "Ceph cluster: BOOTSTRAPPED"
+            cephadm shell -- ceph status 2>/dev/null || echo "  (daemons may be starting)"
+        else
+            echo "Ceph cluster: NOT BOOTSTRAPPED"
+            echo "  Bootstrap runs on first bare-metal boot, or run:"
+            echo "  sudo /usr/local/bin/ceph-bootstrap.sh"
+        fi ;;
+    dashboard)
+        IP=$(hostname -I | awk '{print $1}')
+        echo "Ceph Dashboard: https://${IP}:8443"
+        echo "  Admin password: check /var/log/ceph/cephadm.log" ;;
+    bootstrap)
+        echo "Running Ceph bootstrap manually..."
+        sudo /usr/local/bin/ceph-bootstrap.sh ;;
+    join)
+        if [ -z "${2:-}" ] || [ -z "${3:-}" ]; then
+            echo "Usage: cloudws-ceph join <hostname> <ip>"
+        else
+            echo "Adding host ${2} (${3}) to Ceph cluster..."
+            ceph cephadm get-pub-key | ssh root@${3} tee -a /root/.ssh/authorized_keys
+            ceph orch host add "${2}" "${3}" --labels=osd
+        fi ;;
+    *)
+        echo "Usage: cloudws-ceph {status|dashboard|bootstrap|join <host> <ip>}" ;;
+esac
+EOCEPH
+chmod +x /usr/local/bin/cloudws-ceph
+
+# cloudws-k3s-join — join a container/WSL2 instance to the K3s cluster
+cat > /usr/local/bin/cloudws-k3s-join <<'EOK3S'
+#!/bin/bash
+if [ -z "${1:-}" ]; then
+    echo "╔══════════════════════════════════════════════════════════════╗"
+    echo "║  CloudWS K3s Cluster Join                                   ║"
+    echo "╚══════════════════════════════════════════════════════════════╝"
+    echo ""
+    if [ -f /var/lib/rancher/k3s/server/node-token ]; then
+        SERVER_IP=$(hostname -I | awk '{print $1}')
+        TOKEN=$(cat /var/lib/rancher/k3s/server/node-token)
+        echo "  This host is a K3s SERVER."
+        echo ""
+        echo "  To join another CloudWS instance (container/WSL2/bare metal):"
+        echo "    k3s agent --server https://${SERVER_IP}:6443 \\"
+        echo "      --token ${TOKEN} \\"
+        echo "      --node-name \$(hostname)"
+        echo ""
+        echo "  Or via Podman on the host:"
+        echo "    sudo podman run -d --privileged --network host \\"
+        echo "      -e K3S_URL=https://${SERVER_IP}:6443 \\"
+        echo "      -e K3S_TOKEN=${TOKEN} \\"
+        echo "      -e K3S_NODE_NAME=k3s-agent-container \\"
+        echo "      rancher/k3s:v1.31.6-k3s1 agent"
+    else
+        echo "  K3s server not running on this host."
+        echo "  Start it: sudo systemctl start k3s"
+    fi
+else
+    SERVER_URL="$1"
+    TOKEN="${2:-}"
+    NODE="${3:-$(hostname)}"
+    if [ -z "$TOKEN" ]; then
+        echo "Usage: cloudws-k3s-join <server-url> <token> [node-name]"
+        exit 1
+    fi
+    echo "Joining K3s cluster at $SERVER_URL as $NODE..."
+    exec k3s agent --server "$SERVER_URL" --token "$TOKEN" --node-name "$NODE"
+fi
+EOK3S
+chmod +x /usr/local/bin/cloudws-k3s-join
+
 # Cockpit .desktop entry (for app grid)
 cat > /usr/share/applications/cockpit.desktop <<'EOCD'
 [Desktop Entry]
@@ -672,12 +759,14 @@ fi
 # Create a drop-in to reduce restart spam in container environments.
 mkdir -p /usr/lib/systemd/system/polkit.service.d
 cat > /usr/lib/systemd/system/polkit.service.d/10-cloudws-container.conf <<'DROPIN'
-[Service]
-# Reduce restart spam when polkit can't get CAP_SYS_ADMIN in containers
-Restart=on-failure
-RestartSec=30
+[Unit]
+# CloudWS: Reduce restart spam when polkit can't get CAP_SYS_ADMIN in containers
 StartLimitIntervalSec=300
 StartLimitBurst=3
+
+[Service]
+Restart=on-failure
+RestartSec=30
 DROPIN
 
 # ═══ 16. SELINUX BUILD-TIME FIXES ═══
@@ -694,8 +783,11 @@ boolean -m --on daemons_dump_core
 boolean -m --on domain_can_mmap_files
 boolean -m --on virt_sandbox_use_all_caps
 boolean -m --on virt_use_nfs
+boolean -m --on nis_enabled
 fcontext -a -t boot_t '/boot/bootupd-state.json'
 fcontext -a -t accountsd_var_lib_t '/usr/share/accountsservice/interfaces(/.*)?'
+fcontext -a -t ceph_var_lib_t '/var/lib/ceph(/.*)?'
+fcontext -a -t ceph_log_t '/var/log/ceph(/.*)?'
 EOSEM
     restorecon -v /boot/bootupd-state.json 2>/dev/null || true
     restorecon -R /usr/share/accountsservice 2>/dev/null || true

@@ -1,9 +1,15 @@
 [Unit]
 Description=Lightweight Kubernetes
-After=network-online.target
+Documentation=https://k3s.io
 Wants=network-online.target
+After=network-online.target remote-fs.target
+
 [Service]
 Type=notify
+EnvironmentFile=-/etc/default/%N
+EnvironmentFile=-/etc/sysconfig/%N
+ExecStartPre=-/sbin/modprobe br_netfilter
+ExecStartPre=-/sbin/modprobe overlay
 ExecStart=/usr/local/bin/k3s server
 KillMode=process
 Delegate=yes
@@ -14,5 +20,6 @@ TasksMax=infinity
 TimeoutStartSec=0
 Restart=always
 RestartSec=5s
+
 [Install]
 WantedBy=multi-user.target

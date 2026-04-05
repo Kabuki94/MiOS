@@ -15,15 +15,22 @@ $RepoUrl = "https://github.com/Kabuki94/CloudWS-bootc.git"
 $Branch  = "main"
 
 Write-Host "`n  ╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "  ║  CloudWS v1.0 — Push to GitHub                             ║" -ForegroundColor Cyan
+Write-Host "  ║  CloudWS v1.2 — Push to GitHub (Ceph + K3s)               ║" -ForegroundColor Cyan
 Write-Host "  ╚══════════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 
 $ScriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { $PWD.Path }
 $SourceDir = $ScriptDir
 Write-Host "  Source: $SourceDir" -ForegroundColor Gray
 
-if (-not (Test-Path (Join-Path $SourceDir "cloud-ws.ps1"))) {
-    Write-Host "  X cloud-ws.ps1 not found — run from your CloudWS folder" -ForegroundColor Red; exit 1
+# Guard: need at least one build script OR cloud-ws.ps1 to confirm we're in the right folder
+$hasContent = (Test-Path (Join-Path $SourceDir "cloud-ws.ps1")) -or
+              (Test-Path (Join-Path $SourceDir "99-overrides.sh")) -or
+              (Test-Path (Join-Path $SourceDir "PACKAGES.md")) -or
+              (Test-Path (Join-Path $SourceDir "system_files.tar"))
+if (-not $hasContent) {
+    Write-Host "  X No CloudWS files found — run from your CloudWS folder" -ForegroundColor Red
+    Write-Host "    Need at least one of: cloud-ws.ps1, 99-overrides.sh, PACKAGES.md, system_files.tar" -ForegroundColor DarkGray
+    exit 1
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -46,6 +53,7 @@ $scriptMap = @{
     "10-gnome.sh"     = "scripts\10-gnome.sh"
     "11-hardware.sh"  = "scripts\11-hardware.sh"
     "12-virt.sh"      = "scripts\12-virt.sh"
+    "13-ceph-k3s.sh"  = "scripts\13-ceph-k3s.sh"
     "20-services.sh"  = "scripts\20-services.sh"
     "99-overrides.sh" = "scripts\99-overrides.sh"
     "packages.sh"     = "scripts\lib\packages.sh"
@@ -167,7 +175,7 @@ else {
     Write-Host "  $n files staged" -ForegroundColor Gray
     git status --short | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
     $msg = Read-Host "`n  Commit message (Enter = default)"
-    if (-not $msg) { $msg = "CloudWS v1.0" }
+    if (-not $msg) { $msg = "CloudWS v1.2 — Ceph/K3s integration + bug fixes" }
     git commit -m $msg
     Write-Host "  Pushing..." -ForegroundColor Cyan
     git push -u origin $Branch 2>&1 | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
