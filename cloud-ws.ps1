@@ -1,8 +1,8 @@
 <#
 .SYNOPSIS
-    CloudWS v1.0 — Cloud Workstation OS Build Orchestrator (Windows)
+    CloudWS v1.2 — Cloud Workstation OS Builder (Windows)
+
 .DESCRIPTION
-    Thin orchestrator for building CloudWS on Windows via Podman WSL2 backend.
     All OS configuration lives in standalone bash scripts (scripts/) and config
     overlays (system_files/). This script handles ONLY:
       - Pre-build questions (user, pass, LUKS, registry)
@@ -11,15 +11,21 @@
       - Containerfile build execution
       - Post-build rechunking
       - Target serialization (RAW, VHDX, WSL, ISO)
+      - Auto-deploy to Hyper-V (Gen2 VM with Enhanced Session)
+      - Auto-deploy to WSL2 (with .wslconfig generation)
       - Registry push with authentication
 
     For Linux-native builds: use the Justfile (just build, just iso, just push)
 
-    FIXES in v1.1:
-      - PAT/token NEVER appears in command-line args (--password-stdin only)
-      - Image tagged with GHCR ref BEFORE BIB so update origin is correct
-      - --local flag removed from BIB (it's the default now)
-      - BIB resolves GHCR-tagged image from local storage mount
+    FIXES in v1.2:
+      - Hyper-V auto-deploy with Enhanced Session (HvSocket)
+      - WSL2 auto-deploy with .wslconfig (fixed memory prevents order-7 panics)
+      - ISO builds mount iso.toml for kickstart injection
+      - pmcd/pmlogger removed from service enables (only pmproxy installed)
+      - fapolicyd SELinux policy targets xdm_var_run_t (was xdm_t)
+      - New accountsd_homed SELinux policy module
+      - WSL2 mask list: +auditd, +audit-rules, +bootloader-update, +usbguard
+      - Mount unit permissions fixed (chmod 644)
 #>
 
 #Requires -RunAsAdministrator
@@ -29,7 +35,7 @@ Set-StrictMode -Version Latest
 # ══════════════════════════════════════════════════════════════════════════════
 #  CONFIGURATION
 # ══════════════════════════════════════════════════════════════════════════════
-$v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "1.0.0" }
+$v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "1.2.0" }
 $ImageName      = "cloudws"
 $ImageTag       = "latest"
 $DefUser        = "cloudws"
@@ -79,7 +85,6 @@ function Read-Timed {
 function Clean-BIBTemp {
     Get-ChildItem $OutputFolder -Directory -Filter "image-*" -ErrorAction SilentlyContinue |
         Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
-    # Also clean BIB manifest/log files
     Get-ChildItem $OutputFolder -File -Filter "manifest-*" -ErrorAction SilentlyContinue |
         Remove-Item -Force -ErrorAction SilentlyContinue
 }
@@ -113,7 +118,6 @@ $cpu = (Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors
 $ram = [math]::Floor((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1MB)
 Write-OK "CPU: $cpu cores | RAM: $ram MB"
 
-# Validate repo files exist
 foreach ($f in "Containerfile","PACKAGES.md","VERSION","scripts/build.sh","scripts/99-overrides.sh") {
     if (-not (Test-Path $f)) { Write-Fatal "Missing required file: $f — are you in the CloudWS-bootc repo root?" }
 }
@@ -135,7 +139,6 @@ Write-Step "Starting '$BuilderMachine'..."
 & podman machine start $BuilderMachine
 if ($LASTEXITCODE -ne 0) { Write-Fatal "$BuilderMachine failed to start" }
 
-# Set as active connection for this build session
 & podman system connection default "${BuilderMachine}-root"
 Write-OK "Builder ready: ${BuilderMachine}-root"
 $ErrorActionPreference = "Stop"
@@ -145,7 +148,6 @@ $ErrorActionPreference = "Stop"
 # ══════════════════════════════════════════════════════════════════════════════
 Write-Phase "2" "OCI Container Build"
 
-# Inject username/password into 99-overrides.sh (temp copy)
 $ovr = Get-Content "scripts/99-overrides.sh" -Raw
 $ovr = $ovr.Replace('INJ_U', $U).Replace('INJ_P', $P)
 $ovr | Set-Content "scripts/99-overrides.sh" -NoNewline -Encoding ascii
@@ -153,13 +155,11 @@ Write-OK "Credentials injected into 99-overrides.sh"
 
 $t0 = Get-Date
 Write-Step "Building OCI image (all $cpu threads)..."
-& podman build --no-cache -t $LocalImage .
+& podman build --squash-all --no-cache -t $LocalImage .
 if ($LASTEXITCODE -ne 0) { Write-Fatal "podman build failed" }
 
-# Restore placeholders immediately (don't leave creds on disk)
 & git checkout scripts/99-overrides.sh 2>$null
 if ($LASTEXITCODE -ne 0) {
-    # Fallback: re-download from raw template
     $ovr = $ovr.Replace($U, 'INJ_U').Replace($P, 'INJ_P')
     $ovr | Set-Content "scripts/99-overrides.sh" -NoNewline -Encoding ascii
 }
@@ -167,11 +167,7 @@ if ($LASTEXITCODE -ne 0) {
 $buildMin = [math]::Round(((Get-Date) - $t0).TotalMinutes, 1)
 Write-OK "Image built in $buildMin min → $LocalImage"
 
-# ── Tag with GHCR ref BEFORE BIB ─────────────────────────────────────────────
-# CRITICAL: The image name BIB sees becomes the PERMANENT update origin.
-# If BIB sees "localhost/cloudws:latest", the deployed system tries to pull
-# updates from localhost — which doesn't exist. By tagging with the GHCR ref
-# first, bootc upgrade / GNOME Software knows to check GHCR for updates.
+# Tag with GHCR ref BEFORE BIB — sets permanent update origin
 Write-Step "Tagging as $GhcrImage (sets update origin for bootc)..."
 & podman tag $LocalImage $GhcrImage
 Write-OK "Update origin set: $GhcrImage"
@@ -191,7 +187,6 @@ Write-OK "Rechunk complete"
 Write-Phase "3" "Generating Deployment Targets"
 $ErrorActionPreference = "Continue"
 
-# BIB config for 80 GiB minimum root
 $bibConf = Join-Path $PWD "config\bib.json"
 if (-not (Test-Path $bibConf)) { $bibConf = Join-Path $PWD "config\bib.toml" }
 $bibConfDest = Join-Path $OutputFolder "bib-config.json"
@@ -204,24 +199,28 @@ if (Test-Path $bibConf) {
     $bibConfDest = $null
 }
 
-# Helper: build BIB volume args
-# FIXED: Uses GHCR-tagged image ref so the installed system has correct update origin.
-# The image resolves from local storage via the volume mount — no network pull needed.
-# --local flag REMOVED (it's the default in current BIB — the warning was about this).
+# iso.toml for kickstart injection during Anaconda ISO builds
+$isoToml = Join-Path $PWD "iso.toml"
+$hasIsoToml = Test-Path $isoToml
+if ($hasIsoToml) { Write-OK "iso.toml found — kickstart will be injected into ISO" }
+
 function Get-BIBArgs {
     param([string]$Type)
-    $args = @(
+    $bibArgs = @(
         "run", "--rm", "-it", "--privileged",
         "--security-opt", "label=type:unconfined_t",
         "-v", "/var/lib/containers/storage:/var/lib/containers/storage",
         "-v", "${OutputFolder}:/output:z"
     )
     if ($bibConfDest -and (Test-Path $bibConfDest)) {
-        $args += @("-v", "${bibConfDest}:${bibMountPath}:ro")
+        $bibArgs += @("-v", "${bibConfDest}:${bibMountPath}:ro")
     }
-    # Use GHCR ref — BIB resolves from local storage but records GHCR as origin
-    $args += @($BIBImage, "build", "--type", $Type, "--rootfs", "ext4", $GhcrImage)
-    return $args
+    # Mount iso.toml for Anaconda ISO builds (kickstart injection)
+    if ($Type -eq "anaconda-iso" -and $hasIsoToml) {
+        $bibArgs += @("-v", "${isoToml}:/config.toml:ro")
+    }
+    $bibArgs += @($BIBImage, "build", "--type", $Type, "--rootfs", "ext4", $GhcrImage)
+    return $bibArgs
 }
 
 # ── RAW ──────────────────────────────────────────────────────────────────────
@@ -267,14 +266,125 @@ Clean-BIBTemp
 $ErrorActionPreference = "Stop"
 
 # ══════════════════════════════════════════════════════════════════════════════
+#  PHASE 3b: AUTO-DEPLOY (Hyper-V + WSL2)
+# ══════════════════════════════════════════════════════════════════════════════
+Write-Phase "3b" "Auto-Deploy to Hyper-V + WSL2"
+$ErrorActionPreference = "Continue"
+
+# ── HYPER-V AUTO-DEPLOY ──────────────────────────────────────────────────────
+if (Test-Path $TargetVhdx) {
+    Write-Step "Deploying to Hyper-V..."
+    $VMName = "CloudWS-OS"
+    $VMPath = Join-Path $env:USERPROFILE "Hyper-V\CloudWS"
+    $VhdxDest = Join-Path $VMPath "cloudws-hyperv.vhdx"
+
+    try {
+        # Remove existing VM if present
+        $existing = Get-VM -Name $VMName -ErrorAction SilentlyContinue
+        if ($existing) {
+            Write-Step "Removing existing VM '$VMName'..."
+            Stop-VM -Name $VMName -Force -TurnOff -ErrorAction SilentlyContinue
+            Remove-VM -Name $VMName -Force
+        }
+
+        New-Item -ItemType Directory -Path $VMPath -Force | Out-Null
+        Copy-Item $TargetVhdx $VhdxDest -Force
+
+        # Gen2 VM: 8GB fixed RAM, half host CPUs, no dynamic memory
+        $cpuCount = [Math]::Max(4, [Math]::Floor((Get-CimInstance Win32_Processor).NumberOfLogicalProcessors / 2))
+        $vmRAM = 8GB
+
+        New-VM -Name $VMName -Path $VMPath -Generation 2 -MemoryStartupBytes $vmRAM -VHDPath $VhdxDest | Out-Null
+        Set-VM -Name $VMName `
+            -ProcessorCount $cpuCount `
+            -DynamicMemory:$false `
+            -CheckpointType Disabled `
+            -AutomaticStartAction Nothing `
+            -AutomaticStopAction ShutDown
+
+        # Secure Boot: Microsoft UEFI CA (NOT "Microsoft Windows" — that rejects Linux shim)
+        Set-VMFirmware -VMName $VMName -SecureBootTemplate "MicrosoftUEFICertificateAuthority"
+
+        # Enhanced Session via HvSocket (xRDP vsock configured in image)
+        Set-VM -Name $VMName -EnhancedSessionTransportType HvSocket
+
+        # Network: Default Switch
+        $switch = Get-VMSwitch "Default Switch" -ErrorAction SilentlyContinue
+        if ($switch) { Get-VMNetworkAdapter -VMName $VMName | Connect-VMNetworkAdapter -SwitchName $switch.Name }
+
+        Write-OK "Hyper-V VM '$VMName' created"
+        Write-OK "  CPUs: $cpuCount | RAM: $([Math]::Round($vmRAM / 1GB))GB (fixed) | Enhanced Session: ON"
+        Write-OK "  Start: Start-VM -Name '$VMName'"
+    } catch {
+        Write-Warn "Hyper-V auto-deploy failed: $_"
+    }
+} else {
+    Write-Warn "VHDX not found — skipping Hyper-V auto-deploy"
+}
+
+# ── WSL2 AUTO-DEPLOY ─────────────────────────────────────────────────────────
+if (Test-Path $TargetWsl) {
+    Write-Step "Deploying to WSL2..."
+    $WslName = "CloudWS-OS"
+    $WslPath = Join-Path $env:USERPROFILE "WSL\CloudWS"
+
+    try {
+        $distros = wsl --list --quiet 2>$null
+        if ($distros -match $WslName) {
+            Write-Step "Removing existing WSL distro '$WslName'..."
+            wsl --unregister $WslName 2>$null | Out-Null
+        }
+
+        New-Item -ItemType Directory -Path $WslPath -Force | Out-Null
+        wsl --import $WslName $WslPath $TargetWsl --version 2
+        if ($LASTEXITCODE -ne 0) { throw "WSL import failed" }
+
+        Write-OK "WSL2 distro '$WslName' imported"
+
+        # Generate .wslconfig — fixed memory prevents VMBus order-7 allocation panics
+        $wslConfigPath = Join-Path $env:USERPROFILE ".wslconfig"
+        $totalRAM = (Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum
+        $wslRAM = [Math]::Max(8, [Math]::Floor($totalRAM / 1GB / 2))
+        $wslCPUs = [Math]::Max(4, [Math]::Floor((Get-CimInstance Win32_Processor).NumberOfLogicalProcessors / 2))
+
+        $wslConfig = @'
+# CloudWS v1.2 — WSL2 Configuration
+# CRITICAL: Fixed memory prevents VMBus order-7 allocation panics
+[wsl2]
+memory=${wslRAM}GB
+processors=${wslCPUs}
+swap=8GB
+localhostForwarding=true
+nestedVirtualization=true
+vmIdleTimeout=-1
+'@
+        $wslConfig = $wslConfig.Replace('${wslRAM}', $wslRAM).Replace('${wslCPUs}', $wslCPUs)
+
+        if (Test-Path $wslConfigPath) {
+            $backup = "${wslConfigPath}.bak.$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+            Copy-Item $wslConfigPath $backup
+            Write-Step "Backed up existing .wslconfig to $backup"
+        }
+
+        $wslConfig | Set-Content $wslConfigPath -Encoding UTF8
+        Write-OK ".wslconfig generated: ${wslRAM}GB RAM, $wslCPUs CPUs (fixed allocation)"
+        Write-OK "  Run 'wsl --shutdown' then relaunch for .wslconfig to take effect"
+    } catch {
+        Write-Warn "WSL2 auto-deploy failed: $_"
+    }
+} else {
+    Write-Warn "WSL tarball not found — skipping WSL2 auto-deploy"
+}
+
+$ErrorActionPreference = "Stop"
+
+# ══════════════════════════════════════════════════════════════════════════════
 #  PHASE 4: REGISTRY PUSH
 # ══════════════════════════════════════════════════════════════════════════════
 Write-Phase "4" "Registry Push → $GhcrImage"
 $ErrorActionPreference = "Continue"
 $registryHost = ($GhcrImage -split '/')[0]
 
-# FIX: Token passed via --password-stdin (NEVER as command-line arg)
-# Command-line args are visible in process lists and terminal logs.
 if ($RegistryToken) {
     Write-Step "Authenticating to $registryHost (via stdin)..."
     $RegistryToken | podman login $registryHost --username $RegistryUser --password-stdin 2>&1 | Out-Null
@@ -285,7 +395,6 @@ if ($RegistryToken) {
 $GhcrOK = $LASTEXITCODE -eq 0
 if ($GhcrOK) {
     Write-OK "Pushed to $registryHost"
-    # Auto-set GHCR package to public (required for unauthenticated bootc upgrade)
     if ($registryHost -eq "ghcr.io" -and $RegistryToken) {
         try {
             $pkgName = ($GhcrImage -split '/')[-1] -replace ':.*$',''
@@ -319,8 +428,8 @@ Write-Host "  $("═"*78)`n" -ForegroundColor $color
 
 foreach ($t in @(
     @(1,"RAW",$T1,$RawImg,"dd if=cloudws-bootable.raw of=/dev/sdX bs=4M"),
-    @(2,"VHDX",$T2,$TargetVhdx,"Hyper-V Gen2 → attach as boot disk (Secure Boot: Microsoft UEFI CA)"),
-    @(3,"WSL2",$T3,$TargetWsl,"wsl --import CloudWS C:\WSL\CloudWS cloudws-wsl.tar"),
+    @(2,"VHDX",$T2,$TargetVhdx,"Hyper-V Gen2 → auto-deployed as 'CloudWS-OS'"),
+    @(3,"WSL2",$T3,$TargetWsl,"Auto-imported as 'CloudWS-OS' with .wslconfig"),
     @(4,"ISO",$T4,$TargetIso,"Write to USB with Rufus (ISO mode)"),
     @(5,"Registry",$GhcrOK,$GhcrImage,"sudo bootc switch $GhcrImage")
 )) {
@@ -332,10 +441,10 @@ foreach ($t in @(
 
 Write-Host "  Credentials: $U / ****" -ForegroundColor Yellow
 Write-Host "  Update origin: $GhcrImage (baked into all disk images)" -ForegroundColor DarkGray
-Write-Host "  Terminal:    cloudws --help" -ForegroundColor DarkGray
+Write-Host "  Terminal:    cloudws --help | cloudws-test --full" -ForegroundColor DarkGray
+Write-Host "  Headless:    sudo cloudws-toggle-headless off" -ForegroundColor DarkGray
 Write-Host "  Cockpit:     https://localhost:9090" -ForegroundColor DarkGray
 Write-Host ""
-Write-Host "  IMPORTANT: Hyper-V Gen2 VM Settings:" -ForegroundColor Yellow
-Write-Host "    Secure Boot → Microsoft UEFI Certificate Authority (NOT Windows)" -ForegroundColor DarkGray
-Write-Host "    Dynamic Memory → OFF (use static 4+ GB) or set minimum RAM ≥ 4096 MB" -ForegroundColor DarkGray
+Write-Host "  Hyper-V: Start-VM -Name 'CloudWS-OS' | vmconnect localhost 'CloudWS-OS'" -ForegroundColor Yellow
+Write-Host "  WSL2:    wsl -d CloudWS-OS (run 'wsl --shutdown' first for .wslconfig)" -ForegroundColor Yellow
 Write-Host ""

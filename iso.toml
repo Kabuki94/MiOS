@@ -1,0 +1,37 @@
+# CloudWS v1.2 — iso.toml
+# Kickstart configuration for BIB Anaconda ISO builds.
+# BIB reads this via: --config /config.toml (or mounted as /config.toml)
+#
+# The <IMAGE_SIGNED> and <UPDATE_IMAGE_REF> placeholders are replaced by
+# the BIB build process (or by cloud-ws.ps1/Justfile before BIB invocation).
+# For manual builds, replace with: ghcr.io/kabuki94/cloudws-bootc:latest
+
+[customizations.installer.kickstart]
+contents = """
+text
+network --bootproto=dhcp --device=link --activate --hostname=CloudWS
+clearpart --all --initlabel --disklabel=gpt
+reqpart --add-boot
+part / --grow --fstype xfs
+
+# ostreecontainer directive pulls the OCI image and deploys it
+ostreecontainer --url ghcr.io/kabuki94/cloudws-bootc:latest --no-signature-verification
+
+# Create default user (matches INJ_U from build — overridden at first login)
+user --name=cloudws --groups=wheel --plaintext --password=cloudws
+
+%post --erroronfail --log=/root/anaconda-post.log
+# Ensure update origin points to GHCR (not localhost from BIB build)
+bootc switch --mutate-in-place --transport registry ghcr.io/kabuki94/cloudws-bootc:latest 2>/dev/null || true
+
+# Set graphical target
+systemctl set-default graphical.target
+
+# Generate machine-id for unique hostname
+systemd-machine-id-setup 2>/dev/null || true
+
+echo "CloudWS v1.2 — Post-install complete"
+%end
+
+reboot
+"""

@@ -1,5 +1,5 @@
-# CloudWS v1.0 — Containerfile
-# Build: podman build --no-cache -t cloudws:latest .
+# CloudWS v1.2 — Containerfile
+# Build: podman build --squash-all --no-cache -t cloudws:latest .
 # Lint:  podman run --rm cloudws:latest bootc container lint
 
 # ── Stage 1: Build context (never enters final image) ────────────────────────
@@ -27,18 +27,21 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     cp /ctx/VERSION /tmp/build/VERSION && \
     find /tmp/build -name "*.sh" -exec sed -i 's/\r$//' {} + && \
     find /tmp/build -name "*.md" -exec sed -i 's/\r$//' {} + && \
+    find /tmp/build -name "cloudws-*" -exec sed -i 's/\r$//' {} + && \
     chmod +x /tmp/build/scripts/*.sh /tmp/build/scripts/lib/*.sh && \
+    chmod +x /tmp/build/scripts/cloudws-toggle-headless /tmp/build/scripts/cloudws-test 2>/dev/null || true && \
     PACKAGES_MD=/tmp/build/PACKAGES.md bash /tmp/build/scripts/build.sh && \
     rm -rf /tmp/build
 
 # Ensure GNOME Software can discover OS updates via rpm-ostree D-Bus bridge.
 # Without this package, GNOME Software only shows Flatpak updates.
-# rpm-ostree acts as a bridge to bootc's update mechanism.
 RUN dnf -y install gnome-software-rpm-ostree && dnf clean all
 
 # System file overlay (configs, systemd units, modprobe.d, dconf, etc.)
+# FIX: chmod 644 on systemd units to prevent permission warnings at boot.
 RUN --mount=type=bind,from=ctx,source=/system_files,target=/tmp/sf \
     cp -a /tmp/sf/. / && \
+    find /etc/systemd/system -name "*.mount" -o -name "*.service" -o -name "*.conf" 2>/dev/null | xargs chmod 644 2>/dev/null || true && \
     dconf update 2>/dev/null || true
 
 LABEL containers.bootc 1
