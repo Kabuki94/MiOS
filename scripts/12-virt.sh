@@ -96,15 +96,27 @@ install_packages "android"
 # ── K3s Lightweight Kubernetes ──────────────────────────────────────────────
 echo "[12-virt] Installing K3s..."
 
-# SELinux policies for K3s (must be installed BEFORE K3s binary)
-dnf -y install --skip-unavailable container-selinux k3s-selinux 2>/dev/null || true
+# container-selinux is in Fedora repos; k3s-selinux is NOT (el8/el9 only)
+dnf -y install --skip-unavailable container-selinux 2>/dev/null || true
 
 K3S_VERSION="v1.32.3+k3s1"
 echo "[12-virt] Downloading K3s ${K3S_VERSION}..."
+
+# INSTALL_K3S_SELINUX_WARN=true: warn instead of fail when k3s-selinux missing
+# (k3s-selinux RPM only exists for RHEL/CentOS, not Fedora Rawhide)
 curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_START=true \
     INSTALL_K3S_SKIP_ENABLE=true \
-    INSTALL_K3S_VERSION="${K3S_VERSION}" sh - 2>/dev/null || {
-    echo "[12-virt] WARNING: K3s install failed — will retry on first boot"
+    INSTALL_K3S_SELINUX_WARN=true \
+    INSTALL_K3S_VERSION="${K3S_VERSION}" sh - || {
+    # Fallback: download binary directly if install script fails
+    echo "[12-virt] Install script failed — downloading binary directly..."
+    K3S_URL="https://github.com/k3s-io/k3s/releases/download/${K3S_VERSION/+/%2B}/k3s"
+    curl -sfL "$K3S_URL" -o /usr/local/bin/k3s && chmod +x /usr/local/bin/k3s
+    # Create symlinks
+    for cmd in kubectl crictl ctr; do
+        ln -sf /usr/local/bin/k3s /usr/local/bin/$cmd
+    done
+    echo "[12-virt] K3s binary installed via direct download"
 }
 
 # K3s config: SELinux enforcing, data in /var

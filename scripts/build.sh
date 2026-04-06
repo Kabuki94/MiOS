@@ -89,7 +89,7 @@ echo "════════════════════════�
 
 CRITICAL_PACKAGES=(
     gnome-shell gdm podman bootc libvirt kernel firewalld cockpit
-    NetworkManager pipewire tuned chronyd sshd
+    NetworkManager pipewire tuned chrony openssh-server
 )
 VALIDATION_FAIL=0
 for pkg in "${CRITICAL_PACKAGES[@]}"; do

@@ -123,6 +123,7 @@ gtk-decoration-layout=:minimize,maximize,close
 EOGTK4
 
 # System-wide env vars for ALL toolkits (GTK3, GTK4/libadwaita, Qt5/6, Electron)
+mkdir -p /etc/environment.d
 cat > /etc/environment.d/70-cloudws-theme.conf <<'EOENV'
 # CloudWS v1.3: Unified dark theme for ALL window toolkits
 # GTK3 apps (Cockpit webview, Wine dialogs, older GNOME apps)

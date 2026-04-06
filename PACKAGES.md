@@ -8,7 +8,7 @@ To add a package, add it to the appropriate section. One package per line.
 - Fixed duplicate `pcp` and `pcp-system-tools` in Cockpit section
 - Removed `lib32-gamemode` and `libstrangle` (Arch-only, not in Fedora)
 - Added `kernel-modules-core` (kernel 7.0 split from kernel-modules)
-- Added `container-selinux` and `k3s-selinux` to K3s prerequisites
+- Added `container-selinux` to containers section (K3s prerequisite)
 - Added `nvidia-persistenced` to NVIDIA section
 - Added `composefs` explicitly to containers section
 
@@ -356,11 +356,10 @@ ceph-selinux
 ## K3s Lightweight Kubernetes
 
 K3s binary is downloaded directly (not via dnf).
-These are the system-level prerequisites K3s needs.
+k3s-selinux only exists for RHEL/CentOS — not available on Fedora Rawhide.
 
 ```packages-k3s
 container-selinux
-k3s-selinux
 ```
 
 ## High Availability — Pacemaker / Corosync
