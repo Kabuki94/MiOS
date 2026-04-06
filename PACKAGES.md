@@ -4,6 +4,14 @@ This file is both documentation and the **single source of truth** for all packa
 Build scripts parse the fenced code blocks below using `scripts/lib/packages.sh`.
 To add a package, add it to the appropriate section. One package per line.
 
+**CHANGELOG v1.3:**
+- Fixed duplicate `pcp` and `pcp-system-tools` in Cockpit section
+- Removed `lib32-gamemode` and `libstrangle` (Arch-only, not in Fedora)
+- Added `kernel-modules-core` (kernel 7.0 split from kernel-modules)
+- Added `container-selinux` and `k3s-selinux` to K3s prerequisites
+- Added `nvidia-persistenced` to NVIDIA section
+- Added `composefs` explicitly to containers section
+
 ---
 
 ## Repositories
@@ -21,11 +29,13 @@ dnf-plugins-core
 ## Kernel
 
 Kernel upgrade + development headers required for akmod-nvidia.
+kernel-modules-core added for kernel 7.0+ (split from kernel-modules).
 
 ```packages-kernel
 kernel
 kernel-core
 kernel-modules
+kernel-modules-core
 kernel-modules-extra
 kernel-devel
 kernel-headers
@@ -40,6 +50,9 @@ python3
 MINIMAL GNOME shell — infrastructure ONLY. NO viewer/editor apps as RPMs.
 Epiphany (Flatpak browser) handles documents, photos, and media natively.
 Steam, Wine, virt-manager, Waydroid are RPM exceptions (need system-level access).
+
+GNOME 49+: systemd is a HARD dependency. gnome-session's built-in service
+manager was removed. Full systemd user session support is required.
 
 ```packages-gnome
 gnome-shell
@@ -94,6 +107,7 @@ adwaita-qt5
 adwaita-qt6
 qadwaitadecorations-qt5
 qadwaitadecorations-qt6
+adw-gtk3-theme
 ```
 
 ## GNOME Core Apps (OPTIONAL — uncomment to include)
@@ -143,6 +157,7 @@ To include any, remove the `#` prefix from the package line.
 ## GPU Drivers — Mesa (AMD / Intel / software fallback)
 
 Universal Mesa stack supporting all AMD and Intel GPUs out of the box.
+Mesa 26: ACO is now default shader compiler for RadeonSI.
 
 ```packages-gpu-mesa
 mesa-vulkan-drivers
@@ -153,30 +168,6 @@ vulkan-tools
 libva-utils
 linux-firmware
 microcode_ctl
-```
-
-## GPU-PV Baseline (ALL images — bare metal, VM, container, WSL2, ISO)
-
-Paravirtualized GPU components for universal portability. These install
-unconditionally so the same image boots everywhere with GPU acceleration.
-WSL2 gets mesa-d3d12 (WDDM→Gallium bridge), VMs get virglrenderer
-(virtio-gpu 3D), containers get EGL/GLES for headless compute.
-
-```packages-gpu-pv-baseline
-mesa-libEGL
-mesa-libGLES
-mesa-libgbm
-mesa-libGL
-mesa-d3d12
-virglrenderer
-libglvnd
-libglvnd-egl
-libglvnd-gles
-libglvnd-glx
-libglvnd-opengl
-mesa-libOpenCL
-ocl-icd
-clinfo
 ```
 
 ## GPU Drivers — AMD Compute (optional, fault-tolerant)
@@ -191,11 +182,15 @@ rocm-hip
 ## GPU Drivers — NVIDIA (akmod, builds for any NVIDIA card)
 
 NVIDIA proprietary drivers via RPMFusion akmod. Builds kmod at image time.
+Driver 560+: Open kernel modules are DEFAULT for Turing (RTX 20+) and newer.
+Blackwell (RTX 50): Open modules are the ONLY option.
+WARNING: RTX 50-series has a VFIO reset bug — see /usr/share/doc/cloudws-vfio-warning.txt
 
 ```packages-gpu-nvidia
 akmod-nvidia
 xorg-x11-drv-nvidia-cuda
 nvidia-container-toolkit
+nvidia-persistenced
 ```
 
 ## Virtualization — KVM / QEMU / Libvirt
@@ -236,6 +231,7 @@ netavark
 aardvark-dns
 slirp4netns
 composefs
+container-selinux
 ```
 
 ## Cockpit Web Management
@@ -290,6 +286,7 @@ driverctl
 ## Gaming
 
 Steam, Wine, and Gamescope for SteamOS-mode GDM session.
+Removed lib32-gamemode and libstrangle (Arch-only, not in Fedora repos).
 
 ```packages-gaming
 steam
@@ -300,13 +297,11 @@ wine-mono
 winetricks
 lutris
 gamemode
-lib32-gamemode
 mangohud
 libobs
 vulkan-tools
 dosbox-staging
 protontricks
-libstrangle
 ```
 
 ## Guest Agents
@@ -365,190 +360,107 @@ These are the system-level prerequisites K3s needs.
 
 ```packages-k3s
 container-selinux
-selinux-policy-base
-iptables
-nftables
+k3s-selinux
 ```
 
-## High Availability
+## High Availability — Pacemaker / Corosync
 
-Pacemaker/Corosync clustering + fencing.
+Full HA cluster stack with fence agents and SBD.
 
 ```packages-ha
 pacemaker
 corosync
 pcs
 fence-agents-all
+fence-virt
 resource-agents
 sbd
-dlm
-booth-arbitrator
+booth
 booth-core
-booth-site
+booth-test
+dlm
+corosync-qdevice
+corosync-qnetd
+kronosnet
+libqb
 cluster-glue
 cluster-glue-libs
-python3-pcs
-python3-pyparsing
-ruby-devel
-gcc
-make
-keepalived
-haproxy
-etcd
-```
-
-## VM High Availability — Shared Storage + Live Migration
-
-Sanlock disk-based VM lock manager prevents split-brain in clustered libvirt.
-VirtualDomain OCF resource agent allows Pacemaker to failover VMs automatically.
-
-```packages-vm-ha
-sanlock
-sanlock-lib
-libvirt-lock-sanlock
-resource-agents
-fence-virt
-```
-
-## Database Stack (BASE — baked into every image)
-
-MariaDB 11.x + PostgreSQL + pgvector for AI embeddings. Every CloudWS node
-is database-ready out of the box for HA cluster deployments. DbGate is
-installed as Flatpak (see Flatpak section below).
-
-```packages-database
-mariadb-server
-mariadb
-mariadb-backup
-mariadb-cracklib-password-check
-postgresql-server
-postgresql
-postgresql-contrib
-postgresql-server-devel
-pgvector
-libpq
-libpq-devel
-redis
+libibverbs
 ```
 
 ## CLI Utilities
 
-Essential command-line tools.
+Common command-line tools and system utilities.
 
 ```packages-utils
 git
-jq
-make
-curl
-wget
-rsync
 tmux
-screen
-tree
-distrobox
-cloud-init
-polkit
-udisks2
-clevis
-python3
-python3-pip
-python3-devel
-lm_sensors
+vim-enhanced
+wget
+curl
+htop
 btop
 nvtop
-intel-gpu-tools
 fastfetch
-GeoIP
-GeoIP-GeoLite-data
+lm_sensors
+smartmontools
+fuse
+fuse3
+p7zip
+unzip
+rsync
+tree
+jq
+yq
+bc
+distrobox
+just
 ```
 
-## Android
+## Android — Waydroid
 
-Waydroid — Android with GAPPS in native Wayland windows.
+Waydroid container runtime for Android apps.
+Note: NVIDIA GPUs lack full 3D acceleration in Waydroid (Mesa/AMD/Intel only).
 
 ```packages-android
 waydroid
 ```
 
-## Looking Glass Build Dependencies (removed after compile)
+## Looking Glass B7 — Build Dependencies
 
-Temporary packages for compiling Looking Glass B7 client.
+These packages are installed during the build to compile Looking Glass B7.
+They are REMOVED after compilation to keep the image small.
 
 ```packages-looking-glass-build
 cmake
 gcc
 gcc-c++
 make
-pkgconf
 binutils
-binutils-devel
-libX11-devel
+pkgconf-pkg-config
+libglvnd-devel
+fontconfig-devel
+spice-protocol
 nettle-devel
+gnutls-devel
 libXi-devel
 libXinerama-devel
 libXcursor-devel
 libXpresent-devel
-libxkbcommon-devel
+libxkbcommon-x11-devel
 wayland-devel
 wayland-protocols-devel
-libsamplerate-devel
-pulseaudio-libs-devel
-pipewire-devel
-spice-protocol
-fontconfig-devel
-freetype-devel
-libXScrnSaver-devel
-libXrandr-devel
 libdecor-devel
-libepoxy-devel
-mesa-libEGL-devel
+pipewire-devel
+libsamplerate-devel
+dkms
 ```
 
-## Cockpit Plugins (npm build dependency)
+## Cockpit Plugin Build Dependencies
+
+Build dependencies for Cockpit plugins from git.
 
 ```packages-cockpit-plugins-build
-nodejs-npm
 npm
+gettext
 ```
-
-## AI Post-Install Framework Dependencies
-
-These packages support the `cloudws-ai-*` post-install commands.
-The heavy AI stacks (CUDA, ROCm full, OpenVINO, oneAPI) are NOT baked
-into the base image — they are fetched on-demand via `cloudws-ai-*`
-commands. These are just the lightweight prerequisites.
-
-```packages-ai-base
-python3-pip
-python3-devel
-python3-virtualenv
-gcc
-gcc-c++
-cmake
-```
-
-## Flatpak Applications (pre-installed, user-removable)
-
-These are installed via `flatpak install`, not dnf.
-
-| Flatpak ID | Source | Description |
-|------------|--------|-------------|
-| org.gnome.Epiphany | flathub | GNOME Web browser (docs, photos, media — replaces dedicated viewer apps) |
-| org.gnome.Logs | flathub | systemd journal viewer |
-| com.mattjakeman.ExtensionManager | flathub | GNOME Shell extension manager |
-| io.podman_desktop.PodmanDesktop | flathub | Container management GUI |
-| ca.andyholmes.Refine | flathub | Modern interface tweaker (replaces gnome-tweaks) |
-| org.dbgate.DbGate | flathub | Universal database management GUI (MariaDB, PostgreSQL, Redis) |
-
-## Totals
-
-| Category | Count |
-|----------|-------|
-| RPM Packages (explicit) | ~280 |
-| Flatpak Apps (pre-installed) | 7 |
-| Git-cloned plugins | 3 (cockpit-benchmark, cockpit-zfs-manager, geist-font) |
-| Binary installs | 1 (K3s) |
-| Custom tools | 20+ |
-| Config files | 20+ |
-| GDM sessions | 2 (GNOME Wayland, Steam Gamescope) |
-| Optional GNOME Core Apps | ~25 (uncomment to enable) |
