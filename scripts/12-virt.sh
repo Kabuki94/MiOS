@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS — 12-virt: Full virtualization, security, networking, HA, gaming
+# CloudWS v1.3 — 12-virt: Full virtualization, security, networking, HA, database, gaming
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
@@ -105,8 +105,65 @@ install_packages "guests"
 # ─── Storage & Networking ────────────────────────────────────────────────────
 install_packages "storage"
 
+# ─── Ceph Distributed Storage ───────────────────────────────────────────────
+install_packages "ceph"
+
 # ─── High Availability / Clustering ─────────────────────────────────────────
 dnf install -y --skip-unavailable --allowerasing --nobest $(get_packages "ha") || true
+
+# ─── VM High Availability — Sanlock + Live Migration ────────────────────────
+echo "[12-virt] Installing VM HA stack (sanlock + libvirt-lock-sanlock)..."
+dnf install -y --skip-unavailable --allowerasing --nobest $(get_packages "vm-ha") || true
+
+# Configure sanlock for libvirt if installed
+if command -v sanlock &>/dev/null; then
+    mkdir -p /etc/libvirt
+    # Enable sanlock disk lock manager in libvirt (prevents split-brain VM writes)
+    if [ -f /etc/libvirt/qemu.conf ]; then
+        if ! grep -q '^lock_manager' /etc/libvirt/qemu.conf; then
+            echo '# CloudWS: sanlock prevents split-brain when VMs run on multiple HA nodes' >> /etc/libvirt/qemu.conf
+            echo 'lock_manager = "sanlock"' >> /etc/libvirt/qemu.conf
+        fi
+    fi
+    # Create sanlock directories
+    mkdir -p /var/lib/libvirt/sanlock
+    echo "[12-virt] sanlock configured for libvirt VM locking"
+fi
+
+# ─── Database Stack (BASE — every CloudWS node is DB-ready) ─────────────────
+echo "[12-virt] Installing database stack (MariaDB + PostgreSQL + pgvector + Redis)..."
+dnf install -y --skip-unavailable --allowerasing --nobest $(get_packages "database") || true
+
+# Initialize MariaDB data directory (if binary installed)
+if command -v mariadb-install-db &>/dev/null; then
+    mariadb-install-db --user=mysql --datadir=/var/lib/mysql 2>/dev/null || true
+    echo "[12-virt] MariaDB data directory initialized"
+fi
+
+# Initialize PostgreSQL data directory (if binary installed)
+if command -v postgresql-setup &>/dev/null; then
+    postgresql-setup --initdb 2>/dev/null || true
+    echo "[12-virt] PostgreSQL data directory initialized"
+fi
+
+# Enable pgvector extension availability (create extension command still needed per-DB)
+if [ -f /usr/pgsql-*/share/extension/vector.control ] 2>/dev/null || \
+   [ -f /usr/share/pgsql/extension/vector.control ] 2>/dev/null; then
+    echo "[12-virt] pgvector extension available for PostgreSQL"
+fi
+
+# Redis: bind to localhost only by default for security
+if [ -f /etc/redis/redis.conf ]; then
+    sed -i 's/^bind .*/bind 127.0.0.1 -::1/' /etc/redis/redis.conf 2>/dev/null || true
+    echo "[12-virt] Redis bound to localhost"
+elif [ -f /etc/redis.conf ]; then
+    sed -i 's/^bind .*/bind 127.0.0.1 -::1/' /etc/redis.conf 2>/dev/null || true
+    echo "[12-virt] Redis bound to localhost"
+fi
+
+# ─── AI Post-Install Framework Dependencies ──────────────────────────────────
+echo "[12-virt] Installing AI framework base dependencies..."
+install_packages "ai-base" 2>/dev/null || true
 
 # ─── System Utilities ────────────────────────────────────────────────────────
 install_packages "utils"
@@ -118,11 +175,9 @@ install_packages "android"
 
 # ─── xRDP Hyper-V Enhanced Session (vsock transport — works at first launch) ─
 if [ -f /etc/xrdp/xrdp.ini ]; then
-    # Configure vsock transport for Hyper-V Enhanced Session
     sed -i 's/^port=3389/port=vsock:\/\/-1:3389/' /etc/xrdp/xrdp.ini
     sed -i 's/^use_vsock=false/use_vsock=true/' /etc/xrdp/xrdp.ini
     sed -i 's/^security_layer=negotiate/security_layer=rdp/' /etc/xrdp/xrdp.ini
-    # Also listen on TCP 3389 as fallback for non-Hyper-V RDP
     sed -i '/^\[xrdp1\]/,/^\[/ s/^port=.*/port=-1/' /etc/xrdp/xrdp.ini 2>/dev/null || true
 fi
 if [ -f /etc/xrdp/sesman.ini ]; then
@@ -173,6 +228,28 @@ mkdir -p client/build; cd client/build
 if cmake ../ && make -j$(nproc); then
     install -Dm755 looking-glass-client /usr/local/bin/looking-glass-client
     echo "[12-virt] Looking Glass B7 built successfully"
+
+    # IVSHMEM device configuration
+    cat > /etc/udev/rules.d/99-kvmfr.rules <<'EOKVMFR'
+SUBSYSTEM=="kvmfr", OWNER="root", GROUP="kvm", MODE="0660"
+EOKVMFR
+
+    cat > /etc/tmpfiles.d/10-looking-glass.conf <<'EOLGSHM'
+# Type Path                Mode UID  GID Age Argument
+f     /dev/shm/looking-glass 0660 root kvm -
+EOLGSHM
+
+    # Looking Glass startup helper
+    cat > /usr/local/bin/looking-glass-start <<'EOLGS'
+#!/bin/bash
+VM_NAME="${1:-win11}"
+echo "Starting Looking Glass client for VM: $VM_NAME"
+echo "Waiting for shared memory..."
+while [[ ! -e /dev/shm/looking-glass ]]; do sleep 1; done
+echo "Shared memory detected — launching..."
+/usr/local/bin/looking-glass-client -F -f /dev/shm/looking-glass
+EOLGS
+    chmod +x /usr/local/bin/looking-glass-start
 else
     echo "[12-virt] WARN: Looking Glass build failed (non-fatal)"
 fi
@@ -181,4 +258,8 @@ rm -rf /tmp/LookingGlass
 # Remove Looking Glass build deps (keep runtime deps)
 dnf remove -y --noautoremove $(get_packages "looking-glass-build") 2>/dev/null || true
 
-echo "[12-virt] Full KVM/Podman/Gaming/Security/Cockpit + Looking Glass B7 installed."
+# ─── DbGate Flatpak (universal database management GUI) ─────────────────────
+echo "[12-virt] Installing DbGate Flatpak..."
+flatpak install -y flathub org.dbgate.DbGate 2>/dev/null || true
+
+echo "[12-virt] Full KVM/Podman/Gaming/Security/Cockpit/Database/HA/Looking Glass installed."

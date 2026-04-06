@@ -1,4 +1,4 @@
-# CloudWS v1.2 — Package Manifest
+# CloudWS v1.3 — Package Manifest
 
 This file is both documentation and the **single source of truth** for all packages installed in CloudWS.
 Build scripts parse the fenced code blocks below using `scripts/lib/packages.sh`.
@@ -155,6 +155,30 @@ linux-firmware
 microcode_ctl
 ```
 
+## GPU-PV Baseline (ALL images — bare metal, VM, container, WSL2, ISO)
+
+Paravirtualized GPU components for universal portability. These install
+unconditionally so the same image boots everywhere with GPU acceleration.
+WSL2 gets mesa-d3d12 (WDDM→Gallium bridge), VMs get virglrenderer
+(virtio-gpu 3D), containers get EGL/GLES for headless compute.
+
+```packages-gpu-pv-baseline
+mesa-libEGL
+mesa-libGLES
+mesa-libgbm
+mesa-libGL
+mesa-d3d12
+virglrenderer
+libglvnd
+libglvnd-egl
+libglvnd-gles
+libglvnd-glx
+libglvnd-opengl
+mesa-libOpenCL
+ocl-icd
+clinfo
+```
+
 ## GPU Drivers — AMD Compute (optional, fault-tolerant)
 
 ROCm OpenCL/HIP for AMD compute workloads.
@@ -231,8 +255,6 @@ cockpit-machines
 cockpit-ostree
 cockpit-selinux
 cockpit-pcp
-pcp
-pcp-system-tools
 pcp
 pcp-system-tools
 ```
@@ -370,6 +392,43 @@ python3-pyparsing
 ruby-devel
 gcc
 make
+keepalived
+haproxy
+etcd
+```
+
+## VM High Availability — Shared Storage + Live Migration
+
+Sanlock disk-based VM lock manager prevents split-brain in clustered libvirt.
+VirtualDomain OCF resource agent allows Pacemaker to failover VMs automatically.
+
+```packages-vm-ha
+sanlock
+sanlock-lib
+libvirt-lock-sanlock
+resource-agents
+fence-virt
+```
+
+## Database Stack (BASE — baked into every image)
+
+MariaDB 11.x + PostgreSQL + pgvector for AI embeddings. Every CloudWS node
+is database-ready out of the box for HA cluster deployments. DbGate is
+installed as Flatpak (see Flatpak section below).
+
+```packages-database
+mariadb-server
+mariadb
+mariadb-backup
+mariadb-cracklib-password-check
+postgresql-server
+postgresql
+postgresql-contrib
+postgresql-server-devel
+pgvector
+libpq
+libpq-devel
+redis
 ```
 
 ## CLI Utilities
@@ -399,6 +458,8 @@ btop
 nvtop
 intel-gpu-tools
 fastfetch
+GeoIP
+GeoIP-GeoLite-data
 ```
 
 ## Android
@@ -450,6 +511,22 @@ nodejs-npm
 npm
 ```
 
+## AI Post-Install Framework Dependencies
+
+These packages support the `cloudws-ai-*` post-install commands.
+The heavy AI stacks (CUDA, ROCm full, OpenVINO, oneAPI) are NOT baked
+into the base image — they are fetched on-demand via `cloudws-ai-*`
+commands. These are just the lightweight prerequisites.
+
+```packages-ai-base
+python3-pip
+python3-devel
+python3-virtualenv
+gcc
+gcc-c++
+cmake
+```
+
 ## Flatpak Applications (pre-installed, user-removable)
 
 These are installed via `flatpak install`, not dnf.
@@ -461,16 +538,17 @@ These are installed via `flatpak install`, not dnf.
 | com.mattjakeman.ExtensionManager | flathub | GNOME Shell extension manager |
 | io.podman_desktop.PodmanDesktop | flathub | Container management GUI |
 | ca.andyholmes.Refine | flathub | Modern interface tweaker (replaces gnome-tweaks) |
+| org.dbgate.DbGate | flathub | Universal database management GUI (MariaDB, PostgreSQL, Redis) |
 
 ## Totals
 
 | Category | Count |
 |----------|-------|
-| RPM Packages (explicit) | ~220 |
-| Flatpak Apps (pre-installed) | 6 |
+| RPM Packages (explicit) | ~280 |
+| Flatpak Apps (pre-installed) | 7 |
 | Git-cloned plugins | 3 (cockpit-benchmark, cockpit-zfs-manager, geist-font) |
 | Binary installs | 1 (K3s) |
-| Custom tools | 14 |
+| Custom tools | 20+ |
 | Config files | 20+ |
 | GDM sessions | 2 (GNOME Wayland, Steam Gamescope) |
 | Optional GNOME Core Apps | ~25 (uncomment to enable) |
