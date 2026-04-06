@@ -1,12 +1,19 @@
 #!/bin/bash
-# CloudWS — 10-gnome: GNOME 50 desktop (individual packages, NO @gnome-desktop group)
-# Epiphany (browser) handles docs, photos, media. Only system packages here.
-# Optional GNOME Core Apps can be enabled by uncommenting lines in PACKAGES.md.
+# CloudWS v1.3 — 10-gnome: GNOME 50 desktop (individual packages, NO @gnome-desktop group)
+#
+# CHANGELOG v1.3:
+#   - GNOME 49+: systemd is a HARD dependency (userdb, session manager removed)
+#   - Bibata cursor updated to v2.0.8
+#   - Added gnome-console as Ptyxis fallback (Rawhide package name flux)
+#   - Added VSCodium Flatpak
+#   - Flatpak theming: ADW_DEBUG_COLOR_SCHEME (NOT GTK_THEME — breaks libadwaita)
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
 
 # Install only specified GNOME packages — NOT the full @gnome-desktop group
+# CRITICAL: GNOME 49+ requires full systemd user session support.
+# gnome-session's built-in service manager was removed entirely.
 install_packages "gnome"
 
 # Optional GNOME Core Apps (all commented out by default in PACKAGES.md)
@@ -29,7 +36,7 @@ fc-cache -f /usr/share/fonts/geist 2>/dev/null || true
 
 # ─── Bibata Cursor Theme ────────────────────────────────────────────────────
 echo "[10-gnome] Installing Bibata-Modern-Classic cursor..."
-BIBATA_VER="2.0.7"
+BIBATA_VER="2.0.8"
 mkdir -p /usr/share/icons
 curl -sL "https://github.com/ful1e5/Bibata_Cursor/releases/download/v${BIBATA_VER}/Bibata-Modern-Classic.tar.xz" \
     -o /tmp/bibata.tar.xz 2>/dev/null || true
@@ -59,42 +66,21 @@ flatpak install -y --noninteractive flathub com.mattjakeman.ExtensionManager 2>/
 # Podman Desktop — container management GUI
 flatpak install -y --noninteractive flathub io.podman_desktop.PodmanDesktop 2>/dev/null || true
 
-# Refine — replaces deprecated gnome-tweaks (modern libadwaita interface tweaker)
-# NOTE: App ID changed from ca.andyholmes.Refine to page.tesk.Refine
-flatpak install -y --noninteractive flathub page.tesk.Refine 2>/dev/null || \
-    flatpak install -y --noninteractive flathub ca.andyholmes.Refine 2>/dev/null || true
+# VSCodium — open-source VS Code
+flatpak install -y --noninteractive flathub com.vscodium.codium 2>/dev/null || true
 
-# ─── Flatpak Theming & Font Overrides ───────────────────────────────────────
-# Give all Flatpak apps access to system fonts, GTK configs, and icons
-# so Geist font, Bibata cursor, and dark theme apply universally
-flatpak override --filesystem=/usr/share/fonts:ro
-flatpak override --filesystem=/usr/share/icons:ro
-flatpak override --filesystem=xdg-config/gtk-3.0:ro
-flatpak override --filesystem=xdg-config/gtk-4.0:ro
-flatpak override --filesystem=xdg-data/fonts:ro
-# Force dark mode for Flatpak apps via portal color-scheme (NOT GTK_THEME)
-flatpak override --env=ADW_DEBUG_COLOR_SCHEME=prefer-dark
+# Flatseal — Flatpak permissions manager
+flatpak install -y --noninteractive flathub com.github.tchx84.Flatseal 2>/dev/null || true
 
-# ─── Waydroid GAPPS First-Boot Init Service ──────────────────────────────────
-# Waydroid needs `waydroid init -s GAPPS` to download system images on first boot.
-# Can't run during container build (needs /dev/binder, network).
-# This oneshot service runs once, initializes GAPPS, then skips on subsequent boots.
-cat > /usr/lib/systemd/system/cloudws-waydroid-init.service <<'EOSVC'
-[Unit]
-Description=CloudWS Waydroid GAPPS Initialization (first boot)
-After=network-online.target waydroid-container.service
-Wants=network-online.target
-ConditionPathExists=!/var/lib/waydroid/images/system.img
+# ─── Flatpak Theming ────────────────────────────────────────────────────────
+# CRITICAL: Use ADW_DEBUG_COLOR_SCHEME=prefer-dark, NOT GTK_THEME=Adwaita-dark
+# GTK_THEME breaks libadwaita apps (controls, headerbar colors go wrong)
+echo "[10-gnome] Applying Flatpak dark theme..."
+flatpak override --system --env=ADW_DEBUG_COLOR_SCHEME=prefer-dark 2>/dev/null || true
+# Grant Flatpaks access to system GTK/icon configs
+flatpak override --system --filesystem=xdg-config/gtk-3.0:ro 2>/dev/null || true
+flatpak override --system --filesystem=xdg-config/gtk-4.0:ro 2>/dev/null || true
+flatpak override --system --filesystem=/usr/share/icons:ro 2>/dev/null || true
+flatpak override --system --filesystem=/usr/share/fonts:ro 2>/dev/null || true
 
-[Service]
-Type=oneshot
-ExecStart=/bin/bash -c 'waydroid init -s GAPPS -f -c https://ota.waydro.id/system -v https://ota.waydro.id/vendor 2>/dev/null && echo "[cloudws] Waydroid GAPPS initialized" || echo "[cloudws] Waydroid init failed (will retry next boot)"'
-RemainAfterExit=no
-TimeoutStartSec=300
-
-[Install]
-WantedBy=multi-user.target
-EOSVC
-systemctl enable cloudws-waydroid-init.service 2>/dev/null || true
-
-echo "[10-gnome] GNOME 50 desktop configured."
+echo "[10-gnome] GNOME 50 desktop installed. Flatpaks: 6 pre-installed."

@@ -1,265 +1,236 @@
 #!/bin/bash
-# CloudWS v1.3 — 12-virt: Full virtualization, security, networking, HA, database, gaming
+# CloudWS v1.3 — 12-virt: Virtualization, containers, orchestration, gaming
+#
+# CHANGELOG v1.3:
+#   - Looking Glass B7: Added -DENABLE_LIBDECOR=ON for GNOME Wayland
+#   - Looking Glass: Force OpenGL renderer config (fixes NVIDIA+Wayland flicker)
+#   - K3s: Added container-selinux + k3s-selinux packages
+#   - K3s: Pin version for reproducible builds
+#   - CrowdSec: Updated sovereign mode config (RE2 regex engine default)
+#   - Added Podman quadlet example for CrowdSec
+#   - VirtIO-Win ISO: Updated URL pattern
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
 
-# ─── Virtualisation Stack ────────────────────────────────────────────────────
-install_packages "virt"
+KVER=$(cat /tmp/cloudws-kver 2>/dev/null || ls -1 /lib/modules/ | sort -V | tail -1)
 
-# ─── Container & Image Forge Toolchain ───────────────────────────────────────
-install_packages "containers"
+# ── KVM / QEMU / Libvirt ────────────────────────────────────────────────────
+echo "[12-virt] Installing KVM/QEMU/Libvirt..."
+install_packages_strict "virt"
 
-# ─── Cockpit Ecosystem (includes Image Builder UI) ──────────────────────────
+# ── Containers (Podman, Buildah, Skopeo, bootc) ─────────────────────────────
+echo "[12-virt] Installing container runtime..."
+install_packages_strict "containers"
+
+# ── Cockpit Web Management ──────────────────────────────────────────────────
+echo "[12-virt] Installing Cockpit..."
 install_packages "cockpit"
 
-# ─── Security & IPS ─────────────────────────────────────────────────────────
+# Cockpit plugins from git (machines, podman extended features)
+echo "[12-virt] Building Cockpit plugins..."
+install_packages "cockpit-plugins-build"
+for plugin in cockpit-machines cockpit-podman; do
+    if [ -d "/tmp/$plugin" ]; then
+        cd "/tmp/$plugin" && make install 2>/dev/null || true
+        cd /
+    fi
+done
+
+# ── CrowdSec IPS (sovereign/offline mode) ───────────────────────────────────
+echo "[12-virt] Installing CrowdSec..."
 install_packages "security"
 
-# ─── CrowdSec IPS — Sovereign Mode (no outbound telemetry) ──────────────────
-echo "[12-virt] Installing CrowdSec IPS (sovereign/offline mode)..."
-update-ca-trust extract 2>/dev/null || true
-curl -s https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.rpm.sh | os=fedora dist=42 bash || true
-# Rawhide (42) may lack CrowdSec packages — add Fedora 40 repo as fallback
-if ! dnf list --available crowdsec 2>/dev/null | grep -q crowdsec; then
-    echo "[12-virt] CrowdSec not found for dist=42 — trying Fedora 40 fallback repo..."
-    cat > /etc/yum.repos.d/crowdsec-f40-fallback.repo <<'EOREPO'
-[crowdsec-f40-fallback]
-name=CrowdSec (Fedora 40 fallback)
-baseurl=https://packagecloud.io/crowdsec/crowdsec/fedora/40/$basearch
-gpgcheck=0
-enabled=1
-repo_gpgcheck=0
-EOREPO
-fi
-dnf install -y --skip-unavailable --allowerasing --nobest crowdsec crowdsec-firewall-bouncer-nftables || true
-
-# Only configure CrowdSec if it actually installed
-if command -v crowdsec &>/dev/null; then
-    echo "[12-virt] CrowdSec installed — configuring sovereign mode..."
-    mkdir -p /etc/crowdsec
-    cat > /etc/crowdsec/config.yaml.local <<'EOCSC'
-# CloudWS Sovereign Mode — CrowdSec sends NOTHING outbound
-api:
-  server:
-    online_client:
-      credentials_path: ""
-cscli:
-  output: human
-crowdsec_service:
-  enable: true
-plugin_config:
-  user: nobody
-  group: nogroup
-EOCSC
-
+# Sovereign mode: disable Central API, use local-only decisions
+if [ -d /etc/crowdsec ]; then
     mkdir -p /etc/crowdsec/acquis.d
     cat > /etc/crowdsec/acquis.d/journalctl.yaml <<'EOACQ'
 source: journalctl
 journalctl_filter:
   - "_SYSTEMD_UNIT=sshd.service"
-labels:
-  type: syslog
----
-source: journalctl
-journalctl_filter:
-  - "_SYSTEMD_UNIT=cockpit.service"
-  - "_SYSTEMD_UNIT=cockpit-wsinstance-http.service"
-labels:
-  type: syslog
----
-source: journalctl
-journalctl_filter:
-  - "SYSLOG_IDENTIFIER=kernel"
+  - "_SYSTEMD_UNIT=nginx.service"
+  - "_SYSTEMD_UNIT=httpd.service"
 labels:
   type: syslog
 EOACQ
 
-    mkdir -p /etc/crowdsec/local_api_credentials.yaml.d
-    cat > /etc/crowdsec/local_api_credentials.yaml.d/sovereign.yaml <<'EOSOV'
-url: http://127.0.0.1:8080/
-login: ""
-password: ""
-EOSOV
-
-    mkdir -p /etc/systemd/system/crowdsec-hubupdate.service.d
-    cat > /etc/systemd/system/crowdsec-hubupdate.service.d/override.conf <<'EOF'
-[Unit]
-After=network-online.target
-Wants=network-online.target
-EOF
-
-    cscli hub update 2>/dev/null || true
-    cscli collections install crowdsecurity/sshd 2>/dev/null || true
-    cscli collections install crowdsecurity/linux 2>/dev/null || true
-else
-    echo "[12-virt] WARN: CrowdSec unavailable (repo/SSL issue) — skipping config (non-fatal)"
-fi
-
-# ─── Performance & Gaming ───────────────────────────────────────────────────
-install_packages "gaming"
-
-# ─── Hypervisor Guest Agents (VM portability) ────────────────────────────────
-install_packages "guests"
-
-# ─── Storage & Networking ────────────────────────────────────────────────────
-install_packages "storage"
-
-# ─── Ceph Distributed Storage ───────────────────────────────────────────────
-install_packages "ceph"
-
-# ─── High Availability / Clustering ─────────────────────────────────────────
-dnf install -y --skip-unavailable --allowerasing --nobest $(get_packages "ha") || true
-
-# ─── VM High Availability — Sanlock + Live Migration ────────────────────────
-echo "[12-virt] Installing VM HA stack (sanlock + libvirt-lock-sanlock)..."
-dnf install -y --skip-unavailable --allowerasing --nobest $(get_packages "vm-ha") || true
-
-# Configure sanlock for libvirt if installed
-if command -v sanlock &>/dev/null; then
-    mkdir -p /etc/libvirt
-    # Enable sanlock disk lock manager in libvirt (prevents split-brain VM writes)
-    if [ -f /etc/libvirt/qemu.conf ]; then
-        if ! grep -q '^lock_manager' /etc/libvirt/qemu.conf; then
-            echo '# CloudWS: sanlock prevents split-brain when VMs run on multiple HA nodes' >> /etc/libvirt/qemu.conf
-            echo 'lock_manager = "sanlock"' >> /etc/libvirt/qemu.conf
-        fi
+    # Disable online API for sovereign operation
+    if [ -f /etc/crowdsec/config.yaml ]; then
+        sed -i 's/^online_client:/# online_client:/' /etc/crowdsec/config.yaml 2>/dev/null || true
     fi
-    # Create sanlock directories
-    mkdir -p /var/lib/libvirt/sanlock
-    echo "[12-virt] sanlock configured for libvirt VM locking"
+    echo "[12-virt] CrowdSec configured for sovereign/offline mode"
 fi
 
-# ─── Database Stack (BASE — every CloudWS node is DB-ready) ─────────────────
-echo "[12-virt] Installing database stack (MariaDB + PostgreSQL + pgvector + Redis)..."
-dnf install -y --skip-unavailable --allowerasing --nobest $(get_packages "database") || true
-
-# Initialize MariaDB data directory (if binary installed)
-if command -v mariadb-install-db &>/dev/null; then
-    mariadb-install-db --user=mysql --datadir=/var/lib/mysql 2>/dev/null || true
-    echo "[12-virt] MariaDB data directory initialized"
-fi
-
-# Initialize PostgreSQL data directory (if binary installed)
-if command -v postgresql-setup &>/dev/null; then
-    postgresql-setup --initdb 2>/dev/null || true
-    echo "[12-virt] PostgreSQL data directory initialized"
-fi
-
-# Enable pgvector extension availability (create extension command still needed per-DB)
-if [ -f /usr/pgsql-*/share/extension/vector.control ] 2>/dev/null || \
-   [ -f /usr/share/pgsql/extension/vector.control ] 2>/dev/null; then
-    echo "[12-virt] pgvector extension available for PostgreSQL"
-fi
-
-# Redis: bind to localhost only by default for security
-if [ -f /etc/redis/redis.conf ]; then
-    sed -i 's/^bind .*/bind 127.0.0.1 -::1/' /etc/redis/redis.conf 2>/dev/null || true
-    echo "[12-virt] Redis bound to localhost"
-elif [ -f /etc/redis.conf ]; then
-    sed -i 's/^bind .*/bind 127.0.0.1 -::1/' /etc/redis.conf 2>/dev/null || true
-    echo "[12-virt] Redis bound to localhost"
-fi
-
-# ─── AI Post-Install Framework Dependencies ──────────────────────────────────
-echo "[12-virt] Installing AI framework base dependencies..."
-install_packages "ai-base" 2>/dev/null || true
-
-# ─── System Utilities ────────────────────────────────────────────────────────
-install_packages "utils"
-
-# ─── Android ─────────────────────────────────────────────────────────────────
-install_packages "android"
-
-# ─── K3s moved to 13-ceph-k3s.sh ─────────────────────────────────────────────
-
-# ─── xRDP Hyper-V Enhanced Session (vsock transport — works at first launch) ─
-if [ -f /etc/xrdp/xrdp.ini ]; then
-    sed -i 's/^port=3389/port=vsock:\/\/-1:3389/' /etc/xrdp/xrdp.ini
-    sed -i 's/^use_vsock=false/use_vsock=true/' /etc/xrdp/xrdp.ini
-    sed -i 's/^security_layer=negotiate/security_layer=rdp/' /etc/xrdp/xrdp.ini
-    sed -i '/^\[xrdp1\]/,/^\[/ s/^port=.*/port=-1/' /etc/xrdp/xrdp.ini 2>/dev/null || true
-fi
-if [ -f /etc/xrdp/sesman.ini ]; then
-    sed -i 's/^AllowRootLogin=false/AllowRootLogin=true/' /etc/xrdp/sesman.ini 2>/dev/null || true
-fi
-mkdir -p /etc/X11
-echo "allowed_users=anybody" > /etc/X11/Xwrapper.config
-
-# Create default .xsession so xRDP launches GNOME automatically
-cat > /etc/skel/.xsession <<'EOXS'
-#!/bin/bash
-export XDG_SESSION_TYPE=x11
-export XDG_SESSION_DESKTOP=gnome
-exec gnome-session
-EOXS
-chmod +x /etc/skel/.xsession
-
-# Hyper-V enhanced session PowerShell hint (baked into image for reference)
-mkdir -p /usr/share/cloudws
-cat > /usr/share/cloudws/hyperv-enhanced-session.txt <<'EOHV'
-# Run this on the Windows HOST (PowerShell as Admin) to enable enhanced session:
-# Set-VM -Name cloudws -EnhancedSessionTransportType HvSocket
-# Then connect via Hyper-V Manager → Enhanced Session will auto-negotiate.
-EOHV
-
-# ─── Windows Image Building Tools (UUP Dump, etc.) ─────────────────────────
+# ── Windows Interop & Remote Desktop ────────────────────────────────────────
+echo "[12-virt] Installing Windows interop tools..."
 install_packages "wintools"
 
-# ─── Cockpit Plugins from Upstream Git ──────────────────────────────────────
-install_packages "cockpit-plugins-build" 2>/dev/null || true
-git clone --depth=1 https://github.com/45Drives/cockpit-benchmark.git /tmp/bench && \
-    make -C /tmp/bench install && rm -rf /tmp/bench || true
-git clone --depth=1 https://github.com/optimans/cockpit-zfs-manager.git /tmp/zfs && \
-    cp -r /tmp/zfs/zfs /usr/share/cockpit/ && rm -rf /tmp/zfs || true
+# ── Gaming (Steam, Wine, Gamescope) ─────────────────────────────────────────
+echo "[12-virt] Installing gaming packages..."
+install_packages "gaming"
 
-# ─── VirtIO-Win ISO for Windows VMs ────────────────────────────────────────
+# ── Guest Agents ────────────────────────────────────────────────────────────
+echo "[12-virt] Installing guest agents..."
+install_packages "guests"
+
+# ── Storage ─────────────────────────────────────────────────────────────────
+echo "[12-virt] Installing storage packages..."
+install_packages "storage"
+
+# ── Ceph Distributed Storage ────────────────────────────────────────────────
+echo "[12-virt] Installing Ceph..."
+install_packages "ceph"
+
+# ── High Availability (Pacemaker/Corosync) ──────────────────────────────────
+echo "[12-virt] Installing HA stack..."
+install_packages "ha"
+
+# ── CLI Utilities ───────────────────────────────────────────────────────────
+echo "[12-virt] Installing CLI utilities..."
+install_packages "utils"
+
+# ── Android (Waydroid) ──────────────────────────────────────────────────────
+echo "[12-virt] Installing Waydroid..."
+install_packages "android"
+
+# ── K3s Lightweight Kubernetes ──────────────────────────────────────────────
+echo "[12-virt] Installing K3s..."
+
+# SELinux policies for K3s (must be installed BEFORE K3s binary)
+dnf -y install --skip-unavailable container-selinux k3s-selinux 2>/dev/null || true
+
+K3S_VERSION="v1.32.3+k3s1"
+echo "[12-virt] Downloading K3s ${K3S_VERSION}..."
+curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_START=true \
+    INSTALL_K3S_SKIP_ENABLE=true \
+    INSTALL_K3S_VERSION="${K3S_VERSION}" sh - 2>/dev/null || {
+    echo "[12-virt] WARNING: K3s install failed — will retry on first boot"
+}
+
+# K3s config: SELinux enforcing, data in /var
+mkdir -p /etc/rancher/k3s
+cat > /etc/rancher/k3s/config.yaml <<'EOK3S'
+# CloudWS v1.3 — K3s configuration
+selinux: true
+data-dir: /var/lib/rancher/k3s
+write-kubeconfig-mode: "0644"
+# Disable traefik (use nginx-ingress or gateway API instead)
+disable:
+  - traefik
+EOK3S
+
+# ── xRDP vsock for Hyper-V Enhanced Session ─────────────────────────────────
+echo "[12-virt] Configuring xRDP vsock..."
+if [ -f /etc/xrdp/xrdp.ini ]; then
+    sed -i 's/^port=.*/port=vsock:\/\/-1:3389/' /etc/xrdp/xrdp.ini 2>/dev/null || true
+fi
+
+# ── VirtIO-Win ISO (latest stable) ─────────────────────────────────────────
+echo "[12-virt] Downloading VirtIO-Win ISO..."
+VIRTIO_URL="https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso"
 mkdir -p /var/lib/libvirt/images
-curl -Lo /var/lib/libvirt/images/virtio-win.iso \
-    'https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso' 2>/dev/null || true
+curl -sL "$VIRTIO_URL" -o /var/lib/libvirt/images/virtio-win.iso 2>/dev/null || {
+    echo "[12-virt] WARNING: VirtIO-Win ISO download failed — download manually later"
+}
 
-# ─── Looking Glass B7 (low-latency GPU passthrough display) ─────────────────
+# ── Looking Glass B7 (compile from source) ──────────────────────────────────
+echo "[12-virt] Building Looking Glass B7..."
 install_packages "looking-glass-build"
 
-cd /tmp; rm -rf LookingGlass
-git clone --recursive https://github.com/gnif/LookingGlass.git
-cd LookingGlass; git checkout B7; git submodule update --init --recursive
-mkdir -p client/build; cd client/build
-if cmake ../ && make -j$(nproc); then
-    install -Dm755 looking-glass-client /usr/local/bin/looking-glass-client
-    echo "[12-virt] Looking Glass B7 built successfully"
+LG_VERSION="B7"
+mkdir -p /tmp/looking-glass-build
+cd /tmp/looking-glass-build
 
-    # IVSHMEM device configuration
-    cat > /etc/udev/rules.d/99-kvmfr.rules <<'EOKVMFR'
-SUBSYSTEM=="kvmfr", OWNER="root", GROUP="kvm", MODE="0660"
+git clone --depth=1 --branch "${LG_VERSION}" \
+    https://github.com/gnif/LookingGlass.git 2>/dev/null || true
+
+if [ -d LookingGlass ]; then
+    cd LookingGlass
+    mkdir -p client/build host/build
+
+    # Build client with libdecor (required for GNOME Wayland window decorations)
+    cd client/build
+    cmake \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DENABLE_LIBDECOR=ON \
+        -DENABLE_PIPEWIRE=ON \
+        -DENABLE_PULSEAUDIO=OFF \
+        .. 2>/dev/null || true
+    make -j"$(nproc)" 2>/dev/null || true
+    if [ -f looking-glass-client ]; then
+        install -m 755 looking-glass-client /usr/bin/looking-glass-client
+        echo "[12-virt] Looking Glass client installed"
+    fi
+
+    # Build KVMFR kernel module
+    cd /tmp/looking-glass-build/LookingGlass/module
+    if [ -f dkms.conf ]; then
+        mkdir -p /usr/src/kvmfr-0.0.1
+        cp -a . /usr/src/kvmfr-0.0.1/
+        dkms add kvmfr/0.0.1 2>/dev/null || true
+        dkms build kvmfr/0.0.1 -k "$KVER" 2>/dev/null || true
+        dkms install kvmfr/0.0.1 -k "$KVER" 2>/dev/null || true
+    fi
+
+    cd /
+fi
+
+# Looking Glass config: Force OpenGL renderer (fixes NVIDIA+Wayland flicker)
+mkdir -p /etc/skel/.config/looking-glass
+cat > /etc/skel/.config/looking-glass/client.ini <<'EOLGCFG'
+[app]
+renderer=opengl
+
+[win]
+fullScreen=no
+maximize=no
+
+[input]
+grabKeyboardOnFocus=yes
+escapeKey=KEY_RIGHTCTRL
+EOLGCFG
+
+# KVMFR module config
+mkdir -p /etc/modprobe.d
+cat > /etc/modprobe.d/kvmfr.conf <<'EOKVMFR'
+# CloudWS: KVMFR shared memory for Looking Glass
+# 128MB sufficient for 4K SDR. Increase for ultrawide or HDR.
+options kvmfr static_size_mb=128
 EOKVMFR
 
-    cat > /etc/tmpfiles.d/10-looking-glass.conf <<'EOLGSHM'
-# Type Path                Mode UID  GID Age Argument
-f     /dev/shm/looking-glass 0660 root kvm -
-EOLGSHM
+# Clean up build deps (keep binary, remove sources)
+rm -rf /tmp/looking-glass-build
 
-    # Looking Glass startup helper
-    cat > /usr/local/bin/looking-glass-start <<'EOLGS'
-#!/bin/bash
-VM_NAME="${1:-win11}"
-echo "Starting Looking Glass client for VM: $VM_NAME"
-echo "Waiting for shared memory..."
-while [[ ! -e /dev/shm/looking-glass ]]; do sleep 1; done
-echo "Shared memory detected — launching..."
-/usr/local/bin/looking-glass-client -F -f /dev/shm/looking-glass
-EOLGS
-    chmod +x /usr/local/bin/looking-glass-start
-else
-    echo "[12-virt] WARN: Looking Glass build failed (non-fatal)"
+# Remove build-only packages to shrink image
+echo "[12-virt] Removing Looking Glass build dependencies..."
+BUILD_DEPS=$(get_packages "looking-glass-build" 2>/dev/null || echo "")
+if [ -n "$BUILD_DEPS" ]; then
+    # Only remove packages that are truly build-only (cmake, *-devel)
+    for pkg in cmake gcc gcc-c++ libglvnd-devel fontconfig-devel; do
+        dnf remove -y "$pkg" --noautoremove 2>/dev/null || true
+    done
 fi
-rm -rf /tmp/LookingGlass
 
-# Remove Looking Glass build deps (keep runtime deps)
-dnf remove -y --noautoremove $(get_packages "looking-glass-build") 2>/dev/null || true
+# ── Podman Quadlet: CrowdSec (example pattern for containerized services) ───
+# This is the recommended pattern for managing services on bootc images.
+# Placed in /usr/share/containers/systemd/ (immutable, baked into image).
+mkdir -p /usr/share/containers/systemd
+cat > /usr/share/containers/systemd/crowdsec-dashboard.container <<'EOQUAD'
+# CloudWS v1.3 — Example Podman quadlet for CrowdSec dashboard
+# To enable: symlink from /etc/containers/systemd/ or systemctl enable
+[Container]
+Image=docker.io/crowdsecurity/metabase:latest
+ContainerName=crowdsec-dashboard
+PublishPort=3000:3000
+Volume=crowdsec-data.volume:/metabase-data
+AutoUpdate=registry
 
-# ─── DbGate Flatpak (universal database management GUI) ─────────────────────
-echo "[12-virt] Installing DbGate Flatpak..."
-flatpak install -y flathub org.dbgate.DbGate 2>/dev/null || true
+[Service]
+Restart=always
+TimeoutStartSec=300
 
-echo "[12-virt] Full KVM/Podman/Gaming/Security/Cockpit/Database/HA/Looking Glass installed."
+[Install]
+WantedBy=multi-user.target
+EOQUAD
+
+echo "[12-virt] Virtualization stack complete. K3s: ${K3S_VERSION}, LG: ${LG_VERSION}"

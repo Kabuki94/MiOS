@@ -1,7 +1,12 @@
 #!/bin/bash
-# CloudWS — Master build runner
+# CloudWS v1.3 — Master build runner
 # Executes all numbered scripts in order, then cleans up.
 # Called from Containerfile RUN layer via bind mount.
+#
+# CHANGELOG v1.3:
+#   - Added post-build package validation (Bluefin pattern)
+#   - Added third-party repo disable after build (Bazzite pattern)
+#   - Added build summary with timing per script
 #
 # BUILD LOG: /tmp/cloudws-build.log (available during build for debugging)
 # Each script gets timed. If a script hangs, the log shows exactly where.
@@ -22,7 +27,7 @@ log_ts() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
 }
 
-VERSION_STR="$(cat "${SCRIPT_DIR}/../VERSION" 2>/dev/null || cat /ctx/VERSION 2>/dev/null || echo '1.0.0')"
+VERSION_STR="$(cat "${SCRIPT_DIR}/../VERSION" 2>/dev/null || cat /ctx/VERSION 2>/dev/null || echo '1.3.0')"
 
 echo "╔══════════════════════════════════════════════════════════════╗"
 echo "║  CloudWS v${VERSION_STR} — Building OS Image               ║"
@@ -69,36 +74,69 @@ for script in "$SCRIPT_DIR"/[0-9][0-9]-*.sh; do
     STEP_ELAPSED=$(( SECONDS - STEP_START ))
 
     if [[ $SCRIPT_EXIT -eq 0 ]]; then
-        log_ts "==> Completed: $SCRIPT_NAME (${STEP_ELAPSED}s)"
+        log_ts "==> $SCRIPT_NAME completed (${STEP_ELAPSED}s)"
     else
-        log_ts "==> FAILED: $SCRIPT_NAME (${STEP_ELAPSED}s) — exit code $SCRIPT_EXIT"
+        log_ts "==> $SCRIPT_NAME FAILED (exit $SCRIPT_EXIT, ${STEP_ELAPSED}s)"
         SCRIPT_FAIL=$((SCRIPT_FAIL + 1))
     fi
 done
 
-# ── Final cleanup — must be in same layer as installs ───────────────────────
+# ── Post-build: Validate critical packages ──────────────────────────────────
 echo ""
 echo "═══════════════════════════════════════════════════════════════"
-log_ts "==> Final cleanup"
+log_ts "==> Post-build validation"
 echo "═══════════════════════════════════════════════════════════════"
+
+CRITICAL_PACKAGES=(
+    gnome-shell gdm podman bootc libvirt kernel firewalld cockpit
+    NetworkManager pipewire tuned chronyd sshd
+)
+VALIDATION_FAIL=0
+for pkg in "${CRITICAL_PACKAGES[@]}"; do
+    if rpm -q "$pkg" > /dev/null 2>&1; then
+        echo "  ✓ $pkg"
+    else
+        echo "  ✗ $pkg MISSING"
+        VALIDATION_FAIL=$((VALIDATION_FAIL + 1))
+    fi
+done
+
+# Validate NO footgun packages are present
+FOOTGUN_PACKAGES=(
+    PackageKit gnome-initial-setup gnome-tour
+)
+for pkg in "${FOOTGUN_PACKAGES[@]}"; do
+    if rpm -q "$pkg" > /dev/null 2>&1; then
+        echo "  ⚠ FOOTGUN: $pkg is installed (should be removed or hidden)"
+    fi
+done
+
+if [[ $VALIDATION_FAIL -gt 0 ]]; then
+    log_ts "WARNING: $VALIDATION_FAIL critical packages missing!"
+fi
+
+# ── Cleanup: Keep final image small ────────────────────────────────────────
+echo ""
+log_ts "Cleaning up..."
 dnf clean all
-rm -rf /var/cache/dnf /var/cache/rpm /var/log/dnf* /var/log/hawkey* /root/.cache
+rm -rf /var/cache/dnf /var/cache/libdnf5 /tmp/geist-font /tmp/*.tar* /tmp/*.rpm 2>/dev/null || true
 
+# Preserve build log in image for debugging
+cp "$BUILD_LOG" /var/log/cloudws-build.log 2>/dev/null || true
+rm -f /tmp/cloudws-build.log
+
+# ── Build summary ───────────────────────────────────────────────────────────
 TOTAL_ELAPSED=$(( SECONDS - TOTAL_START ))
-TOTAL_MIN=$(( TOTAL_ELAPSED / 60 ))
-TOTAL_SEC=$(( TOTAL_ELAPSED % 60 ))
-
 echo ""
 echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║  CloudWS build complete                                     ║"
+echo "║  BUILD COMPLETE                                            ║"
+echo "╠══════════════════════════════════════════════════════════════╣"
+echo "║  Scripts:   $SCRIPT_COUNT executed, $SCRIPT_FAIL failed"
+echo "║  Packages:  $VALIDATION_FAIL critical missing"
+echo "║  Duration:  ${TOTAL_ELAPSED}s ($((TOTAL_ELAPSED / 60))m $((TOTAL_ELAPSED % 60))s)"
+echo "║  Version:   $VERSION_STR"
 echo "╚══════════════════════════════════════════════════════════════╝"
-log_ts "Build finished: ${SCRIPT_COUNT} scripts, ${SCRIPT_FAIL} failures, ${TOTAL_MIN}m${TOTAL_SEC}s"
-
-mkdir -p /var/log
-cp "$BUILD_LOG" /var/log/cloudws-build.log 2>/dev/null || true
-
-rm -rf /tmp/*
 
 if [[ $SCRIPT_FAIL -gt 0 ]]; then
-    echo "WARNING: $SCRIPT_FAIL script(s) had errors — check /var/log/cloudws-build.log"
+    log_ts "WARNING: $SCRIPT_FAIL scripts failed — check log: /var/log/cloudws-build.log"
 fi

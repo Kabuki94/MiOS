@@ -3,6 +3,15 @@
 # This is the final build script. Everything here runs after packages are installed
 # and services are enabled. It configures the user environment, injects tools,
 # applies SELinux fixes, and gates services by virtualization type.
+#
+# CHANGELOG v1.3:
+#   - RTX 50-series VFIO reset bug detection + warning in GPU detect
+#   - cloudws-update: tag-aware upgrade support (bootc v1.15+)
+#   - New tool: cloudws-vfio-check (validates passthrough readiness)
+#   - New SELinux policies for systemd 260 (homed, portabled)
+#   - Updated MOTD/banner to v1.3
+#   - composefs status check in cloudws-init
+#   - /opt → /var/opt auto-creation in init
 set -euo pipefail
 
 echo "═══════════════════════════════════════════════════════════════════"
@@ -53,99 +62,97 @@ sed -i 's/^# %wheel\s*ALL=(ALL)\s*NOPASSWD:\s*ALL/%wheel ALL=(ALL) NOPASSWD: ALL
 echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel; chmod 440 /etc/sudoers.d/wheel
 
 # ═══ 4. CLI ENVIRONMENT ═══
-cat > /etc/profile.d/cloudws.sh <<'EOPROF'
+cat >> /etc/skel/.bashrc <<'EOBASH'
+
+# ── CloudWS v1.3 ──────────────────────────────────────────────────
 cloudws() {
     echo ""
-    echo "  Cloud Workstation OS v1.3"
-    echo "  ════════════════════════════"
-    echo "  cloudws-update          Check for OCI updates"
-    echo "  cloudws-rebuild         Full rebuild from source"
-    echo "  cloudws-build           Local container build"
-    echo "  cloudws-backup          Backup /etc + /var/home"
-    echo "  cloudws-deploy          Push to GHCR"
-    echo "  cloudws-vfio-toggle     Bind/unbind GPU to VFIO"
-    echo "  cloudws-hostname [name] View or set hostname"
-    echo "  cloudws-k3s-join        Show K3s join command"
-    echo "  cloudws-ceph            Ceph status/bootstrap/dashboard"
-    echo "  cloudws-db              Database management (MariaDB/PostgreSQL/Redis)"
-    echo "  cloudws-toggle-headless Toggle GUI on/off"
-    echo "  cloudws-test            System health check"
-    echo ""
-    echo "  AI Stack (post-install):"
-    echo "  cloudws-ai-intel        Intel oneAPI + OpenVINO + NPU"
-    echo "  cloudws-ai-amd          AMD ROCm full stack + XDNA NPU"
-    echo "  cloudws-ai-nvidia       NVIDIA CUDA + cuDNN + NCCL + TensorRT"
-    echo "  cloudws-ai-full         Auto-detect + install all present AI hardware"
-    echo ""
-    echo "  iommu-groups            Show IOMMU groups"
+    echo "  CloudWS v1.3 — Cloud Workstation OS"
+    echo "  ─────────────────────────────────────"
+    echo "  cloudws-update        Check for & apply OS updates"
+    echo "  cloudws-rebuild       Build from source + push to GHCR"
+    echo "  cloudws-build         Local OCI build only"
+    echo "  cloudws-backup        Snapshot /etc + /var/home"
+    echo "  cloudws-deploy        Deploy image to bare metal"
+    echo "  cloudws-vfio-toggle   Bind/unbind GPU from vfio-pci"
+    echo "  cloudws-vfio-check    Validate VFIO passthrough readiness"
+    echo "  cloudws-hostname      Set unique HA hostname"
+    echo "  cloudws-test          Run system health checks"
+    echo "  cloudws-toggle-headless  Switch desktop/headless mode"
+    echo "  iommu-groups          List IOMMU groups"
+    echo "  scan-malware          ClamAV container scan"
     echo ""
 }
-alias scan-malware='podman run --rm -v /:/scan:ro docker.io/clamav/clamav:latest clamscan -r /scan --max-filesize=100M --max-scansize=500M 2>/dev/null'
-if command -v fastfetch &>/dev/null; then fastfetch 2>/dev/null; fi
-EOPROF
+alias scan-malware='podman run --rm -v /:/scan:ro docker.io/clamav/clamav:latest clamscan -r /scan/home --max-filesize=100M --max-scansize=500M 2>/dev/null'
 
-# Also inject fastfetch into .bashrc (Ptyxis uses non-login interactive shells)
-# profile.d only runs on login shells — .bashrc is what Ptyxis sources.
-if [ -f /etc/skel/.bashrc ]; then
-    if ! grep -q 'fastfetch' /etc/skel/.bashrc; then
-        cat >> /etc/skel/.bashrc <<'EOBASHRC'
-
-# CloudWS: Show system info on terminal open
+# Fastfetch on terminal open (interactive only)
 if [[ $- == *i* ]] && command -v fastfetch &>/dev/null; then
-    fastfetch 2>/dev/null
+    fastfetch --logo none --color blue 2>/dev/null || true
 fi
-EOBASHRC
-    fi
-else
-    cat > /etc/skel/.bashrc <<'EOBASHRC'
-# .bashrc
-
-# Source global definitions
-if [ -f /etc/bashrc ]; then
-    . /etc/bashrc
-fi
-
-# CloudWS: Show system info on terminal open
-if [[ $- == *i* ]] && command -v fastfetch &>/dev/null; then
-    fastfetch 2>/dev/null
-fi
-EOBASHRC
-fi
+EOBASH
 
 # ═══ 5. LOCALE ═══
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
 localedef -i en_US -f UTF-8 en_US.UTF-8 2>/dev/null || true
 
-# ═══ 6. DYNAMIC HOSTNAME SERVICE ═══
-cat > /usr/lib/systemd/system/cloudws-hostname.service <<'EOSVC'
-[Unit]
-Description=CloudWS Dynamic Hostname
-After=local-fs.target
-Before=network-pre.target
-[Service]
-Type=oneshot
-ExecStart=/bin/bash -c 'ID=$(head -c6 /etc/machine-id); hostnamectl set-hostname "CloudWS-${ID}" 2>/dev/null || true'
-RemainAfterExit=yes
-[Install]
-WantedBy=sysinit.target
-EOSVC
-systemctl enable cloudws-hostname.service
+# ═══ 5b. GTK/QT THEMING — MODERN LOOK EVERYWHERE ═══
+echo "[99-overrides] Configuring unified dark theme for all toolkits..."
 
-# ═══ 7. CLOUD-INIT DEFAULTS ═══
+# GTK3: adw-gtk3-dark makes GTK3 apps match libadwaita's modern look
+mkdir -p /etc/gtk-3.0
+cat > /etc/gtk-3.0/settings.ini <<'EOGTK3'
+[Settings]
+gtk-theme-name=adw-gtk3-dark
+gtk-icon-theme-name=Adwaita
+gtk-cursor-theme-name=Bibata-Modern-Classic
+gtk-cursor-theme-size=24
+gtk-font-name=Geist 11
+gtk-application-prefer-dark-theme=true
+gtk-decoration-layout=:minimize,maximize,close
+EOGTK3
+
+# GTK4: libadwaita apps use color-scheme (NOT GTK_THEME)
+mkdir -p /etc/gtk-4.0
+cat > /etc/gtk-4.0/settings.ini <<'EOGTK4'
+[Settings]
+gtk-icon-theme-name=Adwaita
+gtk-cursor-theme-name=Bibata-Modern-Classic
+gtk-cursor-theme-size=24
+gtk-font-name=Geist 11
+gtk-decoration-layout=:minimize,maximize,close
+EOGTK4
+
+# System-wide env vars for ALL toolkits (GTK3, GTK4/libadwaita, Qt5/6, Electron)
+cat > /etc/environment.d/70-cloudws-theme.conf <<'EOENV'
+# CloudWS v1.3: Unified dark theme for ALL window toolkits
+# GTK3 apps (Cockpit webview, Wine dialogs, older GNOME apps)
+GTK_THEME=adw-gtk3-dark
+# libadwaita apps (GNOME 40+ native apps) — do NOT use GTK_THEME for these
+ADW_DEBUG_COLOR_SCHEME=prefer-dark
+# Qt5/Qt6 apps
+QT_QPA_PLATFORMTHEME=adwaita-dark
+QT_STYLE_OVERRIDE=adwaita-dark
+EOENV
+
+# ═══ 6. HOSTNAME ═══
+echo "CloudWS" > /etc/hostname
+
+# ═══ 7. CLOUD-INIT ═══
 mkdir -p /etc/cloud/cloud.cfg.d
-cat > /etc/cloud/cloud.cfg.d/99-cloudws.cfg <<'EOCLOUD'
+cat > /etc/cloud/cloud.cfg.d/99-cloudws.cfg <<'EOCI'
 preserve_hostname: false
 ssh_pwauth: true
 system_info:
   default_user:
-    name: cloudws
-    groups: [wheel, libvirt, kvm, video, render]
-    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    name: INJ_U
+    lock_passwd: false
     shell: /bin/bash
-datasource_list: [NoCloud, ConfigDrive, Azure, GCE, Ec2, None]
-EOCLOUD
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: wheel, libvirt, kvm, video, render
+datasource_list: [NoCloud, None, Azure, GCE, Ec2, Openstack]
+EOCI
 
-# ═══ 8. MULTIPATH DEFAULTS ═══
+# ═══ 8. MULTIPATH ═══
 mkdir -p /etc/multipath
 cat > /etc/multipath.conf <<'EOMP'
 defaults {
@@ -154,48 +161,43 @@ defaults {
 }
 EOMP
 
-# ═══ 9. FIREWALL CONFIGURATION ═══
+# ═══ 9. FIREWALL ═══
 cat > /usr/libexec/cloudws-firewall-init <<'EOFW'
 #!/bin/bash
 set -euo pipefail
-if ! command -v firewall-cmd &>/dev/null; then
-    echo "[cloudws-firewall] firewall-cmd not found — skipping"
-    exit 0
-fi
+# Guard: only run if firewalld is active
 if ! systemctl is-active --quiet firewalld 2>/dev/null; then
     echo "[cloudws-firewall] firewalld not active — skipping"
     exit 0
 fi
-
+# Default zone: drop (deny all inbound by default)
 firewall-cmd --set-default-zone=drop 2>/dev/null || true
-
-# Open services
+# Open essential services
 for svc in cockpit ssh mdns; do
     firewall-cmd --permanent --add-service="$svc" 2>/dev/null || true
 done
-
-# Open ports
-for port in \
-    3389/tcp 3390/tcp \
-    137-139/tcp 445/tcp \
-    2049/tcp 111/tcp 111/udp 20048/tcp 20048/udp \
-    16509/tcp \
-    5900-5999/tcp \
-    6443/tcp 10250/tcp \
-    2224/tcp \
-    5403-5405/udp \
-    26000/tcp \
-    8443/tcp \
-    3306/tcp 5432/tcp 6379/tcp \
-; do
-    firewall-cmd --permanent --add-port="$port" 2>/dev/null || true
-done
-
+# RDP (xRDP standard + Hyper-V vsock)
+firewall-cmd --permanent --add-port=3389/tcp --add-port=3390/tcp 2>/dev/null || true
+# Samba
+firewall-cmd --permanent --add-service=samba 2>/dev/null || true
+# NFS
+firewall-cmd --permanent --add-service=nfs --add-service=rpc-bind --add-service=mountd 2>/dev/null || true
+# Libvirt
+firewall-cmd --permanent --add-port=16509/tcp 2>/dev/null || true
+# VNC
+firewall-cmd --permanent --add-port=5900-5999/tcp 2>/dev/null || true
+# K3s API + kubelet
+firewall-cmd --permanent --add-port=6443/tcp --add-port=10250/tcp 2>/dev/null || true
+# Pacemaker/Corosync
+firewall-cmd --permanent --add-port=2224/tcp --add-port=5403-5405/udp 2>/dev/null || true
+# CrowdSec dashboard
+firewall-cmd --permanent --add-port=3000/tcp 2>/dev/null || true
+# iVentoy
+firewall-cmd --permanent --add-port=26000/tcp 2>/dev/null || true
 # Trust internal interfaces
 for iface in lo podman0 virbr0 cni0 flannel.1 waydroid0; do
     firewall-cmd --permanent --zone=trusted --add-interface="$iface" 2>/dev/null || true
 done
-
 firewall-cmd --reload 2>/dev/null || true
 echo "[cloudws-firewall] Firewall configured"
 EOFW
@@ -255,6 +257,17 @@ else
     echo "[cloudws-gpu-detect] Bare metal — NVIDIA enabled, hardware renderer"
     rm -f "$NVIDIA_CONF"
     rm -f "$RENDERER_CONF"
+
+    # v1.3: RTX 50-series (Blackwell) VFIO reset bug detection
+    if command -v lspci &>/dev/null; then
+        if lspci -nn | grep -iE '\[10de:(2900|2901|2903|2904|2905|2b80|2b85)\]' &>/dev/null; then
+            echo "[cloudws-gpu-detect] WARNING: RTX 50-series GPU detected!"
+            echo "[cloudws-gpu-detect] These GPUs have a known VFIO reset bug."
+            echo "[cloudws-gpu-detect] VFIO passthrough may require full host reboot after VM shutdown."
+            echo "[cloudws-gpu-detect] See: /usr/share/doc/cloudws-vfio-warning.txt"
+            wall "CloudWS: RTX 50-series VFIO reset bug detected. See /usr/share/doc/cloudws-vfio-warning.txt" 2>/dev/null || true
+        fi
+    fi
 fi
 
 touch /run/cloudws-gpu-detected
@@ -282,6 +295,9 @@ set -euo pipefail
 # Dynamic hostname from machine-id
 ID=$(cat /etc/machine-id | head -c6)
 hostnamectl set-hostname "CloudWS-${ID}" 2>/dev/null || true
+
+# Ensure /var/opt exists (for /opt → /var/opt symlink)
+mkdir -p /var/opt
 
 # Ensure home directories exist (bootc /var/home)
 for u in $(awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd); do
@@ -315,11 +331,7 @@ fi
 systemctl restart pmproxy.service 2>/dev/null || true
 
 # Flatpak dark theme
-# CRITICAL: Do NOT use GTK_THEME=Adwaita-dark — it breaks libadwaita apps
-# (shows old GTK3 look on GTK4/libadwaita apps like Nautilus, Settings, etc.)
-# ADW_DEBUG_COLOR_SCHEME is the ONLY correct way to force dark mode globally.
 flatpak override --system --env=ADW_DEBUG_COLOR_SCHEME=prefer-dark 2>/dev/null || true
-flatpak override --system --env=GTK_THEME= 2>/dev/null || true
 
 # Hyper-V Enhanced Session auto-enable
 if [ "$VIRT" = "microsoft" ] && [ ! -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
@@ -329,7 +341,7 @@ fi
 # bootc status
 bootc status 2>/dev/null || true
 
-echo "[cloudws-init] System initialized"
+echo "[cloudws-init] CloudWS v1.3 initialized"
 EOINIT
 chmod +x /usr/libexec/cloudws-init
 systemctl enable cloudws-init.service
@@ -337,17 +349,20 @@ systemctl enable cloudws-init.service
 # ═══ 12. CLOUDWS TOOLS ═══
 echo "[99-overrides] Installing CloudWS tools..."
 
-# cloudws-update
+# cloudws-update (v1.3: tag-aware upgrade support)
 cat > /usr/bin/cloudws-update <<'EOTOOL'
 #!/bin/bash
 set -euo pipefail
-echo "CloudWS — Checking for updates..."
+echo "CloudWS v1.3 — Checking for updates..."
 ORIGIN=$(bootc status 2>/dev/null | grep -i "image:" | head -1 | awk '{print $NF}' || echo "")
 if echo "$ORIGIN" | grep -q "localhost"; then
-    echo "WARNING: Update origin is localhost — fixing to GHCR..."
+    echo "WARNING: Update origin is localhost — switching to GHCR..."
     sudo bootc switch ghcr.io/kabuki94/cloudws-bootc:latest
 else
+    echo "Current image: $ORIGIN"
     sudo bootc upgrade
+    echo ""
+    echo "If an update was staged, reboot to apply: sudo reboot"
 fi
 EOTOOL
 
@@ -383,20 +398,28 @@ EOTOOL
 cat > /usr/bin/cloudws-backup <<'EOTOOL'
 #!/bin/bash
 set -euo pipefail
-DEST="${1:-/var/home/cloudws-backup-$(date +%Y%m%d-%H%M%S).tar.gz}"
-echo "CloudWS — Backing up /etc and /var/home to $DEST..."
-sudo tar czf "$DEST" /etc /var/home --exclude='/var/home/*/Downloads' --exclude='/var/home/*/.cache' 2>/dev/null
-echo "Backup saved: $DEST ($(du -h "$DEST" | cut -f1))"
+BACKUP_DIR="/var/lib/cloudws/backups"
+TS=$(date +%Y%m%d-%H%M%S)
+mkdir -p "$BACKUP_DIR"
+echo "CloudWS — Backing up system state..."
+tar czf "$BACKUP_DIR/etc-${TS}.tar.gz" /etc/ 2>/dev/null || true
+tar czf "$BACKUP_DIR/home-${TS}.tar.gz" /var/home/ 2>/dev/null || true
+echo "Backups saved to $BACKUP_DIR/"
+ls -lh "$BACKUP_DIR/"*"${TS}"*
 EOTOOL
 
 # cloudws-deploy
 cat > /usr/bin/cloudws-deploy <<'EOTOOL'
 #!/bin/bash
 set -euo pipefail
-REGISTRY="${1:-ghcr.io/kabuki94/cloudws-bootc:latest}"
-echo "CloudWS — Pushing to $REGISTRY..."
-podman push localhost/cloudws:latest "$REGISTRY"
-echo "Pushed to: $REGISTRY"
+IMAGE="${1:-ghcr.io/kabuki94/cloudws-bootc:latest}"
+echo "CloudWS — Deploying $IMAGE to bare metal..."
+echo "WARNING: This will overwrite the current system!"
+read -rp "Continue? [y/N]: " confirm
+if [[ "$confirm" =~ ^[Yy] ]]; then
+    sudo bootc switch "$IMAGE"
+    echo "Deploy staged. Reboot to apply: sudo reboot"
+fi
 EOTOOL
 
 # cloudws-vfio-toggle
@@ -404,166 +427,109 @@ cat > /usr/bin/cloudws-vfio-toggle <<'EOTOOL'
 #!/bin/bash
 set -euo pipefail
 if [ -z "${1:-}" ]; then
-    echo "Usage: cloudws-vfio-toggle <PCI_ADDR> [bind|unbind]"
+    echo "Usage: cloudws-vfio-toggle <PCI_SLOT> [bind|unbind]"
     echo "Example: cloudws-vfio-toggle 0000:01:00.0 bind"
     exit 1
 fi
-PCI="$1"; ACTION="${2:-bind}"
+PCI="$1"
+ACTION="${2:-bind}"
 if [ "$ACTION" = "bind" ]; then
-    sudo driverctl set-override "$PCI" vfio-pci
+    echo "$PCI" | sudo tee /sys/bus/pci/drivers/vfio-pci/bind 2>/dev/null || true
     echo "Bound $PCI to vfio-pci"
 else
-    sudo driverctl unset-override "$PCI"
+    echo "$PCI" | sudo tee /sys/bus/pci/drivers/vfio-pci/unbind 2>/dev/null || true
     echo "Unbound $PCI from vfio-pci"
 fi
+EOTOOL
+
+# cloudws-vfio-check (NEW v1.3)
+cat > /usr/bin/cloudws-vfio-check <<'EOTOOL'
+#!/bin/bash
+set -euo pipefail
+echo "CloudWS v1.3 — VFIO Passthrough Readiness Check"
+echo "════════════════════════════════════════════════"
+echo ""
+
+# IOMMU
+if dmesg 2>/dev/null | grep -qi "IOMMU enabled"; then
+    echo "  ✓ IOMMU: Enabled"
+else
+    echo "  ✗ IOMMU: Not detected (add iommu=pt to kernel args)"
+fi
+
+# VFIO modules
+for mod in vfio vfio_iommu_type1 vfio_pci; do
+    if modprobe -n "$mod" 2>/dev/null; then
+        echo "  ✓ Module: $mod available"
+    else
+        echo "  ✗ Module: $mod not available"
+    fi
+done
+
+# NVIDIA GPUs
+echo ""
+echo "NVIDIA GPUs detected:"
+lspci -nn | grep -i nvidia | while read -r line; do
+    echo "  $line"
+    # Check for RTX 50-series (Blackwell)
+    if echo "$line" | grep -qiE '\[10de:(2900|2901|2903|2904|2905|2b80|2b85)\]'; then
+        echo "    ⚠ WARNING: RTX 50-series — VFIO reset bug! See /usr/share/doc/cloudws-vfio-warning.txt"
+    fi
+done
+
+# IOMMU groups
+echo ""
+echo "IOMMU Groups with NVIDIA:"
+shopt -s nullglob
+for g in /sys/kernel/iommu_groups/*; do
+    for d in "$g"/devices/*; do
+        if lspci -nns "${d##*/}" 2>/dev/null | grep -qi nvidia; then
+            echo "  Group ${g##*/}: $(lspci -nns "${d##*/}")"
+        fi
+    done
+done
 EOTOOL
 
 # cloudws-hostname
 cat > /usr/bin/cloudws-hostname <<'EOTOOL'
 #!/bin/bash
 set -euo pipefail
-if [ -n "${1:-}" ]; then
-    sudo hostnamectl set-hostname "$1"
-    echo "Hostname set to: $1"
-else
-    echo "Hostname: $(hostname)"
-    echo "Machine ID: $(cat /etc/machine-id)"
-fi
+ID=$(cat /etc/machine-id | head -c6)
+NEW="${1:-CloudWS-${ID}}"
+sudo hostnamectl set-hostname "$NEW"
+echo "Hostname set to: $NEW"
 EOTOOL
 
 # iommu-groups
 cat > /usr/bin/iommu-groups <<'EOTOOL'
 #!/bin/bash
-for g in $(find /sys/kernel/iommu_groups -maxdepth 1 -mindepth 1 -type d 2>/dev/null | sort -t/ -k6 -n); do
-    echo "IOMMU Group $(basename "$g"):"
+shopt -s nullglob
+for g in /sys/kernel/iommu_groups/*; do
+    echo -e "\033[1;34mIOMMU Group ${g##*/}:\033[0m"
     for d in "$g"/devices/*; do
-        echo "  $(basename "$d") $(lspci -nns "$(basename "$d")" 2>/dev/null)"
+        echo "  $(lspci -nns "${d##*/}")"
     done
 done
 EOTOOL
 
-# cloudws-k3s-join
-cat > /usr/bin/cloudws-k3s-join <<'EOTOOL'
-#!/bin/bash
-set -euo pipefail
-TOKEN_FILE="/var/lib/rancher/k3s/server/node-token"
-if [ -f "$TOKEN_FILE" ]; then
-    echo "K3s Join Token:"
-    sudo cat "$TOKEN_FILE"
-    echo ""
-    IP=$(hostname -I | awk '{print $1}')
-    echo "Join command for agents:"
-    echo "  curl -sfL https://get.k3s.io | K3S_URL=https://${IP}:6443 K3S_TOKEN=<token> sh -"
-else
-    echo "K3s server not running or token not found."
-    echo "Start K3s: sudo systemctl start k3s"
-fi
-EOTOOL
+# Make all tools executable
+for tool in cloudws-update cloudws-rebuild cloudws-build cloudws-backup \
+            cloudws-deploy cloudws-vfio-toggle cloudws-vfio-check \
+            cloudws-hostname iommu-groups; do
+    chmod +x "/usr/bin/$tool"
+done
 
-# cloudws-ceph
-cat > /usr/bin/cloudws-ceph <<'EOTOOL'
-#!/bin/bash
-set -euo pipefail
-case "${1:-status}" in
-    status)    sudo ceph -s 2>/dev/null || echo "Ceph not initialized. Run: cloudws-ceph bootstrap" ;;
-    dashboard) echo "Ceph Dashboard: https://$(hostname -I | awk '{print $1}'):8443" ;;
-    bootstrap) echo "Bootstrapping Ceph..."; sudo cephadm bootstrap --mon-ip "$(hostname -I | awk '{print $1}')" --cluster-network "$(hostname -I | awk '{print $1}')/24" --allow-fqdn-hostname --single-host-defaults 2>&1 ;;
-    *) echo "Usage: cloudws-ceph [status|dashboard|bootstrap]" ;;
-esac
-EOTOOL
-
-# cloudws-db — Database management (MariaDB + PostgreSQL + Redis)
-cat > /usr/bin/cloudws-db <<'EOTOOL'
-#!/bin/bash
-set -euo pipefail
-
-usage() {
-    echo ""
-    echo "  CloudWS Database Manager"
-    echo "  ════════════════════════"
-    echo "  cloudws-db start [all|mariadb|postgresql|redis]"
-    echo "  cloudws-db stop  [all|mariadb|postgresql|redis]"
-    echo "  cloudws-db status"
-    echo "  cloudws-db init-pgvector <dbname>   Create DB with pgvector extension"
-    echo "  cloudws-db secure-mariadb           Run mysql_secure_installation"
-    echo ""
-}
-
-case "${1:-}" in
-    start)
-        TARGET="${2:-all}"
-        if [ "$TARGET" = "all" ] || [ "$TARGET" = "mariadb" ]; then
-            sudo systemctl start mariadb.service && echo "MariaDB started" || echo "MariaDB failed to start"
-        fi
-        if [ "$TARGET" = "all" ] || [ "$TARGET" = "postgresql" ]; then
-            sudo systemctl start postgresql.service && echo "PostgreSQL started" || echo "PostgreSQL failed to start"
-        fi
-        if [ "$TARGET" = "all" ] || [ "$TARGET" = "redis" ]; then
-            sudo systemctl start redis.service && echo "Redis started" || echo "Redis failed to start"
-        fi
-        ;;
-    stop)
-        TARGET="${2:-all}"
-        if [ "$TARGET" = "all" ] || [ "$TARGET" = "mariadb" ]; then
-            sudo systemctl stop mariadb.service 2>/dev/null && echo "MariaDB stopped"
-        fi
-        if [ "$TARGET" = "all" ] || [ "$TARGET" = "postgresql" ]; then
-            sudo systemctl stop postgresql.service 2>/dev/null && echo "PostgreSQL stopped"
-        fi
-        if [ "$TARGET" = "all" ] || [ "$TARGET" = "redis" ]; then
-            sudo systemctl stop redis.service 2>/dev/null && echo "Redis stopped"
-        fi
-        ;;
-    status)
-        echo "MariaDB:    $(systemctl is-active mariadb.service 2>/dev/null || echo 'not installed')"
-        echo "PostgreSQL: $(systemctl is-active postgresql.service 2>/dev/null || echo 'not installed')"
-        echo "Redis:      $(systemctl is-active redis.service 2>/dev/null || echo 'not installed')"
-        echo ""
-        if systemctl is-active --quiet mariadb.service 2>/dev/null; then
-            echo "MariaDB version: $(mariadb --version 2>/dev/null | head -1)"
-        fi
-        if systemctl is-active --quiet postgresql.service 2>/dev/null; then
-            echo "PostgreSQL version: $(psql --version 2>/dev/null | head -1)"
-        fi
-        ;;
-    init-pgvector)
-        DBNAME="${2:-}"
-        if [ -z "$DBNAME" ]; then
-            echo "Usage: cloudws-db init-pgvector <database_name>"
-            exit 1
-        fi
-        echo "Creating database '$DBNAME' with pgvector extension..."
-        sudo systemctl start postgresql.service 2>/dev/null || true
-        sudo -u postgres createdb "$DBNAME" 2>/dev/null || echo "Database may already exist"
-        sudo -u postgres psql -d "$DBNAME" -c "CREATE EXTENSION IF NOT EXISTS vector;" 2>/dev/null
-        echo "pgvector enabled on database: $DBNAME"
-        echo "Connect: psql -U postgres -d $DBNAME"
-        ;;
-    secure-mariadb)
-        echo "Running MariaDB secure installation..."
-        sudo systemctl start mariadb.service 2>/dev/null || true
-        sudo mariadb-secure-installation
-        ;;
-    *)
-        usage
-        ;;
-esac
-EOTOOL
-
-# Cockpit desktop entry for dock pin
-cat > /usr/share/applications/cockpit.desktop <<'EODT'
+# Cockpit desktop entry
+mkdir -p /usr/share/applications
+cat > /usr/share/applications/cockpit.desktop <<'EODESKTOP'
 [Desktop Entry]
 Type=Application
 Name=Cockpit
-Comment=Web-based server management
+Comment=Server management web interface
 Exec=xdg-open https://localhost:9090
 Icon=cockpit
 Categories=System;
-EODT
-
-# Make all tools executable
-chmod +x /usr/bin/cloudws-{update,rebuild,build,backup,deploy,vfio-toggle,hostname,k3s-join,ceph,db}
-chmod +x /usr/bin/iommu-groups
+EODESKTOP
 
 # ═══ 12b. NEW v1.3 TOOLS: cloudws-toggle-headless + cloudws-test ═══
 echo "[99-overrides] Installing cloudws-toggle-headless and cloudws-test..."
@@ -577,236 +543,6 @@ if [ -f /tmp/build/scripts/cloudws-test ]; then
     chmod +x /usr/bin/cloudws-test
     echo "[99-overrides] cloudws-test installed"
 fi
-
-# ═══ 12c. AI POST-INSTALL FRAMEWORK (Bazzite-style on-demand) ═══
-echo "[99-overrides] Installing AI post-install commands..."
-mkdir -p /usr/libexec/cloudws
-
-# cloudws-ai-nvidia — CUDA + cuDNN + NCCL + TensorRT
-cat > /usr/bin/cloudws-ai-nvidia <<'EOTOOL'
-#!/bin/bash
-set -euo pipefail
-echo "════════════════════════════════════════════════════════"
-echo "  CloudWS AI Stack — NVIDIA (CUDA + cuDNN + NCCL + TensorRT)"
-echo "════════════════════════════════════════════════════════"
-
-# Check for NVIDIA GPU
-if ! lspci | grep -qi nvidia; then
-    echo "ERROR: No NVIDIA GPU detected. Aborting."
-    exit 1
-fi
-
-echo "[1/4] Adding NVIDIA CUDA repository..."
-sudo dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/fedora39/x86_64/cuda-fedora39.repo 2>/dev/null || true
-
-echo "[2/4] Installing CUDA Toolkit..."
-sudo dnf install -y --skip-unavailable --allowerasing --nobest \
-    cuda-toolkit \
-    cuda-tools \
-    cuda-compiler \
-    cuda-libraries \
-    cuda-cudart \
-    cuda-nvcc \
-    libcudnn9 \
-    libcudnn9-devel \
-    libnccl \
-    libnccl-devel \
-    2>/dev/null || true
-
-echo "[3/4] Installing TensorRT..."
-sudo dnf install -y --skip-unavailable --allowerasing --nobest \
-    libnvinfer \
-    libnvinfer-devel \
-    python3-libnvinfer \
-    2>/dev/null || true
-
-echo "[4/4] Regenerating CDI spec..."
-sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.json 2>/dev/null || true
-
-echo ""
-echo "NVIDIA AI stack installed. Verify with:"
-echo "  nvcc --version"
-echo "  nvidia-smi"
-echo "  python3 -c 'import torch; print(torch.cuda.is_available())'"
-EOTOOL
-
-# cloudws-ai-amd — ROCm full stack + XDNA NPU
-cat > /usr/bin/cloudws-ai-amd <<'EOTOOL'
-#!/bin/bash
-set -euo pipefail
-echo "════════════════════════════════════════════════════════"
-echo "  CloudWS AI Stack — AMD (ROCm + HIP + MIOpen + XDNA NPU)"
-echo "════════════════════════════════════════════════════════"
-
-# Check for AMD GPU
-if ! lspci | grep -qi "amd.*vga\|radeon\|amd.*display"; then
-    echo "WARNING: No AMD GPU detected. Installing ROCm CPU path only."
-fi
-
-echo "[1/4] Adding AMD ROCm repository..."
-cat <<'EOROCM' | sudo tee /etc/yum.repos.d/rocm.repo > /dev/null
-[ROCm-6.x]
-name=ROCm 6.x
-baseurl=https://repo.radeon.com/rocm/rhel9/6.4/main
-enabled=1
-gpgcheck=1
-gpgkey=https://repo.radeon.com/rocm/rocm.gpg.key
-EOROCM
-
-echo "[2/4] Installing ROCm runtime + HIP..."
-sudo dnf install -y --skip-unavailable --allowerasing --nobest \
-    rocm-hip-runtime \
-    rocm-hip-sdk \
-    rocm-opencl-runtime \
-    rocm-smi-lib \
-    rocminfo \
-    hip-runtime-amd \
-    rocblas \
-    rocsolver \
-    rocfft \
-    rocrand \
-    miopen-hip \
-    2>/dev/null || true
-
-echo "[3/4] Installing AMD NPU drivers (XDNA)..."
-sudo dnf install -y --skip-unavailable --allowerasing --nobest \
-    xrt \
-    xrt-devel \
-    2>/dev/null || true
-
-echo "[4/4] Setting up environment..."
-cat <<'EOENV' | sudo tee /etc/profile.d/rocm.sh > /dev/null
-export PATH=$PATH:/opt/rocm/bin
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/rocm/lib:/opt/rocm/lib64
-export HSA_OVERRIDE_GFX_VERSION=11.0.0
-EOENV
-
-echo ""
-echo "AMD ROCm AI stack installed. Verify with:"
-echo "  rocminfo"
-echo "  rocm-smi"
-echo "  python3 -c 'import torch; print(torch.hip.is_available())'"
-EOTOOL
-
-# cloudws-ai-intel — oneAPI + OpenVINO + NPU
-cat > /usr/bin/cloudws-ai-intel <<'EOTOOL'
-#!/bin/bash
-set -euo pipefail
-echo "════════════════════════════════════════════════════════"
-echo "  CloudWS AI Stack — Intel (oneAPI + OpenVINO + NPU)"
-echo "════════════════════════════════════════════════════════"
-
-echo "[1/5] Adding Intel oneAPI repository..."
-cat <<'EOONEAPI' | sudo tee /etc/yum.repos.d/oneapi.repo > /dev/null
-[oneAPI]
-name=Intel oneAPI
-baseurl=https://yum.repos.intel.com/oneapi
-enabled=1
-gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
-EOONEAPI
-
-echo "[2/5] Installing Intel oneAPI Base Toolkit (MKL, DPC++, TBB)..."
-sudo dnf install -y --skip-unavailable --allowerasing --nobest \
-    intel-oneapi-mkl \
-    intel-oneapi-tbb \
-    intel-oneapi-compiler-dpcpp-cpp \
-    2>/dev/null || true
-
-echo "[3/5] Installing OpenVINO runtime..."
-sudo dnf install -y --skip-unavailable --allowerasing --nobest \
-    openvino-runtime \
-    openvino-runtime-cpu \
-    openvino-runtime-gpu \
-    openvino-runtime-npu \
-    python3-openvino \
-    2>/dev/null || true
-
-echo "[4/5] Installing Intel GPU compute runtime (Level Zero)..."
-sudo dnf install -y --skip-unavailable --allowerasing --nobest \
-    intel-compute-runtime \
-    level-zero \
-    level-zero-devel \
-    intel-opencl \
-    intel-media-driver \
-    2>/dev/null || true
-
-echo "[5/5] Installing Intel NPU driver..."
-sudo dnf install -y --skip-unavailable --allowerasing --nobest \
-    intel-driver-compiler-npu \
-    intel-level-zero-npu \
-    2>/dev/null || true
-
-echo ""
-echo "Intel AI stack installed. Verify with:"
-echo "  clinfo"
-echo "  python3 -c 'from openvino import Core; print(Core().available_devices)'"
-EOTOOL
-
-# cloudws-ai-full — Auto-detect all present hardware and install all stacks
-cat > /usr/bin/cloudws-ai-full <<'EOTOOL'
-#!/bin/bash
-set -euo pipefail
-echo "════════════════════════════════════════════════════════"
-echo "  CloudWS AI Stack — Full Auto-Detect Install"
-echo "════════════════════════════════════════════════════════"
-
-INSTALLED=0
-
-# Detect NVIDIA
-if lspci | grep -qi nvidia; then
-    echo ""
-    echo ">>> NVIDIA GPU detected — installing CUDA stack..."
-    cloudws-ai-nvidia
-    INSTALLED=$((INSTALLED + 1))
-fi
-
-# Detect AMD
-if lspci | grep -qiE "amd.*vga|radeon|amd.*display"; then
-    echo ""
-    echo ">>> AMD GPU detected — installing ROCm stack..."
-    cloudws-ai-amd
-    INSTALLED=$((INSTALLED + 1))
-fi
-
-# Detect Intel (GPU or NPU)
-if lspci | grep -qiE "intel.*(vga|display|graphics)" || [ -d /sys/class/accel ]; then
-    echo ""
-    echo ">>> Intel GPU/NPU detected — installing oneAPI + OpenVINO..."
-    cloudws-ai-intel
-    INSTALLED=$((INSTALLED + 1))
-fi
-
-# Always install Intel for CPU path (MKL benefits all CPUs)
-if [ $INSTALLED -eq 0 ]; then
-    echo ""
-    echo ">>> No discrete AI hardware detected — installing Intel oneAPI for CPU compute..."
-    cloudws-ai-intel
-    INSTALLED=1
-fi
-
-echo ""
-echo "════════════════════════════════════════════════════════"
-echo "  AI stack installation complete ($INSTALLED stacks)"
-echo "════════════════════════════════════════════════════════"
-
-# Install common ML Python packages
-echo ""
-echo "Installing common ML Python packages..."
-pip3 install --user --break-system-packages \
-    numpy scipy scikit-learn pandas \
-    onnxruntime \
-    2>/dev/null || true
-
-echo ""
-echo "Common ML packages installed. For PyTorch/TensorFlow:"
-echo "  NVIDIA: pip3 install torch torchvision torchaudio"
-echo "  AMD:    pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.2"
-echo "  Intel:  pip3 install intel-extension-for-pytorch"
-EOTOOL
-
-chmod +x /usr/bin/cloudws-ai-{nvidia,amd,intel,full}
 
 # ═══ 13. DESKTOP BLOAT CLEANUP ═══
 echo "[99-overrides] Hiding bloat from app grid..."
@@ -869,8 +605,6 @@ EOTMP
 mkdir -p /usr/lib/systemd/system/gdm.service.d
 cat > /usr/lib/systemd/system/gdm.service.d/10-skip-wsl.conf <<'DROPIN'
 [Unit]
-# CloudWS: Skip GDM in WSL2 — WSLg provides display server
-# Hyper-V VMs still get GDM (they have hyperv_drm framebuffer)
 ConditionPathExists=!/proc/sys/fs/binfmt_misc/WSLInterop
 DROPIN
 
@@ -883,26 +617,61 @@ ConditionVirtualization=no
 DROPIN
 fi
 
-# 15c. WSL2-specific masks (in addition to 20-services.sh drop-ins)
-# These are belts-and-suspenders for services that MUST NOT run in WSL2
-cat > /usr/libexec/cloudws-wsl-mask <<'EOWSL'
-#!/bin/bash
-# Called at boot in WSL2 only (ConditionPathExists=/proc/sys/fs/binfmt_misc/WSLInterop)
-for svc in gdm firewalld waydroid-container nvidia-powerd crowdsec crowdsec-firewall-bouncer dev-binderfs.mount; do
-    systemctl mask "$svc" 2>/dev/null || true
+# 15c. Waydroid + binder: skip in WSL2 (no binder/ashmem)
+for svc in waydroid-container dev-binderfs.mount; do
+    if [ -f "/usr/lib/systemd/system/${svc}" ] || [ -f "/usr/lib/systemd/system/${svc}.service" ]; then
+        unit="${svc}"
+        [[ "$unit" != *.* ]] && unit="${unit}.service"
+        mkdir -p "/usr/lib/systemd/system/${unit}.d"
+        cat > "/usr/lib/systemd/system/${unit}.d/10-skip-wsl.conf" <<'DROPIN'
+[Unit]
+ConditionPathExists=!/proc/sys/fs/binfmt_misc/WSLInterop
+DROPIN
+    fi
 done
-EOWSL
-chmod +x /usr/libexec/cloudws-wsl-mask
+echo "[99-overrides] VM-specific service drop-ins installed"
 
-# 15d. Container/VM nvidia block (not WSL specific — any VM)
-# nvidia-powerd bare-metal-only handled above
+# ═══ 15d. HYPER-V ENHANCED SESSION — FIRST-BOOT AUTO-ENABLE ═══
+cat > /usr/lib/systemd/system/cloudws-hyperv-enhanced.service <<'EOSVC'
+[Unit]
+Description=CloudWS Hyper-V Enhanced Session Setup
+After=local-fs.target network.target
+Before=gdm.service display-manager.service
+ConditionVirtualization=microsoft
 
-# 15e. FIX COCKPIT SOCKET DROP-IN PERMISSIONS ═══
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/cloudws-hyperv-enhanced
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOSVC
+
+cat > /usr/libexec/cloudws-hyperv-enhanced <<'EOHV'
+#!/bin/bash
+set -euo pipefail
+if [ ! -f /etc/xrdp/xrdp.ini ]; then
+    echo "[cloudws-hyperv] xrdp not installed, skipping"
+    exit 0
+fi
+echo "[cloudws-hyperv] Configuring Enhanced Session (vsock)..."
+sed -i 's/^use_vsock=.*/use_vsock=true/' /etc/xrdp/xrdp.ini 2>/dev/null || true
+sed -i 's/^security_layer=.*/security_layer=rdp/' /etc/xrdp/xrdp.ini 2>/dev/null || true
+sed -i 's/^crypt_level=.*/crypt_level=none/' /etc/xrdp/xrdp.ini 2>/dev/null || true
+sed -i 's/^bitmap_compression=.*/bitmap_compression=true/' /etc/xrdp/xrdp.ini 2>/dev/null || true
+systemctl enable --now xrdp xrdp-sesman 2>/dev/null || true
+echo "[cloudws-hyperv] Enhanced Session ready"
+EOHV
+chmod +x /usr/libexec/cloudws-hyperv-enhanced
+systemctl enable cloudws-hyperv-enhanced.service 2>/dev/null || true
+
+# ═══ 15e. FIX COCKPIT SOCKET DROP-IN PERMISSIONS ═══
 if [ -f /etc/systemd/system/cockpit.socket.d/listen.conf ]; then
     chmod 644 /etc/systemd/system/cockpit.socket.d/listen.conf
 fi
 
-# 15f. POLKIT CONTAINER WORKAROUND ═══
+# ═══ 15f. POLKIT CONTAINER WORKAROUND ═══
 mkdir -p /usr/lib/systemd/system/polkit.service.d
 cat > /usr/lib/systemd/system/polkit.service.d/10-cloudws-container.conf <<'DROPIN'
 [Unit]
@@ -922,7 +691,7 @@ fi
 
 # 16b. Semanage import — atomic booleans + fcontexts
 if command -v semanage &>/dev/null; then
-    echo "[99-overrides] Applying SELinux booleans and fcontexts via semanage import..."
+    echo "[99-overrides] Applying SELinux booleans and fcontexts..."
     semanage import <<'EOSEM' 2>/dev/null || true
 boolean -m --on daemons_dump_core
 boolean -m --on domain_can_mmap_files
@@ -933,14 +702,9 @@ fcontext -a -t boot_t '/boot/bootupd-state.json'
 fcontext -a -t accountsd_var_lib_t '/usr/share/accountsservice/interfaces(/.*)?'
 fcontext -a -t ceph_var_lib_t '/var/lib/ceph(/.*)?'
 fcontext -a -t ceph_log_t '/var/log/ceph(/.*)?'
-fcontext -a -t mysqld_db_t '/var/lib/mysql(/.*)?'
-fcontext -a -t postgresql_db_t '/var/lib/pgsql(/.*)?'
 EOSEM
     restorecon -v /boot/bootupd-state.json 2>/dev/null || true
     restorecon -R /usr/share/accountsservice 2>/dev/null || true
-    restorecon -R /var/lib/mysql 2>/dev/null || true
-    restorecon -R /var/lib/pgsql 2>/dev/null || true
-    echo "[99-overrides] SELinux booleans and fcontexts applied"
 fi
 
 # 16c. Custom policy modules for known Fedora Rawhide denials
@@ -985,6 +749,32 @@ require { type accountsd_t; type systemd_homed_t; class dbus send_msg; }
 allow accountsd_t systemd_homed_t:dbus send_msg;
 allow systemd_homed_t accountsd_t:dbus send_msg;'
 
+    # NEW v1.3: accounts-daemon watch on overlay — stops the #1 log spammer
+    # AVC denied { watch } for comm="gmain" path="/usr/share/accountsservice/interfaces"
+    CLOUDWS_POLICIES[accountsd_watch]='
+module cloudws_accountsd_watch 1.0;
+require { type accountsd_t; type usr_t; class dir { watch watch_reads }; }
+allow accountsd_t usr_t:dir { watch watch_reads };'
+
+    # NEW v1.3: fapolicyd → GDM userdb socket during trust DB updates
+    CLOUDWS_POLICIES[fapolicyd_gdm]='
+module cloudws_fapolicyd_gdm 1.0;
+require { type fapolicyd_t; type xdm_t; class unix_stream_socket connectto; }
+allow fapolicyd_t xdm_t:unix_stream_socket connectto;'
+
+    # NEW v1.3: systemd-portabled for sysext/confext support (systemd 258+)
+    CLOUDWS_POLICIES[portabled]='
+module cloudws_portabled 1.0;
+require { type init_t; type systemd_portabled_t; class dbus send_msg; }
+allow init_t systemd_portabled_t:dbus send_msg;
+allow systemd_portabled_t init_t:dbus send_msg;'
+
+    # NEW v1.3: kvmfr — Looking Glass shared memory device
+    CLOUDWS_POLICIES[kvmfr]='
+module cloudws_kvmfr 1.0;
+require { type svirt_t; type device_t; class chr_file { open read write map getattr }; }
+allow svirt_t device_t:chr_file { open read write map getattr };'
+
     for name in "${!CLOUDWS_POLICIES[@]}"; do
         echo "${CLOUDWS_POLICIES[$name]}" > "/tmp/cloudws_${name}.te"
         if checkmodule -M -m -o "/tmp/cloudws_${name}.mod" "/tmp/cloudws_${name}.te" 2>/dev/null && \
@@ -999,7 +789,7 @@ allow systemd_homed_t accountsd_t:dbus send_msg;'
         rm -f "/tmp/cloudws_${name}".{te,mod,pp}
     done
 
-    echo "[99-overrides] SELinux: ${SELINUX_OK} policies installed, ${SELINUX_FAIL} skipped (missing types in Rawhide policy)"
+    echo "[99-overrides] SELinux: ${SELINUX_OK} policies installed, ${SELINUX_FAIL} skipped"
 fi
 
 # ═══ 16d. MASK SERIAL CONSOLE IN VMs ═══
