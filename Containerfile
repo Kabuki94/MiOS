@@ -57,8 +57,19 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5 \
 RUN rm -rf /opt && ln -s /var/opt /opt
 
 # System file overlay (dconf, systemd units, modprobe.d, sysctl, etc.)
+# NOTE: On ucore, /usr/local is a symlink → /var/usrlocal. cp -a cannot
+# overwrite a symlink with a directory, so we handle /usr/local separately.
 RUN --mount=type=bind,from=ctx,source=/system_files,target=/tmp/sf \
-    cp -a /tmp/sf/. / && \
+    if [ -d /tmp/sf/usr/local ]; then \
+        cp -a /tmp/sf/usr/local/. /usr/local/ 2>/dev/null || true; \
+    fi && \
+    find /tmp/sf -path /tmp/sf/usr/local -prune -o -print0 2>/dev/null \
+        | cpio -p0dmu / 2>/dev/null || \
+    rsync -a --exclude='usr/local' /tmp/sf/ / 2>/dev/null || \
+    (cd /tmp/sf && find . -not -path './usr/local*' -not -path './usr/local' | while read f; do \
+        if [ -d "/tmp/sf/$f" ]; then mkdir -p "/$f"; \
+        else cp -a "/tmp/sf/$f" "/$f" 2>/dev/null || true; fi; \
+    done) && \
     find /etc/systemd/system -name "*.mount" -o -name "*.service" -o -name "*.conf" 2>/dev/null | xargs chmod 644 2>/dev/null || true && \
     find /usr/lib/systemd/system -name "*.mount" -o -name "*.service" -o -name "*.conf" 2>/dev/null | xargs chmod 644 2>/dev/null || true && \
     dconf update 2>/dev/null || true
@@ -77,6 +88,19 @@ RUN dnf config-manager setopt rpmfusion-free.enabled=0 2>/dev/null || true && \
     dnf config-manager setopt rpmfusion-nonfree-updates.enabled=0 2>/dev/null || true && \
     dnf config-manager setopt terra.enabled=0 2>/dev/null || true && \
     dnf config-manager setopt fedora-rawhide.enabled=0 2>/dev/null || true
+
+# Generate initramfs for BIB (bootc image builder) compatibility.
+# ucore-hci base ships kernel modules but no initramfs. BIB's lsinitrd
+# fails without it, blocking RAW/VHDX/ISO generation.
+RUN KVER=$(ls -1 /lib/modules/ | sort -V | tail -1) && \
+    echo "── Generating initramfs for kernel ${KVER} ──" && \
+    if [ -n "$KVER" ] && [ ! -f "/lib/modules/${KVER}/initramfs.img" ] && \
+       [ ! -f "/boot/initramfs-${KVER}.img" ]; then \
+        dracut --force --kver "$KVER" "/boot/initramfs-${KVER}.img" 2>&1 || \
+        echo "WARNING: dracut failed — BIB disk image targets may not work"; \
+    else \
+        echo "── initramfs already exists for ${KVER} ──"; \
+    fi
 
 LABEL containers.bootc 1
 LABEL ostree.bootable 1

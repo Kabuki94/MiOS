@@ -65,8 +65,13 @@ echo "[12-virt] Installing Windows interop tools..."
 install_packages "wintools"
 
 # ── Gaming (Steam, Wine, Gamescope) ─────────────────────────────────────────
+# NOTE: steam-devices and udev-joystick-blacklist-rm (terra weak dep of
+# gamescope-session-steam) both ship the same udev rules file. Exclude it.
 echo "[12-virt] Installing gaming packages..."
-install_packages "gaming"
+GAMING_PKGS=$(get_packages "gaming")
+if [[ -n "$GAMING_PKGS" ]]; then
+    dnf -y install --skip-unavailable --exclude=udev-joystick-blacklist-rm $GAMING_PKGS
+fi
 
 # ── Guest Agents ────────────────────────────────────────────────────────────
 echo "[12-virt] Installing guest agents..."
