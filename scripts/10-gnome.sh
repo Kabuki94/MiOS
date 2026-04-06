@@ -1,29 +1,91 @@
 #!/bin/bash
-# CloudWS v1.3 — 10-gnome: GNOME 50 desktop (individual packages, NO @gnome-desktop group)
+# CloudWS v2.0 — 10-gnome: GNOME 50 desktop — PURE BUILD-UP
 #
-# CHANGELOG v1.3:
-#   - GNOME 49+: systemd is a HARD dependency (userdb, session manager removed)
-#   - Bibata cursor updated to v2.0.8
-#   - Added gnome-console as Ptyxis fallback (Rawhide package name flux)
-#   - Added VSCodium Flatpak
-#   - Flatpak theming: ADW_DEBUG_COLOR_SCHEME (NOT GTK_THEME — breaks libadwaita)
+# STRATEGY: ucore has ZERO GNOME packages. We install exactly what we need.
+# With install_weakdeps=False (set globally in 01-repos.sh), only hard deps
+# get pulled in. This means:
+#   - malcontent-libs comes in (gnome-control-center hard dep) — CORRECT
+#   - malcontent-control/pam/tools do NOT come in (weak deps) — CORRECT
+#   - No GNOME bloat apps get installed — nothing to remove
+#
+# The ~25 core packages from the docs produce a fully functional GNOME 50
+# Wayland desktop with GDM, all portals, audio, Bluetooth, networking,
+# security, and proper theming across GTK3/GTK4/Qt.
+#
+# CHANGELOG v2.0:
+#   - Pure build-up: zero dnf removes (nothing to remove on ucore base)
+#   - install_weakdeps=False prevents bloat installation
+#   - Flatpak: disable filtered fedora remote, use unfiltered Flathub
+#   - Qt Adwaita env vars for cross-toolkit theming
+#   - Localsearch disabled via autostart override (never removed — breaks Nautilus)
+#   - Bibata cursor v2.0.8, Geist font
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
 
-# Install only specified GNOME packages — NOT the full @gnome-desktop group
-# CRITICAL: GNOME 49+ requires full systemd user session support.
-# gnome-session's built-in service manager was removed entirely.
+# ═════════════════════════════════════════════════════════════════════════════
+# GNOME 50 — Install from PACKAGES.md (build-up, NOT strip-down)
+#
+# PACKAGES.md packages-gnome block should contain ONLY these ~25 core packages:
+#   gnome-shell, gdm, gnome-session-wayland-session, gnome-control-center,
+#   xdg-desktop-portal, xdg-desktop-portal-gnome, xdg-desktop-portal-gtk,
+#   gnome-keyring, gnome-keyring-pam, pipewire-pulseaudio, wireplumber,
+#   bluez, NetworkManager, NetworkManager-wifi,
+#   NetworkManager-config-connectivity-fedora, power-profiles-daemon,
+#   adw-gtk3, adwaita-qt5, adwaita-qt6, qadwaitadecorations-qt5,
+#   qadwaitadecorations-qt6, xdg-user-dirs, xdg-user-dirs-gtk,
+#   dejavu-sans-fonts, dejavu-sans-mono-fonts, google-noto-emoji-color-fonts,
+#   nautilus, gvfs-smb, gvfs-mtp, gvfs-goa, gvfs-nfs, flatpak,
+#   mesa-dri-drivers, mesa-vulkan-drivers, gnome-backgrounds
+#
+# With install_weakdeps=False, installing gnome-shell auto-resolves:
+#   mutter, gnome-session, gnome-settings-daemon, gjs, gnome-desktop4,
+#   gsettings-desktop-schemas, pipewire, libadwaita, cantarell-fonts,
+#   colord, libinput — NO explicit install needed.
+# Installing gnome-control-center auto-resolves:
+#   polkit, gnome-bluetooth, gnome-online-accounts, malcontent-libs
+# ═════════════════════════════════════════════════════════════════════════════
+echo "[10-gnome] Installing GNOME 50 desktop (pure build-up, ~25 core packages)..."
 install_packages "gnome"
 
 # Optional GNOME Core Apps (all commented out by default in PACKAGES.md)
-# Users uncomment package lines in PACKAGES.md to enable these
 install_packages_optional "gnome-core-apps"
 
+# Enable display manager and network
 systemctl enable gdm.service NetworkManager.service
 systemctl set-default graphical.target
 
-# ─── Geist Font (Vercel) ────────────────────────────────────────────────────
+# ═════════════════════════════════════════════════════════════════════════════
+# Localsearch/tracker — disable indexing without removing
+# Removing localsearch breaks Nautilus search + Activities Overview.
+# Hide via autostart overrides instead.
+# ═════════════════════════════════════════════════════════════════════════════
+echo "[10-gnome] Disabling localsearch/tracker indexing (keep package, hide autostart)..."
+mkdir -p /etc/xdg/autostart
+for tracker_entry in \
+    localsearch-3.desktop \
+    localsearch-control-3.desktop \
+    localsearch-writeback-3.desktop; do
+    cat > "/etc/xdg/autostart/$tracker_entry" <<EOF
+[Desktop Entry]
+Hidden=true
+EOF
+done
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Qt Adwaita theming — required for Qt apps to match GNOME look
+# ═════════════════════════════════════════════════════════════════════════════
+echo "[10-gnome] Setting Qt Adwaita environment variables..."
+mkdir -p /etc/environment.d
+cat > /etc/environment.d/60-cloudws-qt-adwaita.conf <<'EOF'
+QT_QPA_PLATFORMTHEME=gnome
+QT_WAYLAND_DECORATION=adwaita
+QT_STYLE_OVERRIDE=adwaita
+EOF
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Geist Font (Vercel)
+# ═════════════════════════════════════════════════════════════════════════════
 echo "[10-gnome] Installing Geist font family..."
 mkdir -p /usr/share/fonts/geist
 git clone --depth=1 https://github.com/vercel/geist-font.git /tmp/geist-font 2>/dev/null || true
@@ -31,11 +93,12 @@ if [ -d /tmp/geist-font ]; then
     find /tmp/geist-font -name "*.otf" -o -name "*.ttf" | xargs -I{} cp {} /usr/share/fonts/geist/ 2>/dev/null || true
     rm -rf /tmp/geist-font
 fi
-# Rebuild font cache so Geist is discoverable by all apps (including Flatpaks)
 fc-cache -f /usr/share/fonts/geist 2>/dev/null || true
 
-# ─── Bibata Cursor Theme ────────────────────────────────────────────────────
-echo "[10-gnome] Installing Bibata-Modern-Classic cursor..."
+# ═════════════════════════════════════════════════════════════════════════════
+# Bibata Cursor Theme
+# ═════════════════════════════════════════════════════════════════════════════
+echo "[10-gnome] Installing Bibata-Modern-Classic cursor v2.0.8..."
 BIBATA_VER="2.0.8"
 mkdir -p /usr/share/icons
 curl -sL "https://github.com/ful1e5/Bibata_Cursor/releases/download/v${BIBATA_VER}/Bibata-Modern-Classic.tar.xz" \
@@ -45,42 +108,40 @@ if [ -f /tmp/bibata.tar.xz ]; then
     rm -f /tmp/bibata.tar.xz
 fi
 
-# ─── Flatpak Remotes ────────────────────────────────────────────────────────
-flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+# ═════════════════════════════════════════════════════════════════════════════
+# Flatpak Remotes
+# Disable filtered Fedora remote, use unfiltered Flathub for full catalog
+# ═════════════════════════════════════════════════════════════════════════════
+echo "[10-gnome] Configuring Flatpak remotes..."
+flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 flatpak remote-add --if-not-exists flathub-beta https://flathub.org/beta-repo/flathub-beta.flatpakrepo
 flatpak remote-add --if-not-exists gnome-nightly https://nightly.gnome.org/gnome-nightly.flatpakrepo 2>/dev/null || true
+flatpak remote-modify --disable fedora 2>/dev/null || true
 
-# ─── Pre-install essential Flatpaks ──────────────────────────────────────────
+# ═════════════════════════════════════════════════════════════════════════════
+# Essential Flatpaks
+# ═════════════════════════════════════════════════════════════════════════════
 echo "[10-gnome] Installing essential Flatpaks..."
-
-# Epiphany — the universal viewer (browser + docs + photos + media)
 flatpak install -y --noninteractive flathub org.gnome.Epiphany 2>/dev/null || \
     flatpak install -y --noninteractive gnome-nightly org.gnome.Epiphany.Devel 2>/dev/null || true
-
-# Logs — systemd journal viewer
 flatpak install -y --noninteractive flathub org.gnome.Logs 2>/dev/null || true
-
-# Extension Manager
 flatpak install -y --noninteractive flathub com.mattjakeman.ExtensionManager 2>/dev/null || true
-
-# Podman Desktop — container management GUI
 flatpak install -y --noninteractive flathub io.podman_desktop.PodmanDesktop 2>/dev/null || true
-
-# VSCodium — open-source VS Code
 flatpak install -y --noninteractive flathub com.vscodium.codium 2>/dev/null || true
-
-# Flatseal — Flatpak permissions manager
 flatpak install -y --noninteractive flathub com.github.tchx84.Flatseal 2>/dev/null || true
 
-# ─── Flatpak Theming ────────────────────────────────────────────────────────
-# CRITICAL: Use ADW_DEBUG_COLOR_SCHEME=prefer-dark, NOT GTK_THEME=Adwaita-dark
+# ═════════════════════════════════════════════════════════════════════════════
+# Flatpak Theming
+# CRITICAL: ADW_DEBUG_COLOR_SCHEME=prefer-dark, NOT GTK_THEME=Adwaita-dark
 # GTK_THEME breaks libadwaita apps (controls, headerbar colors go wrong)
-echo "[10-gnome] Applying Flatpak dark theme..."
+# ═════════════════════════════════════════════════════════════════════════════
+echo "[10-gnome] Applying Flatpak dark theme + filesystem overrides..."
 flatpak override --system --env=ADW_DEBUG_COLOR_SCHEME=prefer-dark 2>/dev/null || true
-# Grant Flatpaks access to system GTK/icon configs
 flatpak override --system --filesystem=xdg-config/gtk-3.0:ro 2>/dev/null || true
 flatpak override --system --filesystem=xdg-config/gtk-4.0:ro 2>/dev/null || true
 flatpak override --system --filesystem=/usr/share/icons:ro 2>/dev/null || true
 flatpak override --system --filesystem=/usr/share/fonts:ro 2>/dev/null || true
 
-echo "[10-gnome] GNOME 50 desktop installed. Flatpaks: 6 pre-installed."
+echo "[10-gnome] GNOME 50 desktop installed (pure build-up on ucore base)."
+echo "[10-gnome] Zero removes. install_weakdeps=False prevented all bloat."
+echo "[10-gnome] Flatpaks: 6 pre-installed from Flathub."

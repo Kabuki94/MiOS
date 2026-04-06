@@ -1,15 +1,27 @@
-# CloudWS v1.3 — Containerfile
+# CloudWS v2.0 — Containerfile
 # Build: podman build --squash-all --no-cache -t cloudws:latest .
 # Lint:  podman run --rm cloudws:latest bootc container lint
 #
-# CHANGELOG v1.3:
-#   - Added --mount=type=cache for dnf5 (dramatically speeds rebuilds)
-#   - Added --mount=type=tmpfs for /tmp (prevents layer bloat)
-#   - Added /opt → /var/opt symlink (writable /opt on immutable fs)
-#   - Added CMD ["/sbin/init"] (bootc convention)
-#   - Added post-build validation step
-#   - Added composefs prepare-root.conf
-#   - Added bootc kargs.d drop-ins for IOMMU + security hardening
+# BASE IMAGE: ghcr.io/ublue-os/ucore-hci:stable-nvidia
+# Provides: bootc, podman, firewalld, tailscale, wireguard-tools, tmux,
+#   qemu-guest-agent, open-vm-tools, libvirt, qemu-kvm, virt-install,
+#   cockpit-machines, intel wifi firmware, storage tools,
+#   NVIDIA kmod (pre-signed with ublue MOK — fixes SecureBoot kernel panic),
+#   nvidia-container-toolkit, CDI, SELinux policy.
+#
+# Rawhide repos overlayed in 01-repos.sh → distro-sync upgrades to
+# GNOME 50 / kernel 7.x / systemd 260 / Mesa 26.
+#
+# GNOME 50 installed via pure build-up (~25 explicit packages).
+# install_weakdeps=False prevents bloat — malcontent UI/PAM/tools never
+# get pulled in, avoiding the dependency trap entirely.
+#
+# CHANGELOG v2.0:
+#   - Base: ucore-hci:stable-nvidia (pre-signed NVIDIA, fixes kernel panic)
+#   - install_weakdeps=False globally (was True — doc fix)
+#   - Pure build-up GNOME: install only what we need, zero removes
+#   - --mount=type=cache for dnf5, --mount=type=tmpfs for /tmp
+#   - /opt → /var/opt symlink, composefs, bootc kargs.d
 
 # ── Stage 1: Build context (never enters final image) ────────────────────────
 FROM scratch AS ctx
@@ -19,17 +31,11 @@ COPY VERSION /
 COPY system_files/ /system_files/
 
 # ── Stage 2: CloudWS bootc image ─────────────────────────────────────────────
-FROM quay.io/fedora/fedora-bootc:rawhide
+FROM ghcr.io/ublue-os/ucore-hci:stable-nvidia
 
-# CRITICAL: Bind mount from ctx is READ-ONLY.
-# Must copy to writable /tmp/build before sed -i or chmod.
-#
-# SYSTEMD_OFFLINE=1 prevents %post/%triggerin scriptlets from trying to
-# start/enable systemd services (which hangs forever inside container builds).
-# container=podman tells systemd-aware scriptlets they're in a container.
-#
-# --mount=type=cache: Persists dnf5 cache across builds (5-10x faster rebuilds).
-# --mount=type=tmpfs: Prevents /tmp artifacts from bloating layers.
+# Bind mount from ctx is READ-ONLY — copy to /tmp/build before sed -i or chmod.
+# SYSTEMD_OFFLINE=1 prevents scriptlets from starting services during build.
+# --mount=type=cache persists dnf cache across builds (5-10x faster rebuilds).
 RUN --mount=type=cache,dst=/var/cache/libdnf5 \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=tmpfs,dst=/tmp \
@@ -47,38 +53,30 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5 \
     PACKAGES_MD=/tmp/build/PACKAGES.md bash /tmp/build/scripts/build.sh && \
     rm -rf /tmp/build
 
-# /opt → /var/opt: Makes /opt writable on the immutable filesystem.
-# Universal Blue, Bluefin, Bazzite all use this pattern for apps that
-# expect to write to /opt (Steam, NVIDIA, third-party tools).
+# /opt → /var/opt: writable /opt on immutable filesystem
 RUN rm -rf /opt && ln -s /var/opt /opt
 
-# Ensure GNOME Software can discover OS updates via rpm-ostree D-Bus bridge.
-# Without this package, GNOME Software only shows Flatpak updates.
-RUN dnf -y install gnome-software-rpm-ostree && dnf clean all
-
-# System file overlay (configs, systemd units, modprobe.d, dconf, etc.)
-# FIX: chmod 644 on systemd units to prevent permission warnings at boot.
+# System file overlay (dconf, systemd units, modprobe.d, sysctl, etc.)
 RUN --mount=type=bind,from=ctx,source=/system_files,target=/tmp/sf \
     cp -a /tmp/sf/. / && \
     find /etc/systemd/system -name "*.mount" -o -name "*.service" -o -name "*.conf" 2>/dev/null | xargs chmod 644 2>/dev/null || true && \
     find /usr/lib/systemd/system -name "*.mount" -o -name "*.service" -o -name "*.conf" 2>/dev/null | xargs chmod 644 2>/dev/null || true && \
     dconf update 2>/dev/null || true
 
-# Post-build validation: verify critical packages are installed.
-# Adapted from Bluefin's validate-packages.sh pattern.
+# Post-build validation
 RUN echo "── Post-build validation ──" && \
     for pkg in gnome-shell gdm podman bootc libvirt kernel firewalld cockpit; do \
         rpm -q "$pkg" > /dev/null 2>&1 || echo "WARNING: $pkg not installed"; \
     done && \
     echo "── Validation complete ──"
 
-# Disable third-party repos post-build to prevent runtime package installation.
-# Packages should only change via new image builds, not runtime dnf.
+# Disable third-party repos post-build (Bazzite pattern)
 RUN dnf config-manager setopt rpmfusion-free.enabled=0 2>/dev/null || true && \
     dnf config-manager setopt rpmfusion-nonfree.enabled=0 2>/dev/null || true && \
     dnf config-manager setopt rpmfusion-free-updates.enabled=0 2>/dev/null || true && \
     dnf config-manager setopt rpmfusion-nonfree-updates.enabled=0 2>/dev/null || true && \
-    dnf config-manager setopt terra.enabled=0 2>/dev/null || true
+    dnf config-manager setopt terra.enabled=0 2>/dev/null || true && \
+    dnf config-manager setopt fedora-rawhide.enabled=0 2>/dev/null || true
 
 LABEL containers.bootc 1
 LABEL ostree.bootable 1
