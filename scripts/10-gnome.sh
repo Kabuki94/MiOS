@@ -127,8 +127,8 @@ flatpak install -y --noninteractive flathub org.gnome.Epiphany 2>/dev/null || \
 flatpak install -y --noninteractive flathub org.gnome.Logs 2>/dev/null || true
 flatpak install -y --noninteractive flathub com.mattjakeman.ExtensionManager 2>/dev/null || true
 flatpak install -y --noninteractive flathub io.podman_desktop.PodmanDesktop 2>/dev/null || true
-flatpak install -y --noninteractive flathub com.vscodium.codium 2>/dev/null || true
 flatpak install -y --noninteractive flathub com.github.tchx84.Flatseal 2>/dev/null || true
+flatpak install -y --noninteractive flathub page.tesk.Refine 2>/dev/null || true
 
 # ═════════════════════════════════════════════════════════════════════════════
 # Flatpak Theming
@@ -142,6 +142,36 @@ flatpak override --system --filesystem=xdg-config/gtk-4.0:ro 2>/dev/null || true
 flatpak override --system --filesystem=/usr/share/icons:ro 2>/dev/null || true
 flatpak override --system --filesystem=/usr/share/fonts:ro 2>/dev/null || true
 
+# ═════════════════════════════════════════════════════════════════════════════
+# Waydroid — GAPPS init (first-boot oneshot)
+# Initializes Waydroid with Google Play Services (GAPPS) on first boot.
+# Uses official OTA URLs. Runs once, then disables itself via sentinel file.
+# ═════════════════════════════════════════════════════════════════════════════
+echo "[10-gnome] Creating Waydroid GAPPS init service..."
+mkdir -p /etc/systemd/system
+cat > /etc/systemd/system/waydroid-init-gapps.service <<'EOWAYDROID'
+[Unit]
+Description=CloudWS — Waydroid GAPPS initialization (first-boot)
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=!/var/lib/waydroid/.cloudws-init-done
+
+[Service]
+Type=oneshot
+RemainAfterExit=no
+ExecStart=/bin/bash -c '\
+    waydroid init -s GAPPS \
+        -i https://ota.waydro.id/system \
+        -v https://ota.waydro.id/vendor && \
+    mkdir -p /var/lib/waydroid && \
+    touch /var/lib/waydroid/.cloudws-init-done'
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target
+EOWAYDROID
+systemctl enable waydroid-init-gapps.service 2>/dev/null || true
+
 echo "[10-gnome] GNOME 50 desktop installed (pure build-up on ucore base)."
 echo "[10-gnome] Zero removes. install_weakdeps=False prevented all bloat."
-echo "[10-gnome] Flatpaks: 6 pre-installed from Flathub."
+echo "[10-gnome] Flatpaks: 6 pre-installed from Flathub (VSCodium removed, Refine added)."

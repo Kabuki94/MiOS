@@ -4,8 +4,7 @@
 # CHANGELOG v1.3:
 #   - Looking Glass B7: Added -DENABLE_LIBDECOR=ON for GNOME Wayland
 #   - Looking Glass: Force OpenGL renderer config (fixes NVIDIA+Wayland flicker)
-#   - K3s: Added container-selinux + k3s-selinux packages
-#   - K3s: Pin version for reproducible builds
+#   - K3s: MOVED to 13-ceph-k3s.sh (no longer duplicated here)
 #   - CrowdSec: Updated sovereign mode config (RE2 regex engine default)
 #   - Added Podman quadlet example for CrowdSec
 #   - VirtIO-Win ISO: Updated URL pattern
@@ -92,44 +91,6 @@ install_packages "utils"
 # ── Android (Waydroid) ──────────────────────────────────────────────────────
 echo "[12-virt] Installing Waydroid..."
 install_packages "android"
-
-# ── K3s Lightweight Kubernetes ──────────────────────────────────────────────
-echo "[12-virt] Installing K3s..."
-
-# container-selinux is in Fedora repos; k3s-selinux is NOT (el8/el9 only)
-dnf -y install --skip-unavailable container-selinux 2>/dev/null || true
-
-K3S_VERSION="v1.32.3+k3s1"
-echo "[12-virt] Downloading K3s ${K3S_VERSION}..."
-
-# INSTALL_K3S_SELINUX_WARN=true: warn instead of fail when k3s-selinux missing
-# (k3s-selinux RPM only exists for RHEL/CentOS, not Fedora Rawhide)
-curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_START=true \
-    INSTALL_K3S_SKIP_ENABLE=true \
-    INSTALL_K3S_SELINUX_WARN=true \
-    INSTALL_K3S_VERSION="${K3S_VERSION}" sh - || {
-    # Fallback: download binary directly if install script fails
-    echo "[12-virt] Install script failed — downloading binary directly..."
-    K3S_URL="https://github.com/k3s-io/k3s/releases/download/${K3S_VERSION/+/%2B}/k3s"
-    curl -sfL "$K3S_URL" -o /usr/local/bin/k3s && chmod +x /usr/local/bin/k3s
-    # Create symlinks
-    for cmd in kubectl crictl ctr; do
-        ln -sf /usr/local/bin/k3s /usr/local/bin/$cmd
-    done
-    echo "[12-virt] K3s binary installed via direct download"
-}
-
-# K3s config: SELinux enforcing, data in /var
-mkdir -p /etc/rancher/k3s
-cat > /etc/rancher/k3s/config.yaml <<'EOK3S'
-# CloudWS v1.3 — K3s configuration
-selinux: true
-data-dir: /var/lib/rancher/k3s
-write-kubeconfig-mode: "0644"
-# Disable traefik (use nginx-ingress or gateway API instead)
-disable:
-  - traefik
-EOK3S
 
 # ── xRDP vsock for Hyper-V Enhanced Session ─────────────────────────────────
 echo "[12-virt] Configuring xRDP vsock..."
@@ -245,4 +206,4 @@ TimeoutStartSec=300
 WantedBy=multi-user.target
 EOQUAD
 
-echo "[12-virt] Virtualization stack complete. K3s: ${K3S_VERSION}, LG: ${LG_VERSION}"
+echo "[12-virt] Virtualization stack complete. LG: ${LG_VERSION} (K3s in 13-ceph-k3s.sh)"
