@@ -1,10 +1,10 @@
-# CloudWS v1.2 — iso.toml
-# Kickstart configuration for BIB Anaconda ISO builds.
-# BIB reads this via: --config /config.toml (or mounted as /config.toml)
-#
-# The <IMAGE_SIGNED> and <UPDATE_IMAGE_REF> placeholders are replaced by
-# the BIB build process (or by cloud-ws.ps1/Justfile before BIB invocation).
-# For manual builds, replace with: ghcr.io/kabuki94/cloudws-bootc:latest
+# CloudWS v1.3 — iso.toml
+# Combined BIB + kickstart configuration for Anaconda ISO builds.
+# This is the ONLY config file mounted for ISO builds (/config.toml).
+# bib.json/bib.toml is used for RAW/VHD targets only.
+
+[customizations.filesystem]
+minsize = "80 GiB"
 
 [customizations.installer.kickstart]
 contents = """
@@ -30,7 +30,7 @@ systemctl set-default graphical.target
 # Generate machine-id for unique hostname
 systemd-machine-id-setup 2>/dev/null || true
 
-echo "CloudWS v1.2 — Post-install complete"
+echo "CloudWS v1.3 — Post-install complete"
 %end
 
 reboot

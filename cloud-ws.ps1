@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    CloudWS v1.2 — Cloud Workstation OS Builder (Windows)
+    CloudWS v1.3 — Cloud Workstation OS Builder (Windows)
 
 .DESCRIPTION
     All OS configuration lives in standalone bash scripts (scripts/) and config
@@ -17,15 +17,16 @@
 
     For Linux-native builds: use the Justfile (just build, just iso, just push)
 
-    FIXES in v1.2:
-      - Hyper-V auto-deploy with Enhanced Session (HvSocket)
-      - WSL2 auto-deploy with .wslconfig (fixed memory prevents order-7 panics)
-      - ISO builds mount iso.toml for kickstart injection
-      - pmcd/pmlogger removed from service enables (only pmproxy installed)
-      - fapolicyd SELinux policy targets xdm_var_run_t (was xdm_t)
-      - New accountsd_homed SELinux policy module
-      - WSL2 mask list: +auditd, +audit-rules, +bootloader-update, +usbguard
-      - Mount unit permissions fixed (chmod 644)
+    FIXES in v1.3:
+      - ISO build: only mount iso.toml (not bib config) — BIB crashes with both
+      - WSL deploy: robust --unregister (handles UTF-16 output from wsl --list)
+      - Dark theme: ADW_DEBUG_COLOR_SCHEME (not GTK_THEME)
+      - Fastfetch: injected into .bashrc (not just profile.d)
+      - GPU-PV baseline in all images
+      - Database stack (MariaDB, PostgreSQL, pgvector, Redis)
+      - VM HA (sanlock, libvirt-lock-sanlock)
+      - AI post-install framework (cloudws-ai-*)
+      - First-boot timezone geolocation
 #>
 
 #Requires -RunAsAdministrator
@@ -35,7 +36,7 @@ Set-StrictMode -Version Latest
 # ══════════════════════════════════════════════════════════════════════════════
 #  CONFIGURATION
 # ══════════════════════════════════════════════════════════════════════════════
-$v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "1.2.0" }
+$v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "1.3.0" }
 $ImageName      = "cloudws"
 $ImageTag       = "latest"
 $DefUser        = "cloudws"
@@ -62,42 +63,27 @@ function Write-Step  { param([string]$M) Write-Host "      » $M" -ForegroundCol
 function Write-OK    { param([string]$M) Write-Host "      ✓ $M" -ForegroundColor Green }
 function Write-Warn  { param([string]$M) Write-Host "      ⚠ $M" -ForegroundColor Yellow }
 function Write-Fatal { param([string]$M) Write-Host "`n  ✗ FATAL: $M" -ForegroundColor Red; exit 1 }
-function Get-FileSize { param([string]$P) if(!(Test-Path $P)){return "N/A"} $s=(Get-Item $P).Length; if($s -gt 1GB){"$([math]::Round($s/1GB,2)) GB"}elseif($s -gt 1MB){"$([math]::Round($s/1MB,1)) MB"}else{"$([math]::Round($s/1KB,0)) KB"} }
-
-function Read-Timed {
-    param([string]$Prompt, [string]$Default, [switch]$Secret)
-    Write-Host "    $Prompt " -NoNewline -ForegroundColor White
-    if ($Secret) { Write-Host "[hidden, ${Timeout}s] " -NoNewline -ForegroundColor DarkGray }
-    else { Write-Host "[$Default, ${Timeout}s] " -NoNewline -ForegroundColor DarkGray }
-    $sw = [System.Diagnostics.Stopwatch]::StartNew(); $buf = ""
-    while ($sw.Elapsed.TotalSeconds -lt $Timeout) {
-        if ([Console]::KeyAvailable) {
-            $k = [Console]::ReadKey($true)
-            if ($k.Key -eq 'Enter') { Write-Host ""; if($buf){return $buf}else{return $Default} }
-            if ($k.Key -eq 'Backspace' -and $buf.Length -gt 0) { $buf = $buf.Substring(0,$buf.Length-1); Write-Host "`b `b" -NoNewline }
-            elseif ($k.KeyChar -match '[\x20-\x7E]') { $buf += $k.KeyChar; Write-Host $(if($Secret){"*"}else{$k.KeyChar}) -NoNewline }
-        }
-        Start-Sleep -Milliseconds 50
-    }
-    Write-Host " (timeout → default)"; return $Default
+function Get-FileSize { param([string]$P) if(!(Test-Path $P)){return "N/A"} $s=(Get-Item $P).Length; if($s -gt 1GB){"$([math]::Round($s/1GB,2)) GB"}else{"$([math]::Round($s/1MB,2)) MB"} }
+function Read-Timed { param([string]$Prompt, [string]$Default, [switch]$Secret)
+    if ($Secret) { Write-Host "      $Prompt " -NoNewline -ForegroundColor DarkCyan; Write-Host "[$("*"*$Default.Length)] " -NoNewline -ForegroundColor DarkGray }
+    else { Write-Host "      $Prompt " -NoNewline -ForegroundColor DarkCyan; Write-Host "[$Default] " -NoNewline -ForegroundColor DarkGray }
+    $sw = [System.Diagnostics.Stopwatch]::StartNew(); $input = ""
+    while ($sw.Elapsed.TotalSeconds -lt $Timeout -and -not [Console]::KeyAvailable) { Start-Sleep -Milliseconds 100 }
+    if ([Console]::KeyAvailable) { $input = Read-Host }
+    if ([string]::IsNullOrWhiteSpace($input)) { $input = $Default }
+    return $input
 }
+function Clean-BIBTemp { Get-ChildItem $OutputFolder -Directory -Filter "image" -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue }
 
-function Clean-BIBTemp {
-    Get-ChildItem $OutputFolder -Directory -Filter "image-*" -ErrorAction SilentlyContinue |
-        Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
-    Get-ChildItem $OutputFolder -File -Filter "manifest-*" -ErrorAction SilentlyContinue |
-        Remove-Item -Force -ErrorAction SilentlyContinue
-}
+Write-Banner "CloudWS v$Version — Cloud Workstation OS Builder"
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  PHASE 0: CONFIGURATION
 # ══════════════════════════════════════════════════════════════════════════════
-Write-Banner "CloudWS v$Version — Cloud Workstation OS Builder"
-Write-Phase "0" "Build Configuration (${Timeout}s timeout per question)"
-
+Write-Phase "0" "Configuration (${Timeout}s timeout per question)"
 $U = Read-Timed "Username:" $DefUser
 $P = Read-Timed "Password:" $DefPass -Secret
-$luksIn = Read-Timed "Enable LUKS2 disk encryption? (y/N):" "N"
+$luksIn = Read-Timed "Enable LUKS encryption? (y/N):" "N"
 $UseLuks = $luksIn -match "^[yY]"
 $LuksPass = if ($UseLuks) { Read-Timed "LUKS passphrase:" "cloudws" -Secret } else { "" }
 $RegistryUrl = Read-Timed "Registry URL:" $DefRegistry
@@ -187,12 +173,20 @@ Write-OK "Rechunk complete"
 Write-Phase "3" "Generating Deployment Targets"
 $ErrorActionPreference = "Continue"
 
-$bibConf = Join-Path $PWD "config\bib.json"
-if (-not (Test-Path $bibConf)) { $bibConf = Join-Path $PWD "config\bib.toml" }
-$bibConfDest = Join-Path $OutputFolder "bib-config.json"
-if ($bibConf -match '\.toml$') { $bibMountPath = "/config.toml" } else { $bibMountPath = "/config.json" }
+# BIB config — use bib.toml ONLY (bib.json deleted in v1.3 to prevent conflict)
+$bibConf = Join-Path $PWD "config\bib.toml"
+if (-not (Test-Path $bibConf)) { $bibConf = Join-Path $PWD "config\bib.json" }
+$bibConfDest = Join-Path $OutputFolder "bib-config"
 if (Test-Path $bibConf) {
-    Copy-Item $bibConf $bibConfDest -Force
+    if ($bibConf -match '\.toml$') {
+        $bibMountPath = "/config.toml"
+        Copy-Item $bibConf "$bibConfDest.toml" -Force
+        $bibConfDest = "$bibConfDest.toml"
+    } else {
+        $bibMountPath = "/config.json"
+        Copy-Item $bibConf "$bibConfDest.json" -Force
+        $bibConfDest = "$bibConfDest.json"
+    }
     Write-OK "BIB config: 80 GiB minimum root (mounted as $bibMountPath)"
 } else {
     Write-Warn "No BIB config found — disk may auto-size too small!"
@@ -212,12 +206,12 @@ function Get-BIBArgs {
         "-v", "/var/lib/containers/storage:/var/lib/containers/storage",
         "-v", "${OutputFolder}:/output:z"
     )
-    if ($bibConfDest -and (Test-Path $bibConfDest)) {
-        $bibArgs += @("-v", "${bibConfDest}:${bibMountPath}:ro")
-    }
-    # Mount iso.toml for Anaconda ISO builds (kickstart injection)
+    # FIX v1.3: BIB only supports ONE config file. For ISO, use iso.toml ONLY
+    # (it now includes minsize). For other targets, use bib config only.
     if ($Type -eq "anaconda-iso" -and $hasIsoToml) {
         $bibArgs += @("-v", "${isoToml}:/config.toml:ro")
+    } elseif ($bibConfDest -and (Test-Path $bibConfDest)) {
+        $bibArgs += @("-v", "${bibConfDest}:${bibMountPath}:ro")
     }
     $bibArgs += @($BIBImage, "build", "--type", $Type, "--rootfs", "ext4", $GhcrImage)
     return $bibArgs
@@ -329,11 +323,11 @@ if (Test-Path $TargetWsl) {
     $WslPath = Join-Path $env:USERPROFILE "WSL\CloudWS"
 
     try {
-        $distros = wsl --list --quiet 2>$null
-        if ($distros -match $WslName) {
-            Write-Step "Removing existing WSL distro '$WslName'..."
-            wsl --unregister $WslName 2>$null | Out-Null
-        }
+        # FIX v1.3: Always try --unregister first (wsl --list output is UTF-16
+        # and -match comparison silently fails). Ignore errors if not registered.
+        Write-Step "Ensuring clean WSL state (unregister if exists)..."
+        wsl --unregister $WslName 2>$null | Out-Null
+        Start-Sleep 1
 
         New-Item -ItemType Directory -Path $WslPath -Force | Out-Null
         wsl --import $WslName $WslPath $TargetWsl --version 2
@@ -347,8 +341,8 @@ if (Test-Path $TargetWsl) {
         $wslRAM = [Math]::Max(8, [Math]::Floor($totalRAM / 1GB / 2))
         $wslCPUs = [Math]::Max(4, [Math]::Floor((Get-CimInstance Win32_Processor).NumberOfLogicalProcessors / 2))
 
-        $wslConfig = @'
-# CloudWS v1.2 — WSL2 Configuration
+        $wslConfig = @"
+# CloudWS v1.3 — WSL2 Configuration
 # CRITICAL: Fixed memory prevents VMBus order-7 allocation panics
 [wsl2]
 memory=${wslRAM}GB
@@ -357,8 +351,7 @@ swap=8GB
 localhostForwarding=true
 nestedVirtualization=true
 vmIdleTimeout=-1
-'@
-        $wslConfig = $wslConfig.Replace('${wslRAM}', $wslRAM).Replace('${wslCPUs}', $wslCPUs)
+"@
 
         if (Test-Path $wslConfigPath) {
             $backup = "${wslConfigPath}.bak.$(Get-Date -Format 'yyyyMMdd-HHmmss')"
@@ -397,14 +390,16 @@ if ($GhcrOK) {
     Write-OK "Pushed to $registryHost"
     if ($registryHost -eq "ghcr.io" -and $RegistryToken) {
         try {
-            $pkgName = ($GhcrImage -split '/')[-1] -replace ':.*$',''
-            Invoke-RestMethod -Uri "https://api.github.com/user/packages/container/$pkgName" -Method Patch `
-                -Headers @{Authorization="Bearer $RegistryToken";Accept="application/vnd.github+json"} `
-                -Body '{"visibility":"public"}' -ContentType "application/json" -ErrorAction Stop
-            Write-OK "GHCR package set to public"
-        } catch { Write-Warn "Could not auto-set public visibility — do it manually: https://github.com/Kabuki94?tab=packages" }
+            $pkgName = ($GhcrImage -split '/')[-1] -replace ':.*', ''
+            $owner = ($GhcrImage -split '/')[1]
+            $headers = @{ Authorization = "Bearer $RegistryToken"; Accept = "application/vnd.github+json" }
+            Invoke-RestMethod -Uri "https://api.github.com/user/packages/container/$pkgName/versions" -Headers $headers -Method Get -ErrorAction Stop | Out-Null
+            Invoke-RestMethod -Uri "https://api.github.com/user/packages/container/$pkgName" -Headers $headers -Method Patch -Body '{"visibility":"public"}' -ContentType "application/json" -ErrorAction Stop | Out-Null
+            Write-OK "Package visibility set to public"
+        } catch { Write-Warn "Could not set public (manual: https://github.com/Kabuki94?tab=packages)" }
     }
-} else { Write-Warn "Push failed — check credentials"; $GhcrOK = $false }
+} else { Write-Warn "Push failed — authenticate manually: podman push $GhcrImage" }
+
 $ErrorActionPreference = "Stop"
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -412,39 +407,36 @@ $ErrorActionPreference = "Stop"
 # ══════════════════════════════════════════════════════════════════════════════
 Write-Phase "5" "Cleanup & Report"
 $ErrorActionPreference = "Continue"
-& podman system connection default podman-machine-default 2>$null
+
+# Restore default Podman machine
+& podman system connection default "podman-machine-default-root" 2>$null
 & podman machine stop $BuilderMachine 2>$null
-Write-OK "Builder stopped. Your default Podman machine restored."
-Write-Step "To remove builder: podman machine rm $BuilderMachine"
+Write-OK "Restored default Podman machine"
+
 $ErrorActionPreference = "Stop"
 
-$total = [math]::Round(((Get-Date) - $t0).TotalMinutes, 1)
-$T1 = Test-Path $RawImg; $T2 = Test-Path $TargetVhdx; $T3 = Test-Path $TargetWsl; $T4 = Test-Path $TargetIso
-$color = if ($T1 -and $T2 -and $T3 -and $T4 -and $GhcrOK) { "Green" } else { "Yellow" }
-
-Write-Host "`n  $("═"*78)" -ForegroundColor $color
-Write-Host "   CLOUDWS v$Version BUILD COMPLETE (${total} min)" -ForegroundColor $color
-Write-Host "  $("═"*78)`n" -ForegroundColor $color
-
-foreach ($t in @(
-    @(1,"RAW",$T1,$RawImg,"dd if=cloudws-bootable.raw of=/dev/sdX bs=4M"),
-    @(2,"VHDX",$T2,$TargetVhdx,"Hyper-V Gen2 → auto-deployed as 'CloudWS-OS'"),
-    @(3,"WSL2",$T3,$TargetWsl,"Auto-imported as 'CloudWS-OS' with .wslconfig"),
-    @(4,"ISO",$T4,$TargetIso,"Write to USB with Rufus (ISO mode)"),
-    @(5,"Registry",$GhcrOK,$GhcrImage,"sudo bootc switch $GhcrImage")
-)) {
-    $icon = if($t[2]){"✓"}else{"✗"}; $c = if($t[2]){"Green"}else{"Red"}
-    Write-Host "  [$icon] TARGET $($t[0]) — $($t[1])" -ForegroundColor $c
-    if($t[2]) { Write-Host "      $($t[3]) ($(Get-FileSize $t[3]))" -ForegroundColor DarkGray; Write-Host "      $($t[4])" -ForegroundColor DarkGray }
-    Write-Host ""
-}
-
-Write-Host "  Credentials: $U / ****" -ForegroundColor Yellow
-Write-Host "  Update origin: $GhcrImage (baked into all disk images)" -ForegroundColor DarkGray
-Write-Host "  Terminal:    cloudws --help | cloudws-test --full" -ForegroundColor DarkGray
-Write-Host "  Headless:    sudo cloudws-toggle-headless off" -ForegroundColor DarkGray
-Write-Host "  Cockpit:     https://localhost:9090" -ForegroundColor DarkGray
+# ── Build report ─────────────────────────────────────────────────────────────
+Write-Banner "CloudWS v$Version — Build Complete"
+$totalMin = [math]::Round(((Get-Date) - $t0).TotalMinutes, 1)
+Write-Host "  Total time: $totalMin min" -ForegroundColor DarkGray
 Write-Host ""
-Write-Host "  Hyper-V: Start-VM -Name 'CloudWS-OS' | vmconnect localhost 'CloudWS-OS'" -ForegroundColor Yellow
-Write-Host "  WSL2:    wsl -d CloudWS-OS (run 'wsl --shutdown' first for .wslconfig)" -ForegroundColor Yellow
+$targets = @(
+    @{N="OCI Image"; P=$LocalImage; S="(in Podman storage)"},
+    @{N="RAW Disk";  P=$RawImg;     S=Get-FileSize $RawImg},
+    @{N="VHDX";      P=$TargetVhdx; S=Get-FileSize $TargetVhdx},
+    @{N="WSL Tar";   P=$TargetWsl;  S=Get-FileSize $TargetWsl},
+    @{N="ISO";       P=$TargetIso;  S=Get-FileSize $TargetIso},
+    @{N="Registry";  P=$GhcrImage;  S=if($GhcrOK){"✓ pushed"}else{"⚠ not pushed"}}
+)
+foreach ($t in $targets) {
+    $icon = if ($t.P -eq $LocalImage -or $t.P -eq $GhcrImage) { "✓" } elseif (Test-Path $t.P -ErrorAction SilentlyContinue) { "✓" } else { "✗" }
+    $color = if ($icon -eq "✓") { "Green" } else { "Red" }
+    Write-Host "    $icon $($t.N): $($t.S)" -ForegroundColor $color
+}
+Write-Host ""
+Write-Host "  Deploy commands:" -ForegroundColor Yellow
+Write-Host "    Hyper-V:  Start-VM -Name 'CloudWS-OS'" -ForegroundColor DarkGray
+Write-Host "    WSL2:     wsl -d CloudWS-OS" -ForegroundColor DarkGray
+Write-Host "    Bare:     dd if=$RawImg of=/dev/sdX bs=4M status=progress" -ForegroundColor DarkGray
+Write-Host "    Update:   bootc upgrade (from inside running CloudWS)" -ForegroundColor DarkGray
 Write-Host ""

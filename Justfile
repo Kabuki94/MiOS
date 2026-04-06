@@ -1,9 +1,9 @@
-# CloudWS v1.2 — Justfile
-# Linux-native build targets. Requires: podman, just
+# CloudWS v1.3 — Linux Build Targets
+# Requires: podman, just
 # Usage: just build | just iso | just all
 
 IMAGE_NAME := "ghcr.io/kabuki94/cloudws-bootc"
-VERSION := `cat VERSION 2>/dev/null || echo "1.2.0"`
+VERSION := `cat VERSION 2>/dev/null || echo "1.3.0"`
 LOCAL := "localhost/cloudws:latest"
 BIB := "quay.io/centos-bootc/bootc-image-builder:latest"
 RECHUNK := "quay.io/centos-bootc/centos-bootc:stream10"
@@ -30,18 +30,19 @@ raw: build
         --security-opt label=type:unconfined_t \
         -v ./output:/output \
         -v /var/lib/containers/storage:/var/lib/containers/storage \
-        -v ./config/bib.json:/config.json:ro \
+        -v ./config/bib.toml:/config.toml:ro \
         {{BIB}} build --type raw --rootfs ext4 {{LOCAL}}
     @echo "✓ RAW image in output/"
 
-# Generate Anaconda installer ISO (uses iso.toml kickstart)
+# Generate Anaconda installer ISO
+# FIX v1.3: ONLY mount iso.toml (includes minsize). Do NOT also mount bib config.
+# BIB crashes with: "found config.json and also config.toml"
 iso: build
     mkdir -p output
     sudo podman run --rm -it --privileged \
         --security-opt label=type:unconfined_t \
         -v ./output:/output \
         -v /var/lib/containers/storage:/var/lib/containers/storage \
-        -v ./config/bib.json:/config.json:ro \
         -v ./iso.toml:/config.toml:ro \
         {{BIB}} build --type anaconda-iso --rootfs ext4 {{LOCAL}}
     @echo "✓ ISO in output/"
@@ -53,7 +54,7 @@ vhd: build
         --security-opt label=type:unconfined_t \
         -v ./output:/output \
         -v /var/lib/containers/storage:/var/lib/containers/storage \
-        -v ./config/bib.json:/config.json:ro \
+        -v ./config/bib.toml:/config.toml:ro \
         {{BIB}} build --type vhd --rootfs ext4 {{LOCAL}}
     @echo "✓ VHD in output/"
 
