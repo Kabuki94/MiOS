@@ -4,7 +4,8 @@ This file is both documentation and the **single source of truth** for all packa
 Build scripts parse the fenced code blocks below using `scripts/lib/packages.sh`.
 To add a package, add it to the appropriate section. One package per line.
 
-**CHANGELOG v1.3:**
+**CHANGELOG v1.3.1:**
+- Removed base kernel packages (kernel, kernel-core, kernel-modules, kernel-modules-core) — base image ships them
 - Fixed duplicate `pcp` and `pcp-system-tools` in Cockpit section
 - Removed `lib32-gamemode` and `libstrangle` (Arch-only, not in Fedora)
 - Added `kernel-modules-core` (kernel 7.0 split from kernel-modules)
@@ -28,14 +29,11 @@ dnf-plugins-core
 
 ## Kernel
 
-Kernel upgrade + development headers required for akmod-nvidia.
-kernel-modules-core added for kernel 7.0+ (split from kernel-modules).
+Kernel extras + development headers for akmod-nvidia and DKMS builds.
+Base kernel ships with fedora-bootc:rawhide — NEVER upgrade it in-container.
+Upgrading triggers dracut under tmpfs which breaks the initramfs.
 
 ```packages-kernel
-kernel
-kernel-core
-kernel-modules
-kernel-modules-core
 kernel-modules-extra
 kernel-devel
 kernel-headers

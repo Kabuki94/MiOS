@@ -1,10 +1,21 @@
 #!/bin/bash
-# CloudWS v1.3 — 02-kernel: Kernel + development headers
-# Headers are required for akmod-nvidia to build kernel modules at image time.
+# CloudWS v1.3 — 02-kernel: Kernel extras + development headers
+# The base fedora-bootc:rawhide image ships the newest kernel with a working
+# initramfs. We NEVER upgrade the base kernel packages inside the container —
+# doing so triggers dracut under the tmpfs mount, which fails with
+# "Invalid cross-device link (os error 18)" and produces a broken initramfs.
 #
-# CHANGELOG v1.3:
-#   - Added kernel-modules-core (split from kernel-modules in kernel 7.0)
-#   - Added kernel version logging for build reproducibility
+# This script installs ONLY the extras needed for:
+#   - akmod-nvidia (kernel-devel, kernel-headers)
+#   - DKMS/kvmfr (kernel-devel)
+#   - kernel-modules-extra (VFIO, USB, storage modules not in base)
+#   - kernel-tools (cpupower, turbostat, perf)
+#
+# CHANGELOG v1.3.1:
+#   - REMOVED kernel/kernel-core/kernel-modules/kernel-modules-core
+#     (base image already has them — upgrading broke dracut)
+#   - kernel-modules-extra ensures VFIO/USB/storage modules are present
+#   - kernel-devel enables akmod-nvidia and DKMS builds
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
@@ -12,15 +23,20 @@ source "${SCRIPT_DIR}/lib/packages.sh"
 install_packages_strict "kernel"
 
 # Capture KVER for akmod builds later.
-# Multiple kernels may be installed; use the highest version.
+# The base image kernel is the only one installed; grab it.
 export KVER=$(ls -1 /lib/modules/ | sort -V | tail -1)
 echo "[02-kernel] Kernel version: $KVER"
 echo "$KVER" > /tmp/cloudws-kver
 
-# Verify kernel modules directory exists (build will fail without it)
+# Verify kernel modules directory exists (akmod build will fail without it)
 if [[ ! -d "/lib/modules/$KVER" ]]; then
     echo "[02-kernel] FATAL: /lib/modules/$KVER does not exist"
     exit 1
 fi
 
-echo "[02-kernel] Kernel $KVER installed successfully."
+# Verify kernel-devel is installed (akmod-nvidia needs it)
+if [[ ! -d "/lib/modules/$KVER/build" ]]; then
+    echo "[02-kernel] WARNING: /lib/modules/$KVER/build missing — akmod may fail"
+fi
+
+echo "[02-kernel] Kernel extras for $KVER installed successfully."

@@ -122,18 +122,9 @@ gtk-font-name=Geist 11
 gtk-decoration-layout=:minimize,maximize,close
 EOGTK4
 
-# System-wide env vars for ALL toolkits (GTK3, GTK4/libadwaita, Qt5/6, Electron)
-mkdir -p /etc/environment.d
-cat > /etc/environment.d/70-cloudws-theme.conf <<'EOENV'
-# CloudWS v1.3: Unified dark theme for ALL window toolkits
-# GTK3 apps (Cockpit webview, Wine dialogs, older GNOME apps)
-GTK_THEME=adw-gtk3-dark
-# libadwaita apps (GNOME 40+ native apps) — do NOT use GTK_THEME for these
-ADW_DEBUG_COLOR_SCHEME=prefer-dark
-# Qt5/Qt6 apps
-QT_QPA_PLATFORMTHEME=adwaita-dark
-QT_STYLE_OVERRIDE=adwaita-dark
-EOENV
+# System-wide env vars handled by system_files/etc/environment.d/50-cloudws.conf
+# (ADW_DEBUG_COLOR_SCHEME, QT_*, ELECTRON_*, MOZ_*, SDL_*, HDR, etc.)
+# No duplicate creation needed here — the overlay provides all theme env vars.
 
 # ═══ 6. HOSTNAME ═══
 echo "CloudWS" > /etc/hostname
