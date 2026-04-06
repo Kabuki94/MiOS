@@ -10,7 +10,7 @@ RECHUNK := "quay.io/centos-bootc/centos-bootc:stream10"
 
 # Build OCI image
 build:
-    podman build --squash-all --no-cache -t {{LOCAL}} .
+    podman build --no-cache -t {{LOCAL}} .
     @echo "✓ Built: {{LOCAL}}"
 
 # Rechunk for optimal Day-2 updates (5-10x smaller deltas)

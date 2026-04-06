@@ -155,7 +155,7 @@ Write-OK "Credentials injected into 99-overrides.sh"
 
 $t0 = Get-Date
 Write-Step "Building OCI image (all $cpu threads)..."
-& podman build --squash-all --no-cache -t $LocalImage .
+& podman build --no-cache -t $LocalImage .
 if ($LASTEXITCODE -ne 0) { Write-Fatal "podman build failed" }
 
 & git checkout scripts/99-overrides.sh 2>$null

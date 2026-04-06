@@ -1,5 +1,5 @@
 # CloudWS v1.2 — Containerfile
-# Build: podman build --squash-all --no-cache -t cloudws:latest .
+# Build: podman build --no-cache -t cloudws:latest .
 # Lint:  podman run --rm cloudws:latest bootc container lint
 
 # ── Stage 1: Build context (never enters final image) ────────────────────────
