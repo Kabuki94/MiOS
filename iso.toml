@@ -3,7 +3,8 @@
 # This is the ONLY config file mounted for ISO builds (/config.toml).
 # bib.json/bib.toml is used for RAW/VHD targets only.
 
-[customizations.filesystem]
+[[customizations.filesystem]]
+mountpoint = "/"
 minsize = "80 GiB"
 
 [customizations.installer.kickstart]

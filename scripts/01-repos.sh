@@ -44,8 +44,14 @@ EOREPO
 # ── Distro-sync to Rawhide ──────────────────────────────────────────────────
 # Upgrades ucore's Fedora stable packages to Rawhide versions.
 # --allowerasing handles package renames/splits between Fedora versions.
+# CRITICAL: Exclude shim-* and grub2-efi-* from distro-sync. The ucore base
+# ships pre-signed EFI binaries with ublue's MOK key. Upgrading them to
+# Rawhide versions creates duplicate shimx64.efi which makes bootupctl fail
+# with "Found multiple shimx64.efi in the image", blocking BIB RAW/VHDX/ISO.
 echo "[01-repos] Distro-sync to Rawhide (this takes a while)..."
 dnf distro-sync -y --best --allowerasing \
+    --exclude='shim-*' \
+    --exclude='grub2-efi-*' \
     --setopt=install_weak_deps=False 2>&1 | tail -30 || {
     echo "[01-repos] WARNING: distro-sync had errors — check output above"
 }
