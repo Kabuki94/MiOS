@@ -9,6 +9,9 @@
 #   - Base: ucore-hci:stable-nvidia (Rawhide overlay in 01-repos.sh)
 #   - Post-build validates malcontent-libs present (flatpak needs it)
 #   - Footgun list includes malcontent-control/pam/tools
+#   - PackageKit/gnome-tour removed via dnf (safe, no cascade)
+#   - gnome-software KEPT (manages Flatpaks on immutable systems)
+#   - malcontent-control hidden via NoDisplay (dnf remove cascades)
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -74,6 +77,21 @@ for script in "$SCRIPT_DIR"/[0-9][0-9]-*.sh; do
     fi
 done
 
+# ── Remove ucore base bloat ────────────────────────────────────────────────
+# These come from the ucore-hci base image. Safe to remove with --noautoremove.
+# NOTE: gnome-software is KEPT — it manages Flatpaks on immutable systems.
+# NOTE: malcontent-control cascades into gnome-shell removal — hidden via
+#       NoDisplay in 99-overrides.sh instead.
+echo ""
+log_ts "==> Removing base image bloat..."
+for bloat_pkg in PackageKit gnome-tour gnome-initial-setup; do
+    if rpm -q "$bloat_pkg" > /dev/null 2>&1; then
+        dnf remove -y --noautoremove "$bloat_pkg" 2>/dev/null && \
+            echo "  ✓ Removed $bloat_pkg" || \
+            echo "  ⚠ Could not remove $bloat_pkg (dependency cascade)"
+    fi
+done
+
 # ── Post-build validation ──────────────────────────────────────────────────
 echo ""
 echo "═══════════════════════════════════════════════════════════════"
@@ -101,10 +119,15 @@ else
     echo "  ⚠ malcontent-libs MISSING — flatpak may break"
 fi
 
-# Footgun check — these should NOT be present in a build-up image
+# gnome-software: expected (manages Flatpaks on immutable systems)
+if rpm -q gnome-software > /dev/null 2>&1; then
+    echo "  ✓ gnome-software (Flatpak manager)"
+fi
+
+# Footgun check — these should NOT be present after bloat removal
 FOOTGUN_PACKAGES=(
-    PackageKit gnome-initial-setup gnome-tour gnome-software
-    malcontent-control malcontent-pam malcontent-tools
+    PackageKit gnome-initial-setup gnome-tour
+    malcontent-pam malcontent-tools
 )
 for pkg in "${FOOTGUN_PACKAGES[@]}"; do
     if rpm -q "$pkg" > /dev/null 2>&1; then
