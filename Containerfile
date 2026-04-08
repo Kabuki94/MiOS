@@ -9,8 +9,8 @@
 #   NVIDIA kmod (pre-signed with ublue MOK — fixes SecureBoot kernel panic),
 #   nvidia-container-toolkit, CDI, SELinux policy.
 #
-# Rawhide repos overlayed in 01-repos.sh → distro-sync upgrades to
-# GNOME 50 / kernel 7.x / systemd 260 / Mesa 26.
+# Fedora 44 repos overlayed in 01-repos.sh → distro-sync upgrades to
+# GNOME 50 / systemd 260 / Mesa 26. Kernel from Rawhide (Linux 7.0 RC).
 #
 # GNOME 50 installed via pure build-up (~25 explicit packages).
 # install_weakdeps=False prevents bloat — malcontent UI/PAM/tools never
@@ -87,7 +87,9 @@ RUN dnf config-manager setopt rpmfusion-free.enabled=0 2>/dev/null || true && \
     dnf config-manager setopt rpmfusion-free-updates.enabled=0 2>/dev/null || true && \
     dnf config-manager setopt rpmfusion-nonfree-updates.enabled=0 2>/dev/null || true && \
     dnf config-manager setopt terra.enabled=0 2>/dev/null || true && \
-    dnf config-manager setopt fedora-rawhide.enabled=0 2>/dev/null || true
+    dnf config-manager setopt fedora-44.enabled=0 2>/dev/null || true && \
+    dnf config-manager setopt fedora-44-updates.enabled=0 2>/dev/null || true && \
+    dnf config-manager setopt fedora-rawhide-kernel.enabled=0 2>/dev/null || true
 
 # Generate initramfs for BIB (bootc image builder) compatibility.
 # ucore-hci base ships kernel modules but no initramfs. BIB's lsinitrd
