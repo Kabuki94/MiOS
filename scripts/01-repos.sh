@@ -92,9 +92,12 @@ priority=90
 EOREPO
 
 echo "[01-repos] Upgrading kernel to latest Rawhide (7.0 RC)..."
-dnf upgrade -y --best kernel kernel-core kernel-modules kernel-modules-core \
-    kernel-modules-extra linux-firmware \
-    --repo=fedora-rawhide-kernel \
+# The rawhide-kernel repo is already enabled with includepkgs limiting it to
+# kernel packages only. Just run distro-sync on kernel — dnf5 will pick up
+# the newer version from rawhide automatically due to priority=90.
+dnf distro-sync -y --best \
+    kernel kernel-core kernel-modules kernel-modules-core \
+    kernel-modules-extra kernel-devel kernel-headers linux-firmware \
     --setopt=install_weak_deps=False 2>&1 | tail -20 || {
     echo "[01-repos] WARNING: Rawhide kernel upgrade had errors"
 }
@@ -111,11 +114,14 @@ dnf config-manager setopt rpmfusion-free-updates.priority=90 2>/dev/null || true
 dnf config-manager setopt rpmfusion-nonfree-updates.priority=90 2>/dev/null || true
 
 # ── Terra repo (Fyra Labs) — gamescope-session-steam ────────────────────────
+# gpgcheck disabled: BIB re-enables repos during ISO builds and the
+# terra44 GPG key path doesn't exist, causing ISO generation to fail.
 echo "[01-repos] Installing Terra repo..."
 dnf install -y --setopt=install_weak_deps=False --nogpgcheck \
     --repofrompath 'terra,https://repos.fyralabs.com/terra44' \
     terra-release 2>/dev/null || true
 dnf config-manager setopt terra.priority=85 2>/dev/null || true
+dnf config-manager setopt terra.gpgcheck=0 2>/dev/null || true
 
 # ── CrowdSec (Fedora 40 fallback — compat with 44) ──────────────────────────
 echo "[01-repos] Adding CrowdSec repo..."

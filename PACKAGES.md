@@ -53,52 +53,56 @@ GNOME 49+: systemd is a HARD dependency. gnome-session's built-in service
 manager was removed. Full systemd user session support is required.
 
 ```packages-gnome
+# ── Core shell (auto-pulls: mutter, gjs, gtk4, libadwaita, gnome-desktop4,
+#    gnome-session, gnome-settings-daemon, gsettings-desktop-schemas, colord,
+#    dconf, adwaita-icon-theme, adwaita-cursor-theme, pipewire, polkit) ──
 gnome-shell
-gnome-session
 gnome-session-wayland-session
-gnome-settings-daemon
 gnome-control-center
-mutter
-gjs
 gnome-keyring
-polkit
 gdm
-gtk4
-libadwaita
-gnome-desktop4
+# ── Desktop apps ──
 ptyxis
 nautilus
+gnome-software
+gnome-remote-desktop
+gnome-backgrounds
+# ── Extensions ──
 gnome-shell-extension-appindicator
 gnome-shell-extension-dash-to-dock
-adwaita-cursor-theme
-adwaita-icon-theme
-gnome-backgrounds
-gsettings-desktop-schemas
-colord
+# ── Portals ──
 xdg-user-dirs
 xdg-utils
 xdg-desktop-portal
 xdg-desktop-portal-gnome
 xdg-desktop-portal-gtk
-pipewire
+# ── Audio ──
 pipewire-alsa
 pipewire-pulseaudio
 wireplumber
+# ── GStreamer (MUST be explicit — ucore fc43 base ships older GStreamer that
+#    is ABI-incompatible with GNOME 50. Without these, gnome-shell crashes on
+#    launch with "undefined symbol: gst_state_get_name" in libgstplay) ──
+gstreamer1
+gstreamer1-plugins-base
+gstreamer1-plugins-good
+# ── Hardware ──
 upower
 gnome-bluetooth
 bluez
 bluez-tools
+# ── Flatpak (gnome-software manages these — no rpm-ostree plugin needed) ──
 flatpak
-dconf
-gnome-software
-gnome-software-rpm-ostree
-gnome-remote-desktop
+# ── Filesystem access ──
 gvfs
 gvfs-smb
 gvfs-mtp
+# ── Networking ──
 NetworkManager-wifi
 NetworkManager-openvpn-gnome
+# ── Locale ──
 glibc-langpack-en
+# ── Qt Adwaita theming ──
 qt6-qtbase-gui
 qt6-qtwayland
 adwaita-qt5
@@ -274,6 +278,7 @@ crowdsec
 crowdsec-firewall-bouncer-nftables
 firewalld
 fapolicyd
+fapolicyd-selinux
 usbguard
 setroubleshoot-server
 policycoreutils-python-utils
@@ -296,7 +301,6 @@ winetricks
 lutris
 gamemode
 mangohud
-libobs
 vulkan-tools
 dosbox-staging
 protontricks

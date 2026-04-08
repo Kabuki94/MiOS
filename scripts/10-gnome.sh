@@ -26,26 +26,17 @@ source "${SCRIPT_DIR}/lib/packages.sh"
 # ═════════════════════════════════════════════════════════════════════════════
 # GNOME 50 — Install from PACKAGES.md (build-up, NOT strip-down)
 #
-# PACKAGES.md packages-gnome block should contain ONLY these ~25 core packages:
-#   gnome-shell, gdm, gnome-session-wayland-session, gnome-control-center,
-#   xdg-desktop-portal, xdg-desktop-portal-gnome, xdg-desktop-portal-gtk,
-#   gnome-keyring, gnome-keyring-pam, pipewire-pulseaudio, wireplumber,
-#   bluez, NetworkManager, NetworkManager-wifi,
-#   NetworkManager-config-connectivity-fedora, power-profiles-daemon,
-#   adw-gtk3, adwaita-qt5, adwaita-qt6, qadwaitadecorations-qt5,
-#   qadwaitadecorations-qt6, xdg-user-dirs, xdg-user-dirs-gtk,
-#   dejavu-sans-fonts, dejavu-sans-mono-fonts, google-noto-emoji-color-fonts,
-#   nautilus, gvfs-smb, gvfs-mtp, gvfs-goa, gvfs-nfs, flatpak,
-#   mesa-dri-drivers, mesa-vulkan-drivers, gnome-backgrounds
-#
-# With install_weakdeps=False, installing gnome-shell auto-resolves:
+# PACKAGES.md packages-gnome block contains ~40 explicit packages.
+# With install_weakdeps=False, gnome-shell auto-resolves ~15 deps:
 #   mutter, gnome-session, gnome-settings-daemon, gjs, gnome-desktop4,
-#   gsettings-desktop-schemas, pipewire, libadwaita, cantarell-fonts,
-#   colord, libinput — NO explicit install needed.
-# Installing gnome-control-center auto-resolves:
-#   polkit, gnome-bluetooth, gnome-online-accounts, malcontent-libs
+#   gsettings-desktop-schemas, gtk4, libadwaita, pipewire, colord,
+#   polkit, dconf, adwaita-icon-theme, adwaita-cursor-theme, libinput
+#
+# These are NOT listed in PACKAGES.md — they come in automatically.
+# gnome-software is included for Flatpak management (no rpm-ostree plugin).
+# gnome-software-rpm-ostree is NOT included — it pulls in PackageKit.
 # ═════════════════════════════════════════════════════════════════════════════
-echo "[10-gnome] Installing GNOME 50 desktop (pure build-up, ~25 core packages)..."
+echo "[10-gnome] Installing GNOME 50 desktop (pure build-up)..."
 install_packages "gnome"
 
 # Optional GNOME Core Apps (all commented out by default in PACKAGES.md)
