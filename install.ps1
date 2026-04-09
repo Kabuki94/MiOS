@@ -1,80 +1,29 @@
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { Write-Host '  Run as Administrator!' -ForegroundColor Red; return }
-<#
-.SYNOPSIS  CloudWS Bootstrap — Downloads and runs the full build script
-.DESCRIPTION
-    Usage: irm https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/install.ps1 | iex
-#>
 $ErrorActionPreference = "Stop"
-$Repo = "https://github.com/Kabuki94/CloudWS-bootc"
-$RawBase = "https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main"
-$ParentDir = $PWD.Path
-$Dir = Join-Path $ParentDir "CloudWS-bootc"
-
+if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { Write-Host "  Run as Administrator!" -ForegroundColor Red; return }
+$RepoUrl = "https://github.com/Kabuki94/CloudWS-bootc"
 Write-Host ""
-Write-Host "  ╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "  ║  CloudWS v1.0 — Cloud Workstation OS Builder (Windows)     ║" -ForegroundColor Cyan
-Write-Host "  ╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host "  CloudWS v1.4 - Cloud Workstation OS Builder (Windows)" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  1) Run preflight check first (recommended)" -ForegroundColor White
-Write-Host "  2) Clone repo + run full build (cloud-ws.ps1)" -ForegroundColor White
+Write-Host "  2) Clone repo + launch build (cloud-ws.ps1)" -ForegroundColor White
 Write-Host "  3) Download build script only" -ForegroundColor White
 Write-Host ""
 $choice = Read-Host "  Choice [1-3]"
-
 switch ($choice) {
     "1" {
-        Write-Host "`n  Running preflight check..." -ForegroundColor Cyan
-        $pf = Invoke-WebRequest -Uri "$RawBase/preflight.ps1" -UseBasicParsing
-        Invoke-Expression $pf.Content
-        Write-Host "`n  Preflight complete. Run this script again and choose option 2." -ForegroundColor Green
+        try { Invoke-Expression (Invoke-WebRequest -Uri "$RepoUrl/raw/main/preflight.ps1" -UseBasicParsing).Content }
+        catch { Write-Host "  Preflight failed: $_" -ForegroundColor Red }
     }
     "2" {
-        Write-Host "`n  Cloning $Repo ..." -ForegroundColor Cyan
-
-        # CRITICAL: Always ensure CWD is the parent BEFORE touching $Dir.
-        # If CWD is inside $Dir, Remove-Item fails with "being used by another process".
-        Set-Location $ParentDir
-
-        if (Test-Path $Dir) {
-            # Check if it's a valid git repo with the right content
-            $isGitRepo = Test-Path (Join-Path $Dir ".git")
-            if ($isGitRepo) {
-                Set-Location $Dir
-                $pullResult = git pull 2>&1
-                if ($LASTEXITCODE -ne 0) {
-                    Write-Host "  Git pull failed — re-cloning..." -ForegroundColor Yellow
-                    Set-Location $ParentDir
-                    Remove-Item $Dir -Recurse -Force
-                    git clone $Repo $Dir
-                }
-            } else {
-                Write-Host "  Existing directory is not a git repo — re-cloning..." -ForegroundColor Yellow
-                # CWD is already $ParentDir — safe to remove
-                Remove-Item $Dir -Recurse -Force
-                git clone $Repo $Dir
-            }
-        } else {
-            git clone $Repo $Dir
-        }
-
-        Set-Location $Dir
-        Write-Host "  ✓ Repository cloned to $Dir" -ForegroundColor Green
-
-        if (Test-Path ".\cloud-ws.ps1") {
-            Write-Host "  Launching build script..." -ForegroundColor Cyan
-            & ".\cloud-ws.ps1"
-        } else {
-            Write-Host "  ✗ cloud-ws.ps1 not found in $Dir" -ForegroundColor Red
-            Write-Host "    The repo may be empty or push is pending." -ForegroundColor Yellow
-            Write-Host "    Check: https://github.com/Kabuki94/CloudWS-bootc" -ForegroundColor Yellow
-        }
+        $dest = Join-Path $PWD "CloudWS-bootc"
+        if (Test-Path $dest) { Push-Location $dest; git pull --rebase 2>&1 | Out-Null; Pop-Location; Write-Host "  Updated $dest" -ForegroundColor Green }
+        else { git clone $RepoUrl $dest; if ($LASTEXITCODE -ne 0) { Write-Host "  Clone failed" -ForegroundColor Red; return } }
+        Write-Host "  Launching build..." -ForegroundColor Cyan
+        Push-Location $dest; & .\cloud-ws.ps1; Pop-Location
     }
     "3" {
-        Write-Host "`n  Downloading cloud-ws.ps1 ..." -ForegroundColor Cyan
-        $script = Join-Path $PWD "cloud-ws.ps1"
-        Invoke-WebRequest -Uri "$RawBase/cloud-ws.ps1" -OutFile $script
-        Write-Host "  ✓ Saved to $script" -ForegroundColor Green
-        Write-Host "  Run it:  .\cloud-ws.ps1" -ForegroundColor White
+        Invoke-WebRequest -Uri "$RepoUrl/raw/main/cloud-ws.ps1" -OutFile "cloud-ws.ps1"
+        Write-Host "  Saved. Run: .\cloud-ws.ps1" -ForegroundColor Green
     }
-    default { Write-Host "  Invalid choice." -ForegroundColor Red }
+    default { Write-Host "  Invalid." -ForegroundColor Red }
 }
