@@ -407,6 +407,7 @@ fastfetch
 lm_sensors
 smartmontools
 tuned
+tuned-ppd
 fuse
 fuse3
 p7zip

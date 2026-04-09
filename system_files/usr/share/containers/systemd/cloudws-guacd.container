@@ -2,16 +2,13 @@
 Description=CloudWS Guacamole Protocol Proxy (guacd)
 After=network-online.target
 Wants=network-online.target
-
 [Container]
 Image=docker.io/guacamole/guacd:latest
 ContainerName=cloudws-guacd
 Network=host
 AutoUpdate=registry
-
 [Service]
 Restart=on-failure
 RestartSec=30
-
 [Install]
 WantedBy=multi-user.target

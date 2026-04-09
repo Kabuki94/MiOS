@@ -2,28 +2,27 @@
 [[ $- != *i* ]] && return
 [[ -n "$CLOUDWS_NO_MOTD" ]] && return
 _ip() { ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}' | head -1; }
-_ips() { ip -4 addr show scope global 2>/dev/null | awk '/inet / {split($2,a,"/"); print a[1]}'; }
 IP=$(_ip); [[ -z "$IP" ]] && IP="127.0.0.1"
 HN=$(hostname -s 2>/dev/null || echo "CloudWS")
 _l() { printf '\e]8;;%s\e\\%s\e]8;;\e\\' "$1" "$2"; }
 C='\033[0;36m';W='\033[1;37m';G='\033[0;32m';D='\033[0;90m';N='\033[0m'
-_s() { systemctl is-active --quiet "$1" 2>/dev/null && printf "${G}●${N}" || printf "${D}○${N}"; }
+_s() { systemctl is-active --quiet "$1" 2>/dev/null && printf "${G}o${N}" || printf "${D}o${N}"; }
 echo ""
-printf "${C}═══════════════════════════════════════════════════════════════${N}\n"
-printf "${W}  ⚡ CloudWS${N}  ${D}${HN} — ${IP}${N}\n"
-printf "${C}═══════════════════════════════════════════════════════════════${N}\n"
+printf "${C}================================================================${N}\n"
+printf "${W}  CloudWS${N}  ${D}${HN} -- ${IP}${N}\n"
+printf "${C}================================================================${N}\n"
 echo ""
 printf "  $(_s cockpit.socket)  ${W}Cockpit${N}            $(_l "https://${IP}:9090" "https://${IP}:9090")\n"
 printf "  $(_s gnome-remote-desktop)  ${W}Remote Desktop${N}     $(_l "rdp://${IP}:3389" "${IP}:3389") ${D}(RDP)${N}\n"
 if systemctl is-active --quiet cloudws-guacamole.service 2>/dev/null || podman ps --format '{{.Names}}' 2>/dev/null | grep -q cloudws-guacamole; then
-    printf "  ${G}●${N}  ${W}Browser Desktop${N}    $(_l "http://${IP}:8080/guacamole/" "http://${IP}:8080/guacamole/")\n"
+    printf "  ${G}o${N}  ${W}Browser Desktop${N}    $(_l "http://${IP}:8080/guacamole/" "http://${IP}:8080/guacamole/")\n"
 else
-    printf "  ${D}○${N}  ${W}Browser Desktop${N}    ${D}(start: systemctl start cloudws-guacamole)${N}\n"
+    printf "  ${D}o${N}  ${W}Browser Desktop${N}    ${D}(start: systemctl start cloudws-guacamole)${N}\n"
 fi
-systemctl is-active --quiet ceph-mgr@*.service 2>/dev/null && printf "  ${G}●${N}  ${W}Ceph Dashboard${N}     $(_l "https://${IP}:8443" "https://${IP}:8443")\n"
-systemctl is-active --quiet k3s.service 2>/dev/null && printf "  ${G}●${N}  ${W}K3s API${N}            $(_l "https://${IP}:6443" "https://${IP}:6443")\n"
+systemctl is-active --quiet ceph-mgr@*.service 2>/dev/null && printf "  ${G}o${N}  ${W}Ceph Dashboard${N}     $(_l "https://${IP}:8443" "https://${IP}:8443")\n"
+systemctl is-active --quiet k3s.service 2>/dev/null && printf "  ${G}o${N}  ${W}K3s API${N}            $(_l "https://${IP}:6443" "https://${IP}:6443")\n"
 printf "  $(_s libvirtd.service)  ${W}Libvirt${N}            ${D}virt-manager / virsh${N}\n"
-systemctl is-active --quiet xrdp.service 2>/dev/null && printf "  ${G}●${N}  ${W}xRDP (Hyper-V)${N}     ${D}vsock:3389${N}\n"
+systemctl is-active --quiet xrdp.service 2>/dev/null && printf "  ${G}o${N}  ${W}xRDP (Hyper-V)${N}     ${D}vsock:3389${N}\n"
 echo ""
 printf "  ${D}Disable: export CLOUDWS_NO_MOTD=1${N}\n"
 echo ""

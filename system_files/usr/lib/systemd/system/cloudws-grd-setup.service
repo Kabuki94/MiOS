@@ -3,11 +3,9 @@ Description=CloudWS GNOME Remote Desktop Setup
 After=local-fs.target network-online.target gdm.service
 Wants=network-online.target
 ConditionPathExists=!/var/lib/cloudws/.grd-init-done
-
 [Service]
 Type=oneshot
 ExecStart=/usr/libexec/cloudws-grd-setup
 RemainAfterExit=yes
-
 [Install]
 WantedBy=multi-user.target
