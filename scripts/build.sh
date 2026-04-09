@@ -28,7 +28,7 @@ VERSION_STR="$(cat "${SCRIPT_DIR}/../VERSION" 2>/dev/null || cat /ctx/VERSION 2>
 
 echo "╔══════════════════════════════════════════════════════════════╗"
 echo "║  CloudWS v${VERSION_STR} — Building OS Image               ║"
-echo "║  Base: ucore-hci:stable-nvidia + Rawhide overlay           ║"
+echo "║  Base: ucore-hci:stable-nvidia + F44 + Rawhide kernel    ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo ""
 log_ts "Build started"
@@ -140,6 +140,13 @@ if [[ $VALIDATION_FAIL -gt 0 ]]; then
 fi
 
 # ── Cleanup ─────────────────────────────────────────────────────────────────
+
+# Create sysusers.d entry for cloudws user (fixes bootc lint sysusers warning)
+mkdir -p /usr/lib/sysusers.d
+cat > /usr/lib/sysusers.d/cloudws.conf <<'EOF'
+u cloudws - "CloudWS User" /home/cloudws /bin/bash
+EOF
+
 echo ""
 log_ts "Cleaning up..."
 dnf clean all
@@ -147,7 +154,11 @@ rm -rf /var/cache/dnf /var/cache/libdnf5 /tmp/geist-font /tmp/*.tar* /tmp/*.rpm 
 rm -rf /usr/share/doc/* /usr/share/man/* /usr/share/info/* 2>/dev/null || true
 rm -rf /usr/share/gnome/help/* /usr/share/help/* 2>/dev/null || true
 
-cp "$BUILD_LOG" /var/log/cloudws-build.log 2>/dev/null || true
+# Clean bootc lint triggers
+rm -f /var/log/dnf5.log* /var/log/cloudws-build.log 2>/dev/null || true
+rm -rf /run/ceph /run/cockpit /run/k3s /tmp/* 2>/dev/null || true
+rm -f /var/lib/systemd/random-seed 2>/dev/null || true
+
 rm -f /tmp/cloudws-build.log
 
 # ── Summary ─────────────────────────────────────────────────────────────────
@@ -156,7 +167,7 @@ echo ""
 echo "╔══════════════════════════════════════════════════════════════╗"
 echo "║  BUILD COMPLETE                                            ║"
 echo "╠══════════════════════════════════════════════════════════════╣"
-echo "║  Base:      ucore-hci:stable-nvidia + Rawhide overlay      ║"
+echo "║  Base:      ucore-hci:stable-nvidia + F44 + Rawhide kernel  ║"
 echo "║  Scripts:   $SCRIPT_COUNT executed, $SCRIPT_FAIL failed"
 echo "║  Packages:  $VALIDATION_FAIL critical missing"
 echo "║  Duration:  ${TOTAL_ELAPSED}s ($((TOTAL_ELAPSED / 60))m $((TOTAL_ELAPSED % 60))s)"
@@ -164,5 +175,5 @@ echo "║  Version:   $VERSION_STR"
 echo "╚══════════════════════════════════════════════════════════════╝"
 
 if [[ $SCRIPT_FAIL -gt 0 ]]; then
-    log_ts "WARNING: $SCRIPT_FAIL scripts failed — check log: /var/log/cloudws-build.log"
+    log_ts "WARNING: $SCRIPT_FAIL scripts failed — review build output above"
 fi

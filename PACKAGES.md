@@ -297,6 +297,7 @@ gamescope
 gamescope-session-steam
 wine
 wine-mono
+wine-dxvk
 winetricks
 lutris
 gamemode
