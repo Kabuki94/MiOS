@@ -1,4 +1,4 @@
-﻿#Requires -RunAsAdministrator
+if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { Write-Host '  Run as Administrator!' -ForegroundColor Red; return }
 <#
 .SYNOPSIS  CloudWS Bootstrap — Downloads and runs the full build script
 .DESCRIPTION
