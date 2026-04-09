@@ -1,71 +1,29 @@
 #!/bin/bash
-# CloudWS — Service Dashboard MOTD
-# Displays clickable hyperlinks with actual IPs and ports
-# on every TTY login and terminal open.
-#
-# Install: /usr/libexec/cloudws-motd
-# Triggered by: /etc/profile.d/cloudws-motd.sh
-
 [[ $- != *i* ]] && return
 [[ -n "$CLOUDWS_NO_MOTD" ]] && return
-
-_cloudws_primary_ip() {
-    ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}' | head -1
-}
-
-_cloudws_all_ips() {
-    ip -4 addr show scope global 2>/dev/null | awk '/inet / {split($2,a,"/"); print a[1]}'
-}
-
-PRIMARY_IP=$(_cloudws_primary_ip)
-[[ -z "$PRIMARY_IP" ]] && PRIMARY_IP="127.0.0.1"
-HOSTNAME_SHORT=$(hostname -s 2>/dev/null || echo "CloudWS")
-
-_link() { printf '\e]8;;%s\e\\%s\e]8;;\e\\' "$1" "$2"; }
-
-C='\033[0;36m'; W='\033[1;37m'; G='\033[0;32m'; D='\033[0;90m'; N='\033[0m'
-
-_svc() {
-    if systemctl is-active --quiet "$1" 2>/dev/null; then printf "${G}●${N}"
-    else printf "${D}○${N}"; fi
-}
-
+_ip() { ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}' | head -1; }
+_ips() { ip -4 addr show scope global 2>/dev/null | awk '/inet / {split($2,a,"/"); print a[1]}'; }
+IP=$(_ip); [[ -z "$IP" ]] && IP="127.0.0.1"
+HN=$(hostname -s 2>/dev/null || echo "CloudWS")
+_l() { printf '\e]8;;%s\e\\%s\e]8;;\e\\' "$1" "$2"; }
+C='\033[0;36m';W='\033[1;37m';G='\033[0;32m';D='\033[0;90m';N='\033[0m'
+_s() { systemctl is-active --quiet "$1" 2>/dev/null && printf "${G}●${N}" || printf "${D}○${N}"; }
 echo ""
 printf "${C}═══════════════════════════════════════════════════════════════${N}\n"
-printf "${W}  ⚡ CloudWS${N}  ${D}${HOSTNAME_SHORT} — ${PRIMARY_IP}${N}\n"
+printf "${W}  ⚡ CloudWS${N}  ${D}${HN} — ${IP}${N}\n"
 printf "${C}═══════════════════════════════════════════════════════════════${N}\n"
 echo ""
-printf "  $(_svc cockpit.socket)  ${W}Cockpit${N}            $(_link "https://${PRIMARY_IP}:9090" "https://${PRIMARY_IP}:9090")\n"
-printf "  $(_svc gnome-remote-desktop)  ${W}Remote Desktop${N}     $(_link "rdp://${PRIMARY_IP}:3389" "${PRIMARY_IP}:3389") ${D}(RDP — mstsc / Remmina)${N}\n"
-
-if systemctl is-active --quiet cloudws-guacamole.service 2>/dev/null || \
-   podman ps --format '{{.Names}}' 2>/dev/null | grep -q cloudws-guacamole; then
-    printf "  ${G}●${N}  ${W}Browser Desktop${N}    $(_link "http://${PRIMARY_IP}:8080/guacamole/" "http://${PRIMARY_IP}:8080/guacamole/")\n"
+printf "  $(_s cockpit.socket)  ${W}Cockpit${N}            $(_l "https://${IP}:9090" "https://${IP}:9090")\n"
+printf "  $(_s gnome-remote-desktop)  ${W}Remote Desktop${N}     $(_l "rdp://${IP}:3389" "${IP}:3389") ${D}(RDP)${N}\n"
+if systemctl is-active --quiet cloudws-guacamole.service 2>/dev/null || podman ps --format '{{.Names}}' 2>/dev/null | grep -q cloudws-guacamole; then
+    printf "  ${G}●${N}  ${W}Browser Desktop${N}    $(_l "http://${IP}:8080/guacamole/" "http://${IP}:8080/guacamole/")\n"
 else
     printf "  ${D}○${N}  ${W}Browser Desktop${N}    ${D}(start: systemctl start cloudws-guacamole)${N}\n"
 fi
-
-if systemctl is-active --quiet ceph-mgr@*.service 2>/dev/null; then
-    printf "  ${G}●${N}  ${W}Ceph Dashboard${N}     $(_link "https://${PRIMARY_IP}:8443" "https://${PRIMARY_IP}:8443")\n"
-fi
-
-if systemctl is-active --quiet k3s.service 2>/dev/null; then
-    printf "  ${G}●${N}  ${W}K3s API${N}            $(_link "https://${PRIMARY_IP}:6443" "https://${PRIMARY_IP}:6443")\n"
-fi
-
-printf "  $(_svc libvirtd.service)  ${W}Libvirt${N}            ${D}virt-manager / virsh${N}\n"
-
-if systemctl is-active --quiet xrdp.service 2>/dev/null; then
-    printf "  ${G}●${N}  ${W}xRDP (Hyper-V)${N}     ${D}vsock:3389 (Enhanced Session)${N}\n"
-fi
-
+systemctl is-active --quiet ceph-mgr@*.service 2>/dev/null && printf "  ${G}●${N}  ${W}Ceph Dashboard${N}     $(_l "https://${IP}:8443" "https://${IP}:8443")\n"
+systemctl is-active --quiet k3s.service 2>/dev/null && printf "  ${G}●${N}  ${W}K3s API${N}            $(_l "https://${IP}:6443" "https://${IP}:6443")\n"
+printf "  $(_s libvirtd.service)  ${W}Libvirt${N}            ${D}virt-manager / virsh${N}\n"
+systemctl is-active --quiet xrdp.service 2>/dev/null && printf "  ${G}●${N}  ${W}xRDP (Hyper-V)${N}     ${D}vsock:3389${N}\n"
 echo ""
-ALL_IPS=$(_cloudws_all_ips)
-IP_COUNT=$(echo "$ALL_IPS" | wc -l)
-if [ "$IP_COUNT" -gt 1 ]; then
-    printf "  ${D}All interfaces:${N}"
-    for ip in $ALL_IPS; do printf " ${D}${ip}${N}"; done
-    echo ""; echo ""
-fi
 printf "  ${D}Disable: export CLOUDWS_NO_MOTD=1${N}\n"
 echo ""

@@ -1,51 +1,28 @@
 #!/bin/bash
-# CloudWS — GNOME Remote Desktop first-boot setup
-# Enables native RDP access (port 3389) for:
-#   - Windows RDP client → direct GNOME Wayland session
-#   - Browser access via Guacamole (localhost:8080)
-#   - WSL2/VM host access at instance IP
 set -euo pipefail
-
 SENTINEL="/var/lib/cloudws/.grd-init-done"
-if [ -f "$SENTINEL" ]; then
-    echo "[cloudws-grd] Already configured, skipping"
-    exit 0
-fi
-
-echo "[cloudws-grd] Setting up GNOME Remote Desktop (system RDP)..."
-
-# Generate TLS certificate for RDP
+[ -f "$SENTINEL" ] && exit 0
+echo "[cloudws-grd] Setting up GNOME Remote Desktop..."
 GRD_DIR="/var/lib/gnome-remote-desktop"
 mkdir -p "$GRD_DIR"
-
 if [ ! -f "$GRD_DIR/rdp-tls.key" ]; then
     openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 \
         -sha256 -days 3650 -nodes \
-        -keyout "$GRD_DIR/rdp-tls.key" \
-        -out "$GRD_DIR/rdp-tls.crt" \
+        -keyout "$GRD_DIR/rdp-tls.key" -out "$GRD_DIR/rdp-tls.crt" \
         -subj "/CN=CloudWS-RDP" 2>/dev/null
     chown -R gnome-remote-desktop:gnome-remote-desktop "$GRD_DIR" 2>/dev/null || true
     chmod 600 "$GRD_DIR/rdp-tls.key"
-    chmod 644 "$GRD_DIR/rdp-tls.crt"
-    echo "[cloudws-grd] TLS certificate generated"
 fi
-
-# Configure system-wide RDP (remote login via GDM)
 grdctl --system rdp set-tls-key "$GRD_DIR/rdp-tls.key" 2>/dev/null || true
 grdctl --system rdp set-tls-cert "$GRD_DIR/rdp-tls.crt" 2>/dev/null || true
 grdctl --system rdp set-credentials cloudws cloudws 2>/dev/null || true
 grdctl --system rdp enable 2>/dev/null || true
-
-# Enable services
 systemctl enable --now gnome-remote-desktop.service 2>/dev/null || true
-
-# Firewall
 if command -v firewall-cmd &>/dev/null && firewall-cmd --state &>/dev/null 2>&1; then
     firewall-cmd --permanent --add-port=3389/tcp 2>/dev/null || true
+    firewall-cmd --permanent --add-port=8080/tcp 2>/dev/null || true
     firewall-cmd --reload 2>/dev/null || true
 fi
-
 mkdir -p "$(dirname "$SENTINEL")"
 touch "$SENTINEL"
-echo "[cloudws-grd] GNOME Remote Desktop ready on port 3389"
-echo "[cloudws-grd] Default credentials: cloudws / cloudws (change with grdctl)"
+echo "[cloudws-grd] Ready — RDP:3389 Browser:8080"
