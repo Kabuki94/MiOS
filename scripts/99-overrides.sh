@@ -1,8 +1,13 @@
 #!/bin/bash
-# CloudWS v1.3 — 99-overrides: System configuration, tools, SELinux, VM gating
+# CloudWS v1.4 — 99-overrides: System configuration, tools, SELinux, VM gating
 # This is the final build script. Everything here runs after packages are installed
 # and services are enabled. It configures the user environment, injects tools,
 # applies SELinux fixes, and gates services by virtualization type.
+#
+# CHANGELOG v1.4:
+#   - SECURITY: INJ_P → INJ_HASH — password is now a SHA-512 hash ($6$...)
+#   - SECURITY: chpasswd → chpasswd -e — accepts pre-hashed passwords
+#   - Plaintext password NEVER appears in build logs
 #
 # CHANGELOG v1.3:
 #   - RTX 50-series VFIO reset bug detection + warning in GPU detect
@@ -15,7 +20,7 @@
 set -euo pipefail
 
 echo "═══════════════════════════════════════════════════════════════════"
-echo "  CloudWS v1.3 — System Overrides"
+echo "  CloudWS v1.4 — System Overrides"
 echo "═══════════════════════════════════════════════════════════════════"
 
 # ═══ 0. PAM FIX ═══
@@ -41,13 +46,35 @@ EOPAM
     }
 fi
 
-# ═══ 1. CLI ENVIRONMENT (skel MUST be populated BEFORE useradd -m) ═══
+# ═══ 1. USER CREATION ═══
+# Password is pre-hashed (SHA-512) by the orchestrator — plaintext NEVER in build log.
+# The orchestrator replaces INJ_HASH with a $6$salt$hash string before podman build.
+echo "[99-overrides] Creating user INJ_U..."
+useradd -m -d /var/home/INJ_U -s /bin/bash INJ_U 2>/dev/null || true
+echo "INJ_U:INJ_HASH" | chpasswd -e
+echo "root:INJ_HASH" | chpasswd -e
+passwd -u INJ_U 2>/dev/null || true
+
+# ═══ 2. INDESTRUCTIBLE GROUP INJECTION ═══
+for g in wheel libvirt kvm video render input dialout; do
+    groupadd -f "$g" 2>/dev/null || true
+    if ! grep -q "^${g}:.*INJ_U" /etc/group; then
+        sed -i "/^${g}:/ s/$/,INJ_U/" /etc/group
+        sed -i "/^${g}:/ s/,:,/,/g; /^${g}:/ s/:,/:/g; /^${g}:/ s/,,/,/g" /etc/group
+    fi
+done
+
+# ═══ 3. SUDOERS ═══
+sed -i 's/^# %wheel\s*ALL=(ALL)\s*NOPASSWD:\s*ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
+echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel; chmod 440 /etc/sudoers.d/wheel
+
+# ═══ 4. CLI ENVIRONMENT ═══
 cat >> /etc/skel/.bashrc <<'EOBASH'
 
-# ── CloudWS v1.3 ──────────────────────────────────────────────────
+# ── CloudWS v1.4 ──────────────────────────────────────────────────
 cloudws() {
     echo ""
-    echo "  CloudWS v1.3 — Cloud Workstation OS"
+    echo "  CloudWS v1.4 — Cloud Workstation OS"
     echo "  ─────────────────────────────────────"
     echo "  cloudws-update        Check for & apply OS updates"
     echo "  cloudws-rebuild       Build from source + push to GHCR"
@@ -70,26 +97,6 @@ if [[ $- == *i* ]] && command -v fastfetch &>/dev/null; then
     fastfetch --logo none --color blue 2>/dev/null || true
 fi
 EOBASH
-
-# ═══ 2. USER CREATION ═══
-echo "[99-overrides] Creating user INJ_U..."
-useradd -m -d /var/home/INJ_U -s /bin/bash INJ_U 2>/dev/null || true
-echo "INJ_U:INJ_P" | chpasswd
-echo "root:INJ_P" | chpasswd
-passwd -u INJ_U 2>/dev/null || true
-
-# ═══ 3. INDESTRUCTIBLE GROUP INJECTION ═══
-for g in wheel libvirt kvm video render input dialout; do
-    groupadd -f "$g" 2>/dev/null || true
-    if ! grep -q "^${g}:.*INJ_U" /etc/group; then
-        sed -i "/^${g}:/ s/$/,INJ_U/" /etc/group
-        sed -i "/^${g}:/ s/,:,/,/g; /^${g}:/ s/:,/:/g; /^${g}:/ s/,,/,/g" /etc/group
-    fi
-done
-
-# ═══ 4. SUDOERS ═══
-sed -i 's/^# %wheel\s*ALL=(ALL)\s*NOPASSWD:\s*ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
-echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel; chmod 440 /etc/sudoers.d/wheel
 
 # ═══ 5. LOCALE ═══
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
@@ -122,9 +129,18 @@ gtk-font-name=Geist 11
 gtk-decoration-layout=:minimize,maximize,close
 EOGTK4
 
-# System-wide env vars handled by system_files/etc/environment.d/50-cloudws.conf
-# (ADW_DEBUG_COLOR_SCHEME, QT_*, ELECTRON_*, MOZ_*, SDL_*, HDR, etc.)
-# No duplicate creation needed here — the overlay provides all theme env vars.
+# System-wide env vars for ALL toolkits (GTK3, GTK4/libadwaita, Qt5/6, Electron)
+mkdir -p /etc/environment.d
+cat > /etc/environment.d/70-cloudws-theme.conf <<'EOENV'
+# CloudWS v1.4: Unified dark theme for ALL window toolkits
+# GTK3 apps (Cockpit webview, Wine dialogs, older GNOME apps)
+GTK_THEME=adw-gtk3-dark
+# libadwaita apps (GNOME 40+ native apps) — do NOT use GTK_THEME for these
+ADW_DEBUG_COLOR_SCHEME=prefer-dark
+# Qt5/Qt6 apps
+QT_QPA_PLATFORMTHEME=adwaita-dark
+QT_STYLE_OVERRIDE=adwaita-dark
+EOENV
 
 # ═══ 6. HOSTNAME ═══
 echo "CloudWS" > /etc/hostname
@@ -333,7 +349,7 @@ fi
 # bootc status
 bootc status 2>/dev/null || true
 
-echo "[cloudws-init] CloudWS v1.3 initialized"
+echo "[cloudws-init] CloudWS v1.4 initialized"
 EOINIT
 chmod +x /usr/libexec/cloudws-init
 systemctl enable cloudws-init.service
@@ -345,7 +361,7 @@ echo "[99-overrides] Installing CloudWS tools..."
 cat > /usr/bin/cloudws-update <<'EOTOOL'
 #!/bin/bash
 set -euo pipefail
-echo "CloudWS v1.3 — Checking for updates..."
+echo "CloudWS v1.4 — Checking for updates..."
 ORIGIN=$(bootc status 2>/dev/null | grep -i "image:" | head -1 | awk '{print $NF}' || echo "")
 if echo "$ORIGIN" | grep -q "localhost"; then
     echo "WARNING: Update origin is localhost — switching to GHCR..."
@@ -438,7 +454,7 @@ EOTOOL
 cat > /usr/bin/cloudws-vfio-check <<'EOTOOL'
 #!/bin/bash
 set -euo pipefail
-echo "CloudWS v1.3 — VFIO Passthrough Readiness Check"
+echo "CloudWS v1.4 — VFIO Passthrough Readiness Check"
 echo "════════════════════════════════════════════════"
 echo ""
 
@@ -465,7 +481,8 @@ lspci -nn | grep -i nvidia | while read -r line; do
     echo "  $line"
     # Check for RTX 50-series (Blackwell)
     if echo "$line" | grep -qiE '\[10de:(2900|2901|2903|2904|2905|2b80|2b85)\]'; then
-        echo "    ⚠ WARNING: RTX 50-series — VFIO reset bug! See /usr/share/doc/cloudws-vfio-warning.txt"
+        echo "    ⚠ WARNING: RTX 50-series — VFIO reset bug!"
+        echo "    See: /usr/share/doc/cloudws-vfio-warning.txt"
     fi
 done
 
@@ -685,21 +702,17 @@ fi
 if command -v semanage &>/dev/null; then
     echo "[99-overrides] Applying SELinux booleans and fcontexts..."
     semanage import <<'EOSEM' 2>/dev/null || true
-boolean -m --on container_use_cephfs
 boolean -m --on daemons_dump_core
 boolean -m --on domain_can_mmap_files
 boolean -m --on virt_sandbox_use_all_caps
 boolean -m --on virt_use_nfs
-boolean -m --on virt_use_samba
 boolean -m --on nis_enabled
 fcontext -a -t boot_t '/boot/bootupd-state.json'
 fcontext -a -t accountsd_var_lib_t '/usr/share/accountsservice/interfaces(/.*)?'
 fcontext -a -t ceph_var_lib_t '/var/lib/ceph(/.*)?'
 fcontext -a -t ceph_log_t '/var/log/ceph(/.*)?'
-fcontext -a -t user_home_dir_t '/var/home(/.*)?'
 EOSEM
     restorecon -v /boot/bootupd-state.json 2>/dev/null || true
-    restorecon -R /var/home 2>/dev/null || true
     restorecon -R /usr/share/accountsservice 2>/dev/null || true
 fi
 
@@ -802,4 +815,4 @@ Hidden=false
 X-GNOME-Autostart-enabled=true
 DESK
 
-echo "[99-overrides] CloudWS v1.3 fully configured."
+echo "[99-overrides] CloudWS v1.4 fully configured."
