@@ -128,6 +128,8 @@ flatpak install -y --noninteractive flathub page.tesk.Refine 2>/dev/null || true
 # ═════════════════════════════════════════════════════════════════════════════
 echo "[10-gnome] Applying Flatpak dark theme + filesystem overrides..."
 flatpak override --system --env=ADW_DEBUG_COLOR_SCHEME=prefer-dark 2>/dev/null || true
+flatpak override --system --env=XCURSOR_THEME=Bibata-Modern-Classic 2>/dev/null || true
+flatpak override --system --env=XCURSOR_SIZE=24 2>/dev/null || true
 flatpak override --system --filesystem=xdg-config/gtk-3.0:ro 2>/dev/null || true
 flatpak override --system --filesystem=xdg-config/gtk-4.0:ro 2>/dev/null || true
 flatpak override --system --filesystem=/usr/share/icons:ro 2>/dev/null || true

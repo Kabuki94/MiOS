@@ -406,6 +406,7 @@ nvtop
 fastfetch
 lm_sensors
 smartmontools
+tuned
 fuse
 fuse3
 p7zip

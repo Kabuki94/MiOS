@@ -41,27 +41,7 @@ EOPAM
     }
 fi
 
-# ═══ 1. USER CREATION ═══
-echo "[99-overrides] Creating user INJ_U..."
-useradd -m -d /var/home/INJ_U -s /bin/bash INJ_U 2>/dev/null || true
-echo "INJ_U:INJ_P" | chpasswd
-echo "root:INJ_P" | chpasswd
-passwd -u INJ_U 2>/dev/null || true
-
-# ═══ 2. INDESTRUCTIBLE GROUP INJECTION ═══
-for g in wheel libvirt kvm video render input dialout; do
-    groupadd -f "$g" 2>/dev/null || true
-    if ! grep -q "^${g}:.*INJ_U" /etc/group; then
-        sed -i "/^${g}:/ s/$/,INJ_U/" /etc/group
-        sed -i "/^${g}:/ s/,:,/,/g; /^${g}:/ s/:,/:/g; /^${g}:/ s/,,/,/g" /etc/group
-    fi
-done
-
-# ═══ 3. SUDOERS ═══
-sed -i 's/^# %wheel\s*ALL=(ALL)\s*NOPASSWD:\s*ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
-echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel; chmod 440 /etc/sudoers.d/wheel
-
-# ═══ 4. CLI ENVIRONMENT ═══
+# ═══ 1. CLI ENVIRONMENT (skel MUST be populated BEFORE useradd -m) ═══
 cat >> /etc/skel/.bashrc <<'EOBASH'
 
 # ── CloudWS v1.3 ──────────────────────────────────────────────────
@@ -90,6 +70,26 @@ if [[ $- == *i* ]] && command -v fastfetch &>/dev/null; then
     fastfetch --logo none --color blue 2>/dev/null || true
 fi
 EOBASH
+
+# ═══ 2. USER CREATION ═══
+echo "[99-overrides] Creating user INJ_U..."
+useradd -m -d /var/home/INJ_U -s /bin/bash INJ_U 2>/dev/null || true
+echo "INJ_U:INJ_P" | chpasswd
+echo "root:INJ_P" | chpasswd
+passwd -u INJ_U 2>/dev/null || true
+
+# ═══ 3. INDESTRUCTIBLE GROUP INJECTION ═══
+for g in wheel libvirt kvm video render input dialout; do
+    groupadd -f "$g" 2>/dev/null || true
+    if ! grep -q "^${g}:.*INJ_U" /etc/group; then
+        sed -i "/^${g}:/ s/$/,INJ_U/" /etc/group
+        sed -i "/^${g}:/ s/,:,/,/g; /^${g}:/ s/:,/:/g; /^${g}:/ s/,,/,/g" /etc/group
+    fi
+done
+
+# ═══ 4. SUDOERS ═══
+sed -i 's/^# %wheel\s*ALL=(ALL)\s*NOPASSWD:\s*ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
+echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel; chmod 440 /etc/sudoers.d/wheel
 
 # ═══ 5. LOCALE ═══
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
@@ -685,17 +685,21 @@ fi
 if command -v semanage &>/dev/null; then
     echo "[99-overrides] Applying SELinux booleans and fcontexts..."
     semanage import <<'EOSEM' 2>/dev/null || true
+boolean -m --on container_use_cephfs
 boolean -m --on daemons_dump_core
 boolean -m --on domain_can_mmap_files
 boolean -m --on virt_sandbox_use_all_caps
 boolean -m --on virt_use_nfs
+boolean -m --on virt_use_samba
 boolean -m --on nis_enabled
 fcontext -a -t boot_t '/boot/bootupd-state.json'
 fcontext -a -t accountsd_var_lib_t '/usr/share/accountsservice/interfaces(/.*)?'
 fcontext -a -t ceph_var_lib_t '/var/lib/ceph(/.*)?'
 fcontext -a -t ceph_log_t '/var/log/ceph(/.*)?'
+fcontext -a -t user_home_dir_t '/var/home(/.*)?'
 EOSEM
     restorecon -v /boot/bootupd-state.json 2>/dev/null || true
+    restorecon -R /var/home 2>/dev/null || true
     restorecon -R /usr/share/accountsservice 2>/dev/null || true
 fi
 

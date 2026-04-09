@@ -5,6 +5,7 @@ font-name='Geist 11'
 document-font-name='Geist 11'
 monospace-font-name='Geist Mono 10'
 cursor-theme='Bibata-Modern-Classic'
+cursor-size=24
 enable-animations=true
 
 [org/gnome/desktop/wm/preferences]
