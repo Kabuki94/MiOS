@@ -1,0 +1,21 @@
+[Unit]
+Description=CloudWS Guacamole Browser Desktop
+After=network-online.target cloudws-guacd.service gnome-remote-desktop.service
+Wants=network-online.target
+Requires=cloudws-guacd.service
+
+[Container]
+Image=docker.io/guacamole/guacamole:latest
+ContainerName=cloudws-guacamole
+Network=host
+PublishPort=8080:8080
+Environment=GUACD_HOSTNAME=127.0.0.1
+Environment=GUACD_PORT=4822
+AutoUpdate=registry
+
+[Service]
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

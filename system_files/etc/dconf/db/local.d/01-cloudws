@@ -27,20 +27,16 @@ folder-children=['Gaming', 'System', 'Virtualization', 'Wine']
 
 [org/gnome/desktop/app-folders/folders/Gaming]
 name='Gaming'
-categories=['Game']
 apps=['steam.desktop', 'net.lutris.Lutris.desktop', 'com.usebottles.bottles.desktop', 'dosbox-staging.desktop', 'io.github.dosbox-staging.desktop', 'protontricks.desktop', 'net.davidotek.pupgui2.desktop']
 
 [org/gnome/desktop/app-folders/folders/System]
 name='System'
-categories=['System', 'Settings', 'Monitor', 'TerminalEmulator']
-apps=['org.gnome.Settings.desktop', 'cockpit.desktop', 'ceph-dashboard.desktop', 'org.gnome.Logs.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.Software.desktop', 'btop.desktop', 'nvtop.desktop', 'org.gnome.DiskUtility.desktop', 'org.gnome.SystemMonitor.desktop', 'org.gnome.baobab.desktop', 'page.tesk.Refine.desktop', 'org.gnome.Nautilus.desktop', 'lm_sensors.desktop', 'nm-connection-editor.desktop', 'org.gnome.Connections.desktop']
+apps=['org.gnome.Settings.desktop', 'cockpit.desktop', 'ceph-dashboard.desktop', 'org.gnome.Logs.desktop', 'com.mattjakeman.ExtensionManager.desktop', 'org.gnome.Software.desktop', 'btop.desktop', 'nvtop.desktop', 'org.gnome.DiskUtility.desktop', 'org.gnome.SystemMonitor.desktop', 'org.gnome.baobab.desktop', 'page.tesk.Refine.desktop', 'com.github.tchx84.Flatseal.desktop', 'lm_sensors.desktop', 'nm-connection-editor.desktop', 'org.gnome.Connections.desktop']
 
 [org/gnome/desktop/app-folders/folders/Virtualization]
 name='Virtualization'
-categories=['Emulator']
 apps=['virt-manager.desktop', 'io.podman_desktop.PodmanDesktop.desktop', 'Waydroid.desktop', 'waydroid.desktop', 'remote-viewer.desktop', 'org.gnome.Boxes.desktop']
 
 [org/gnome/desktop/app-folders/folders/Wine]
 name='Wine'
-categories=['Wine', 'X-Wine']
 apps=['wine-notepad.desktop', 'wine-winecfg.desktop', 'wine-regedit.desktop', 'wine-winefile.desktop', 'wine-uninstaller.desktop', 'wine-oleview.desktop', 'wine-wineboot.desktop', 'wine-wordpad.desktop', 'wine-winemine.desktop', 'winetricks.desktop']
