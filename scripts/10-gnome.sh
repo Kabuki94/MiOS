@@ -99,6 +99,22 @@ if [ -f /tmp/bibata.tar.xz ]; then
     rm -f /tmp/bibata.tar.xz
 fi
 
+# System-wide cursor default (fixes grey box in xRDP/GDM/X11 fallback)
+echo "[10-gnome] Setting system-wide cursor default..."
+mkdir -p /usr/share/icons/default
+cat > /usr/share/icons/default/index.theme <<'EOCURSOR'
+[Icon Theme]
+Name=Default
+Comment=Default Cursor Theme
+Inherits=Bibata-Modern-Classic
+EOCURSOR
+mkdir -p /etc/gtk-3.0
+cat >> /etc/gtk-3.0/settings.ini 2>/dev/null <<'EOGTK' || true
+[Settings]
+gtk-cursor-theme-name=Bibata-Modern-Classic
+gtk-cursor-theme-size=24
+EOGTK
+
 # ═════════════════════════════════════════════════════════════════════════════
 # Flatpak Remotes
 # Disable filtered Fedora remote, use unfiltered Flathub for full catalog

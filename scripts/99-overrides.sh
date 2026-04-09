@@ -816,3 +816,36 @@ X-GNOME-Autostart-enabled=true
 DESK
 
 echo "[99-overrides] CloudWS v1.4 fully configured."
+
+# ═══ 17. GNOME REMOTE DESKTOP — BROWSER/REMOTE ACCESS ═══
+echo "[99-overrides] Installing gnome-remote-desktop first-boot setup..."
+cp /tmp/build/scripts/cloudws-grd-setup /usr/libexec/cloudws-grd-setup
+chmod +x /usr/libexec/cloudws-grd-setup
+systemctl enable cloudws-grd-setup.service 2>/dev/null || true
+
+# ═══ 18. xRDP ENHANCED SESSION — FIX SESSION LAUNCH ═══
+echo "[99-overrides] Fixing xRDP session launcher..."
+if [ -d /etc/xrdp ]; then
+    cat > /etc/xrdp/startwm.sh <<'EOXRDP'
+#!/bin/sh
+if [ -r /etc/profile ]; then . /etc/profile; fi
+export XDG_SESSION_TYPE=x11
+export XDG_CURRENT_DESKTOP=GNOME
+export XDG_SESSION_DESKTOP=gnome
+export GNOME_SHELL_SESSION_MODE=gnome
+export XCURSOR_THEME=Bibata-Modern-Classic
+export XCURSOR_SIZE=24
+exec gnome-session
+EOXRDP
+    chmod +x /etc/xrdp/startwm.sh
+    if [ -f /etc/xrdp/sesman.ini ]; then
+        sed -i 's/^MaxSessions=.*/MaxSessions=10/' /etc/xrdp/sesman.ini 2>/dev/null || true
+        sed -i 's/^KillDisconnected=.*/KillDisconnected=false/' /etc/xrdp/sesman.ini 2>/dev/null || true
+    fi
+fi
+
+# ═══ 19. MOTD — SERVICE DASHBOARD WITH CLICKABLE LINKS ═══
+echo "[99-overrides] Installing CloudWS MOTD dashboard..."
+cp /tmp/build/scripts/cloudws-motd /usr/libexec/cloudws-motd
+chmod +x /usr/libexec/cloudws-motd
+echo "[99-overrides] Remote desktop + MOTD installed"
