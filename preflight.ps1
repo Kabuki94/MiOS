@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 <#
 .SYNOPSIS  CloudWS Preflight — Check and install prerequisites
 .DESCRIPTION
