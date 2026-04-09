@@ -72,7 +72,8 @@ RUN --mount=type=bind,from=ctx,source=/system_files,target=/tmp/sf \
     done) && \
     find /etc/systemd/system -name "*.mount" -o -name "*.service" -o -name "*.conf" 2>/dev/null | xargs chmod 644 2>/dev/null || true && \
     find /usr/lib/systemd/system -name "*.mount" -o -name "*.service" -o -name "*.conf" 2>/dev/null | xargs chmod 644 2>/dev/null || true && \
-    dconf update 2>/dev/null || true
+    dconf update 2>/dev/null || true && \
+    restorecon -R /etc /var /boot 2>/dev/null || true
 
 # Post-build validation
 RUN echo "── Post-build validation ──" && \

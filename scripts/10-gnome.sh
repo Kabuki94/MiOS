@@ -134,34 +134,19 @@ flatpak override --system --filesystem=/usr/share/icons:ro 2>/dev/null || true
 flatpak override --system --filesystem=/usr/share/fonts:ro 2>/dev/null || true
 
 # ═════════════════════════════════════════════════════════════════════════════
-# Waydroid — GAPPS init (first-boot oneshot)
-# Initializes Waydroid with Google Play Services (GAPPS) on first boot.
-# Uses official OTA URLs. Runs once, then disables itself via sentinel file.
+# Waydroid — Pre-download GAPPS OTA images (baked into image, no first-boot)
+# Everything offline. No post-install services.
 # ═════════════════════════════════════════════════════════════════════════════
-echo "[10-gnome] Creating Waydroid GAPPS init service..."
-mkdir -p /etc/systemd/system
-cat > /etc/systemd/system/waydroid-init-gapps.service <<'EOWAYDROID'
-[Unit]
-Description=CloudWS — Waydroid GAPPS initialization (first-boot)
-After=network-online.target
-Wants=network-online.target
-ConditionPathExists=!/var/lib/waydroid/.cloudws-init-done
-
-[Service]
-Type=oneshot
-RemainAfterExit=no
-ExecStart=/bin/bash -c '\
-    waydroid init -s GAPPS \
-        -i https://ota.waydro.id/system \
-        -v https://ota.waydro.id/vendor && \
-    mkdir -p /var/lib/waydroid && \
-    touch /var/lib/waydroid/.cloudws-init-done'
-TimeoutStartSec=300
-
-[Install]
-WantedBy=multi-user.target
-EOWAYDROID
-systemctl enable waydroid-init-gapps.service 2>/dev/null || true
+echo "[10-gnome] Pre-downloading Waydroid GAPPS OTA images..."
+WAYDROID_IMG_DIR="/var/lib/waydroid/images"
+mkdir -p "$WAYDROID_IMG_DIR"
+curl -sL "https://ota.waydro.id/system" -o "$WAYDROID_IMG_DIR/system.zip" 2>/dev/null || true
+curl -sL "https://ota.waydro.id/vendor" -o "$WAYDROID_IMG_DIR/vendor.zip" 2>/dev/null || true
+if [ -f "$WAYDROID_IMG_DIR/system.zip" ] && [ -f "$WAYDROID_IMG_DIR/vendor.zip" ]; then
+    echo "[10-gnome] Waydroid OTA images cached ($(du -sh $WAYDROID_IMG_DIR | cut -f1))"
+else
+    echo "[10-gnome] WARNING: Waydroid OTA download failed — user must run: waydroid init -s GAPPS"
+fi
 
 echo "[10-gnome] GNOME 50 desktop installed (pure build-up on ucore base)."
 echo "[10-gnome] Zero removes. install_weakdeps=False prevented all bloat."
