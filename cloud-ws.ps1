@@ -524,16 +524,18 @@ if (Test-Path $TargetWsl) {
         $totalRAM = (Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum
         $wslRAM = [Math]::Max(8, [Math]::Floor($totalRAM / 1GB / 2))
         $wslCPUs = [Math]::Max(4, [Math]::Floor($cpu / 2))
-        $wslConfig = @"
-# CloudWS v1.4 — WSL2 Configuration
-[wsl2]
-memory=${wslRAM}GB
-processors=${wslCPUs}
-swap=8GB
-localhostForwarding=true
-nestedVirtualization=true
-vmIdleTimeout=-1
-"@
+        # Build .wslconfig content without here-string (avoids PS parser edge cases)
+        $wslLines = @(
+            "# CloudWS v1.4 — WSL2 Configuration",
+            "[wsl2]",
+            "memory=${wslRAM}GB",
+            "processors=${wslCPUs}",
+            "swap=8GB",
+            "localhostForwarding=true",
+            "nestedVirtualization=true",
+            "vmIdleTimeout=-1"
+        )
+        $wslConfig = $wslLines -join "`r`n"
         if (Test-Path $wslConfigPath) {
             $backup = "${wslConfigPath}.bak.$(Get-Date -Format 'yyyyMMdd-HHmmss')"
             Copy-Item $wslConfigPath $backup
@@ -604,11 +606,9 @@ foreach ($t in $targets) { Write-OK $t }
 Write-Host ""
 Write-OK "Output folder: $OutputFolder"
 Write-Host ""
-Write-Host "  ┌─────────────────────────────────────────────────────────────┐" -ForegroundColor Cyan
-Write-Host "  │  CloudWS is self-replicating: pull → build → push → repeat │" -ForegroundColor Cyan
-Write-Host "  │  On deployed CloudWS:  cloudws-rebuild                     │" -ForegroundColor Cyan
-Write-Host "  │  On any machine:       podman pull $GhcrImage              │" -ForegroundColor Cyan
-Write-Host "  └─────────────────────────────────────────────────────────────┘" -ForegroundColor Cyan
+Write-Host "  CloudWS is self-replicating: pull → build → push → repeat" -ForegroundColor Cyan
+Write-Host "  On deployed CloudWS:  cloudws-rebuild" -ForegroundColor Cyan
+Write-Host "  On any machine:       podman pull $GhcrImage" -ForegroundColor Cyan
 Write-Host ""
 
 # Cleanup: wipe any credential variables from memory
