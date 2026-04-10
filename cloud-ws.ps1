@@ -66,7 +66,7 @@ function Read-Timed {
     param([string]$Prompt, [string]$Default, [switch]$Secret)
     if ($Secret) {
         Write-Host "      $Prompt " -NoNewline -ForegroundColor DarkCyan
-        Write-Host "[$(if($Default){"********"}else{""})] " -NoNewline -ForegroundColor DarkGray
+        Write-Host "[$(if($Default){'********'}else{''})] " -NoNewline -ForegroundColor DarkGray
     } else {
         Write-Host "      $Prompt " -NoNewline -ForegroundColor DarkCyan
         Write-Host "[$Default] " -NoNewline -ForegroundColor DarkGray
