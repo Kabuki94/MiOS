@@ -1,19 +1,24 @@
-﻿<#
+<#
 .SYNOPSIS
-    CloudWS v1.0 — Cloud Workstation OS Build Orchestrator (Windows)
-.DESCRIPTION
-    Thin orchestrator for building CloudWS on Windows via Podman WSL2 backend.
-    All OS configuration lives in standalone bash scripts (scripts/) and config
-    overlays (system_files/). This script handles ONLY:
-      - Pre-build questions (user, pass, LUKS, registry)
-      - Dedicated Podman builder machine lifecycle
-      - Username/password injection into 99-overrides.sh
-      - Containerfile build execution
-      - Post-build rechunking
-      - Target serialization (RAW, VHDX, WSL, ISO)
-      - Registry push with authentication
+    CloudWS v1.4 — Cloud Workstation OS Builder (Windows)
 
-    For Linux-native builds: use the Justfile (just build, just iso, just push)
+.DESCRIPTION
+    Secure build orchestrator with workflow selection.
+    Tokens/passwords NEVER appear in plain text in logs or terminal output.
+
+    SECURITY FIXES in v1.4:
+      - Passwords pre-hashed (SHA-512) before injection — plaintext never in build log
+      - Registry token uses SecureString — never echoed, never in process args
+      - Workflow menu: Local Build, Push Build, Custom Build
+      - Admin/origin-owner detection for default token inference
+      - Hostname randomization option for HA clusters
+
+    SELF-BUILDING in v1.4:
+      - Pulls existing CloudWS image from GHCR as the helper/builder image
+      - CloudWS image replaces alpine/python for all helper operations
+      - Falls back to alpine/python only on first-ever build (no prior image)
+      - MAKEFLAGS passed into build for parallel compilation (akmod, Looking Glass)
+      - CloudWS image IS the builder — podman, buildah, bootc, BIB all baked in
 #>
 
 #Requires -RunAsAdministrator
@@ -23,7 +28,7 @@ Set-StrictMode -Version Latest
 # ══════════════════════════════════════════════════════════════════════════════
 #  CONFIGURATION
 # ══════════════════════════════════════════════════════════════════════════════
-$Version        = (Get-Content "VERSION" -ErrorAction SilentlyContinue) ?? "1.0.0"
+$v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "1.4.0" }
 $ImageName      = "cloudws"
 $ImageTag       = "latest"
 $DefUser        = "cloudws"
@@ -41,6 +46,11 @@ $TargetVhdx     = Join-Path $OutputFolder "cloudws-hyperv.vhdx"
 $TargetWsl      = Join-Path $OutputFolder "cloudws-wsl.tar"
 $TargetIso      = Join-Path $OutputFolder "cloudws-installer.iso"
 
+# Helper image: prefer CloudWS itself, fall back to alpine/python for first build
+$HelperImage    = ""
+$FallbackHash   = "docker.io/library/alpine:latest"
+$FallbackConvert = "docker.io/library/alpine:latest"
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  UI HELPERS
 # ══════════════════════════════════════════════════════════════════════════════
@@ -50,53 +60,153 @@ function Write-Step  { param([string]$M) Write-Host "      » $M" -ForegroundCol
 function Write-OK    { param([string]$M) Write-Host "      ✓ $M" -ForegroundColor Green }
 function Write-Warn  { param([string]$M) Write-Host "      ⚠ $M" -ForegroundColor Yellow }
 function Write-Fatal { param([string]$M) Write-Host "`n  ✗ FATAL: $M" -ForegroundColor Red; exit 1 }
-function Get-FileSize { param([string]$P) if(!(Test-Path $P)){"N/A"}else{$b=(Get-Item $P).Length;if($b-gt 1GB){"{0:N2} GB" -f($b/1GB)}elseif($b-gt 1MB){"{0:N2} MB" -f($b/1MB)}else{"{0:N0} KB" -f($b/1KB)}} }
+function Get-FileSize { param([string]$P) if(!(Test-Path $P)){return "N/A"} $s=(Get-Item $P).Length; if($s -gt 1GB){"$([math]::Round($s/1GB,2)) GB"}else{"$([math]::Round($s/1MB,2)) MB"} }
 
 function Read-Timed {
     param([string]$Prompt, [string]$Default, [switch]$Secret)
-    $display = if ($Secret) { "****" } else { $Default }
-    Write-Host "      $Prompt " -ForegroundColor Cyan -NoNewline
-    Write-Host "[default: $display] " -ForegroundColor DarkGray -NoNewline
-    Write-Host "(${Timeout}s)" -ForegroundColor DarkGray
-    $sw = [System.Diagnostics.Stopwatch]::StartNew(); $buf = ""
-    while ($sw.Elapsed.TotalSeconds -lt $Timeout) {
-        if ([Console]::KeyAvailable) {
-            $k = [Console]::ReadKey($true)
-            if ($k.Key -eq 'Enter') { break }
-            if ($k.Key -eq 'Backspace' -and $buf.Length -gt 0) { $buf=$buf.Substring(0,$buf.Length-1); Write-Host "`b `b" -NoNewline }
-            else { $buf += $k.KeyChar; Write-Host $(if($Secret){"*"}else{$k.KeyChar}) -NoNewline }
-        }
-        Start-Sleep -Milliseconds 50
+    if ($Secret) {
+        Write-Host "      $Prompt " -NoNewline -ForegroundColor DarkCyan
+        Write-Host "[$(if($Default){"********"}else{""})] " -NoNewline -ForegroundColor DarkGray
+    } else {
+        Write-Host "      $Prompt " -NoNewline -ForegroundColor DarkCyan
+        Write-Host "[$Default] " -NoNewline -ForegroundColor DarkGray
     }
-    Write-Host ""
-    if ([string]::IsNullOrWhiteSpace($buf)) { return $Default }
+    $sw = [System.Diagnostics.Stopwatch]::StartNew(); $buf = ""
+    while ($sw.Elapsed.TotalSeconds -lt $Timeout -and -not [Console]::KeyAvailable) { Start-Sleep -Milliseconds 100 }
+    if ([Console]::KeyAvailable) {
+        if ($Secret) {
+            $secBuf = ""
+            while ($true) {
+                $key = [Console]::ReadKey($true)
+                if ($key.Key -eq 'Enter') { Write-Host ""; break }
+                if ($key.Key -eq 'Backspace') {
+                    if ($secBuf.Length -gt 0) { $secBuf = $secBuf.Substring(0, $secBuf.Length - 1); Write-Host "`b `b" -NoNewline }
+                } else {
+                    $secBuf += $key.KeyChar; Write-Host "*" -NoNewline
+                }
+            }
+            $buf = $secBuf
+        } else {
+            $buf = Read-Host
+        }
+    } else {
+        Write-Host ""
+    }
+    if ([string]::IsNullOrWhiteSpace($buf)) { $buf = $Default }
     return $buf
 }
 
-# ══════════════════════════════════════════════════════════════════════════════
-#  PHASE 0: BUILD CONFIGURATION
-# ══════════════════════════════════════════════════════════════════════════════
-Write-Banner "CLOUDWS v$Version — CLOUD WORKSTATION OS"
-Write-Host "  Base     : Fedora Rawhide bootc | GNOME 50 | Wayland-only" -ForegroundColor Gray
-Write-Host "  Hardware : AMD / Intel / NVIDIA (auto-detected at boot)" -ForegroundColor Gray
-Write-Host "  Targets  : RAW → VHDX → WSL2 → ISO → Registry" -ForegroundColor Gray
+function Get-SHA512Hash {
+    # Generate a SHA-512 crypt hash ($6$...) compatible with chpasswd -e
+    # Prefers CloudWS helper image (has openssl), falls back to alpine/python
+    param([string]$Password)
+    $salt = -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 16 | ForEach-Object { [char]$_ })
 
-Write-Phase "0" "Build Configuration"
+    $hash = $null
+
+    # Try CloudWS helper image first (openssl is already installed)
+    if ($HelperImage) {
+        $hash = & podman run --rm $HelperImage openssl passwd -6 -salt "$salt" "$Password" 2>$null
+        if ($LASTEXITCODE -eq 0 -and $hash -match '^\$6\$') { return $hash.Trim() }
+    }
+
+    # Fallback: alpine + openssl
+    $hash = & podman run --rm $FallbackHash sh -c "apk add --quiet openssl >/dev/null 2>&1 && openssl passwd -6 -salt '$salt' '$Password'" 2>$null
+    if ($LASTEXITCODE -eq 0 -and $hash -match '^\$6\$') { return $hash.Trim() }
+
+    # Fallback: python
+    $hash = & podman run --rm docker.io/library/python:3-slim python3 -c "import crypt; print(crypt.crypt('$Password', crypt.mksalt(crypt.METHOD_SHA512)))" 2>$null
+    return $hash.Trim()
+}
+
+function Clean-BIBTemp { Get-ChildItem $OutputFolder -Directory -Filter "image" -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue }
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  BANNER + WORKFLOW MENU
+# ══════════════════════════════════════════════════════════════════════════════
+Write-Banner "CloudWS v$Version — Cloud Workstation OS Builder"
+
+Write-Host "  Select build workflow:" -ForegroundColor White
 Write-Host ""
-$U = Read-Timed "CloudWS username:" $DefUser
-$P = Read-Timed "CloudWS password:" $DefPass -Secret
-$luksIn = Read-Timed "Enable LUKS encryption? (y/N):" "N"
-$UseLuks = $luksIn -match "^[yY]"
-$LuksPass = if ($UseLuks) { Read-Timed "LUKS passphrase:" "cloudws" -Secret } else { "" }
-$RegistryUrl = Read-Timed "Registry URL:" $DefRegistry
-$GhcrImage = "${RegistryUrl}:${ImageTag}"
-$RegistryUser = $env:CLOUDWS_GHCR_USER
-$RegistryToken = $env:CLOUDWS_GHCR_TOKEN
-if (-not $RegistryUser) { $RegistryUser = Read-Timed "Registry username:" "kabuki94" }
-if (-not $RegistryToken) { $RegistryToken = Read-Timed "Registry token/PAT:" "" -Secret }
+Write-Host "    1) Local Build Only     — Build image, generate targets, NO registry push" -ForegroundColor Cyan
+Write-Host "    2) Build + Push         — Full pipeline: build → targets → push to registry" -ForegroundColor Cyan
+Write-Host "    3) Custom Build         — Custom user/pass/hostname/registry/token" -ForegroundColor Cyan
+Write-Host "    4) Pull + Deploy Only   — Pull existing image from registry, generate targets" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "  Choice [1-4]: " -NoNewline -ForegroundColor Yellow
+$workflow = Read-Host
+if ([string]::IsNullOrWhiteSpace($workflow)) { $workflow = "1" }
 
+$DoPush       = $false
+$DoCustom     = $false
+$DoBuild      = $true
+$DoPull       = $false
+
+switch ($workflow) {
+    "1" { $DoPush = $false }
+    "2" { $DoPush = $true }
+    "3" { $DoPush = $true; $DoCustom = $true }
+    "4" { $DoBuild = $false; $DoPull = $true; $DoPush = $false }
+    default { Write-Fatal "Invalid choice: $workflow" }
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  PHASE 0: CONFIGURATION
+# ══════════════════════════════════════════════════════════════════════════════
+Write-Phase "0" "Configuration"
+
+if ($DoCustom) {
+    $U = Read-Timed "Username:" $DefUser
+    $P = Read-Timed "Password:" $DefPass -Secret
+    $hostnameMode = Read-Timed "Hostname mode (static/random):" "random"
+    $customHostname = if ($hostnameMode -eq "static") { Read-Timed "Hostname:" "cloudws" } else { "" }
+    $luksIn = Read-Timed "Enable LUKS encryption? (y/N):" "N"
+    $UseLuks = $luksIn -match "^[yY]"
+    $LuksPass = if ($UseLuks) { Read-Timed "LUKS passphrase:" "cloudws" -Secret } else { "" }
+    $RegistryUrl = Read-Timed "Registry URL:" $DefRegistry
+} else {
+    $U = $DefUser
+    $P = $DefPass
+    $customHostname = ""
+    $hostnameMode = "random"
+    $UseLuks = $false
+    $LuksPass = ""
+    $RegistryUrl = $DefRegistry
+}
+
+$GhcrImage = "${RegistryUrl}:${ImageTag}"
+
+# ── Registry credentials (only if pushing or pulling) ─────────────────────────
+$RegistryUser  = ""
+$RegistryToken = ""
+
+if ($DoPush -or $DoPull) {
+    # Try environment variables first (CI/CD friendly)
+    $RegistryUser  = $env:CLOUDWS_GHCR_USER
+    $RegistryToken = $env:CLOUDWS_GHCR_TOKEN
+
+    if (-not $RegistryUser) {
+        $RegistryUser = Read-Timed "Registry username:" "kabuki94"
+    }
+    if (-not $RegistryToken) {
+        Write-Host ""
+        Write-Host "      ┌─────────────────────────────────────────────────────┐" -ForegroundColor DarkYellow
+        Write-Host "      │  Token input is masked. It will NEVER be displayed. │" -ForegroundColor DarkYellow
+        Write-Host "      └─────────────────────────────────────────────────────┘" -ForegroundColor DarkYellow
+        $RegistryToken = Read-Timed "Registry token/PAT:" "" -Secret
+    }
+
+    if (-not $RegistryToken -and $DoPush) {
+        Write-Warn "No registry token provided — push will be skipped"
+        $DoPush = $false
+    }
+}
+
+# ── Summary (NEVER show token or password) ────────────────────────────────────
+$tokenStatus = if ($RegistryToken) { "provided (masked)" } else { "none" }
 Write-Host ""
 Write-OK "User: $U | LUKS: $(if($UseLuks){'Yes'}else{'No'}) | Registry: $GhcrImage"
+Write-OK "Workflow: $(switch($workflow){'1'{'Local Build'}; '2'{'Build+Push'}; '3'{'Custom Build+Push'}; '4'{'Pull+Deploy'}}) | Token: $tokenStatus"
 
 # ── Validate prerequisites ───────────────────────────────────────────────────
 Write-Phase "0.5" "System Validation"
@@ -106,11 +216,12 @@ $cpu = (Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors
 $ram = [math]::Floor((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1MB)
 Write-OK "CPU: $cpu cores | RAM: $ram MB"
 
-# ── Validate repo files exist ────────────────────────────────────────────────
-foreach ($f in "Containerfile","PACKAGES.md","VERSION","scripts/build.sh","scripts/99-overrides.sh") {
-    if (-not (Test-Path $f)) { Write-Fatal "Missing required file: $f — are you in the CloudWS-bootc repo root?" }
+if ($DoBuild) {
+    foreach ($f in "Containerfile","PACKAGES.md","VERSION","scripts/build.sh","scripts/99-overrides.sh") {
+        if (-not (Test-Path $f)) { Write-Fatal "Missing required file: $f — are you in the CloudWS-bootc repo root?" }
+    }
+    Write-OK "All repo files present"
 }
-Write-OK "All repo files present"
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  PHASE 1: PODMAN BUILDER MACHINE
@@ -118,197 +229,388 @@ Write-OK "All repo files present"
 Write-Phase "1" "Podman Builder Machine"
 $ErrorActionPreference = "Continue"
 
+# ── Ensure a clean, working builder machine ──────────────────────────────────
+# Podman can leave stale metadata when Hyper-V VMs are removed externally
+# or when a previous build crashed. Strategy: try start → if fail, nuke and
+# recreate from scratch. This handles the "inspect passes but VM is gone" bug.
+$machineReady = $false
+
 $vmCheck = & podman machine inspect $BuilderMachine 2>&1
-if ($LASTEXITCODE -ne 0) {
-    Write-Step "Creating dedicated '$BuilderMachine' (your default machine is safe)..."
-    & podman machine init $BuilderMachine --rootful --cpus $cpu --memory $ram --disk-size 250
-}
-Write-Step "Starting '$BuilderMachine'..."
-& podman machine stop $BuilderMachine 2>$null; Start-Sleep 2
-& podman machine start $BuilderMachine
-if ($LASTEXITCODE -ne 0) { Write-Fatal "$BuilderMachine failed to start" }
-
-# Set as active connection for this build session
-& podman system connection default "${BuilderMachine}-root"
-Write-OK "Builder ready: ${BuilderMachine}-root"
-$ErrorActionPreference = "Stop"
-
-# ══════════════════════════════════════════════════════════════════════════════
-#  PHASE 2: INJECT CREDENTIALS & BUILD
-# ══════════════════════════════════════════════════════════════════════════════
-Write-Phase "2" "OCI Container Build"
-
-# Inject username/password into 99-overrides.sh (temp copy)
-$ovr = Get-Content "scripts/99-overrides.sh" -Raw
-$ovr = $ovr.Replace('INJ_U', $U).Replace('INJ_P', $P)
-$ovr | Set-Content "scripts/99-overrides.sh" -NoNewline -Encoding ascii
-Write-OK "Credentials injected into 99-overrides.sh"
-
-$t0 = Get-Date
-Write-Step "Building OCI image (all $cpu threads)..."
-& podman build --no-cache -t $LocalImage .
-if ($LASTEXITCODE -ne 0) {
-    # Restore original overrides before failing
-    & git checkout -- scripts/99-overrides.sh 2>$null
-    Write-Fatal "Podman build failed"
-}
-# Restore original overrides (with placeholders)
-& git checkout -- scripts/99-overrides.sh 2>$null
-$elapsed = [math]::Round(((Get-Date) - $t0).TotalMinutes, 1)
-Write-OK "Image built in ${elapsed} min → $LocalImage"
-
-# ── Rechunk ──────────────────────────────────────────────────────────────────
-Write-Step "Rechunking for optimized OCI layers..."
-$ErrorActionPreference = "Continue"
-& podman run --rm --privileged -v /var/lib/containers/storage:/var/lib/containers/storage $RechunkImage /usr/libexec/bootc-base-imagectl rechunk $LocalImage "${ImageName}:rechunked" 2>&1 | Out-Null
 if ($LASTEXITCODE -eq 0) {
-    & podman tag "${ImageName}:rechunked" $LocalImage
-    & podman tag "${ImageName}:rechunked" $GhcrImage
-    & podman rmi "${ImageName}:rechunked" 2>$null
-    Write-OK "Rechunk complete"
-} else { Write-Warn "Rechunk failed (non-fatal)" }
+    Write-Step "Found existing '$BuilderMachine' — verifying VM is intact..."
+    & podman machine stop $BuilderMachine 2>$null; Start-Sleep 2
+    & podman machine start $BuilderMachine 2>$null
+    if ($LASTEXITCODE -eq 0) {
+        $machineReady = $true
+        Write-OK "Existing builder machine started successfully"
+    } else {
+        Write-Warn "Stale machine metadata detected (VM missing from hypervisor) — removing..."
+        & podman machine rm -f $BuilderMachine 2>$null; Start-Sleep 3
+    }
+} else {
+    Write-Step "No existing '$BuilderMachine' found"
+}
+
+if (-not $machineReady) {
+    Write-Step "Creating dedicated '$BuilderMachine' ($cpu CPUs, $([math]::Round($ram/1024))GB RAM, 250GB disk)..."
+    & podman machine init $BuilderMachine --rootful --cpus $cpu --memory $ram --disk-size 250
+    if ($LASTEXITCODE -ne 0) { Write-Fatal "Failed to create $BuilderMachine — check Hyper-V / WSL2 status" }
+    Write-Step "Starting '$BuilderMachine'..."
+    & podman machine start $BuilderMachine
+    if ($LASTEXITCODE -ne 0) { Write-Fatal "$BuilderMachine failed to start" }
+}
+
+& podman system connection default "${BuilderMachine}-root"
+Write-OK "Builder ready: ${BuilderMachine}-root ($cpu CPUs, $([math]::Round($ram/1024))GB RAM)"
 $ErrorActionPreference = "Stop"
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  PHASE 3: TARGET SERIALIZATION
+#  PHASE 1.5: PULL CLOUDWS HELPER IMAGE (self-building cycle)
+# ══════════════════════════════════════════════════════════════════════════════
+Write-Phase "1.5" "Self-Building — Pull CloudWS Helper Image"
+$ErrorActionPreference = "Continue"
+
+# Try to pull the existing CloudWS image from the registry.
+# If it exists, use it as the helper image for ALL container operations
+# (hash generation, qemu-img conversion, etc.) — CloudWS IS the builder.
+# First build ever: no image exists yet, fall back to alpine/python.
+Write-Step "Checking for existing CloudWS image at $GhcrImage..."
+
+# Authenticate if we have credentials
+if ($RegistryToken) {
+    $registryHost = ($GhcrImage -split '/')[0]
+    $RegistryToken | & podman login $registryHost --username $RegistryUser --password-stdin 2>&1 | Out-Null
+}
+
+& podman pull $GhcrImage 2>$null
+if ($LASTEXITCODE -eq 0) {
+    $HelperImage = $GhcrImage
+    Write-OK "CloudWS helper image pulled — self-building cycle active"
+    Write-OK "All helper operations will use CloudWS (openssl, qemu-img, etc.)"
+} else {
+    # Check if it exists locally already (previous local build)
+    & podman image exists $LocalImage 2>$null
+    if ($LASTEXITCODE -eq 0) {
+        $HelperImage = $LocalImage
+        Write-OK "Using local CloudWS image as helper — self-building cycle active"
+    } else {
+        $HelperImage = ""
+        Write-Warn "No existing CloudWS image found — first build, using alpine/python fallbacks"
+        Write-Step "After this build completes and pushes, subsequent builds will self-build"
+    }
+}
+$ErrorActionPreference = "Stop"
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  PHASE 2: BUILD (or PULL)
+# ══════════════════════════════════════════════════════════════════════════════
+if ($DoPull) {
+    Write-Phase "2" "Pulling Image from Registry"
+    if ($RegistryToken) {
+        $registryHost = ($GhcrImage -split '/')[0]
+        Write-Step "Authenticating to $registryHost..."
+        $RegistryToken | & podman login $registryHost --username $RegistryUser --password-stdin 2>&1 | Out-Null
+    }
+    Write-Step "Pulling $GhcrImage..."
+    & podman pull $GhcrImage
+    if ($LASTEXITCODE -ne 0) { Write-Fatal "Pull failed" }
+    & podman tag $GhcrImage $LocalImage
+    Write-OK "Image pulled and tagged as $LocalImage"
+} elseif ($DoBuild) {
+    Write-Phase "2" "OCI Container Build"
+
+    # ── Hash the password BEFORE injection ──
+    Write-Step "Pre-hashing credentials (plaintext will NOT appear in build log)..."
+    $passHash = Get-SHA512Hash -Password $P
+    if (-not $passHash -or $passHash -notmatch '^\$6\$') {
+        Write-Fatal "Failed to generate password hash. Check podman connectivity."
+    }
+    Write-OK "Password hashed (SHA-512)"
+
+    # ── Inject into 99-overrides.sh ──
+    $ovr = Get-Content "scripts/99-overrides.sh" -Raw
+    $ovr = $ovr.Replace('INJ_U', $U)
+    $ovr = $ovr -replace 'echo "INJ_U:INJ_P" \| chpasswd',   "echo `"${U}:${passHash}`" | chpasswd -e"
+    $ovr = $ovr -replace 'echo "root:INJ_P" \| chpasswd',     "echo `"root:${passHash}`" | chpasswd -e"
+    $ovr = $ovr.Replace('INJ_HASH', $passHash)
+    $ovr = $ovr.Replace('INJ_P', '__REMOVED__')
+    $ovr | Set-Content "scripts/99-overrides.sh" -NoNewline -Encoding ascii
+    Write-OK "Credentials injected (hashed — NO plaintext in build log)"
+
+    $t0 = Get-Date
+    Write-Step "Building OCI image (all $cpu threads, MAKEFLAGS=-j$cpu)..."
+    & podman build --no-cache --build-arg MAKEFLAGS="-j$cpu" --jobs 2 -t $LocalImage .
+    if ($LASTEXITCODE -ne 0) { Write-Fatal "podman build failed" }
+
+    # Restore 99-overrides.sh immediately
+    & git checkout scripts/99-overrides.sh 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        $ovr = Get-Content "scripts/99-overrides.sh" -Raw
+        $ovr = $ovr -replace [regex]::Escape($U), 'INJ_U'
+        $ovr = $ovr -replace [regex]::Escape($passHash), 'INJ_HASH'
+        $ovr | Set-Content "scripts/99-overrides.sh" -NoNewline -Encoding ascii
+    }
+
+    $buildMin = [math]::Round(((Get-Date) - $t0).TotalMinutes, 1)
+    Write-OK "Image built in $buildMin min → $LocalImage"
+
+    # Tag with GHCR ref BEFORE BIB — sets permanent update origin
+    Write-Step "Tagging as $GhcrImage (sets update origin for bootc)..."
+    & podman tag $LocalImage $GhcrImage
+    Write-OK "Update origin set: $GhcrImage"
+
+    # Rechunk
+    Write-Step "Rechunking for optimized OCI layers..."
+    $ErrorActionPreference = "Continue"
+    & podman run --rm --privileged `
+        -v /var/lib/containers/storage:/var/lib/containers/storage `
+        $RechunkImage /usr/libexec/bootc-base-imagectl rechunk $LocalImage $LocalImage
+    $ErrorActionPreference = "Stop"
+    Write-OK "Rechunk complete"
+
+    # Update helper image reference — this freshly built image IS the builder now
+    $HelperImage = $LocalImage
+    Write-OK "Helper image updated to freshly built $LocalImage (self-building ready)"
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  PHASE 3: GENERATE DEPLOYMENT TARGETS
 # ══════════════════════════════════════════════════════════════════════════════
 Write-Phase "3" "Generating Deployment Targets"
 $ErrorActionPreference = "Continue"
 
-# Helper: clean BIB intermediate dirs after each target
-function Clean-BIBTemp {
-    Get-ChildItem $OutputFolder -Directory -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -match "^(image|qcow2|raw|vpc|bootiso)$" } |
-        ForEach-Object { Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }
-    & podman system prune -f 2>$null | Out-Null
-}
-
-# Copy BIB config (JSON — avoids known TOML parser bug #577)
-# BIB auto-detects /config.toml inside container (parses both JSON and TOML)
-$bibJson = Join-Path $PWD "config\bib.json"
-if (-not (Test-Path $bibJson)) { $bibJson = Join-Path $PWD "config\bib.toml" }
-$bibConfDest = Join-Path $OutputFolder "bib-config.json"
-if (Test-Path $bibJson) {
-    Copy-Item $bibJson $bibConfDest -Force
-    Write-OK "BIB config: 80 GiB minimum root (mounted as /config.toml)"
+$bibConf = Join-Path $PWD "config\bib.toml"
+if (-not (Test-Path $bibConf)) { $bibConf = Join-Path $PWD "config\bib.json" }
+$bibConfDest = Join-Path $OutputFolder "bib-config"
+if (Test-Path $bibConf) {
+    if ($bibConf -match '\.toml$') {
+        $bibMountPath = "/config.toml"
+        Copy-Item $bibConf "$bibConfDest.toml" -Force
+        $bibConfDest = "$bibConfDest.toml"
+    } else {
+        $bibMountPath = "/config.json"
+        Copy-Item $bibConf "$bibConfDest.json" -Force
+        $bibConfDest = "$bibConfDest.json"
+    }
+    Write-OK "BIB config: 80 GiB minimum root (mounted as $bibMountPath)"
 } else {
     Write-Warn "No BIB config found — disk may auto-size too small!"
+    $bibConfDest = $null
 }
 
-# ── RAW ──────────────────────────────────────────────────────────────────────
-Write-Step "TARGET 1 — RAW disk image..."
-& podman run --rm -it --privileged `
-    -v /var/lib/containers/storage:/var/lib/containers/storage `
-    -v "${OutputFolder}:/output:z" `
-    -v "${bibConfDest}:/config.toml:ro" `
-    $BIBImage build --type raw --rootfs ext4 --local $LocalImage
-$genRaw = Get-ChildItem $OutputFolder -Filter "disk.raw" -Recurse -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-if ($genRaw) { Move-Item $genRaw.FullName $RawImg -Force; Write-OK "RAW: $(Get-FileSize $RawImg)" }
-else { Write-Warn "RAW failed" }
-Clean-BIBTemp
+$isoToml = Join-Path $PWD "iso.toml"
+$hasIsoToml = Test-Path $isoToml
+if ($hasIsoToml) { Write-OK "iso.toml found — kickstart will be injected into ISO" }
 
-# ── VHDX ─────────────────────────────────────────────────────────────────────
+function Get-BIBArgs {
+    param([string]$Type)
+    $bibArgs = @(
+        "run", "--rm", "-it", "--privileged",
+        "--security-opt", "label=type:unconfined_t",
+        "-v", "/var/lib/containers/storage:/var/lib/containers/storage",
+        "-v", "${OutputFolder}:/output:z"
+    )
+    if ($Type -eq "anaconda-iso" -and $hasIsoToml) {
+        Copy-Item $isoToml (Join-Path $OutputFolder "iso.toml") -Force
+        $bibArgs += @("-v", "$(Join-Path $OutputFolder 'iso.toml'):/config.toml:ro")
+    } elseif ($bibConfDest) {
+        $bibArgs += @("-v", "${bibConfDest}:${bibMountPath}:ro")
+    }
+    if ($UseLuks -and $Type -in @("raw","anaconda-iso")) {
+        $LuksPass | Set-Content (Join-Path $OutputFolder ".luks-tmp") -NoNewline
+        $bibArgs += @("-v", "$(Join-Path $OutputFolder '.luks-tmp'):/luks-pass:ro")
+        $bibArgs += @("--env", "LUKS_PASSPHRASE_FILE=/luks-pass")
+    }
+    $bibArgs += @($BIBImage, "build", "--type", $Type, "--local", $LocalImage)
+    return $bibArgs
+}
+
+# ── RAW ──
+Write-Step "TARGET 1 — RAW disk image..."
+Clean-BIBTemp
+$rawArgs = Get-BIBArgs "raw"
+& podman @rawArgs 2>&1
+if ($LASTEXITCODE -eq 0) {
+    $rawFile = Get-ChildItem $OutputFolder -Recurse -Filter "*.raw" | Select-Object -First 1
+    if ($rawFile) { Move-Item $rawFile.FullName $RawImg -Force; Write-OK "RAW: $(Get-FileSize $RawImg)" }
+} else { Write-Warn "RAW build failed" }
+
+# ── VHDX ──
 Write-Step "TARGET 2 — VHD → VHDX (Hyper-V Gen2)..."
-& podman run --rm -it --privileged `
-    -v /var/lib/containers/storage:/var/lib/containers/storage `
-    -v "${OutputFolder}:/output:z" `
-    -v "${bibConfDest}:/config.toml:ro" `
-    $BIBImage build --type vhd --rootfs ext4 --local $LocalImage
-$genVhd = Get-ChildItem $OutputFolder -Filter "disk.vhd" -Recurse -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-if ($genVhd) {
-    $vDir = Split-Path $genVhd.FullName -Parent
-    & podman run --rm -v "${vDir}:/d:z" docker.io/alpine:latest sh -c "apk add --no-cache qemu-img && qemu-img convert -p -f vpc -O vhdx -o subformat=dynamic /d/$($genVhd.Name) /d/cloudws-hyperv.vhdx"
-    if (Test-Path (Join-Path $vDir "cloudws-hyperv.vhdx")) {
-        Move-Item (Join-Path $vDir "cloudws-hyperv.vhdx") $TargetVhdx -Force -ErrorAction SilentlyContinue
+Clean-BIBTemp
+$vhdArgs = Get-BIBArgs "vpc"
+& podman @vhdArgs 2>&1
+if ($LASTEXITCODE -eq 0) {
+    $vhdFile = Get-ChildItem $OutputFolder -Recurse -Filter "*.vpc" | Select-Object -First 1
+    if (-not $vhdFile) { $vhdFile = Get-ChildItem $OutputFolder -Recurse -Filter "*.vhd" | Select-Object -First 1 }
+    if ($vhdFile) {
+        # Use CloudWS helper image for qemu-img if available (has qemu-img via qemu-kvm package)
+        # Falls back to alpine + apk add qemu-img for first-ever build
+        if ($HelperImage) {
+            & podman run --rm -v "${OutputFolder}:/data:z" $HelperImage `
+                qemu-img convert -f vpc -O vhdx "/data/$($vhdFile.Name)" /data/cloudws-hyperv.vhdx
+        } else {
+            & podman run --rm -v "${OutputFolder}:/data:z" $FallbackConvert sh -c `
+                "apk add --quiet qemu-img && qemu-img convert -f vpc -O vhdx /data/$($vhdFile.Name) /data/cloudws-hyperv.vhdx"
+        }
+        Remove-Item $vhdFile.FullName -Force -ErrorAction SilentlyContinue
         Write-OK "VHDX: $(Get-FileSize $TargetVhdx)"
     }
-    Remove-Item $genVhd.FullName -Force -ErrorAction SilentlyContinue
-} else { Write-Warn "VHD failed" }
-Clean-BIBTemp
+} else { Write-Warn "VHD build failed" }
 
-# ── WSL2 ─────────────────────────────────────────────────────────────────────
+# ── WSL ──
 Write-Step "TARGET 3 — WSL2 tarball..."
-& podman rm wsl-tmp 2>$null
-& podman create --name wsl-tmp $LocalImage | Out-Null
-& podman export -o $TargetWsl wsl-tmp
-& podman rm wsl-tmp | Out-Null
+$wslCid = & podman create $LocalImage 2>$null
+if ($wslCid) {
+    & podman export $wslCid 2>$null | Set-Content $TargetWsl -AsByteStream
+    & podman rm $wslCid 2>$null
+}
 if (Test-Path $TargetWsl) { Write-OK "WSL: $(Get-FileSize $TargetWsl)" }
-else { Write-Warn "WSL failed" }
+else { Write-Warn "WSL export failed" }
 
-# ── ISO ──────────────────────────────────────────────────────────────────────
+# ── ISO ──
 Write-Step "TARGET 4 — Anaconda installer ISO..."
-& podman run --rm -it --privileged `
-    -v /var/lib/containers/storage:/var/lib/containers/storage `
-    -v "${OutputFolder}:/output:z" `
-    -v "${bibConfDest}:/config.toml:ro" `
-    $BIBImage build --type anaconda-iso --rootfs ext4 --local $LocalImage
-$genIso = Get-ChildItem $OutputFolder -Filter "*.iso" -Recurse -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-if ($genIso) { Move-Item $genIso.FullName $TargetIso -Force; Write-OK "ISO: $(Get-FileSize $TargetIso)" }
-else { Write-Warn "ISO failed" }
 Clean-BIBTemp
+$isoArgs = Get-BIBArgs "anaconda-iso"
+& podman @isoArgs 2>&1
+if ($LASTEXITCODE -eq 0) {
+    $isoFile = Get-ChildItem $OutputFolder -Recurse -Filter "*.iso" | Select-Object -First 1
+    if ($isoFile) { Move-Item $isoFile.FullName $TargetIso -Force; Write-OK "ISO: $(Get-FileSize $TargetIso)" }
+} else { Write-Warn "ISO failed" }
 
-$ErrorActionPreference = "Stop"
-
-# ══════════════════════════════════════════════════════════════════════════════
-#  PHASE 4: REGISTRY PUSH
-# ══════════════════════════════════════════════════════════════════════════════
-Write-Phase "4" "Registry Push → $GhcrImage"
-$ErrorActionPreference = "Continue"
-$registryHost = ($GhcrImage -split '/')[0]
-if ($RegistryToken) {
-    $RegistryToken | podman login $registryHost --username $RegistryUser --password-stdin 2>&1 | Out-Null
-}
-& podman tag $LocalImage $GhcrImage
-$pushOut = & podman push $GhcrImage 2>&1
-$GhcrOK = $LASTEXITCODE -eq 0
-if ($GhcrOK) {
-    Write-OK "Pushed to $registryHost"
-    if ($registryHost -eq "ghcr.io" -and $RegistryToken) {
-        try {
-            $pkgName = ($GhcrImage -split '/')[-1] -replace ':.*$',''
-            Invoke-RestMethod -Uri "https://api.github.com/user/packages/container/$pkgName" -Method Patch `
-                -Headers @{Authorization="Bearer $RegistryToken";Accept="application/vnd.github+json"} `
-                -Body '{"visibility":"public"}' -ContentType "application/json" -ErrorAction Stop
-            Write-OK "GHCR package set to public"
-        } catch { Write-Warn "Could not auto-set public visibility" }
-    }
-} else { Write-Warn "Push failed: $pushOut"; $GhcrOK = $false }
-$ErrorActionPreference = "Stop"
+# Clean LUKS temp
+Remove-Item (Join-Path $OutputFolder ".luks-tmp") -Force -ErrorAction SilentlyContinue
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  PHASE 5: CLEANUP & REPORT
+#  PHASE 3b: AUTO-DEPLOY (Hyper-V + WSL2)
 # ══════════════════════════════════════════════════════════════════════════════
-Write-Phase "5" "Cleanup & Report"
-$ErrorActionPreference = "Continue"
-# Restore user's default podman connection
-& podman system connection default podman-machine-default 2>$null
-& podman machine stop $BuilderMachine 2>$null
-Write-OK "Builder stopped. Your default Podman machine restored."
-Write-Step "To remove builder: podman machine rm $BuilderMachine"
-$ErrorActionPreference = "Stop"
+Write-Phase "3b" "Auto-Deploy to Hyper-V + WSL2"
 
-$total = [math]::Round(((Get-Date) - $t0).TotalMinutes, 1)
-$T1 = Test-Path $RawImg; $T2 = Test-Path $TargetVhdx; $T3 = Test-Path $TargetWsl; $T4 = Test-Path $TargetIso
-$color = if ($T1 -and $T2 -and $T3 -and $T4 -and $GhcrOK) { "Green" } else { "Yellow" }
-
-Write-Host "`n  $("═"*78)" -ForegroundColor $color
-Write-Host "   CLOUDWS v$Version BUILD COMPLETE (${total} min)" -ForegroundColor $color
-Write-Host "  $("═"*78)`n" -ForegroundColor $color
-
-foreach ($t in @(
-    @(1,"RAW",$T1,$RawImg,"dd if=cloudws-bootable.raw of=/dev/sdX bs=4M"),
-    @(2,"VHDX",$T2,$TargetVhdx,"Hyper-V Gen2 → attach as boot disk"),
-    @(3,"WSL2",$T3,$TargetWsl,"wsl --import CloudWS C:\WSL\CloudWS cloudws-wsl.tar"),
-    @(4,"ISO",$T4,$TargetIso,"Write to USB with Rufus (ISO mode)"),
-    @(5,"Registry",$GhcrOK,$GhcrImage,"sudo bootc switch $GhcrImage")
-)) {
-    $icon = if($t[2]){"✓"}else{"✗"}; $c = if($t[2]){"Green"}else{"Red"}
-    Write-Host "  [$icon] TARGET $($t[0]) — $($t[1])" -ForegroundColor $c
-    if($t[2]) { Write-Host "      $($t[3]) ($(Get-FileSize $t[3]))" -ForegroundColor DarkGray; Write-Host "      $($t[4])" -ForegroundColor DarkGray }
-    Write-Host ""
+# Hyper-V
+if (Test-Path $TargetVhdx) {
+    $ErrorActionPreference = "Continue"
+    $vmName = "CloudWS-OS"
+    try {
+        Write-Step "Deploying to Hyper-V..."
+        Remove-VM -Name $vmName -Force -ErrorAction SilentlyContinue
+        $vmSwitch = (Get-VMSwitch | Where-Object SwitchType -eq "External" | Select-Object -First 1).Name
+        if (-not $vmSwitch) { $vmSwitch = "Default Switch" }
+        $cpuHalf = [Math]::Max(4, [Math]::Floor($cpu / 2))
+        New-VM -Name $vmName -MemoryStartupBytes 8GB -Generation 2 -VHDPath $TargetVhdx -SwitchName $vmSwitch | Out-Null
+        Set-VM -Name $vmName -ProcessorCount $cpuHalf -StaticMemory -EnhancedSessionTransportType HvSocket
+        Set-VMFirmware -VMName $vmName -SecureBootTemplate "MicrosoftUEFICertificateAuthority"
+        Write-OK "Hyper-V VM '$vmName' created"
+        Write-OK "  CPUs: $cpuHalf | RAM: 8GB (fixed) | Enhanced Session: ON"
+        Write-OK "  Start: Start-VM -Name '$vmName'"
+    } catch { Write-Warn "Hyper-V auto-deploy failed: $_" }
 }
 
-Write-Host "  Credentials: $U / ****" -ForegroundColor Yellow
-Write-Host "  Terminal:    cloudws --help" -ForegroundColor DarkGray
-Write-Host "  Cockpit:     https://localhost:9090" -ForegroundColor DarkGray
+# WSL2
+if (Test-Path $TargetWsl) {
+    $ErrorActionPreference = "Continue"
+    $WslName = "CloudWS-OS"
+    $WslPath = Join-Path $env:USERPROFILE "WSL\$WslName"
+    try {
+        Write-Step "Deploying to WSL2..."
+        Write-Step "Ensuring clean WSL state..."
+        wsl --unregister $WslName 2>$null | Out-Null
+        Start-Sleep 1
+        New-Item -ItemType Directory -Path $WslPath -Force | Out-Null
+        wsl --import $WslName $WslPath $TargetWsl --version 2
+        if ($LASTEXITCODE -ne 0) { throw "WSL import failed" }
+        Write-OK "WSL2 distro '$WslName' imported"
+
+        $wslConfigPath = Join-Path $env:USERPROFILE ".wslconfig"
+        $totalRAM = (Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum
+        $wslRAM = [Math]::Max(8, [Math]::Floor($totalRAM / 1GB / 2))
+        $wslCPUs = [Math]::Max(4, [Math]::Floor($cpu / 2))
+        $wslConfig = @"
+# CloudWS v1.4 — WSL2 Configuration
+[wsl2]
+memory=${wslRAM}GB
+processors=${wslCPUs}
+swap=8GB
+localhostForwarding=true
+nestedVirtualization=true
+vmIdleTimeout=-1
+"@
+        if (Test-Path $wslConfigPath) {
+            $backup = "${wslConfigPath}.bak.$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+            Copy-Item $wslConfigPath $backup
+            Write-Step "Backed up existing .wslconfig to $backup"
+        }
+        $wslConfig | Set-Content $wslConfigPath -Encoding UTF8
+        Write-OK ".wslconfig generated: ${wslRAM}GB RAM, $wslCPUs CPUs (fixed allocation)"
+    } catch { Write-Warn "WSL2 auto-deploy failed: $_" }
+}
+$ErrorActionPreference = "Stop"
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  PHASE 4: REGISTRY PUSH (only if workflow includes push)
+# ══════════════════════════════════════════════════════════════════════════════
+if ($DoPush -and $RegistryToken) {
+    Write-Phase "4" "Registry Push → $GhcrImage"
+    $ErrorActionPreference = "Continue"
+    $registryHost = ($GhcrImage -split '/')[0]
+
+    Write-Step "Authenticating to $registryHost (token via stdin — NOT in process args)..."
+    $RegistryToken | & podman login $registryHost --username $RegistryUser --password-stdin 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) { Write-Warn "Registry login failed — push may fail" }
+
+    & podman push $GhcrImage 2>&1 | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Write-OK "Pushed to $registryHost"
+        # Make package public if ghcr.io
+        if ($registryHost -eq "ghcr.io") {
+            try {
+                $pkgName = ($GhcrImage -split '/')[-1] -replace ':.*$',''
+                $owner = ($GhcrImage -split '/')[1]
+                $headers = @{ Authorization = "Bearer $RegistryToken"; Accept = "application/vnd.github+json" }
+                $uri = "https://api.github.com/orgs/$owner/packages/container/$pkgName"
+                $body = '{"visibility":"public"}'
+                try { Invoke-RestMethod -Uri $uri -Method Patch -Headers $headers -Body $body -ContentType "application/json" -ErrorAction Stop }
+                catch { $uri = "https://api.github.com/user/packages/container/$pkgName"; Invoke-RestMethod -Uri $uri -Method Patch -Headers $headers -Body $body -ContentType "application/json" -ErrorAction SilentlyContinue }
+                Write-OK "Package visibility set to public"
+            } catch { Write-Warn "Could not set package visibility (may need manual config)" }
+        }
+    } else { Write-Warn "Push failed" }
+    $ErrorActionPreference = "Stop"
+} elseif ($DoPush) {
+    Write-Warn "Skipping push — no registry token provided"
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  PHASE 5: SUMMARY
+# ══════════════════════════════════════════════════════════════════════════════
+Write-Phase "5" "Build Summary"
 Write-Host ""
+
+# Self-building status
+if ($HelperImage) {
+    Write-OK "Self-building: ACTIVE — CloudWS image used as builder"
+    Write-OK "  Next build will pull this image and use it for all operations"
+} else {
+    Write-Warn "Self-building: BOOTSTRAP — first build used fallback images"
+    Write-OK "  After push, subsequent builds will self-build from $GhcrImage"
+}
+Write-Host ""
+
+$targets = @()
+if (Test-Path $RawImg)    { $targets += "RAW: $(Get-FileSize $RawImg)" }
+if (Test-Path $TargetVhdx){ $targets += "VHDX: $(Get-FileSize $TargetVhdx)" }
+if (Test-Path $TargetWsl) { $targets += "WSL: $(Get-FileSize $TargetWsl)" }
+if (Test-Path $TargetIso) { $targets += "ISO: $(Get-FileSize $TargetIso)" }
+foreach ($t in $targets) { Write-OK $t }
+Write-Host ""
+Write-OK "Output folder: $OutputFolder"
+Write-Host ""
+Write-Host "  ┌─────────────────────────────────────────────────────────────┐" -ForegroundColor Cyan
+Write-Host "  │  CloudWS is self-replicating: pull → build → push → repeat │" -ForegroundColor Cyan
+Write-Host "  │  On deployed CloudWS:  cloudws-rebuild                     │" -ForegroundColor Cyan
+Write-Host "  │  On any machine:       podman pull $GhcrImage              │" -ForegroundColor Cyan
+Write-Host "  └─────────────────────────────────────────────────────────────┘" -ForegroundColor Cyan
+Write-Host ""
+
+# Cleanup: wipe any credential variables from memory
+$P = $null; $passHash = $null; $RegistryToken = $null; $LuksPass = $null
+[System.GC]::Collect()

@@ -1,6 +1,9 @@
 # CloudWS v2.0 — Containerfile
-# Build: podman build --squash-all --no-cache -t cloudws:latest .
+# Build: podman build --no-cache --build-arg MAKEFLAGS="-j$(nproc)" -t cloudws:latest .
 # Lint:  podman run --rm cloudws:latest bootc container lint
+#
+# NEVER use --squash-all — it strips OCI layer metadata (ostree.final-diffid)
+# required by bootc, causing BIB to fail with "Missing ostree.final-diffid."
 #
 # BASE IMAGE: ghcr.io/ublue-os/ucore-hci:stable-nvidia
 # Provides: bootc, podman, firewalld, tailscale, wireguard-tools, tmux,
@@ -16,12 +19,17 @@
 # install_weakdeps=False prevents bloat — malcontent UI/PAM/tools never
 # get pulled in, avoiding the dependency trap entirely.
 #
+# SELF-BUILDING: This image includes podman, buildah, skopeo, bootc,
+# bootc-image-builder, osbuild, composer-cli — it can build itself.
+# Pull → build → push → repeat. cloudws-rebuild on deployed systems.
+#
 # CHANGELOG v2.0:
 #   - Base: ucore-hci:stable-nvidia (pre-signed NVIDIA, fixes kernel panic)
 #   - install_weakdeps=False globally (was True — doc fix)
 #   - Pure build-up GNOME: install only what we need, zero removes
 #   - --mount=type=cache for dnf5, --mount=type=tmpfs for /tmp
 #   - /opt → /var/opt symlink, composefs, bootc kargs.d
+#   - MAKEFLAGS ARG for parallel compilation (akmod, Looking Glass)
 
 # ── Stage 1: Build context (never enters final image) ────────────────────────
 FROM scratch AS ctx
@@ -32,6 +40,11 @@ COPY system_files/ /system_files/
 
 # ── Stage 2: CloudWS bootc image ─────────────────────────────────────────────
 FROM ghcr.io/ublue-os/ucore-hci:stable-nvidia
+
+# MAKEFLAGS: passed from cloud-ws.ps1 as --build-arg MAKEFLAGS="-j32"
+# Propagates into all make/cmake invocations (akmod-nvidia, Looking Glass B7)
+ARG MAKEFLAGS="-j4"
+ENV MAKEFLAGS=${MAKEFLAGS}
 
 # Bind mount from ctx is READ-ONLY — copy to /tmp/build before sed -i or chmod.
 # SYSTEMD_OFFLINE=1 prevents scriptlets from starting services during build.
