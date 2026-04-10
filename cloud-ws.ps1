@@ -245,7 +245,10 @@ if ($LASTEXITCODE -eq 0) {
         Write-OK "Existing builder machine started successfully"
     } else {
         Write-Warn "Stale machine metadata detected (VM missing from hypervisor) — removing..."
-        & podman machine rm -f $BuilderMachine 2>$null; Start-Sleep 3
+        & podman machine rm -f $BuilderMachine 2>$null
+        wsl --unregister $BuilderMachine 2>$null
+        Remove-VM -Name $BuilderMachine -Force -ErrorAction SilentlyContinue
+        Start-Sleep 3
     }
 } else {
     Write-Step "No existing '$BuilderMachine' metadata found"
@@ -257,8 +260,10 @@ if (-not $machineReady) {
     #   2. VM exists on hypervisor but metadata is gone (orphaned VM)
     Write-Step "Cleaning up any orphaned state..."
     & podman machine rm -f $BuilderMachine 2>$null; Start-Sleep 1
-    # Also remove directly from Hyper-V — podman rm can't find orphaned VMs without metadata
+    # Remove directly from Hyper-V (older podman or HyperV backend)
     Remove-VM -Name $BuilderMachine -Force -ErrorAction SilentlyContinue
+    # Remove directly from WSL2 (podman 5.x default backend)
+    wsl --unregister $BuilderMachine 2>$null
     Start-Sleep 2
     Write-Step "Creating dedicated '$BuilderMachine' ($cpu CPUs, $([math]::Round($ram/1024))GB RAM, 250GB disk)..."
     & podman machine init $BuilderMachine --rootful --cpus $cpu --memory $ram --disk-size 250
