@@ -140,6 +140,7 @@ dnf config-manager setopt terra.gpgcheck=0 2>/dev/null || true
 # Strip the gpgkey path that points to a nonexistent file.
 sed -i '/^gpgkey.*terra/d' /etc/yum.repos.d/terra*.repo 2>/dev/null || true
 sed -i 's/^gpgcheck=1/gpgcheck=0/' /etc/yum.repos.d/terra*.repo 2>/dev/null || true
+sed -i 's/^repo_gpgcheck=1/repo_gpgcheck=0/' /etc/yum.repos.d/terra*.repo 2>/dev/null || true
 
 # ── CrowdSec (Fedora 40 fallback — compat with 44) ──────────────────────────
 echo "[01-repos] Adding CrowdSec repo..."

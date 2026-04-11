@@ -46,29 +46,7 @@ EOPAM
     }
 fi
 
-# ═══ 1. USER CREATION ═══
-# Password is pre-hashed (SHA-512) by the orchestrator — plaintext NEVER in build log.
-# The orchestrator replaces INJ_HASH with a $6$salt$hash string before podman build.
-echo "[99-overrides] Creating user INJ_U..."
-useradd -m -d /var/home/INJ_U -s /bin/bash INJ_U 2>/dev/null || true
-echo "INJ_U:INJ_HASH" | chpasswd -e
-echo "root:INJ_HASH" | chpasswd -e
-passwd -u INJ_U 2>/dev/null || true
-
-# ═══ 2. INDESTRUCTIBLE GROUP INJECTION ═══
-for g in wheel libvirt kvm video render input dialout; do
-    groupadd -f "$g" 2>/dev/null || true
-    if ! grep -q "^${g}:.*INJ_U" /etc/group; then
-        sed -i "/^${g}:/ s/$/,INJ_U/" /etc/group
-        sed -i "/^${g}:/ s/,:,/,/g; /^${g}:/ s/:,/:/g; /^${g}:/ s/,,/,/g" /etc/group
-    fi
-done
-
-# ═══ 3. SUDOERS ═══
-sed -i 's/^# %wheel\s*ALL=(ALL)\s*NOPASSWD:\s*ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
-echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel; chmod 440 /etc/sudoers.d/wheel
-
-# ═══ 4. CLI ENVIRONMENT ═══
+# ═══ 1. CLI ENVIRONMENT (must come BEFORE useradd -m so skel is populated) ═══
 cat >> /etc/skel/.bashrc <<'EOBASH'
 
 # ── CloudWS v1.4 ──────────────────────────────────────────────────
@@ -97,6 +75,31 @@ if [[ $- == *i* ]] && command -v fastfetch &>/dev/null; then
     fastfetch --logo none --color blue 2>/dev/null || true
 fi
 EOBASH
+
+# ═══ 2. USER CREATION ═══
+# Password is pre-hashed (SHA-512) by the orchestrator — plaintext NEVER in build log.
+# The orchestrator replaces INJ_HASH with a $6$salt$hash string before podman build.
+echo "[99-overrides] Creating user INJ_U..."
+useradd -m -d /var/home/INJ_U -s /bin/bash INJ_U 2>/dev/null || true
+echo "INJ_U:INJ_HASH" | chpasswd -e
+echo "root:INJ_HASH" | chpasswd -e
+passwd -u INJ_U 2>/dev/null || true
+
+# ═══ 2. INDESTRUCTIBLE GROUP INJECTION ═══
+for g in wheel libvirt kvm video render input dialout; do
+    groupadd -f "$g" 2>/dev/null || true
+    if ! grep -q "^${g}:.*INJ_U" /etc/group; then
+        sed -i "/^${g}:/ s/$/,INJ_U/" /etc/group
+        sed -i "/^${g}:/ s/,:,/,/g; /^${g}:/ s/:,/:/g; /^${g}:/ s/,,/,/g" /etc/group
+    fi
+done
+
+# ═══ 3. SUDOERS ═══
+sed -i 's/^# %wheel\s*ALL=(ALL)\s*NOPASSWD:\s*ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
+echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel; chmod 440 /etc/sudoers.d/wheel
+
+# ═══ 4. CLI ENVIRONMENT ═══
+# (skel .bashrc already written above before useradd)
 
 # ═══ 5. LOCALE ═══
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
@@ -554,54 +557,7 @@ if [ -f /tmp/build/scripts/cloudws-test ]; then
 fi
 
 # ═══ 13. DESKTOP BLOAT CLEANUP ═══
-echo "[99-overrides] Hiding bloat from app grid..."
-OVERRIDE_DIR="/usr/share/applications"
-for entry in \
-    "org.gnome.Tour.desktop" \
-    "org.freedesktop.MalcontentControl.desktop" \
-    "gamemode-simulate-game.desktop" \
-    "nvidia-settings.desktop" \
-    "nvidia-smi.desktop" \
-    "wine.desktop" \
-    "wine-help.desktop" \
-    "wine-winehelp.desktop" \
-    "wine-mime-msi.desktop" \
-    "wine-browsedrive.desktop" \
-    "wine-extension-chm.desktop" \
-    "wine-extension-hlp.desktop" \
-    "wine-extension-ini.desktop" \
-    "wine-extension-vbs.desktop" \
-    "yelp.desktop" \
-    "xterm.desktop" \
-    "bvnc.desktop" \
-    "bssh.desktop" \
-    "avahi-discover.desktop" \
-    "qv4l2.desktop" \
-    "qvidcap.desktop" \
-    "org.gnome.Epiphany.WebAppProvider.desktop" \
-    "org.gnome.IconBrowser4.desktop" \
-    "gtk4-icon-browser.desktop" \
-    "gtk4-widget-factory.desktop" \
-    "gtk4-demo.desktop" \
-    "gtk4-print-editor.desktop" \
-    "gtk4-node-editor.desktop" \
-    "gamt.desktop" \
-    "org.gnome.tweaks.desktop" \
-    "ibus-setup.desktop" \
-    "setroubleshoot.desktop" \
-    "yad-icon-browser.desktop" \
-    "fluid-soundfont-gm.desktop" \
-    "lstopo.desktop" \
-    "cmake-gui.desktop" \
-    "qdbusviewer.desktop" \
-; do
-    cat > "${OVERRIDE_DIR}/${entry}" <<EODT
-[Desktop Entry]
-Type=Application
-Name=Hidden
-NoDisplay=true
-EODT
-done
+# REMOVED: User wants all apps visible. Apps are organized into dconf folders instead.
 
 # ═══ 14. NFS STATE DIRECTORY (fixes rpc.statd error) ═══
 mkdir -p /var/lib/nfs/statd
