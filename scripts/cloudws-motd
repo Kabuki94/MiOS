@@ -1,6 +1,6 @@
 #!/bin/bash
-[[ $- != *i* ]] && return
-[[ -n "$CLOUDWS_NO_MOTD" ]] && return
+[[ $- != *i* ]] && exit 0
+[[ -n "$CLOUDWS_NO_MOTD" ]] && exit 0
 _ip() { ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}' | head -1; }
 IP=$(_ip); [[ -z "$IP" ]] && IP="127.0.0.1"
 HN=$(hostname -s 2>/dev/null || echo "CloudWS")

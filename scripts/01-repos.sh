@@ -136,6 +136,10 @@ dnf install -y --setopt=install_weak_deps=False --nogpgcheck \
     terra-release 2>/dev/null || true
 dnf config-manager setopt terra.priority=85 2>/dev/null || true
 dnf config-manager setopt terra.gpgcheck=0 2>/dev/null || true
+# BIB reads raw .repo files, not dnf config-manager overrides.
+# Strip the gpgkey path that points to a nonexistent file.
+sed -i '/^gpgkey.*terra/d' /etc/yum.repos.d/terra*.repo 2>/dev/null || true
+sed -i 's/^gpgcheck=1/gpgcheck=0/' /etc/yum.repos.d/terra*.repo 2>/dev/null || true
 
 # ── CrowdSec (Fedora 40 fallback — compat with 44) ──────────────────────────
 echo "[01-repos] Adding CrowdSec repo..."
