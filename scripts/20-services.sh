@@ -129,6 +129,7 @@ WSL_SKIP_SERVICES=(
     auditd
     audit-rules
     bootloader-update
+    coreos-printk-quiet
     usbguard
 )
 

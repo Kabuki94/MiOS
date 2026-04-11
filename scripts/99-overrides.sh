@@ -559,6 +559,19 @@ fi
 # ═══ 13. DESKTOP BLOAT CLEANUP ═══
 # REMOVED: User wants all apps visible. Apps are organized into dconf folders instead.
 
+# ═══ 13b. FIX HOME DIRECTORY OWNERSHIP ═══
+# Build processes may create files in user homes as root.
+# Unconditionally chown all user homes to fix .config ownership
+# (fixes podman "not owned by current user" and user@1000.service failure).
+echo "[99-overrides] Fixing home directory ownership..."
+for u in $(awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd); do
+    home=$(getent passwd "$u" | cut -d: -f6)
+    if [ -d "$home" ]; then
+        uid=$(id -u "$u"); gid=$(id -g "$u")
+        chown -R "${uid}:${gid}" "$home"
+    fi
+done
+
 # ═══ 14. NFS STATE DIRECTORY (fixes rpc.statd error) ═══
 mkdir -p /var/lib/nfs/statd
 cat > /usr/lib/tmpfiles.d/cloudws-nfs.conf <<'EOTMP'

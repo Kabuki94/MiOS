@@ -545,12 +545,14 @@ if (Test-Path $TargetVhdx) {
         Remove-VM -Name $vmName -Force -ErrorAction SilentlyContinue
         $vmSwitchObj = Get-VMSwitch | Where-Object SwitchType -eq "External" | Select-Object -First 1
         $vmSwitch = if ($vmSwitchObj) { $vmSwitchObj.Name } else { "Default Switch" }
-        $cpuHalf = [Math]::Max(4, [Math]::Floor($cpu / 2))
-        New-VM -Name $vmName -MemoryStartupBytes 8GB -Generation 2 -VHDPath $TargetVhdx -SwitchName $vmSwitch | Out-Null
-        Set-VM -Name $vmName -ProcessorCount $cpuHalf -StaticMemory -EnhancedSessionTransportType HvSocket
+        $vmCpu = [Math]::Max(4, $cpu)
+        $vmRamGB = [Math]::Max(8, [Math]::Floor(((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB) * 0.75))
+        $vmRam = [int64]$vmRamGB * 1GB
+        New-VM -Name $vmName -MemoryStartupBytes $vmRam -Generation 2 -VHDPath $TargetVhdx -SwitchName $vmSwitch | Out-Null
+        Set-VM -Name $vmName -ProcessorCount $vmCpu -StaticMemory -EnhancedSessionTransportType HvSocket
         Set-VMFirmware -VMName $vmName -SecureBootTemplate "MicrosoftUEFICertificateAuthority"
         Write-OK "Hyper-V VM '$vmName' created"
-        Write-OK "  CPUs: $cpuHalf | RAM: 8GB (fixed) | Enhanced Session: ON"
+        Write-OK "  CPUs: $vmCpu | RAM: ${vmRamGB}GB (75% of host) | Enhanced Session: ON"
         Write-OK "  Start: Start-VM -Name '$vmName'"
     } catch { Write-Warn "Hyper-V auto-deploy failed: $_" }
 }
@@ -572,8 +574,8 @@ if (Test-Path $TargetWsl) {
 
         $wslConfigPath = Join-Path $env:USERPROFILE ".wslconfig"
         $totalRAM = (Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum
-        $wslRAM = [Math]::Max(8, [Math]::Floor($totalRAM / 1GB / 2))
-        $wslCPUs = [Math]::Max(4, [Math]::Floor($cpu / 2))
+        $wslRAM = [Math]::Max(8, [Math]::Floor($totalRAM / 1GB * 0.75))
+        $wslCPUs = [Math]::Max(4, $cpu)
         # Build .wslconfig content without here-string (avoids PS parser edge cases)
         $wslLines = @(
             "# CloudWS v0.1.1 — WSL2 Configuration",
@@ -592,7 +594,7 @@ if (Test-Path $TargetWsl) {
             Write-Step "Backed up existing .wslconfig to $backup"
         }
         $wslConfig | Set-Content $wslConfigPath -Encoding UTF8
-        Write-OK ".wslconfig generated: ${wslRAM}GB RAM, $wslCPUs CPUs (fixed allocation)"
+        Write-OK ".wslconfig generated: ${wslRAM}GB RAM, $wslCPUs CPUs (75% RAM, all CPUs)"
     } catch { Write-Warn "WSL2 auto-deploy failed: $_" }
 }
 $ErrorActionPreference = "Stop"
