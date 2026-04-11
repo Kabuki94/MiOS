@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Steam (Gamescope)
+Comment=Launch Steam in SteamOS mode via Gamescope compositor
+Exec=/usr/bin/gamescope-session-steam
+Type=Application
+DesktopNames=gamescope

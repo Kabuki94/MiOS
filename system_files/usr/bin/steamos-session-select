@@ -1,0 +1,13 @@
+#!/bin/bash
+# CloudWS — SteamOS session selector stub
+case "${1:-}" in
+    desktop|plasma|gnome)
+        pkill -f gamescope-session-steam 2>/dev/null
+        pkill -f gamescope 2>/dev/null
+        ;;
+    gamescope) ;;
+    *)
+        pkill -f gamescope-session-steam 2>/dev/null
+        pkill -f gamescope 2>/dev/null
+        ;;
+esac

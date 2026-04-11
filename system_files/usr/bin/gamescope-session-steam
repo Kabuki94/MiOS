@@ -1,0 +1,45 @@
+#!/bin/bash
+# CloudWS — Gamescope SteamOS-mode session launcher
+# Launched by GDM via /usr/share/wayland-sessions/gamescope-steam.desktop
+
+SCREEN_WIDTH="${SCREEN_WIDTH:-0}"
+SCREEN_HEIGHT="${SCREEN_HEIGHT:-0}"
+INTERNAL_WIDTH="${INTERNAL_WIDTH:-0}"
+INTERNAL_HEIGHT="${INTERNAL_HEIGHT:-0}"
+REFRESH_RATE="${REFRESH_RATE:-0}"
+
+GAMESCOPE_ARGS=(
+    --steam
+    --mangoapp
+    --default-touch-mode 4
+    --hide-cursor-delay 2000
+    -f
+)
+
+if [ "$SCREEN_WIDTH" -gt 0 ] 2>/dev/null && [ "$SCREEN_HEIGHT" -gt 0 ] 2>/dev/null; then
+    GAMESCOPE_ARGS+=( -W "$SCREEN_WIDTH" -H "$SCREEN_HEIGHT" )
+fi
+if [ "$INTERNAL_WIDTH" -gt 0 ] 2>/dev/null && [ "$INTERNAL_HEIGHT" -gt 0 ] 2>/dev/null; then
+    GAMESCOPE_ARGS+=( -w "$INTERNAL_WIDTH" -h "$INTERNAL_HEIGHT" )
+fi
+if [ "$REFRESH_RATE" -gt 0 ] 2>/dev/null; then
+    GAMESCOPE_ARGS+=( -r "$REFRESH_RATE" )
+fi
+
+if [ "${ENABLE_GAMESCOPE_HDR:-0}" = "1" ]; then
+    GAMESCOPE_ARGS+=( --hdr-enabled )
+fi
+
+if [ -n "${GAMESCOPE_EXTRA_ARGS:-}" ]; then
+    GAMESCOPE_ARGS+=( $GAMESCOPE_EXTRA_ARGS )
+fi
+
+STEAM_ARGS=(
+    -gamepadui
+    -steamos3
+    -steampal
+    -pipewire-dmabuf
+    -nointro
+)
+
+exec gamescope "${GAMESCOPE_ARGS[@]}" -- steam "${STEAM_ARGS[@]}"

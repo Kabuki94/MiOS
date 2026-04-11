@@ -287,12 +287,13 @@ driverctl
 ## Gaming
 
 Steam, Wine, and Gamescope for gaming.
-gamescope-session-steam removed (ChimeraOS/Nobara only, not in Fedora repos).
+Gamescope SteamOS-mode GDM session baked via system_files (no COPR needed).
 Removed lib32-gamemode and libstrangle (Arch-only, not in Fedora repos).
 
 ```packages-gaming
 steam
 gamescope
+gnome-shell-extension-gamemode
 wine
 wine-mono
 wine-dxvk
