@@ -217,7 +217,7 @@ $ram = [math]::Floor((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory 
 Write-OK "CPU: $cpu cores | RAM: $ram MB"
 
 if ($DoBuild) {
-    foreach ($f in "Containerfile","PACKAGES.md","VERSION","scripts/build.sh","scripts/99-overrides.sh") {
+    foreach ($f in "Containerfile","PACKAGES.md","VERSION","scripts/build.sh","scripts/31-user.sh") {
         if (-not (Test-Path $f)) { Write-Fatal "Missing required file: $f — are you in the CloudWS-bootc repo root?" }
     }
     Write-OK "All repo files present"
@@ -356,8 +356,8 @@ if ($DoPull) {
     }
     Write-OK "Password hashed (SHA-512)"
 
-    # ── Inject into 99-overrides.sh ──
-    $ovr = Get-Content "scripts/99-overrides.sh" -Raw
+    # ── Inject into 31-user.sh ──
+    $ovr = Get-Content "scripts/31-user.sh" -Raw
     $ovr = $ovr.Replace('INJ_U', $U)
     # Change double quotes to single quotes on chpasswd lines BEFORE inserting hash.
     # This prevents bash from expanding $6 in the hash as a variable.
@@ -367,7 +367,7 @@ if ($DoPull) {
     # Now safe to insert hash — it's inside single quotes, bash won't expand $6
     $ovr = $ovr.Replace('INJ_HASH', $passHash)
     $ovr = $ovr.Replace('INJ_P', '__REMOVED__')
-    $ovr | Set-Content "scripts/99-overrides.sh" -NoNewline -Encoding ascii
+    $ovr | Set-Content "scripts/31-user.sh" -NoNewline -Encoding ascii
     Write-OK "Credentials injected (hashed — NO plaintext in build log)"
 
     $t0 = Get-Date
@@ -375,13 +375,13 @@ if ($DoPull) {
     & podman build --no-cache --build-arg MAKEFLAGS="-j$cpu" --jobs 2 -t $LocalImage .
     if ($LASTEXITCODE -ne 0) { Write-Fatal "podman build failed" }
 
-    # Restore 99-overrides.sh immediately
-    & git checkout scripts/99-overrides.sh 2>$null
+    # Restore 31-user.sh immediately
+    & git checkout scripts/31-user.sh 2>$null
     if ($LASTEXITCODE -ne 0) {
-        $ovr = Get-Content "scripts/99-overrides.sh" -Raw
+        $ovr = Get-Content "scripts/31-user.sh" -Raw
         $ovr = $ovr -replace [regex]::Escape($U), 'INJ_U'
         $ovr = $ovr -replace [regex]::Escape($passHash), 'INJ_HASH'
-        $ovr | Set-Content "scripts/99-overrides.sh" -NoNewline -Encoding ascii
+        $ovr | Set-Content "scripts/31-user.sh" -NoNewline -Encoding ascii
     }
 
     $buildMin = [math]::Round(((Get-Date) - $t0).TotalMinutes, 1)
