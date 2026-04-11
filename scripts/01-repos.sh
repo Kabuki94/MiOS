@@ -1,13 +1,14 @@
 #!/bin/bash
-# CloudWS v2.0 — 01-repos: Fedora 44 + Rawhide kernel overlay on ucore
+# CloudWS v2.0 — 01-repos: Fedora 44 overlay on ucore (base kernel preserved)
 #
 # STRATEGY: ucore-hci:stable-nvidia is Fedora CoreOS-based (fc43 stable).
 # We add Fedora 44 repos and distro-sync for GNOME 50, Mesa 26, systemd 260,
-# stable SELinux policy, etc. Kernel comes from Rawhide (Linux 7.0 RC).
+# stable SELinux policy, etc. Kernel stays at the base image version.
 #
-# WHY SPLIT: Rawhide (fc45) has missing SELinux types and duplicate shim
-# binaries. Fedora 44 has stable policy. But F44 ships kernel 6.19 —
-# we want 7.0 RC, so kernel packages come from Rawhide via includepkgs.
+# WHY BASE KERNEL: ucore ships pre-signed NVIDIA modules that match its kernel.
+# Upgrading to rawhide kernel breaks dkms (kernel-devel-matched mismatch),
+# invalidates NVIDIA kmod signatures, and gains little for a workstation.
+# Rawhide kernel (7.0 RC) is available as an opt-in post-install command.
 #
 # install_weakdeps=False is set BEFORE any installs. Both docs say this is
 # "non-negotiable for minimalism" — prevents hundreds of Recommends packages.
@@ -62,8 +63,7 @@ EOREPO
 # ── Distro-sync to Fedora 44 ───────────────────────────────────────────────
 # Upgrades ucore's fc43 packages to Fedora 44 versions.
 # Exclude shim: ucore ships pre-signed EFI binaries with ublue's MOK key.
-# grub2 CAN upgrade safely (only shim is pre-signed by ublue).
-# Exclude kernel*: we pull the latest RC kernel from Rawhide separately.
+# Exclude kernel*: preserve the base image kernel + pre-signed NVIDIA modules.
 echo "[01-repos] Distro-sync to Fedora 44 (this takes a while)..."
 dnf distro-sync -y --best --allowerasing \
     --exclude='shim-*' \
@@ -79,10 +79,18 @@ dnf distro-sync -y --best --allowerasing \
 echo "[01-repos] Ensuring F44 ca-certificates is installed..."
 dnf install -y ca-certificates p11-kit-trust 2>&1 | tail -5 || true
 
-# ── Rawhide kernel (Linux 7.0 RC) ──────────────────────────────────────────
-# F44 ships 6.19. Rawhide has 7.0 RCs. Pull kernel ONLY from Rawhide.
-echo "[01-repos] Adding Rawhide repo (kernel only)..."
-cat > /etc/yum.repos.d/fedora-rawhide-kernel.repo <<'EOREPO'
+# ── Rawhide kernel — DISABLED BY DEFAULT ────────────────────────────────────
+# The base ucore kernel works with pre-signed NVIDIA modules and matching
+# kernel-devel. Rawhide kernel (7.0 RC) breaks dkms and NVIDIA signatures.
+#
+# To opt-in to rawhide kernel at build time, set CLOUDWS_RAWHIDE_KERNEL=1:
+#   podman build --build-arg CLOUDWS_RAWHIDE_KERNEL=1 ...
+#
+# To opt-in on a running system:
+#   cloudws-kernel-rawhide   (post-install command, rebuilds NVIDIA kmod)
+if [[ "${CLOUDWS_RAWHIDE_KERNEL:-0}" == "1" ]]; then
+    echo "[01-repos] RAWHIDE KERNEL ENABLED — upgrading to Linux 7.0 RC..."
+    cat > /etc/yum.repos.d/fedora-rawhide-kernel.repo <<'EOREPO'
 [fedora-rawhide-kernel]
 name=Fedora Rawhide - Kernel Only
 metalink=https://mirrors.fedoraproject.org/metalink?repo=rawhide&arch=$basearch
@@ -97,17 +105,16 @@ skip_if_unavailable=True
 priority=90
 EOREPO
 
-echo "[01-repos] Upgrading kernel to latest Rawhide (7.0 RC)..."
-# The rawhide-kernel repo is already enabled with includepkgs limiting it to
-# kernel packages only. Just run distro-sync on kernel — dnf5 will pick up
-# the newer version from rawhide automatically due to priority=90.
-dnf distro-sync -y --best \
-    kernel kernel-core kernel-modules kernel-modules-core \
-    kernel-modules-extra kernel-devel kernel-headers \
-    linux-firmware linux-firmware-whence \
-    --setopt=install_weak_deps=False 2>&1 | tail -20 || {
-    echo "[01-repos] WARNING: Rawhide kernel upgrade had errors"
-}
+    dnf distro-sync -y --best \
+        kernel kernel-core kernel-modules kernel-modules-core \
+        kernel-modules-extra kernel-devel kernel-headers \
+        linux-firmware linux-firmware-whence \
+        --setopt=install_weak_deps=False 2>&1 | tail -20 || {
+        echo "[01-repos] WARNING: Rawhide kernel upgrade had errors"
+    }
+else
+    echo "[01-repos] Using base image kernel (rawhide kernel disabled — set CLOUDWS_RAWHIDE_KERNEL=1 to enable)"
+fi
 
 # ── RPMFusion Free + Nonfree (Fedora 44) ────────────────────────────────────
 echo "[01-repos] Installing RPMFusion Free + Nonfree for Fedora 44..."
@@ -141,5 +148,5 @@ enabled=1
 priority=80
 EOREPO
 
-echo "[01-repos] Done. ucore (fc43) + F44 userspace + Rawhide kernel (7.0 RC) + RPMFusion + Terra + CrowdSec."
-echo "[01-repos] Priority: CrowdSec(80) < Terra(85) < RPMFusion(90) < Rawhide-kernel(90) < F44(95) < ucore(99)"
+echo "[01-repos] Done. ucore base kernel + F44 userspace + RPMFusion + Terra + CrowdSec."
+echo "[01-repos] Priority: CrowdSec(80) < Terra(85) < RPMFusion(90) < F44(95) < ucore(99)"

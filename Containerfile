@@ -13,7 +13,8 @@
 #   nvidia-container-toolkit, CDI, SELinux policy.
 #
 # Fedora 44 repos overlayed in 01-repos.sh → distro-sync upgrades to
-# GNOME 50 / systemd 260 / Mesa 26. Kernel from Rawhide (Linux 7.0 RC).
+# GNOME 50 / systemd 260 / Mesa 26. Base image kernel preserved by default.
+# Rawhide kernel (7.0 RC) available via --build-arg CLOUDWS_RAWHIDE_KERNEL=1.
 #
 # GNOME 50 installed via pure build-up (~25 explicit packages).
 # install_weakdeps=False prevents bloat — malcontent UI/PAM/tools never
@@ -45,6 +46,12 @@ FROM ghcr.io/ublue-os/ucore-hci:stable-nvidia
 # Propagates into all make/cmake invocations (akmod-nvidia, Looking Glass B7)
 ARG MAKEFLAGS="-j4"
 ENV MAKEFLAGS=${MAKEFLAGS}
+
+# CLOUDWS_RAWHIDE_KERNEL: opt-in to Linux 7.0 RC from Rawhide
+# Default: 0 (use base image kernel with pre-signed NVIDIA modules)
+# Set to 1 to upgrade: --build-arg CLOUDWS_RAWHIDE_KERNEL=1
+ARG CLOUDWS_RAWHIDE_KERNEL=0
+ENV CLOUDWS_RAWHIDE_KERNEL=${CLOUDWS_RAWHIDE_KERNEL}
 
 # Bind mount from ctx is READ-ONLY — copy to /tmp/build before sed -i or chmod.
 # SYSTEMD_OFFLINE=1 prevents scriptlets from starting services during build.

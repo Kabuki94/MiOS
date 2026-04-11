@@ -8,6 +8,8 @@
 #   - CrowdSec: Updated sovereign mode config (RE2 regex engine default)
 #   - Added Podman quadlet example for CrowdSec
 #   - VirtIO-Win ISO: Updated URL pattern
+#   - dkms excluded: conflicts with kernel-devel-matched on mixed kernel builds
+#   - KVMFR built manually with make instead of dkms
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
@@ -81,10 +83,6 @@ install_packages "guests"
 echo "[12-virt] Installing storage packages..."
 install_packages "storage"
 
-# ── Ceph Distributed Storage ────────────────────────────────────────────────
-echo "[12-virt] Installing Ceph..."
-install_packages "ceph"
-
 # ── High Availability (Pacemaker/Corosync) ──────────────────────────────────
 echo "[12-virt] Installing HA stack..."
 install_packages "ha"
@@ -113,7 +111,12 @@ curl -sL "$VIRTIO_URL" -o /var/lib/libvirt/images/virtio-win.iso 2>/dev/null || 
 
 # ── Looking Glass B7 (compile from source) ──────────────────────────────────
 echo "[12-virt] Building Looking Glass B7..."
-install_packages "looking-glass-build"
+# Exclude dkms: it requires kernel-devel-matched which conflicts when the
+# base kernel doesn't match the fc44 repos. KVMFR is built manually below.
+LG_BUILD_PKGS=$(get_packages "looking-glass-build")
+if [[ -n "$LG_BUILD_PKGS" ]]; then
+    dnf -y install --skip-unavailable --exclude=dkms $LG_BUILD_PKGS
+fi
 
 LG_VERSION="B7"
 mkdir -p /tmp/looking-glass-build
@@ -140,9 +143,20 @@ if [ -d LookingGlass ]; then
         echo "[12-virt] Looking Glass client installed"
     fi
 
-    # Build KVMFR kernel module
+    # Build KVMFR kernel module manually (no dkms — avoids kernel-devel-matched conflict)
     cd /tmp/looking-glass-build/LookingGlass/module
-    if [ -f dkms.conf ]; then
+    if [ -f Makefile ] && [ -d "/lib/modules/$KVER/build" ]; then
+        echo "[12-virt] Building KVMFR module for kernel $KVER..."
+        make KVER="$KVER" 2>/dev/null || true
+        if [ -f kvmfr.ko ]; then
+            install -D -m 644 kvmfr.ko "/lib/modules/$KVER/extra/kvmfr.ko"
+            depmod -a "$KVER" 2>/dev/null || true
+            echo "[12-virt] KVMFR module installed for $KVER"
+        else
+            echo "[12-virt] WARNING: KVMFR module build failed — Looking Glass IVSHMEM-only"
+        fi
+    elif [ -f dkms.conf ]; then
+        # Fallback: try dkms if it happens to be installed
         mkdir -p /usr/src/kvmfr-0.0.1
         cp -a . /usr/src/kvmfr-0.0.1/
         dkms add kvmfr/0.0.1 2>/dev/null || true

@@ -344,8 +344,8 @@ if ($DoPull) {
     # ── Inject into 99-overrides.sh ──
     $ovr = Get-Content "scripts/99-overrides.sh" -Raw
     $ovr = $ovr.Replace('INJ_U', $U)
-    $ovr = $ovr -replace 'echo "INJ_U:INJ_P" \| chpasswd',   "echo `"${U}:${passHash}`" | chpasswd -e"
-    $ovr = $ovr -replace 'echo "root:INJ_P" \| chpasswd',     "echo `"root:${passHash}`" | chpasswd -e"
+    $ovr = $ovr -replace 'echo "INJ_U:INJ_P" \| chpasswd',   "echo '${U}:${passHash}' | chpasswd -e"
+    $ovr = $ovr -replace 'echo "root:INJ_P" \| chpasswd',     "echo 'root:${passHash}' | chpasswd -e"
     $ovr = $ovr.Replace('INJ_HASH', $passHash)
     $ovr = $ovr.Replace('INJ_P', '__REMOVED__')
     $ovr | Set-Content "scripts/99-overrides.sh" -NoNewline -Encoding ascii
