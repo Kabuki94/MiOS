@@ -439,7 +439,7 @@ function Get-BIBArgs {
         $bibArgs += @("-v", "$(Join-Path $OutputFolder '.luks-tmp'):/luks-pass:ro")
         $bibArgs += @("--env", "LUKS_PASSPHRASE_FILE=/luks-pass")
     }
-    $bibArgs += @($BIBImage, "build", "--type", $Type, "--local", $LocalImage)
+    $bibArgs += @($BIBImage, "build", "--type", $Type, "--rootfs", "ext4", "--local", $LocalImage)
     return $bibArgs
 }
 
@@ -456,11 +456,11 @@ if ($LASTEXITCODE -eq 0) {
 # ── VHDX ──
 Write-Step "TARGET 2 — VHD → VHDX (Hyper-V Gen2)..."
 Clean-BIBTemp
-$vhdArgs = Get-BIBArgs "vpc"
+$vhdArgs = Get-BIBArgs "vhd"
 & podman @vhdArgs 2>&1
 if ($LASTEXITCODE -eq 0) {
-    $vhdFile = Get-ChildItem $OutputFolder -Recurse -Filter "*.vpc" | Select-Object -First 1
-    if (-not $vhdFile) { $vhdFile = Get-ChildItem $OutputFolder -Recurse -Filter "*.vhd" | Select-Object -First 1 }
+    $vhdFile = Get-ChildItem $OutputFolder -Recurse -Filter "*.vhd" | Select-Object -First 1
+    if (-not $vhdFile) { $vhdFile = Get-ChildItem $OutputFolder -Recurse -Filter "*.vpc" | Select-Object -First 1 }
     if ($vhdFile) {
         # Use CloudWS helper image for qemu-img if available (has qemu-img via qemu-kvm package)
         # Falls back to alpine + apk add qemu-img for first-ever build
