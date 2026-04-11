@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v2.0 — 01-repos: Fedora 44 overlay on ucore (base kernel preserved)
+# CloudWS v0.1.1 — 01-repos: Fedora 44 overlay on ucore (base kernel preserved)
 #
 # STRATEGY: ucore-hci:stable-nvidia is Fedora CoreOS-based (fc43 stable).
 # We add Fedora 44 repos and distro-sync for GNOME 50, Mesa 26, systemd 260,

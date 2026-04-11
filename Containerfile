@@ -1,4 +1,4 @@
-# CloudWS v2.0 — Containerfile
+# CloudWS v0.1.1 — Containerfile
 # Build: podman build --no-cache --build-arg MAKEFLAGS="-j$(nproc)" -t cloudws:latest .
 # Lint:  podman run --rm cloudws:latest bootc container lint
 #
@@ -24,7 +24,7 @@
 # bootc-image-builder, osbuild, composer-cli — it can build itself.
 # Pull → build → push → repeat. cloudws-rebuild on deployed systems.
 #
-# CHANGELOG v2.0:
+# CHANGELOG v0.1.1:
 #   - Base: ucore-hci:stable-nvidia (pre-signed NVIDIA, fixes kernel panic)
 #   - install_weakdeps=False globally (was True — doc fix)
 #   - Pure build-up GNOME: install only what we need, zero removes

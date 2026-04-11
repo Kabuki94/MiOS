@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v1.3 — 12-virt: Virtualization, containers, orchestration, gaming
+# CloudWS v0.1.1 — 12-virt: Virtualization, containers, orchestration, gaming
 #
 # CHANGELOG v1.3:
 #   - Looking Glass B7: Added -DENABLE_LIBDECOR=ON for GNOME Wayland
@@ -208,7 +208,7 @@ fi
 # Placed in /usr/share/containers/systemd/ (immutable, baked into image).
 mkdir -p /usr/share/containers/systemd
 cat > /usr/share/containers/systemd/crowdsec-dashboard.container <<'EOQUAD'
-# CloudWS v1.3 — Example Podman quadlet for CrowdSec dashboard
+# CloudWS v0.1.1 — Example Podman quadlet for CrowdSec dashboard
 # To enable: symlink from /etc/containers/systemd/ or systemctl enable
 [Container]
 Image=docker.io/crowdsecurity/metabase:latest

@@ -1,19 +1,19 @@
 <#
 .SYNOPSIS
-    CloudWS v1.4 — Cloud Workstation OS Builder (Windows)
+    CloudWS v0.1.1 — Cloud Workstation OS Builder (Windows)
 
 .DESCRIPTION
     Secure build orchestrator with workflow selection.
     Tokens/passwords NEVER appear in plain text in logs or terminal output.
 
-    SECURITY FIXES in v1.4:
+    SECURITY FIXES in v0.1.1:
       - Passwords pre-hashed (SHA-512) before injection — plaintext never in build log
       - Registry token uses SecureString — never echoed, never in process args
       - Workflow menu: Local Build, Push Build, Custom Build
       - Admin/origin-owner detection for default token inference
       - Hostname randomization option for HA clusters
 
-    SELF-BUILDING in v1.4:
+    SELF-BUILDING in v0.1.1:
       - Pulls existing CloudWS image from GHCR as the helper/builder image
       - CloudWS image replaces alpine/python for all helper operations
       - Falls back to alpine/python only on first-ever build (no prior image)
@@ -28,7 +28,7 @@ Set-StrictMode -Version Latest
 # ══════════════════════════════════════════════════════════════════════════════
 #  CONFIGURATION
 # ══════════════════════════════════════════════════════════════════════════════
-$v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "1.4.0" }
+$v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "0.1.1" }
 $ImageName      = "cloudws"
 $ImageTag       = "latest"
 $DefUser        = "cloudws"
@@ -119,7 +119,7 @@ function Get-SHA512Hash {
     return $hash.Trim()
 }
 
-function Clean-BIBTemp { Get-ChildItem $OutputFolder -Directory -Filter "image" -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue }
+function Clean-BIBTemp { foreach ($d in "image","vpc","qcow2","bootiso") { Get-ChildItem $OutputFolder -Directory -Filter $d -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue } }
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  BANNER + WORKFLOW MENU
@@ -459,20 +459,28 @@ Clean-BIBTemp
 $vhdArgs = Get-BIBArgs "vhd"
 & podman @vhdArgs 2>&1
 if ($LASTEXITCODE -eq 0) {
-    $vhdFile = Get-ChildItem $OutputFolder -Recurse -Filter "*.vhd" | Select-Object -First 1
-    if (-not $vhdFile) { $vhdFile = Get-ChildItem $OutputFolder -Recurse -Filter "*.vpc" | Select-Object -First 1 }
+    # BIB nests output in subdirectories (vpc/disk.vhd or image/disk.vhd).
+    # Move to output root first so the container mount path is simple.
+    $vhdFile = Get-ChildItem $OutputFolder -Recurse -Include "*.vhd","*.vpc" | Select-Object -First 1
     if ($vhdFile) {
-        # Use CloudWS helper image for qemu-img if available (has qemu-img via qemu-kvm package)
-        # Falls back to alpine + apk add qemu-img for first-ever build
+        $vhdSrc = Join-Path $OutputFolder "disk.vhd"
+        if ($vhdFile.FullName -ne $vhdSrc) {
+            Move-Item $vhdFile.FullName $vhdSrc -Force
+        }
+        Write-Step "Converting disk.vhd → VHDX..."
         if ($HelperImage) {
             & podman run --rm -v "${OutputFolder}:/data:z" $HelperImage `
-                qemu-img convert -f vpc -O vhdx "/data/$($vhdFile.Name)" /data/cloudws-hyperv.vhdx
+                qemu-img convert -f vpc -O vhdx /data/disk.vhd /data/cloudws-hyperv.vhdx
         } else {
             & podman run --rm -v "${OutputFolder}:/data:z" $FallbackConvert sh -c `
-                "apk add --quiet qemu-img && qemu-img convert -f vpc -O vhdx /data/$($vhdFile.Name) /data/cloudws-hyperv.vhdx"
+                "apk add --quiet qemu-img && qemu-img convert -f vpc -O vhdx /data/disk.vhd /data/cloudws-hyperv.vhdx"
         }
-        Remove-Item $vhdFile.FullName -Force -ErrorAction SilentlyContinue
-        Write-OK "VHDX: $(Get-FileSize $TargetVhdx)"
+        Remove-Item $vhdSrc -Force -ErrorAction SilentlyContinue
+        Clean-BIBTemp
+        if (Test-Path $TargetVhdx) { Write-OK "VHDX: $(Get-FileSize $TargetVhdx)" }
+        else { Write-Warn "VHDX conversion failed — qemu-img error" }
+    } else {
+        Write-Warn "VHD file not found in BIB output"
     }
 } else { Write-Warn "VHD build failed" }
 
@@ -545,7 +553,7 @@ if (Test-Path $TargetWsl) {
         $wslCPUs = [Math]::Max(4, [Math]::Floor($cpu / 2))
         # Build .wslconfig content without here-string (avoids PS parser edge cases)
         $wslLines = @(
-            "# CloudWS v1.4 — WSL2 Configuration",
+            "# CloudWS v0.1.1 — WSL2 Configuration",
             "[wsl2]",
             "memory=${wslRAM}GB",
             "processors=${wslCPUs}",
