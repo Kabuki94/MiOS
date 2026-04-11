@@ -313,6 +313,21 @@ if ($LASTEXITCODE -eq 0) {
         Write-Step "After this build completes and pushes, subsequent builds will self-build"
     }
 }
+# ── Self-Building BIB: Try CloudWS as bootc-image-builder ────────────────────
+# CloudWS includes bootc-image-builder + osbuild as RPMs. If HelperImage is set,
+# verify it can serve as BIB. Falls back to centos-bootc on first build.
+$BIBSelfBuild = $false
+if ($HelperImage) {
+    $ErrorActionPreference = "Continue"
+    $bibCheck = & podman run --rm $HelperImage which bootc-image-builder 2>$null
+    if ($LASTEXITCODE -eq 0) {
+        $BIBImage = $HelperImage
+        $BIBSelfBuild = $true
+        Write-OK "Self-building BIB: CloudWS image will be used as bootc-image-builder"
+    } else {
+        Write-Step "CloudWS image lacks bootc-image-builder binary — using centos-bootc BIB"
+    }
+}
 $ErrorActionPreference = "Stop"
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -388,7 +403,15 @@ if ($DoPull) {
 
     # Update helper image reference — this freshly built image IS the builder now
     $HelperImage = $LocalImage
-    Write-OK "Helper image updated to freshly built $LocalImage (self-building ready)"
+    # Check if freshly built image can serve as BIB for deployment targets
+    $bibCheck = & podman run --rm $LocalImage which bootc-image-builder 2>$null
+    if ($LASTEXITCODE -eq 0) {
+        $BIBImage = $LocalImage
+        $BIBSelfBuild = $true
+        Write-OK "Helper image updated — self-building BIB active (CloudWS IS the builder)"
+    } else {
+        Write-OK "Helper image updated to freshly built $LocalImage (self-building ready)"
+    }
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -520,8 +543,8 @@ if (Test-Path $TargetVhdx) {
     try {
         Write-Step "Deploying to Hyper-V..."
         Remove-VM -Name $vmName -Force -ErrorAction SilentlyContinue
-        $extSwitch = Get-VMSwitch | Where-Object SwitchType -eq "External" | Select-Object -First 1
-        $vmSwitch = if ($extSwitch) { $extSwitch.Name } else { "Default Switch" }
+        $vmSwitch = (Get-VMSwitch | Where-Object SwitchType -eq "External" | Select-Object -First 1).Name
+        if (-not $vmSwitch) { $vmSwitch = "Default Switch" }
         $cpuHalf = [Math]::Max(4, [Math]::Floor($cpu / 2))
         New-VM -Name $vmName -MemoryStartupBytes 8GB -Generation 2 -VHDPath $TargetVhdx -SwitchName $vmSwitch | Out-Null
         Set-VM -Name $vmName -ProcessorCount $cpuHalf -StaticMemory -EnhancedSessionTransportType HvSocket
@@ -617,6 +640,8 @@ Write-Host ""
 # Self-building status
 if ($HelperImage) {
     Write-OK "Self-building: ACTIVE — CloudWS image used as builder"
+    if ($BIBSelfBuild) { Write-OK "  BIB: Self-building (CloudWS used as bootc-image-builder)" }
+    else { Write-OK "  BIB: External (centos-bootc)" }
     Write-OK "  Next build will pull this image and use it for all operations"
 } else {
     Write-Warn "Self-building: BOOTSTRAP — first build used fallback images"

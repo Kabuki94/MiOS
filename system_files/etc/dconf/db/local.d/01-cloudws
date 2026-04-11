@@ -13,7 +13,7 @@ titlebar-font='Geist Bold 11'
 button-layout='close,minimize:'
 
 [org/gnome/shell]
-favorite-apps=['org.gnome.Nautilus.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.Epiphany.desktop', 'cockpit.desktop', 'ceph-dashboard.desktop', 'org.gnome.Software.desktop']
+favorite-apps=['org.gnome.Nautilus.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.Epiphany.desktop', 'btop.desktop', 'cockpit.desktop', 'org.localsend.localsend_app.desktop', 'org.gnome.Software.desktop']
 enabled-extensions=['appindicatorsupport@rgcjonas.gmail.com', 'dash-to-dock@micxgx.gmail.com']
 
 [org/gnome/shell/extensions/dash-to-dock]
