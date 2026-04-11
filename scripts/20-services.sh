@@ -73,6 +73,8 @@ OPTIONAL_SERVICES=(
     rpcbind
     tailscaled
     xrdp
+    xrdp-sesman
+    cloudws-hyperv-enhanced
     waydroid-container
     cloud-init
     cloud-init-local

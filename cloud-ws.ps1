@@ -520,8 +520,8 @@ if (Test-Path $TargetVhdx) {
     try {
         Write-Step "Deploying to Hyper-V..."
         Remove-VM -Name $vmName -Force -ErrorAction SilentlyContinue
-        $vmSwitch = (Get-VMSwitch | Where-Object SwitchType -eq "External" | Select-Object -First 1).Name
-        if (-not $vmSwitch) { $vmSwitch = "Default Switch" }
+        $extSwitch = Get-VMSwitch | Where-Object SwitchType -eq "External" | Select-Object -First 1
+        $vmSwitch = if ($extSwitch) { $extSwitch.Name } else { "Default Switch" }
         $cpuHalf = [Math]::Max(4, [Math]::Floor($cpu / 2))
         New-VM -Name $vmName -MemoryStartupBytes 8GB -Generation 2 -VHDPath $TargetVhdx -SwitchName $vmSwitch | Out-Null
         Set-VM -Name $vmName -ProcessorCount $cpuHalf -StaticMemory -EnhancedSessionTransportType HvSocket

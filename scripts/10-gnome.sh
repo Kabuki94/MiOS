@@ -136,6 +136,7 @@ flatpak install -y --noninteractive flathub com.mattjakeman.ExtensionManager 2>/
 flatpak install -y --noninteractive flathub io.podman_desktop.PodmanDesktop 2>/dev/null || true
 flatpak install -y --noninteractive flathub com.github.tchx84.Flatseal 2>/dev/null || true
 flatpak install -y --noninteractive flathub page.tesk.Refine 2>/dev/null || true
+flatpak install -y --noninteractive flathub org.localsend.localsend_app 2>/dev/null || true
 
 # ═════════════════════════════════════════════════════════════════════════════
 # Flatpak Theming
