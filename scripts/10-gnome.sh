@@ -69,7 +69,7 @@ done
 echo "[10-gnome] Setting Qt Adwaita environment variables..."
 mkdir -p /etc/environment.d
 cat > /etc/environment.d/60-cloudws-qt-adwaita.conf <<'EOF'
-QT_QPA_PLATFORMTHEME=gnome
+QT_QPA_PLATFORMTHEME=adwaita
 QT_WAYLAND_DECORATION=adwaita
 QT_STYLE_OVERRIDE=adwaita
 EOF
@@ -170,3 +170,20 @@ fi
 echo "[10-gnome] GNOME 50 desktop installed (pure build-up on ucore base)."
 echo "[10-gnome] Zero removes. install_weakdeps=False prevented all bloat."
 echo "[10-gnome] Flatpaks: 6 pre-installed from Flathub (VSCodium removed, Refine added)."
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Network Discovery — Avahi / mDNS
+# Enables .local hostname discovery so CloudWS instances are reachable
+# as cloudws-XXXXX.local on the LAN without DNS configuration.
+# ═════════════════════════════════════════════════════════════════════════════
+echo "[10-gnome] Installing Avahi/mDNS for .local network discovery..."
+install_packages "network-discovery"
+
+# Configure nsswitch for mDNS resolution
+if [ -f /etc/nsswitch.conf ]; then
+    if ! grep -q 'mdns4_minimal' /etc/nsswitch.conf; then
+        sed -i 's/^hosts:.*/hosts:      files mdns4_minimal [NOTFOUND=return] dns myhostname/' /etc/nsswitch.conf
+    fi
+fi
+
+echo "[10-gnome] GNOME 50 desktop + network discovery installed."

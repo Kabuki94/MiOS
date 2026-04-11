@@ -1,4 +1,4 @@
-# CloudWS v0.1.1 — Containerfile
+# CloudWS v2.0 — Containerfile
 # Build: podman build --no-cache --build-arg MAKEFLAGS="-j$(nproc)" -t cloudws:latest .
 # Lint:  podman run --rm cloudws:latest bootc container lint
 #
@@ -12,25 +12,24 @@
 #   NVIDIA kmod (pre-signed with ublue MOK — fixes SecureBoot kernel panic),
 #   nvidia-container-toolkit, CDI, SELinux policy.
 #
-# Fedora 44 repos overlayed in 01-repos.sh → distro-sync upgrades to
-# GNOME 50 / systemd 260 / Mesa 26. Base image kernel preserved by default.
-# Rawhide kernel (7.0 RC) available via --build-arg CLOUDWS_RAWHIDE_KERNEL=1.
-#
-# GNOME 50 installed via pure build-up (~25 explicit packages).
-# install_weakdeps=False prevents bloat — malcontent UI/PAM/tools never
-# get pulled in, avoiding the dependency trap entirely.
-#
-# SELF-BUILDING: This image includes podman, buildah, skopeo, bootc,
-# bootc-image-builder, osbuild, composer-cli — it can build itself.
-# Pull → build → push → repeat. cloudws-rebuild on deployed systems.
-#
-# CHANGELOG v0.1.1:
-#   - Base: ucore-hci:stable-nvidia (pre-signed NVIDIA, fixes kernel panic)
-#   - install_weakdeps=False globally (was True — doc fix)
-#   - Pure build-up GNOME: install only what we need, zero removes
-#   - --mount=type=cache for dnf5, --mount=type=tmpfs for /tmp
-#   - /opt → /var/opt symlink, composefs, bootc kargs.d
-#   - MAKEFLAGS ARG for parallel compilation (akmod, Looking Glass)
+# BUILD SCRIPTS (modularized):
+#   01-repos.sh        Fedora 44 overlay, RPMFusion, Terra, CrowdSec
+#   02-kernel.sh       Kernel extras, headers, KVER capture
+#   10-gnome.sh        GNOME 50 desktop, Flatpaks, Bibata cursor, Geist font
+#   11-hardware.sh     GPU drivers (Mesa, NVIDIA verify, ROCm)
+#   12-virt.sh         KVM, containers, Cockpit, gaming, Looking Glass
+#   13-ceph-k3s.sh     Ceph distributed storage + K3s Kubernetes
+#   20-services.sh     systemd service enable/gating
+#   30-locale-theme.sh skel/.bashrc, GTK/Qt/Electron dark theme
+#   31-user.sh         PAM, user creation, groups, sudoers
+#   32-hostname.sh     Unique per-instance hostname (systemd wildcard)
+#   33-firewall.sh     Firewall init script
+#   34-gpu-detect.sh   GPU auto-detect service
+#   35-init-service.sh Every-boot init, Podman GC timer, Avahi/mDNS
+#   36-tools.sh        cloudws CLI + all management tools
+#   37-selinux.sh      SELinux policy modules
+#   38-vm-gating.sh    VM service gating, Hyper-V enhanced session, xRDP
+#   39-desktop-polish.sh Cockpit webapp, fastfetch, MOTD, desktop entries
 
 # ── Stage 1: Build context (never enters final image) ────────────────────────
 FROM scratch AS ctx
@@ -42,20 +41,12 @@ COPY system_files/ /system_files/
 # ── Stage 2: CloudWS bootc image ─────────────────────────────────────────────
 FROM ghcr.io/ublue-os/ucore-hci:stable-nvidia
 
-# MAKEFLAGS: passed from cloud-ws.ps1 as --build-arg MAKEFLAGS="-j32"
-# Propagates into all make/cmake invocations (akmod-nvidia, Looking Glass B7)
 ARG MAKEFLAGS="-j4"
 ENV MAKEFLAGS=${MAKEFLAGS}
 
-# CLOUDWS_RAWHIDE_KERNEL: opt-in to Linux 7.0 RC from Rawhide
-# Default: 0 (use base image kernel with pre-signed NVIDIA modules)
-# Set to 1 to upgrade: --build-arg CLOUDWS_RAWHIDE_KERNEL=1
 ARG CLOUDWS_RAWHIDE_KERNEL=0
 ENV CLOUDWS_RAWHIDE_KERNEL=${CLOUDWS_RAWHIDE_KERNEL}
 
-# Bind mount from ctx is READ-ONLY — copy to /tmp/build before sed -i or chmod.
-# SYSTEMD_OFFLINE=1 prevents scriptlets from starting services during build.
-# --mount=type=cache persists dnf cache across builds (5-10x faster rebuilds).
 RUN --mount=type=cache,dst=/var/cache/libdnf5 \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=tmpfs,dst=/tmp \
@@ -98,7 +89,7 @@ RUN --mount=type=bind,from=ctx,source=/system_files,target=/tmp/sf \
 
 # Post-build validation
 RUN echo "── Post-build validation ──" && \
-    for pkg in gnome-shell gdm podman bootc libvirt kernel firewalld cockpit; do \
+    for pkg in gnome-shell gdm podman bootc libvirt kernel firewalld cockpit avahi; do \
         rpm -q "$pkg" > /dev/null 2>&1 || echo "WARNING: $pkg not installed"; \
     done && \
     echo "── Validation complete ──"
@@ -113,9 +104,7 @@ RUN dnf config-manager setopt rpmfusion-free.enabled=0 2>/dev/null || true && \
     dnf config-manager setopt fedora-44-updates.enabled=0 2>/dev/null || true && \
     dnf config-manager setopt fedora-rawhide-kernel.enabled=0 2>/dev/null || true
 
-# Generate initramfs for BIB (bootc image builder) compatibility.
-# ucore-hci base ships kernel modules but no initramfs. BIB's lsinitrd
-# fails without it, blocking RAW/VHDX/ISO generation.
+# Generate initramfs for BIB compatibility.
 RUN KVER=$(ls -1 /lib/modules/ | sort -V | tail -1) && \
     echo "── Generating initramfs for kernel ${KVER} ──" && \
     if [ -n "$KVER" ] && [ ! -f "/lib/modules/${KVER}/initramfs.img" ] && \

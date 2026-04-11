@@ -1,10 +1,16 @@
-# CloudWS v1.3 — Package Manifest
+# CloudWS v2.0 — Package Manifest
 
 This file is both documentation and the **single source of truth** for all packages installed in CloudWS.
 Build scripts parse the fenced code blocks below using `scripts/lib/packages.sh`.
 To add a package, add it to the appropriate section. One package per line.
 
-**CHANGELOG v1.3.1:**
+**CHANGELOG v2.0:**
+- Removed htop (use btop instead)
+- Added nvidia-settings to NVIDIA section
+- Added avahi/nss-mdns for .local network discovery
+- Added network-discovery package section
+
+**CHANGELOG v1.3.1 (previous):**
 - Removed base kernel packages (kernel, kernel-core, kernel-modules, kernel-modules-core) — base image ships them
 - Fixed duplicate `pcp` and `pcp-system-tools` in Cockpit section
 - Removed `lib32-gamemode` and `libstrangle` (Arch-only, not in Fedora)
@@ -190,6 +196,7 @@ akmod-nvidia
 xorg-x11-drv-nvidia-cuda
 nvidia-container-toolkit
 nvidia-persistenced
+nvidia-settings
 ```
 
 ## Virtualization — KVM / QEMU / Libvirt
@@ -396,7 +403,6 @@ tmux
 vim-enhanced
 wget
 curl
-htop
 btop
 nvtop
 fastfetch
@@ -463,4 +469,15 @@ Build dependencies for Cockpit plugins from git.
 ```packages-cockpit-plugins-build
 npm
 gettext
+```
+
+## Network Discovery — Avahi / mDNS
+
+mDNS/DNS-SD for automatic .local hostname discovery on LAN.
+Every CloudWS instance advertises Cockpit and RDP services.
+
+```packages-network-discovery
+avahi
+avahi-tools
+nss-mdns
 ```

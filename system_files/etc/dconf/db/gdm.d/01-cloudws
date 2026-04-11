@@ -1,4 +1,9 @@
 [org/gnome/desktop/interface]
+color-scheme='prefer-dark'
 cursor-theme='Bibata-Modern-Classic'
 cursor-size=24
 font-name='Geist 11'
+gtk-theme='adw-gtk3-dark'
+
+[org/gnome/login-screen]
+banner-message-enable=false
