@@ -105,10 +105,7 @@ glibc-langpack-en
 # ── Qt Adwaita theming ──
 qt6-qtbase-gui
 qt6-qtwayland
-adwaita-qt5
-adwaita-qt6
 qadwaitadecorations-qt5
-qadwaitadecorations-qt6
 adw-gtk3-theme
 ```
 
@@ -238,7 +235,8 @@ container-selinux
 
 ## Cockpit Web Management
 
-Full Cockpit ecosystem with all plugins including Image Builder.
+Full Cockpit ecosystem with file browser and all plugins.
+cockpit-pcp removed (PCP metrics now native in cockpit-bridge since Cockpit 326).
 
 ```packages-cockpit
 cockpit
@@ -252,7 +250,7 @@ cockpit-podman
 cockpit-machines
 cockpit-ostree
 cockpit-selinux
-cockpit-pcp
+cockpit-files
 pcp
 pcp-system-tools
 ```
@@ -288,13 +286,13 @@ driverctl
 
 ## Gaming
 
-Steam, Wine, and Gamescope for SteamOS-mode GDM session.
+Steam, Wine, and Gamescope for gaming.
+gamescope-session-steam removed (ChimeraOS/Nobara only, not in Fedora repos).
 Removed lib32-gamemode and libstrangle (Arch-only, not in Fedora repos).
 
 ```packages-gaming
 steam
 gamescope
-gamescope-session-steam
 wine
 wine-mono
 wine-dxvk
@@ -383,10 +381,7 @@ booth-test
 dlm
 corosync-qdevice
 corosync-qnetd
-kronosnet
 libqb
-cluster-glue
-cluster-glue-libs
 libibverbs
 ```
 
