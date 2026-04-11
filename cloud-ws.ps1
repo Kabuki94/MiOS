@@ -344,8 +344,12 @@ if ($DoPull) {
     # ── Inject into 99-overrides.sh ──
     $ovr = Get-Content "scripts/99-overrides.sh" -Raw
     $ovr = $ovr.Replace('INJ_U', $U)
-    $ovr = $ovr -replace 'echo "INJ_U:INJ_P" \| chpasswd',   "echo '${U}:${passHash}' | chpasswd -e"
-    $ovr = $ovr -replace 'echo "root:INJ_P" \| chpasswd',     "echo 'root:${passHash}' | chpasswd -e"
+    # Change double quotes to single quotes on chpasswd lines BEFORE inserting hash.
+    # This prevents bash from expanding $6 in the hash as a variable.
+    # After INJ_U replacement, lines look like: echo "cloudws:INJ_HASH" | chpasswd -e
+    $ovr = $ovr.Replace("echo `"${U}:INJ_HASH`" | chpasswd -e", "echo '${U}:INJ_HASH' | chpasswd -e")
+    $ovr = $ovr.Replace('echo "root:INJ_HASH" | chpasswd -e', "echo 'root:INJ_HASH' | chpasswd -e")
+    # Now safe to insert hash — it's inside single quotes, bash won't expand $6
     $ovr = $ovr.Replace('INJ_HASH', $passHash)
     $ovr = $ovr.Replace('INJ_P', '__REMOVED__')
     $ovr | Set-Content "scripts/99-overrides.sh" -NoNewline -Encoding ascii
@@ -476,7 +480,8 @@ if ($LASTEXITCODE -eq 0) {
 Write-Step "TARGET 3 — WSL2 tarball..."
 $wslCid = & podman create $LocalImage 2>$null
 if ($wslCid) {
-    & podman export $wslCid 2>$null | Set-Content $TargetWsl -AsByteStream
+    # Use -o flag to write directly to file — PS 7 can't pipe binary through Set-Content
+    & podman export $wslCid -o $TargetWsl 2>$null
     & podman rm $wslCid 2>$null
 }
 if (Test-Path $TargetWsl) { Write-OK "WSL: $(Get-FileSize $TargetWsl)" }
