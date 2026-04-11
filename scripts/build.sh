@@ -24,7 +24,7 @@ log_ts() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
 }
 
-
+VERSION_STR="$(cat "${SCRIPT_DIR}/../VERSION" 2>/dev/null || cat /ctx/VERSION 2>/dev/null || echo '2.0.0')"
 
 echo "╔══════════════════════════════════════════════════════════════╗"
 echo "║  CloudWS v${VERSION_STR} — Building OS Image               ║"

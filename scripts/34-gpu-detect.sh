@@ -72,6 +72,6 @@ fi
 touch /run/cloudws-gpu-detected
 EOGPU
 chmod +x /usr/libexec/cloudws-gpu-detect
-systemctl enable cloudws-gpu-detect.service
+systemctl enable cloudws-gpu-detect.service 2>/dev/null || true
 
 echo "[34-gpu-detect] GPU detection service installed."

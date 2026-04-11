@@ -70,7 +70,7 @@ bootc status 2>/dev/null || true
 echo "[cloudws-init] CloudWS v2.0 initialized"
 EOINIT
 chmod +x /usr/libexec/cloudws-init
-systemctl enable cloudws-init.service
+systemctl enable cloudws-init.service 2>/dev/null || true
 
 # ═══ PODMAN GARBAGE COLLECTION TIMER ═══
 echo "[35-init-service] Installing Podman garbage collection timer..."
@@ -114,7 +114,7 @@ echo "[cloudws-podman-gc] Disk usage after cleanup:"
 podman system df 2>/dev/null || true
 EOGCSCRIPT
 chmod +x /usr/libexec/cloudws-podman-gc
-systemctl enable cloudws-podman-gc.timer
+systemctl enable cloudws-podman-gc.timer 2>/dev/null || true
 
 # ═══ AVAHI / mDNS — Network discovery ═══
 echo "[35-init-service] Configuring Avahi/mDNS for .local discovery..."
