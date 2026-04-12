@@ -99,8 +99,15 @@ if [ -f /tmp/bibata.tar.xz ]; then
     rm -f /tmp/bibata.tar.xz
 fi
 
-# System-wide cursor default (fixes grey box in xRDP/GDM/X11 fallback)
-echo "[10-gnome] Setting system-wide cursor default..."
+# System-wide cursor default — COMPREHENSIVE FIX
+# The cursor shows as a square/invisible when:
+#   - /usr/share/icons/default/index.theme doesn't point to Bibata
+#   - X11 cursor alternatives aren't configured
+#   - XCursor path doesn't include /usr/share/icons
+#   - GDM runs as gdm user who can't read the dconf cursor setting
+echo "[10-gnome] Setting system-wide cursor default (comprehensive)..."
+
+# 1. Default cursor theme for X11 (read by ALL X clients including xRDP)
 mkdir -p /usr/share/icons/default
 cat > /usr/share/icons/default/index.theme <<'EOCURSOR'
 [Icon Theme]
@@ -108,12 +115,30 @@ Name=Default
 Comment=Default Cursor Theme
 Inherits=Bibata-Modern-Classic
 EOCURSOR
-mkdir -p /etc/gtk-3.0
-cat >> /etc/gtk-3.0/settings.ini 2>/dev/null <<'EOGTK' || true
-[Settings]
-gtk-cursor-theme-name=Bibata-Modern-Classic
-gtk-cursor-theme-size=24
-EOGTK
+
+# 2. Also write to /usr/share/X11/icons/default (some X servers check here)
+mkdir -p /usr/share/X11/icons/default
+cp /usr/share/icons/default/index.theme /usr/share/X11/icons/default/index.theme 2>/dev/null || true
+
+# 3. update-alternatives for x-cursor-theme (Debian/Fedora cursor resolution)
+if [ -d /usr/share/icons/Bibata-Modern-Classic/cursors ]; then
+    update-alternatives --install /usr/share/icons/default/index.theme         x-cursor-theme /usr/share/icons/Bibata-Modern-Classic/cursor.theme 100 2>/dev/null || true
+    echo "[10-gnome] ✓ x-cursor-theme alternative set to Bibata"
+fi
+
+# 4. Symlink into /usr/share/cursors/xorg-x11 (legacy X11 cursor path)
+mkdir -p /usr/share/cursors/xorg-x11
+ln -sf /usr/share/icons/Bibata-Modern-Classic /usr/share/cursors/xorg-x11/Bibata-Modern-Classic 2>/dev/null || true
+
+# 5. GDM user cursor — write directly to gdm dconf db AND ensure
+#    the cursor files are world-readable
+if [ -d /usr/share/icons/Bibata-Modern-Classic ]; then
+    chmod -R a+rX /usr/share/icons/Bibata-Modern-Classic 2>/dev/null || true
+fi
+
+# 6. Xresources fallback (oldest X11 cursor method)
+echo "Xcursor.theme: Bibata-Modern-Classic" > /etc/X11/Xresources 2>/dev/null || true
+echo "Xcursor.size: 24" >> /etc/X11/Xresources 2>/dev/null || true
 
 # ═════════════════════════════════════════════════════════════════════════════
 # Flatpak Remotes

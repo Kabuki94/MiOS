@@ -269,6 +269,9 @@ Tools for Hyper-V Enhanced Session, SMB, and xRDP over vsock.
 ```packages-wintools
 xrdp
 xorgxrdp
+xorgxrdp-glamor
+gnome-session-xsession
+hyperv-tools
 samba
 samba-client
 cifs-utils
