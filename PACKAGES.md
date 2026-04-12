@@ -117,45 +117,42 @@ adw-gtk3-theme
 
 ## GNOME Core Apps (OPTIONAL — uncomment to include)
 
-These are additional GNOME Core Apps. By default they are EXCLUDED to keep
-the image lean. Epiphany (browser) handles documents, photos, and media.
-To include any, remove the `#` prefix from the package line.
+Essential GNOME Core Apps for a complete desktop experience.
+Commented-out apps are truly optional (connections, music, weather, maps, etc.).
+v2.0.2: Uncommented core desktop utilities (disk, sysmon, calc, text editor, etc.).
 
 ```packages-gnome-core-apps
-# ── Viewers (browser handles these — only uncomment if you want dedicated apps) ──
-# papers
-# loupe
-# showtime
-# gnome-text-editor
-#
+# ── Viewers ──
+papers
+loupe
+showtime
+gnome-text-editor
 # ── Utilities ──
-# gnome-disk-utility
-# gnome-system-monitor
-# baobab
+gnome-disk-utility
+gnome-system-monitor
+baobab
 # gnome-connections
-# gnome-tweaks
-# file-roller
+gnome-tweaks
+file-roller
 # resources
-# gnome-calculator
-# gnome-calendar
+gnome-calculator
+gnome-calendar
 # gnome-contacts
-# gnome-clocks
+gnome-clocks
 # gnome-weather
 # gnome-maps
-# gnome-characters
-# gnome-font-viewer
-#
+gnome-characters
+gnome-font-viewer
 # ── Media ──
 # gnome-music
-# snapshot
-# decibels
+snapshot
+decibels
 # cheese
-#
 # ── System ──
 # gnome-logs
 # deja-dup
 # simple-scan
-# seahorse
+seahorse
 # gnome-boxes
 ```
 
@@ -268,9 +265,7 @@ Tools for Hyper-V Enhanced Session, SMB, and xRDP over vsock.
 
 ```packages-wintools
 xrdp
-xorgxrdp
 xorgxrdp-glamor
-gnome-session-xsession
 hyperv-tools
 samba
 samba-client
@@ -404,7 +399,7 @@ Common command-line tools and system utilities.
 git
 tmux
 vim-enhanced
-wget
+wget2-wget
 curl
 btop
 nvtop
@@ -415,7 +410,7 @@ tuned
 tuned-ppd
 fuse
 fuse3
-p7zip
+7zip-standalone
 unzip
 rsync
 tree

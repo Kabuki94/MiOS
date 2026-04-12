@@ -549,14 +549,22 @@ if (Test-Path $TargetVhdx) {
         $vmRamGB = [Math]::Max(8, [Math]::Floor(((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB) * 0.75))
         $vmRam = [int64]$vmRamGB * 1GB
         New-VM -Name $vmName -MemoryStartupBytes $vmRam -Generation 2 -VHDPath $TargetVhdx -SwitchName $vmSwitch | Out-Null
-        Set-VM -Name $vmName -ProcessorCount $vmCpu -StaticMemory
+        Set-VM -Name $vmName -ProcessorCount $vmCpu -DynamicMemory -MemoryMinimumBytes 4GB -MemoryMaximumBytes $vmRam
         Set-VMFirmware -VMName $vmName -SecureBootTemplate "MicrosoftUEFICertificateAuthority"
         Write-OK "Hyper-V VM '$vmName' created (CPUs: $vmCpu | RAM: ${vmRamGB}GB)"
 
         # Start VM and wait for POST
         Write-Step "Starting VM..."
-        Start-VM -Name $vmName
-        Write-OK "VM starting — waiting for heartbeat..."
+        try {
+            Start-VM -Name $vmName
+            Write-OK "VM starting — waiting for heartbeat..."
+        } catch {
+            Write-Warn "Start-VM failed: $($_.Exception.Message)"
+            Write-Warn "Try starting manually: Start-VM -Name '$vmName'"
+            Write-Step "Applying Enhanced Session (HvSocket) anyway..."
+            Set-VM -Name $vmName -EnhancedSessionTransportType HvSocket
+            Write-OK "Enhanced Session configured. Start VM manually."
+        }
 
         # Wait for VM to fully POST (Hyper-V heartbeat integration service)
         $timeout = 120
@@ -580,8 +588,8 @@ if (Test-Path $TargetVhdx) {
         Stop-VM -Name $vmName -Force -ErrorAction SilentlyContinue
         Start-Sleep 3
         Set-VM -Name $vmName -EnhancedSessionTransportType HvSocket
-        Start-VM -Name $vmName
-        Write-OK "Enhanced Session enabled — VM restarting"
+        try { Start-VM -Name $vmName } catch { Write-Warn "Restart failed — start manually" }
+        Write-OK "Enhanced Session enabled"
 
         # Wait for second boot heartbeat
         $elapsed = 0

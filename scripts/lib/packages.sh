@@ -1,11 +1,11 @@
 #!/bin/bash
-# CloudWS v1.3 — Package extraction library
+# CloudWS v2.0.2 — Package extraction library
 # Parses PACKAGES.md fenced code blocks tagged with ```packages-<category>
 #
 # Usage:
 #   source scripts/lib/packages.sh
-#   PACKAGES=$(get_packages "gnome" "/path/to/PACKAGES.md")
-#   dnf -y install $PACKAGES
+#   install_packages "gnome"
+#   install_packages_strict "kernel"   # fails if section is empty/missing
 
 get_packages() {
     local category="$1"
@@ -37,7 +37,11 @@ install_packages() {
     packages=$(get_packages "$category" "$packages_file")
     if [[ -n "$packages" ]]; then
         echo "[packages.sh] Installing '$category' packages..."
-        dnf -y install --skip-unavailable $packages
+        # Use subshell so set -e in parent doesn't kill entire script on failure
+        (dnf -y install --skip-unavailable $packages) || {
+            echo "[packages.sh] WARNING: Some '$category' packages failed to install" >&2
+            echo "[packages.sh] Packages requested: $packages" >&2
+        }
     else
         echo "[packages.sh] WARN: No packages in section '$category' — skipping"
     fi
@@ -79,6 +83,8 @@ install_packages_optional() {
     packages=$(get_packages "$category" "$packages_file")
     if [[ -n "$packages" ]]; then
         echo "[packages.sh] Installing optional '$category' packages..."
-        dnf -y install --skip-unavailable $packages
+        (dnf -y install --skip-unavailable $packages) || {
+            echo "[packages.sh] WARNING: Some optional '$category' packages failed" >&2
+        }
     fi
 }
