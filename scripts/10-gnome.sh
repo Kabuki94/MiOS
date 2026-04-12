@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v2.0 — 10-gnome: GNOME 50 desktop — PURE BUILD-UP
+# CloudWS v0.1.3 — 10-gnome: GNOME 50 desktop — PURE BUILD-UP
 #
 # STRATEGY: ucore has ZERO GNOME packages. We install exactly what we need.
 # With install_weakdeps=False (set globally in 01-repos.sh), only hard deps
@@ -12,29 +12,17 @@
 # Wayland desktop with GDM, all portals, audio, Bluetooth, networking,
 # security, and proper theming across GTK3/GTK4/Qt.
 #
-# CHANGELOG v2.0:
-#   - Pure build-up: zero dnf removes (nothing to remove on ucore base)
-#   - install_weakdeps=False prevents bloat installation
-#   - Flatpak: disable filtered fedora remote, use unfiltered Flathub
-#   - Qt Adwaita env vars for cross-toolkit theming
-#   - Localsearch disabled via autostart override (never removed — breaks Nautilus)
-#   - Bibata cursor v2.0.8, Geist font
+# CHANGELOG v0.1.3:
+#   - MANDATORY Bibata cursor download — retries 3x, FAILS BUILD if missing
+#   - dconf profiles for user + GDM added to system_files/
+#   - Flatpak: 7 apps (added Flatseal + LocalSend)
+#   - adw-gtk3 theme for GTK3 visual consistency
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
 
 # ═════════════════════════════════════════════════════════════════════════════
 # GNOME 50 — Install from PACKAGES.md (build-up, NOT strip-down)
-#
-# PACKAGES.md packages-gnome block contains ~40 explicit packages.
-# With install_weakdeps=False, gnome-shell auto-resolves ~15 deps:
-#   mutter, gnome-session, gnome-settings-daemon, gjs, gnome-desktop4,
-#   gsettings-desktop-schemas, gtk4, libadwaita, pipewire, colord,
-#   polkit, dconf, adwaita-icon-theme, adwaita-cursor-theme, libinput
-#
-# These are NOT listed in PACKAGES.md — they come in automatically.
-# gnome-software is included for Flatpak management (no rpm-ostree plugin).
-# gnome-software-rpm-ostree is NOT included — it pulls in PackageKit.
 # ═════════════════════════════════════════════════════════════════════════════
 echo "[10-gnome] Installing GNOME 50 desktop (pure build-up)..."
 install_packages "gnome"
@@ -87,26 +75,51 @@ fi
 fc-cache -f /usr/share/fonts/geist 2>/dev/null || true
 
 # ═════════════════════════════════════════════════════════════════════════════
-# Bibata Cursor Theme
+# Bibata Cursor Theme — MANDATORY (build fails if download fails)
+#
+# The cursor shows as a SQUARE when:
+#   - /usr/share/icons/Bibata-Modern-Classic/ doesn't exist (download failed)
+#   - /usr/share/icons/default/index.theme points to nonexistent theme
+#   - dconf cursor-theme references a theme with no files
+#
+# FIX: Retry download 3 times. VERIFY the cursors directory exists.
+#      FAIL THE BUILD if cursors are missing — a square cursor is unacceptable.
 # ═════════════════════════════════════════════════════════════════════════════
-echo "[10-gnome] Installing Bibata-Modern-Classic cursor v2.0.8..."
+echo "[10-gnome] Installing Bibata-Modern-Classic cursor v2.0.8 (MANDATORY)..."
 BIBATA_VER="2.0.8"
+BIBATA_URL="https://github.com/ful1e5/Bibata_Cursor/releases/download/v${BIBATA_VER}/Bibata-Modern-Classic.tar.xz"
+BIBATA_DIR="/usr/share/icons/Bibata-Modern-Classic"
 mkdir -p /usr/share/icons
-curl -sL "https://github.com/ful1e5/Bibata_Cursor/releases/download/v${BIBATA_VER}/Bibata-Modern-Classic.tar.xz" \
-    -o /tmp/bibata.tar.xz 2>/dev/null || true
-if [ -f /tmp/bibata.tar.xz ]; then
-    tar -xf /tmp/bibata.tar.xz -C /usr/share/icons/ 2>/dev/null || true
-    rm -f /tmp/bibata.tar.xz
+
+# Download with retries — DO NOT silence errors
+BIBATA_OK=0
+for attempt in 1 2 3; do
+    echo "[10-gnome]   Download attempt $attempt/3..."
+    if curl -fSL --retry 3 --retry-delay 5 "$BIBATA_URL" -o /tmp/bibata.tar.xz; then
+        if tar -xf /tmp/bibata.tar.xz -C /usr/share/icons/; then
+            rm -f /tmp/bibata.tar.xz
+            BIBATA_OK=1
+            break
+        fi
+    fi
+    echo "[10-gnome]   Attempt $attempt failed, retrying..."
+    sleep 5
+done
+
+# VERIFY cursor files actually exist — fail build if missing
+if [ "$BIBATA_OK" -eq 0 ] || [ ! -d "$BIBATA_DIR/cursors" ]; then
+    echo "══════════════════════════════════════════════════════════════════"
+    echo "  FATAL: Bibata cursor theme download FAILED after 3 attempts"
+    echo "  URL: $BIBATA_URL"
+    echo "  The cursor will show as a SQUARE without this theme."
+    echo "  BUILD CANNOT CONTINUE."
+    echo "══════════════════════════════════════════════════════════════════"
+    exit 1
 fi
 
-# System-wide cursor default — COMPREHENSIVE FIX
-# The cursor shows as a square/invisible when:
-#   - /usr/share/icons/default/index.theme doesn't point to Bibata
-#   - X11 cursor alternatives aren't configured
-#   - XCursor path doesn't include /usr/share/icons
-#   - GDM runs as gdm user who can't read the dconf cursor setting
-echo "[10-gnome] Setting system-wide cursor default (comprehensive)..."
+echo "[10-gnome] ✓ Bibata cursor installed: $(ls "$BIBATA_DIR/cursors/" | wc -l) cursors"
 
+# Comprehensive cursor default — every layer that reads cursor theme
 # 1. Default cursor theme for X11 (read by ALL X clients including xRDP)
 mkdir -p /usr/share/icons/default
 cat > /usr/share/icons/default/index.theme <<'EOCURSOR'
@@ -120,9 +133,10 @@ EOCURSOR
 mkdir -p /usr/share/X11/icons/default
 cp /usr/share/icons/default/index.theme /usr/share/X11/icons/default/index.theme 2>/dev/null || true
 
-# 3. update-alternatives for x-cursor-theme (Debian/Fedora cursor resolution)
-if [ -d /usr/share/icons/Bibata-Modern-Classic/cursors ]; then
-    update-alternatives --install /usr/share/icons/default/index.theme         x-cursor-theme /usr/share/icons/Bibata-Modern-Classic/cursor.theme 100 2>/dev/null || true
+# 3. update-alternatives for x-cursor-theme (Fedora cursor resolution)
+if [ -d "$BIBATA_DIR/cursors" ]; then
+    update-alternatives --install /usr/share/icons/default/index.theme \
+        x-cursor-theme /usr/share/icons/Bibata-Modern-Classic/cursor.theme 100 2>/dev/null || true
     echo "[10-gnome] ✓ x-cursor-theme alternative set to Bibata"
 fi
 
@@ -130,13 +144,11 @@ fi
 mkdir -p /usr/share/cursors/xorg-x11
 ln -sf /usr/share/icons/Bibata-Modern-Classic /usr/share/cursors/xorg-x11/Bibata-Modern-Classic 2>/dev/null || true
 
-# 5. GDM user cursor — write directly to gdm dconf db AND ensure
-#    the cursor files are world-readable
-if [ -d /usr/share/icons/Bibata-Modern-Classic ]; then
-    chmod -R a+rX /usr/share/icons/Bibata-Modern-Classic 2>/dev/null || true
-fi
+# 5. GDM user cursor — ensure cursor files are world-readable
+chmod -R a+rX "$BIBATA_DIR" 2>/dev/null || true
 
 # 6. Xresources fallback (oldest X11 cursor method)
+mkdir -p /etc/X11
 echo "Xcursor.theme: Bibata-Modern-Classic" > /etc/X11/Xresources 2>/dev/null || true
 echo "Xcursor.size: 24" >> /etc/X11/Xresources 2>/dev/null || true
 
@@ -192,19 +204,12 @@ else
     echo "[10-gnome] WARNING: Waydroid OTA download failed — user must run: waydroid init -s GAPPS"
 fi
 
-echo "[10-gnome] GNOME 50 desktop installed (pure build-up on ucore base)."
-echo "[10-gnome] Zero removes. install_weakdeps=False prevented all bloat."
-echo "[10-gnome] Flatpaks: 6 pre-installed from Flathub (VSCodium removed, Refine added)."
-
 # ═════════════════════════════════════════════════════════════════════════════
 # Network Discovery — Avahi / mDNS
-# Enables .local hostname discovery so CloudWS instances are reachable
-# as cloudws-XXXXX.local on the LAN without DNS configuration.
 # ═════════════════════════════════════════════════════════════════════════════
 echo "[10-gnome] Installing Avahi/mDNS for .local network discovery..."
 install_packages "network-discovery"
 
-# Configure nsswitch for mDNS resolution
 if [ -f /etc/nsswitch.conf ]; then
     if ! grep -q 'mdns4_minimal' /etc/nsswitch.conf; then
         sed -i 's/^hosts:.*/hosts:      files mdns4_minimal [NOTFOUND=return] dns myhostname/' /etc/nsswitch.conf
@@ -212,3 +217,5 @@ if [ -f /etc/nsswitch.conf ]; then
 fi
 
 echo "[10-gnome] GNOME 50 desktop + network discovery installed."
+echo "[10-gnome] Cursor: Bibata-Modern-Classic ($(ls /usr/share/icons/Bibata-Modern-Classic/cursors/ | wc -l) cursors VERIFIED)"
+echo "[10-gnome] Flatpaks: 7 pre-installed from Flathub"
