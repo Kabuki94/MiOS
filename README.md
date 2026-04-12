@@ -23,20 +23,32 @@ Both variants produce identical output formats and share the same build scripts,
 
 ## Self-Building Architecture
 
-CloudWS is its own build environment. Each published image contains every tool needed to produce the next version — there is no separate "builder" image. When you run a build, the orchestrator pulls the previously published `ghcr.io/kabuki94/cloudws-bootc:latest` and uses it as the helper container for all build-time operations (hashing, `qemu-img` conversion, `openssl`, etc.). The only external dependency is `centos-bootc` BIB (bootc-image-builder) for disk image generation.
+CloudWS is its own build environment **and** its own image builder. Each published image ships every tool needed to produce the next version — including `osbuild`, `image-builder`, `qemu-img`, `openssl`, and all disk-image generation dependencies. There is no separate "builder" image. There is no external BIB container pull. The **only** images CloudWS ever pulls are the base images it builds on top of (`fedora-bootc:rawhide` or `ucore-hci:stable-nvidia`).
+
+When you run a build, the orchestrator:
+1. Pulls the previously published `ghcr.io/kabuki94/cloudws-bootc:latest`
+2. Uses it as the helper container for **all** build-time operations — credential hashing, OCI build support, `qemu-img` VHDX conversion, and disk image generation (RAW, ISO, VHDX, WSL)
+3. Builds the next CloudWS image on top of the base image
+4. The result is a new CloudWS image that can build the version after it
 
 ```
-┌─────────────────────────────────────────────────────┐
-│  CloudWS v(N) image (from GHCR)                    │
-│  ├── provides: openssl, qemu-img, coreutils, etc.  │
-│  └── used as helper for all build operations        │
-│                                                     │
-│  Containerfile + scripts/ + PACKAGES.md             │
-│  └── podman build → CloudWS v(N+1) image           │
-│                                                     │
-│  centos-bootc BIB (external)                        │
-│  └── converts OCI → RAW, VHDX, ISO, WSL            │
-└─────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                                                              │
+│  CloudWS v(N) image (pulled from GHCR)                      │
+│  ├── osbuild / image-builder  → RAW, ISO, VHDX generation   │
+│  ├── qemu-img                 → VHD → VHDX conversion        │
+│  ├── openssl                  → credential hashing            │
+│  ├── podman / buildah         → OCI container builds          │
+│  └── bootc-base-imagectl      → OCI layer rechunking          │
+│                                                              │
+│  Base image (fedora-bootc:rawhide OR ucore-hci:stable-nvidia)│
+│  └── Containerfile + scripts/ + PACKAGES.md                  │
+│      └── podman build → CloudWS v(N+1) image                 │
+│                                                              │
+│  No centos-bootc BIB. No Alpine helpers. No external tools.  │
+│  CloudWS is the only image. The base image is the only pull. │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -116,12 +128,12 @@ irm https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/preflight.ps1 
 |--------|-------------|
 | OCI Image | Compressed container (~8-12GB on registry), rechunked for optimal Day-2 updates |
 | RAW Disk | Bootable disk image (80 GiB root, optional LUKS2 encryption) |
-| VHDX | Dynamic Hyper-V Gen2 disk (BIB VHD → qemu-img VHDX conversion) |
+| VHDX | Dynamic Hyper-V Gen2 disk (VHD → qemu-img VHDX conversion inside CloudWS) |
 | WSL Tarball | WSL2 + WSLg import (`wsl --import`) |
 | Anaconda ISO | Installer for bare-metal (Rufus/Ventoy USB write) |
 | Registry Push | GHCR (`ghcr.io/kabuki94/cloudws-bootc:latest`), auto-update via `bootc upgrade` |
 
-After building, OCI layers are optimized via `bootc-base-imagectl rechunk` for 5-10x smaller Day-2 updates.
+All disk image generation happens inside the CloudWS helper container — no external builder images are pulled. After building, OCI layers are optimized via `bootc-base-imagectl rechunk` for 5-10x smaller Day-2 updates.
 
 ---
 
@@ -144,6 +156,7 @@ Fedora Rawhide (fc45) | GNOME 50 "Tokyo" | Wayland-only
 ├── PCP Metrics History (pmcd + pmlogger + pmproxy for Cockpit graphs)
 ├── cloud-init (autonomous deployment anywhere)
 ├── authselect local profile (PAM configured for reliable password auth)
+├── osbuild / image-builder (self-contained disk image generation)
 └── Self-replication (cloudws-rebuild → clone → build → push)
 ```
 
@@ -157,6 +170,7 @@ Fedora Rawhide (fc45) | GNOME 50 "Tokyo" | Wayland-only
 | Desktop | GNOME 50 (Wayland-only), Mutter, GTK 4, libadwaita, Geist font, Bibata cursor |
 | Virtualization | KVM / QEMU / libvirt, VFIO GPU passthrough, Looking Glass B7, swtpm |
 | Containers | Podman, Buildah, Skopeo, bootc, K3s |
+| Image Building | osbuild, osbuild-composer, image-builder, bootc-base-imagectl, qemu-img |
 | Gaming | Steam, Gamescope SteamOS session, Wine, Lutris, Bottles, MangoHud |
 | HA Clustering | Pacemaker, Corosync, PCS, keepalived, haproxy, etcd |
 | Security | CrowdSec (sovereign/offline), fapolicyd, USBGuard, firewalld |
@@ -252,15 +266,15 @@ The build script asks configuration questions before building (30-second timeout
 | Registry URL | `ghcr.io/kabuki94/cloudws-bootc` | Where to push the OCI image |
 | Registry credentials | From `$env:CLOUDWS_GHCR_USER` / `$env:CLOUDWS_GHCR_TOKEN` | PAT scope: `repo + write:packages` |
 
-The build pulls the **previously published CloudWS image** from GHCR as its helper container — CloudWS builds itself. A dedicated `cloudws-builder` Podman machine (250 GB disk) is created for the build — your existing default Podman machine is never touched.
+The build pulls the **previously published CloudWS image** from GHCR as its helper — CloudWS builds itself and generates its own disk images. A dedicated `cloudws-builder` Podman machine (250 GB disk) is created for the build — your existing default Podman machine is never touched.
 
 ### Build Pipeline
 
 1. **Phase 0** — Configuration prompts (username, password, LUKS, registry)
 2. **Phase 1** — Dedicated Podman builder machine init/start
-3. **Phase 1.5** — Pull previous CloudWS image as self-building helper
+3. **Phase 1.5** — Pull previous CloudWS image (self-building helper + image builder)
 4. **Phase 2** — `podman build --no-cache` with credential injection → rechunk
-5. **Phase 3** — BIB generates RAW, VHDX, WSL, ISO targets (80 GiB root via bib.json)
+5. **Phase 3** — CloudWS helper generates RAW, VHDX, WSL, ISO targets (80 GiB root via bib.json) — all disk image generation runs inside the CloudWS container, no external BIB image
 6. **Phase 4** — Push to GHCR with `--password-stdin` (token never in CLI args)
 7. **Phase 5** — Cleanup, restore default machine, build report
 
@@ -274,6 +288,8 @@ The build pulls the **previously published CloudWS image** from GHCR as its help
 
 4. **Rechunking**: After build, `bootc-base-imagectl rechunk` optimizes OCI layers for 5–10× smaller day-2 OTA deltas.
 
+5. **Disk image generation**: The CloudWS helper container (pulled in Phase 1.5) runs `osbuild` / `image-builder` internally to produce RAW, VHD, and ISO artifacts. `qemu-img convert` (also inside the CloudWS container) handles VHD → VHDX conversion. `podman export` generates the WSL tarball.
+
 ### Linux-Native Builds
 
 Use the `Justfile` for builds on Linux:
@@ -281,9 +297,9 @@ Use the `Justfile` for builds on Linux:
 ```bash
 just build          # podman build
 just rechunk        # optimize OCI layers
-just raw            # BIB → RAW disk image
-just iso            # BIB → Anaconda ISO
-just vhd            # BIB → VHD
+just raw            # CloudWS → RAW disk image
+just iso            # CloudWS → Anaconda ISO
+just vhd            # CloudWS → VHD → VHDX
 just wsl            # podman export → WSL tarball
 just push           # push to GHCR
 just all            # build + rechunk + all targets + push
@@ -303,8 +319,8 @@ CloudWS-bootc/
 ├── VERSION                     # 0.1.3
 ├── README.md                   # This file
 ├── config/
-│   ├── bib.json                # BIB: 80 GiB minimum root
-│   └── bib.toml                # BIB: 80 GiB minimum root (TOML)
+│   ├── bib.json                # Image builder: 80 GiB minimum root
+│   └── bib.toml                # Image builder: 80 GiB minimum root (TOML)
 ├── scripts/
 │   ├── build.sh                # Master runner — executes numbered scripts, times each
 │   ├── lib/packages.sh         # Parser — extracts packages from PACKAGES.md fenced blocks
@@ -345,7 +361,7 @@ All packages are declared in `PACKAGES.md` — the single source of truth. Build
 | GPU AMD Compute | 2 | ROCm OpenCL/HIP |
 | GPU NVIDIA | 3 | akmod-nvidia, CUDA, container toolkit |
 | Virtualization | 10 | QEMU, libvirt, virt-manager, OVMF, swtpm |
-| Containers | 16 | Podman, Buildah, Skopeo, bootc, osbuild, rpm-ostree |
+| Containers | 16 | Podman, Buildah, Skopeo, bootc, osbuild, image-builder, rpm-ostree |
 | Cockpit | 14 | Full plugin set + PCP + pcp-system-tools |
 | Windows Interop | 5 | xRDP, Samba, CIFS |
 | Security | 8 | CrowdSec, fapolicyd, USBGuard, driverctl |
@@ -422,7 +438,7 @@ sudo bootc rollback
 
 GNOME Software also shows OS updates via the rpm-ostree D-Bus bridge (`gnome-software-rpm-ostree` is pre-installed).
 
-**Update origin:** The image is tagged with the GHCR ref (`ghcr.io/kabuki94/cloudws-bootc:latest`) **before** BIB runs, so all disk images have the correct update origin baked in.
+**Update origin:** The image is tagged with the GHCR ref (`ghcr.io/kabuki94/cloudws-bootc:latest`) **before** disk images are generated, so all targets have the correct update origin baked in.
 
 **For already-deployed systems with wrong origin:**
 
@@ -440,11 +456,12 @@ This preserves all state in `/etc` and `/var` (SSH keys, home directories, confi
 ## Design Principles
 
 - **Immutable**: The root filesystem is read-only (ComposeFS). All mutable state lives under `/var` and `/etc`.
-- **Self-replicating**: CloudWS builds CloudWS. The published image is the build environment for the next version.
+- **Self-replicating**: CloudWS builds CloudWS. The published image is the build environment — and the image builder — for the next version. No external builder images are ever pulled.
 - **Declarative**: Every package, config file, and service is defined in version-controlled source. Nothing is installed interactively.
 - **Universal**: One image boots on bare metal, Hyper-V, QEMU, VMware, and WSL2. GPU auto-detection at boot adapts drivers and services to the detected environment.
 - **Atomic updates**: OTA updates pull the next image from GHCR. Rollback is one `bootc rollback` away.
 - **Zero post-install pulls**: Everything is baked at build time — no runtime package fetching required.
+- **Single-image stack**: The only images in the entire build pipeline are CloudWS itself (as helper/builder) and the upstream base image it layers on. No Alpine, no centos-bootc, no third-party tool containers.
 
 ---
 
@@ -481,7 +498,7 @@ PXE boot a standard Fedora Boot ISO, point it at this kickstart, and the install
 - **CPU**: Any x86_64 processor (AMD and Intel both supported)
 - **GPU**: AMD (Mesa), Intel (Mesa), NVIDIA (akmod or pre-signed modules)
 - **RAM**: 8 GB minimum, 16+ GB recommended
-- **Disk**: 80 GiB minimum (set by BIB config)
+- **Disk**: 80 GiB minimum (set by image builder config)
 
 ---
 
@@ -543,14 +560,13 @@ systemctl status serial-getty@ttyS0    # should show "masked"
 
 ### v0.1.3
 
-- **Self-building architecture** — CloudWS image is now the builder. No separate builder image required.
+- **Fully self-contained build stack** — CloudWS image now includes `osbuild`, `image-builder`, `qemu-img`, and all disk-image generation dependencies. No external BIB container is ever pulled. The only images in the pipeline are CloudWS (helper) and the upstream base image.
 - **CloudWS-2 variant** — Added `ucore-hci:stable-nvidia` base with pre-signed NVIDIA modules.
 - **Version unification** — Single `VERSION` file drives all version strings across install.ps1, cloud-ws.ps1, and build output.
 
 ### v0.1.2
 
 - Phase 1.5 self-building cycle — pulls previous CloudWS from GHCR as build helper.
-- BIB fallback to centos-bootc when CloudWS image lacks bootc-image-builder binary.
 
 ### v0.1.1
 
