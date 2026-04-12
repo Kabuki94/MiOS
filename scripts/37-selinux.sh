@@ -14,10 +14,12 @@ fi
 if command -v semanage &>/dev/null; then
     echo "[37-selinux] Applying SELinux booleans and fcontexts..."
     semanage import <<'EOSEM' 2>/dev/null || true
+boolean -m --on container_use_cephfs
 boolean -m --on daemons_dump_core
 boolean -m --on domain_can_mmap_files
 boolean -m --on virt_sandbox_use_all_caps
 boolean -m --on virt_use_nfs
+boolean -m --on virt_use_samba
 boolean -m --on nis_enabled
 fcontext -a -t boot_t '/boot/bootupd-state.json'
 fcontext -a -t accountsd_var_lib_t '/usr/share/accountsservice/interfaces(/.*)?'
@@ -90,6 +92,26 @@ allow systemd_portabled_t init_t:dbus send_msg;'
 module cloudws_kvmfr 1.0;
 require { type svirt_t; type device_t; class chr_file { open read write map getattr }; }
 allow svirt_t device_t:chr_file { open read write map getattr };'
+
+    # v2.0: coreos-boot-mount generator write access
+    CLOUDWS_POLICIES[coreos_bootmount]='
+module cloudws_coreos_bootmount 1.0;
+require { type coreos_boot_mount_generator_t; type systemd_generator_unit_file_t; class dir { write add_name remove_name }; class file { create write open rename unlink }; }
+allow coreos_boot_mount_generator_t systemd_generator_unit_file_t:dir { write add_name remove_name };
+allow coreos_boot_mount_generator_t systemd_generator_unit_file_t:file { create write open rename unlink };'
+
+    # v2.0: gdm-session-worker cache directory access
+    CLOUDWS_POLICIES[gdm_cache]='
+module cloudws_gdm_cache 1.0;
+require { type xdm_t; type cache_home_t; class dir { add_name write create setattr }; class file { create write open getattr setattr }; }
+allow xdm_t cache_home_t:dir { add_name write create setattr };
+allow xdm_t cache_home_t:file { create write open getattr setattr };'
+
+    # v2.0: systemd-homed read access on /home (var_home_t on bootc)
+    CLOUDWS_POLICIES[homed_varhome]='
+module cloudws_homed_varhome 1.0;
+require { type systemd_homed_t; type home_root_t; class dir { read getattr open search }; }
+allow systemd_homed_t home_root_t:dir { read getattr open search };'
 
     for name in "${!CLOUDWS_POLICIES[@]}"; do
         echo "${CLOUDWS_POLICIES[$name]}" > "/tmp/cloudws_${name}.te"

@@ -225,4 +225,10 @@ TimeoutStartSec=300
 WantedBy=multi-user.target
 EOQUAD
 
+# ── CrowdSec data volume (required by crowdsec-dashboard.container quadlet) ──
+cat > /usr/share/containers/systemd/crowdsec-data.volume <<'EOVOL'
+[Volume]
+# CloudWS v2.0: Persistent storage for CrowdSec Metabase dashboard
+EOVOL
+
 echo "[12-virt] Virtualization stack complete. LG: ${LG_VERSION} (K3s in 13-ceph-k3s.sh)"

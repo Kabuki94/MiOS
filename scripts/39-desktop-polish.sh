@@ -129,7 +129,7 @@ cat > /etc/fastfetch/config.jsonc <<'EOFF'
         {
             "type": "disk",
             "key": "  Disk",
-            "folders": "/"
+            "folders": "/sysroot"
         },
         "break",
         {

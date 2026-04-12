@@ -22,6 +22,16 @@ cat > /usr/libexec/cloudws-init <<'EOINIT'
 #!/bin/bash
 set -euo pipefail
 
+# ── Unique hostname from machine-id (stable across reboots) ──
+if [ -f /etc/machine-id ] && [ -s /etc/machine-id ]; then
+    TAG=$(head -c 5 /etc/machine-id)
+    CURRENT=$(hostname -s 2>/dev/null || echo "")
+    if [ "$CURRENT" = "cloudws" ] || [ "$CURRENT" = "localhost" ] || [ "$CURRENT" = "linux" ]; then
+        hostnamectl set-hostname "cloudws-${TAG}" 2>/dev/null || true
+        echo "[cloudws-init] Hostname set to cloudws-${TAG}"
+    fi
+fi
+
 # Ensure /var/opt exists (for /opt → /var/opt symlink)
 mkdir -p /var/opt
 
@@ -63,6 +73,10 @@ flatpak override --system --env=ADW_DEBUG_COLOR_SCHEME=prefer-dark 2>/dev/null |
 if [ "$VIRT" = "microsoft" ] && [ ! -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
     /usr/libexec/cloudws-hyperv-enhanced 2>/dev/null || true
 fi
+
+# Fix SELinux labels that may not survive ostree deploy
+restorecon -v /boot/bootupd-state.json 2>/dev/null || true
+restorecon -R /usr/share/accountsservice 2>/dev/null || true
 
 # bootc status
 bootc status 2>/dev/null || true

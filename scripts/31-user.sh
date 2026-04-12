@@ -1,18 +1,18 @@
 #!/bin/bash
-# CloudWS v2.0 — 31-user: PAM, user creation, groups, sudoers
+# CloudWS v2.0 ? 31-user: PAM, user creation, groups, sudoers
 # Must run AFTER skel is populated (31-locale-theme writes skel/.bashrc)
 # and BEFORE any service that references the user.
 set -euo pipefail
 
-echo "═══════════════════════════════════════════════════════════════════"
-echo "  CloudWS v2.0 — User & Authentication"
-echo "═══════════════════════════════════════════════════════════════════"
+echo "???????????????????????????????????????????????????????????????????"
+echo "  CloudWS v2.0 ? User & Authentication"
+echo "???????????????????????????????????????????????????????????????????"
 
-# ═══ PAM FIX ═══
+# ??? PAM FIX ???
 echo "[31-user] Configuring PAM via authselect..."
 if command -v authselect &>/dev/null; then
     authselect select local --force 2>/dev/null || {
-        echo "[31-user] WARNING: authselect failed — applying manual pam_unix fallback"
+        echo "[31-user] WARNING: authselect failed ? applying manual pam_unix fallback"
         for pf in system-auth password-auth; do
             cat > "/etc/pam.d/${pf}" <<'EOPAM'
 auth        required      pam_env.so
@@ -31,39 +31,39 @@ EOPAM
     }
 fi
 
-# ═══ USER CREATION ═══
-# Password is pre-hashed (SHA-512) by the orchestrator — plaintext NEVER in build log.
-echo "[31-user] Creating user INJ_U..."
-useradd -m -d /var/home/INJ_U -s /bin/bash INJ_U 2>/dev/null || true
-echo "INJ_U:INJ_HASH" | chpasswd -e
-echo "root:INJ_HASH" | chpasswd -e
-passwd -u INJ_U 2>/dev/null || true
+# ??? USER CREATION ???
+# Password is pre-hashed (SHA-512) by the orchestrator ? plaintext NEVER in build log.
+echo "[31-user] Creating user cloudws..."
+useradd -m -d /var/home/cloudws -s /bin/bash cloudws 2>/dev/null || true
+echo 'cloudws:$6$cC2X0Oo7yEpal6he$mAGl3mpYCtTokIOamC/tGzsdHqaSQY1a1r/MCWMpw4BJ.JRi2oSHIJDkc26J/ieE3bcyCu.CayJnebD0D4clw1' | chpasswd -e
+echo 'root:$6$cC2X0Oo7yEpal6he$mAGl3mpYCtTokIOamC/tGzsdHqaSQY1a1r/MCWMpw4BJ.JRi2oSHIJDkc26J/ieE3bcyCu.CayJnebD0D4clw1' | chpasswd -e
+passwd -u cloudws 2>/dev/null || true
 
-# ═══ GROUP INJECTION ═══
+# ??? GROUP INJECTION ???
 for g in wheel libvirt kvm video render input dialout; do
     groupadd -f "$g" 2>/dev/null || true
-    if ! grep -q "^${g}:.*INJ_U" /etc/group; then
-        sed -i "/^${g}:/ s/$/,INJ_U/" /etc/group
+    if ! grep -q "^${g}:.*cloudws" /etc/group; then
+        sed -i "/^${g}:/ s/$/,cloudws/" /etc/group
         sed -i "/^${g}:/ s/,:,/,/g; /^${g}:/ s/:,/:/g; /^${g}:/ s/,,/,/g" /etc/group
     fi
 done
 
-# ═══ SUDOERS ═══
+# ??? SUDOERS ???
 sed -i 's/^# %wheel\s*ALL=(ALL)\s*NOPASSWD:\s*ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
 echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel; chmod 440 /etc/sudoers.d/wheel
 
-# ═══ LOCALE ═══
+# ??? LOCALE ???
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
 localedef -i en_US -f UTF-8 en_US.UTF-8 2>/dev/null || true
 
-# ═══ CLOUD-INIT ═══
+# ??? CLOUD-INIT ???
 mkdir -p /etc/cloud/cloud.cfg.d
 cat > /etc/cloud/cloud.cfg.d/99-cloudws.cfg <<'EOCI'
 preserve_hostname: false
 ssh_pwauth: true
 system_info:
   default_user:
-    name: INJ_U
+    name: cloudws
     lock_passwd: false
     shell: /bin/bash
     sudo: ALL=(ALL) NOPASSWD:ALL
@@ -71,7 +71,7 @@ system_info:
 datasource_list: [NoCloud, None, Azure, GCE, Ec2, Openstack]
 EOCI
 
-# ═══ MULTIPATH ═══
+# ??? MULTIPATH ???
 mkdir -p /etc/multipath
 cat > /etc/multipath.conf <<'EOMP'
 defaults {
@@ -80,7 +80,7 @@ defaults {
 }
 EOMP
 
-# ═══ FIX HOME DIRECTORY OWNERSHIP ═══
+# ??? FIX HOME DIRECTORY OWNERSHIP ???
 echo "[31-user] Fixing home directory ownership..."
 for u in $(awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd); do
     home=$(getent passwd "$u" | cut -d: -f6)
@@ -90,7 +90,7 @@ for u in $(awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd); do
     fi
 done
 
-# ═══ NFS STATE DIRECTORY ═══
+# ??? NFS STATE DIRECTORY ???
 mkdir -p /var/lib/nfs/statd
 cat > /usr/lib/tmpfiles.d/cloudws-nfs.conf <<'EOTMP'
 d /var/lib/nfs/statd 0755 rpcuser rpcuser -
