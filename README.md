@@ -1,10 +1,43 @@
 # CloudWS — Cloud Workstation OS
 
-**Self-replicating, immutable, cloud-native workstation OS built on Fedora Rawhide bootc.**
+**Self-replicating, immutable, cloud-native workstation OS built on bootc.**
+
+> Version **v0.1.3** · [ghcr.io/kabuki94/cloudws-bootc:latest](https://ghcr.io/kabuki94/cloudws-bootc)
 
 GNOME 50 • Gamescope Steam Session • KVM/QEMU/VFIO • Podman/K3s • Pacemaker HA • CrowdSec (Sovereign)
 
 Fully portable — supports **AMD, Intel, and NVIDIA** CPUs and GPUs out of the box. GPU auto-detection at boot adjusts for bare metal, Hyper-V, QEMU, or VMware. One image runs everywhere: bare metal, Hyper-V, QEMU/KVM, VMware, WSL2, and OCI containers.
+
+---
+
+## Variants
+
+| Variant | Base Image | Use Case |
+|---------|-----------|----------|
+| **CloudWS-1** | `quay.io/fedora/fedora-bootc:rawhide` | Fedora Rawhide with akmod-built GPU drivers |
+| **CloudWS-2** | `ghcr.io/ublue-os/ucore-hci:stable-nvidia` | Pre-signed NVIDIA modules via Universal Blue MOK |
+
+Both variants produce identical output formats and share the same build scripts, package manifest, and system overlays.
+
+---
+
+## Self-Building Architecture
+
+CloudWS is its own build environment. Each published image contains every tool needed to produce the next version — there is no separate "builder" image. When you run a build, the orchestrator pulls the previously published `ghcr.io/kabuki94/cloudws-bootc:latest` and uses it as the helper container for all build-time operations (hashing, `qemu-img` conversion, `openssl`, etc.). The only external dependency is `centos-bootc` BIB (bootc-image-builder) for disk image generation.
+
+```
+┌─────────────────────────────────────────────────────┐
+│  CloudWS v(N) image (from GHCR)                    │
+│  ├── provides: openssl, qemu-img, coreutils, etc.  │
+│  └── used as helper for all build operations        │
+│                                                     │
+│  Containerfile + scripts/ + PACKAGES.md             │
+│  └── podman build → CloudWS v(N+1) image           │
+│                                                     │
+│  centos-bootc BIB (external)                        │
+│  └── converts OCI → RAW, VHDX, ISO, WSL            │
+└─────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -116,6 +149,24 @@ Fedora Rawhide (fc45) | GNOME 50 "Tokyo" | Wayland-only
 
 ---
 
+## Technology Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Base OS | Fedora Rawhide bootc (fc45) / ucore-hci, ComposeFS, dnf5, systemd, SELinux |
+| Desktop | GNOME 50 (Wayland-only), Mutter, GTK 4, libadwaita, Geist font, Bibata cursor |
+| Virtualization | KVM / QEMU / libvirt, VFIO GPU passthrough, Looking Glass B7, swtpm |
+| Containers | Podman, Buildah, Skopeo, bootc, K3s |
+| Gaming | Steam, Gamescope SteamOS session, Wine, Lutris, Bottles, MangoHud |
+| HA Clustering | Pacemaker, Corosync, PCS, keepalived, haproxy, etcd |
+| Security | CrowdSec (sovereign/offline), fapolicyd, USBGuard, firewalld |
+| GPU | Mesa (AMD/Intel), NVIDIA akmod or pre-signed modules, ROCm, driverctl |
+| Android | Waydroid with GAPPS |
+| Storage | CephFS / cephadm (planned), NFS, GlusterFS, iSCSI, Stratis, LVM |
+| Registry | GHCR (`ghcr.io/kabuki94/cloudws-bootc:latest`) |
+
+---
+
 ## Desktop
 
 **GDM Sessions:**
@@ -180,6 +231,15 @@ Accessible at **https://localhost:9090** after login. Cockpit is pinned to the d
 
 ## Build System
 
+### Build Workflows
+
+| Workflow | Description |
+|----------|-------------|
+| **Local Build Only** | Build the OCI image and generate deployment targets locally |
+| **Build + Push** | Full pipeline — build, generate targets, push to GHCR |
+| **Custom Build** | Specify custom username, password, hostname, registry, and token |
+| **Pull + Deploy Only** | Pull an existing image from GHCR and generate deployment targets |
+
 ### Build Configuration
 
 The build script asks configuration questions before building (30-second timeout per question, then defaults apply):
@@ -192,16 +252,27 @@ The build script asks configuration questions before building (30-second timeout
 | Registry URL | `ghcr.io/kabuki94/cloudws-bootc` | Where to push the OCI image |
 | Registry credentials | From `$env:CLOUDWS_GHCR_USER` / `$env:CLOUDWS_GHCR_TOKEN` | PAT scope: `repo + write:packages` |
 
-The build creates a **dedicated `cloudws-builder` Podman machine** (250 GB disk) — your existing default Podman machine is never touched.
+The build pulls the **previously published CloudWS image** from GHCR as its helper container — CloudWS builds itself. A dedicated `cloudws-builder` Podman machine (250 GB disk) is created for the build — your existing default Podman machine is never touched.
 
 ### Build Pipeline
 
 1. **Phase 0** — Configuration prompts (username, password, LUKS, registry)
 2. **Phase 1** — Dedicated Podman builder machine init/start
-3. **Phase 2** — `podman build --no-cache` with credential injection → rechunk
-4. **Phase 3** — BIB generates RAW, VHDX, WSL, ISO targets (80 GiB root via bib.json)
-5. **Phase 4** — Push to GHCR with `--password-stdin` (token never in CLI args)
-6. **Phase 5** — Cleanup, restore default machine, build report
+3. **Phase 1.5** — Pull previous CloudWS image as self-building helper
+4. **Phase 2** — `podman build --no-cache` with credential injection → rechunk
+5. **Phase 3** — BIB generates RAW, VHDX, WSL, ISO targets (80 GiB root via bib.json)
+6. **Phase 4** — Push to GHCR with `--password-stdin` (token never in CLI args)
+7. **Phase 5** — Cleanup, restore default machine, build report
+
+### How the OCI Build Works
+
+1. **Stage 1** (`FROM scratch AS ctx`): Copies `scripts/`, `PACKAGES.md`, `VERSION`, and `system_files/` into a scratch layer for bind-mounting.
+
+2. **Stage 2** (`FROM <base-image>`): A single `RUN` directive bind-mounts the context read-only, copies files to a writable `/tmp/build`, strips Windows line endings, runs `build.sh` (which executes each numbered script in glob order), then cleans up. A second `RUN` overlays `system_files/` into the root filesystem and runs `dconf update`. The image is labeled for bootc and validated with `bootc container lint`.
+
+3. **Credential injection**: The orchestrator replaces `INJ_U` / `INJ_P` placeholders in `99-overrides.sh` with a pre-hashed password before building, then immediately restores the placeholders via `git checkout`. Plaintext credentials never appear in the build log.
+
+4. **Rechunking**: After build, `bootc-base-imagectl rechunk` optimizes OCI layers for 5–10× smaller day-2 OTA deltas.
 
 ### Linux-Native Builds
 
@@ -225,11 +296,11 @@ just switch         # fix deployed system's update origin
 
 ```
 CloudWS-bootc/
-├── Containerfile               # Two-stage OCI build (scratch context + Fedora bootc)
+├── Containerfile               # Two-stage OCI build (scratch context + bootc base)
 ├── cloud-ws.ps1                # Windows build orchestrator (PowerShell)
 ├── Justfile                    # Linux build targets
 ├── PACKAGES.md                 # Single source of truth — all packages (~240 RPMs, 6 Flatpaks)
-├── VERSION                     # Semver (1.2.0)
+├── VERSION                     # 0.1.3
 ├── README.md                   # This file
 ├── config/
 │   ├── bib.json                # BIB: 80 GiB minimum root
@@ -366,6 +437,17 @@ This preserves all state in `/etc` and `/var` (SSH keys, home directories, confi
 
 ---
 
+## Design Principles
+
+- **Immutable**: The root filesystem is read-only (ComposeFS). All mutable state lives under `/var` and `/etc`.
+- **Self-replicating**: CloudWS builds CloudWS. The published image is the build environment for the next version.
+- **Declarative**: Every package, config file, and service is defined in version-controlled source. Nothing is installed interactively.
+- **Universal**: One image boots on bare metal, Hyper-V, QEMU, VMware, and WSL2. GPU auto-detection at boot adapts drivers and services to the detected environment.
+- **Atomic updates**: OTA updates pull the next image from GHCR. Rollback is one `bootc rollback` away.
+- **Zero post-install pulls**: Everything is baked at build time — no runtime package fetching required.
+
+---
+
 ## Network Boot (PXE)
 
 CloudWS supports network deployment via Anaconda + Kickstart:
@@ -383,6 +465,23 @@ reboot
 ```
 
 PXE boot a standard Fedora Boot ISO, point it at this kickstart, and the installer pulls CloudWS from the registry. For air-gapped environments, use the Anaconda ISO target directly.
+
+---
+
+## Requirements
+
+### Build Host
+
+- **Windows**: Podman Desktop (with WSL2 backend), PowerShell 7+, 32 GB RAM recommended
+- **Linux**: Podman (rootful), `just` (for Justfile), 32 GB RAM recommended
+- **Registry**: GitHub PAT with `repo` + `write:packages` scope (for push workflow)
+
+### Target Hardware
+
+- **CPU**: Any x86_64 processor (AMD and Intel both supported)
+- **GPU**: AMD (Mesa), Intel (Mesa), NVIDIA (akmod or pre-signed modules)
+- **RAM**: 8 GB minimum, 16+ GB recommended
+- **Disk**: 80 GiB minimum (set by BIB config)
 
 ---
 
@@ -440,33 +539,30 @@ systemctl status serial-getty@ttyS0    # should show "masked"
 
 ---
 
-## v1.1 Changelog
+## Changelog
 
-### Critical Fixes
+### v0.1.3
 
-1. **Hyper-V Boot Hang** — Services that only make sense on bare metal (NFS, Pacemaker, CrowdSec, multipathd) now have `ConditionVirtualization=no` drop-ins. VMs skip them instantly instead of waiting 60-90+ seconds.
+- **Self-building architecture** — CloudWS image is now the builder. No separate builder image required.
+- **CloudWS-2 variant** — Added `ucore-hci:stable-nvidia` base with pre-signed NVIDIA modules.
+- **Version unification** — Single `VERSION` file drives all version strings across install.ps1, cloud-ws.ps1, and build output.
 
-2. **GNOME Software Updates** — Image tagged with GHCR ref before BIB so update origin is correct. `gnome-software-rpm-ostree` installed for OS update discovery.
+### v0.1.2
 
-3. **PAT Token Security** — Registry token now piped via `--password-stdin` (never appears in CLI args or terminal output).
+- Phase 1.5 self-building cycle — pulls previous CloudWS from GHCR as build helper.
+- BIB fallback to centos-bootc when CloudWS image lacks bootc-image-builder binary.
 
-4. **PCP/Cockpit Metrics** — `pcp` and `pcp-system-tools` added to PACKAGES.md. `pmcd`, `pmlogger`, `pmproxy` enabled and restarted in cloudws-init.
+### v0.1.1
 
-5. **App Folders** — All apps sorted into 5 dconf folders (Development, Gaming, System, Virtualization). No loose apps in the grid. Desktop IDs verified against actual installed .desktop filenames.
+- Initial public installer (`install.ps1` one-liner).
+- Preflight checker (`preflight.ps1`).
+- Four build workflows (Local, Build+Push, Custom, Pull+Deploy).
 
-6. **Cockpit Dock Pin** — `cockpit.desktop` created in 99-overrides.sh, referenced correctly in dconf favorites.
+### v0.1.0
 
-7. **Logs Flatpak Restored** — `org.gnome.Logs` reinstated. Exactly 6 Flatpaks as specified.
-
-8. **Rechunk Fix** — `bootc-base-imagectl rechunk` now has both `from_image` and `to_image` arguments.
-
-9. **SELinux Per-Rule Modules** — Monolithic policy split into 5 individual modules (bootupd, accountsd, resolved, fapolicyd, chcon) so missing types only affect that specific module.
-
-10. **VM Service Gating** — Proper drop-in files instead of runtime `systemctl mask --now`. GDM skips in WSL2 only (Hyper-V VMs keep GDM). nvidia-powerd skips in all VMs.
-
-11. **serial-getty@ttyS0 Masked** — No more crash-loop noise in Hyper-V journals.
-
-12. **osbuild-worker@1 Gated** — Added to bare-metal-only services (was crash-looping in VMs).
+- Initial release. Fedora Rawhide bootc base, GNOME 50, full virtualization stack, Gamescope session.
+- Five output formats: RAW, VHDX, WSL, ISO, OCI push.
+- 14 custom CLI tools, GPU auto-detect, SELinux hardening.
 
 ---
 
@@ -481,4 +577,8 @@ CloudWS assembles open-source and select proprietary components under their resp
 - **CrowdSec:** MIT | **K3s:** Apache-2.0 | **Looking Glass:** GPL-2.0
 - **Flatpak apps:** Per-app (GNOME: GPL, Bottles: GPL-3.0, Podman Desktop: Apache-2.0)
 
-Build scripts and CloudWS tooling: **MIT License**.
+Build scripts and CloudWS tooling: **MIT License**
+
+---
+
+Built by [Kabu](https://github.com/Kabuki94) · [ghcr.io/kabuki94/cloudws-bootc](https://ghcr.io/kabuki94/cloudws-bootc)
