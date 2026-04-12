@@ -549,11 +549,50 @@ if (Test-Path $TargetVhdx) {
         $vmRamGB = [Math]::Max(8, [Math]::Floor(((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB) * 0.75))
         $vmRam = [int64]$vmRamGB * 1GB
         New-VM -Name $vmName -MemoryStartupBytes $vmRam -Generation 2 -VHDPath $TargetVhdx -SwitchName $vmSwitch | Out-Null
-        Set-VM -Name $vmName -ProcessorCount $vmCpu -StaticMemory -EnhancedSessionTransportType HvSocket
+        Set-VM -Name $vmName -ProcessorCount $vmCpu -StaticMemory
         Set-VMFirmware -VMName $vmName -SecureBootTemplate "MicrosoftUEFICertificateAuthority"
-        Write-OK "Hyper-V VM '$vmName' created"
-        Write-OK "  CPUs: $vmCpu | RAM: ${vmRamGB}GB (75% of host) | Enhanced Session: ON"
-        Write-OK "  Start: Start-VM -Name '$vmName'"
+        Write-OK "Hyper-V VM '$vmName' created (CPUs: $vmCpu | RAM: ${vmRamGB}GB)"
+
+        # Start VM and wait for POST
+        Write-Step "Starting VM..."
+        Start-VM -Name $vmName
+        Write-OK "VM starting — waiting for heartbeat..."
+
+        # Wait for VM to fully POST (Hyper-V heartbeat integration service)
+        $timeout = 120
+        $elapsed = 0
+        while ($elapsed -lt $timeout) {
+            $hb = (Get-VMIntegrationService -VMName $vmName | Where-Object Name -eq "Heartbeat").PrimaryStatusDescription
+            if ($hb -eq "OK") { break }
+            Start-Sleep 5
+            $elapsed += 5
+            Write-Host "      » Waiting for POST... (${elapsed}s)" -ForegroundColor DarkGray
+        }
+
+        if ($hb -eq "OK") {
+            Write-OK "VM fully booted (heartbeat OK)"
+        } else {
+            Write-Warn "VM may still be booting (no heartbeat after ${timeout}s)"
+        }
+
+        # Apply Enhanced Session AFTER VM is fully running
+        Write-Step "Enabling Enhanced Session (HvSocket)..."
+        Stop-VM -Name $vmName -Force -ErrorAction SilentlyContinue
+        Start-Sleep 3
+        Set-VM -Name $vmName -EnhancedSessionTransportType HvSocket
+        Start-VM -Name $vmName
+        Write-OK "Enhanced Session enabled — VM restarting"
+
+        # Wait for second boot heartbeat
+        $elapsed = 0
+        while ($elapsed -lt $timeout) {
+            $hb = (Get-VMIntegrationService -VMName $vmName | Where-Object Name -eq "Heartbeat").PrimaryStatusDescription
+            if ($hb -eq "OK") { break }
+            Start-Sleep 5
+            $elapsed += 5
+        }
+        Write-OK "Hyper-V VM '$vmName' ready with Enhanced Session"
+        Write-OK "  Connect: vmconnect.exe localhost $vmName"
     } catch { Write-Warn "Hyper-V auto-deploy failed: $_" }
 }
 
