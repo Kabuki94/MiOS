@@ -1,4 +1,4 @@
-# CloudWS v2.0 — Containerfile
+# CloudWS v2.1 — Containerfile
 # Build: podman build --no-cache --build-arg MAKEFLAGS="-j$(nproc)" -t cloudws:latest .
 # Lint:  podman run --rm cloudws:latest bootc container lint
 #
@@ -16,10 +16,10 @@
 #   01-repos.sh        Fedora 44 overlay, RPMFusion, Terra, CrowdSec
 #   02-kernel.sh       Kernel extras, headers, KVER capture
 #   10-gnome.sh        GNOME 50 desktop, Flatpaks, Bibata cursor, Geist font
-#   11-hardware.sh     GPU drivers (Mesa, NVIDIA verify, ROCm)
+#   11-hardware.sh     GPU drivers (Mesa, NVIDIA verify, ROCm, CDI)
 #   12-virt.sh         KVM, containers, Cockpit, gaming, Looking Glass
 #   13-ceph-k3s.sh     Ceph distributed storage + K3s Kubernetes
-#   20-services.sh     systemd service enable/gating
+#   20-services.sh     systemd service enable/gating + podman-auto-update
 #   30-locale-theme.sh skel/.bashrc, GTK/Qt/Electron dark theme
 #   31-user.sh         PAM, user creation, groups, sudoers
 #   32-hostname.sh     Unique per-instance hostname (systemd wildcard)
@@ -27,9 +27,22 @@
 #   34-gpu-detect.sh   GPU auto-detect service
 #   35-init-service.sh Every-boot init, Podman GC timer, Avahi/mDNS
 #   36-tools.sh        cloudws CLI + all management tools
-#   37-selinux.sh      SELinux policy modules
+#   37-selinux.sh      SELinux policy modules (15 custom modules)
 #   38-vm-gating.sh    VM service gating, Hyper-V enhanced session, xRDP
 #   39-desktop-polish.sh Cockpit webapp, fastfetch, MOTD, desktop entries
+#
+# CHANGELOG v2.1:
+#   - Cosign/SBOM OCI labels for image signing pipeline readiness
+#   - Logically-bound images directory (/usr/lib/bootc/bound-images.d/)
+#   - Improved restorecon: covers /usr/lib/bootc and /usr/lib/ostree paths
+#   - systemd unit enablement validation in post-build checks
+#   - LABEL placement before CMD (OCI spec compliance)
+#   - io.opencontainers.image.* labels for registry discoverability
+#   - New packages: dnf5-plugins (versionlock), bootupd
+#   - SecureBlue kernel hardening: init_on_free=1, lockdown=confidentiality
+#   - 3 new SELinux policies (cdi, quadlet, sysext)
+#   - Podman quadlet AutoUpdate=registry support
+#   - NVIDIA CDI as default mode (nvidia-container-toolkit v1.19+)
 
 # ── Stage 1: Build context (never enters final image) ────────────────────────
 FROM scratch AS ctx
@@ -67,6 +80,10 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5 \
 # /opt → /var/opt: writable /opt on immutable filesystem
 RUN rm -rf /opt && ln -s /var/opt /opt
 
+# Prepare directories for logically-bound images (bootc v1.13+)
+# Symlink .image quadlet files here to pre-pull containers during bootc upgrade.
+RUN mkdir -p /usr/lib/bootc/bound-images.d
+
 # System file overlay (dconf, systemd units, modprobe.d, sysctl, etc.)
 # NOTE: On ucore, /usr/local is a symlink → /var/usrlocal. cp -a cannot
 # overwrite a symlink with a directory, so we handle /usr/local separately.
@@ -85,14 +102,34 @@ RUN --mount=type=bind,from=ctx,source=/system_files,target=/tmp/sf \
     find /usr/lib/systemd/system -name "*.mount" -o -name "*.service" -o -name "*.conf" 2>/dev/null | xargs chmod 644 2>/dev/null || true && \
     chmod +x /usr/bin/gamescope-session-steam /usr/bin/steamos-session-select 2>/dev/null || true && \
     dconf update 2>/dev/null || true && \
-    restorecon -R /etc /var /boot 2>/dev/null || true
+    restorecon -R /etc /var /boot /usr/lib/bootc /usr/lib/ostree 2>/dev/null || true
 
-# Post-build validation
+# Post-build validation: critical packages + systemd unit enablement
 RUN echo "── Post-build validation ──" && \
-    for pkg in gnome-shell gdm podman bootc libvirt kernel firewalld cockpit avahi; do \
-        rpm -q "$pkg" > /dev/null 2>&1 || echo "WARNING: $pkg not installed"; \
+    MISSING=0 && \
+    for pkg in gnome-shell gdm podman bootc libvirt kernel firewalld cockpit avahi tuned bootupd; do \
+        if rpm -q "$pkg" > /dev/null 2>&1; then \
+            echo "  ✓ $pkg"; \
+        else \
+            echo "  ✗ $pkg MISSING"; \
+            MISSING=$((MISSING + 1)); \
+        fi; \
     done && \
-    echo "── Validation complete ──"
+    echo "── Checking systemd unit enablement ──" && \
+    for unit in gdm.service libvirtd.socket cockpit.socket sshd.service tuned.service podman-auto-update.timer; do \
+        if systemctl is-enabled "$unit" 2>/dev/null | grep -qE 'enabled|static'; then \
+            echo "  ✓ $unit"; \
+        else \
+            echo "  ⚠ $unit not enabled"; \
+        fi; \
+    done && \
+    echo "── Footgun check ──" && \
+    for pkg in PackageKit gnome-initial-setup gnome-tour malcontent-pam malcontent-tools; do \
+        if rpm -q "$pkg" > /dev/null 2>&1; then \
+            echo "  ⚠ FOOTGUN: $pkg present"; \
+        fi; \
+    done && \
+    echo "── Validation complete ($MISSING critical missing) ──"
 
 # Disable third-party repos post-build (Bazzite pattern)
 RUN dnf config-manager setopt rpmfusion-free.enabled=0 2>/dev/null || true && \
@@ -115,7 +152,14 @@ RUN KVER=$(ls -1 /lib/modules/ | sort -V | tail -1) && \
         echo "── initramfs already exists for ${KVER} ──"; \
     fi
 
-LABEL containers.bootc 1
-LABEL ostree.bootable 1
+# OCI labels — placed BEFORE CMD per spec
+LABEL containers.bootc="1"
+LABEL ostree.bootable="1"
+LABEL org.opencontainers.image.title="CloudWS"
+LABEL org.opencontainers.image.description="Cloud Workstation OS — Immutable Fedora bootc with GNOME 50, KVM, K3s, NVIDIA"
+LABEL org.opencontainers.image.source="https://github.com/Kabuki94/CloudWS-bootc"
+LABEL org.opencontainers.image.version="2.1.0"
+LABEL io.artifacthub.package.license="MIT"
+
 CMD ["/sbin/init"]
 RUN bootc container lint

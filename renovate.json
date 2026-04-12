@@ -1,0 +1,31 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    "docker:pinDigests"
+  ],
+  "labels": ["dependencies"],
+  "automerge": true,
+  "automergeType": "pr",
+  "stabilityDays": 7,
+  "packageRules": [
+    {
+      "description": "Auto-merge digest updates (same tag, new content)",
+      "matchUpdateTypes": ["digest"],
+      "automerge": true,
+      "stabilityDays": 3
+    },
+    {
+      "description": "Group all GitHub Actions updates",
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions",
+      "schedule": ["before 9am on monday"]
+    },
+    {
+      "description": "Protect image-versions.yml — require review",
+      "matchFileNames": ["image-versions.yml"],
+      "automerge": false,
+      "assignees": ["Kabuki94"]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+# CloudWS v2.1 — Base Image Version Pinning
+# Managed by Renovate Bot — do NOT edit digests manually.
+# Renovate opens PRs when upstream images publish new digests.
+#
+# To enable: install Renovate GitHub App on the repo.
+# Digests auto-update with a 7-day stability period.
+#
+# USAGE: This file is reference documentation — the Containerfile
+# currently uses tags. To switch to digest pinning, update the
+# FROM line in Containerfile to use the digest below.
+
+base_image:
+  # ucore-hci:stable-nvidia — Universal Blue CoreOS with pre-signed NVIDIA
+  registry: ghcr.io
+  repository: ublue-os/ucore-hci
+  tag: stable-nvidia
+  # Pin to digest for reproducible builds (uncomment and update):
+  # digest: sha256:REPLACE_WITH_CURRENT_DIGEST
+
+build_tools:
+  # bootc-image-builder — OCI to disk image converter
+  registry: quay.io
+  repository: centos-bootc/bootc-image-builder
+  tag: latest
+
+  # image-builder-cli — next-gen image builder (with SBOM support)
+  # registry: ghcr.io
+  # repository: osbuild/image-builder-cli
+  # tag: latest
+
+rechunk:
+  # bootc-base-imagectl — image rechunking for efficient Day-2 updates
+  # Run after build, before push:
+  #   bootc-base-imagectl rechunk --max-layers 67 cloudws:latest
+  tool: bootc-base-imagectl
+  max_layers: 67

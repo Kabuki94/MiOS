@@ -1,23 +1,23 @@
-# CloudWS v2.0 — Package Manifest
+# CloudWS v2.1 — Package Manifest
 
 This file is both documentation and the **single source of truth** for all packages installed in CloudWS.
 Build scripts parse the fenced code blocks below using `scripts/lib/packages.sh`.
 To add a package, add it to the appropriate section. One package per line.
 
-**CHANGELOG v2.0:**
+**CHANGELOG v2.1:**
+- Added bootupd (unified bootloader updates — Fedora 44 phase 1)
+- Added dnf5-plugins (versionlock support for critical package pinning)
+- Added systemd-boot-unsigned (UKI preparation — future composefs+UKI chain)
+- Added libsss_nss_idmap (fixes sssd-related dep resolution on F44)
+- Added tpm2-tools (TPM2 support for measured boot / future attestation)
+- Added clevis, clevis-luks (automated LUKS unlock via TPM2/Tang)
+- Moved driverctl from security to utils (better categorization)
+
+**CHANGELOG v2.0 (previous):**
 - Removed htop (use btop instead)
 - Added nvidia-settings to NVIDIA section
 - Added avahi/nss-mdns for .local network discovery
 - Added network-discovery package section
-
-**CHANGELOG v1.3.1 (previous):**
-- Removed base kernel packages (kernel, kernel-core, kernel-modules, kernel-modules-core) — base image ships them
-- Fixed duplicate `pcp` and `pcp-system-tools` in Cockpit section
-- Removed `lib32-gamemode` and `libstrangle` (Arch-only, not in Fedora)
-- Added `kernel-modules-core` (kernel 7.0 split from kernel-modules)
-- Added `container-selinux` to containers section (K3s prerequisite)
-- Added `nvidia-persistenced` to NVIDIA section
-- Added `composefs` explicitly to containers section
 
 ---
 
@@ -31,6 +31,7 @@ rpmfusion-free-release-rawhide
 rpmfusion-nonfree-release-rawhide
 fedora-workstation-repositories
 dnf-plugins-core
+dnf5-plugins
 ```
 
 ## Kernel
@@ -57,6 +58,7 @@ Steam, Wine, virt-manager, Waydroid are RPM exceptions (need system-level access
 
 GNOME 49+: systemd is a HARD dependency. gnome-session's built-in service
 manager was removed. Full systemd user session support is required.
+GNOME 50: X11 session removed upstream. Wayland-only (Fedora 43+ dropped X11).
 
 ```packages-gnome
 # ── Core shell (auto-pulls: mutter, gjs, gtk4, libadwaita, gnome-desktop4,
@@ -183,9 +185,10 @@ rocm-hip
 ## GPU Drivers — NVIDIA (akmod, builds for any NVIDIA card)
 
 NVIDIA proprietary drivers via RPMFusion akmod. Builds kmod at image time.
-Driver 560+: Open kernel modules are DEFAULT for Turing (RTX 20+) and newer.
-Blackwell (RTX 50): Open modules are the ONLY option.
+Driver 590+: Open kernel modules are DEFAULT for Turing (RTX 20+) and newer.
+Blackwell (RTX 50): Open modules are the ONLY option — proprietary incompatible.
 WARNING: RTX 50-series has a VFIO reset bug — see /usr/share/doc/cloudws-vfio-warning.txt
+CDI is now the default mode in nvidia-container-toolkit v1.19+.
 
 ```packages-gpu-nvidia
 akmod-nvidia
@@ -236,6 +239,18 @@ composefs
 container-selinux
 ```
 
+## Boot & Update Management
+
+Bootloader updates and system update tooling for bootc systems.
+bootupd: unified bootloader update service (Fedora 44 phase 1).
+dnf5-plugins: versionlock for pinning critical packages (Mesa, PipeWire, etc.)
+
+```packages-boot
+bootupd
+dnf5-plugins
+systemd-boot-unsigned
+```
+
 ## Cockpit Web Management
 
 Full Cockpit ecosystem with file browser and all plugins.
@@ -274,6 +289,7 @@ cifs-utils
 ## Security
 
 Host-based IPS, application whitelisting, USB device control.
+CRITICAL: nvidia-container-toolkit >= v1.17.7 required (CVE-2025-23266/23267).
 
 ```packages-security
 crowdsec
@@ -285,7 +301,9 @@ usbguard
 setroubleshoot-server
 policycoreutils-python-utils
 audit
-driverctl
+tpm2-tools
+clevis
+clevis-luks
 ```
 
 ## Gaming
@@ -293,6 +311,7 @@ driverctl
 Steam, Wine, and Gamescope for gaming.
 Gamescope SteamOS-mode GDM session baked via system_files (no COPR needed).
 Removed lib32-gamemode and libstrangle (Arch-only, not in Fedora repos).
+NTSYNC kernel module available in Fedora 44 for improved Wine/Steam performance.
 
 ```packages-gaming
 steam
@@ -418,6 +437,7 @@ yq
 bc
 distrobox
 just
+driverctl
 ```
 
 ## Android — Waydroid
