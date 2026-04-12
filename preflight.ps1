@@ -7,7 +7,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 $ErrorActionPreference = "Continue"
 
 Write-Host "`n╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║  CloudWS Preflight — Prerequisites Check                    ║" -ForegroundColor Cyan
+Write-Host "║  CloudWS v0.1.3 Preflight — Prerequisites Check            ║" -ForegroundColor Cyan
 Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 
@@ -26,11 +26,9 @@ function Check($name, $test, $fix) {
     }
 }
 
-# Windows Edition
 Write-Host "═══ System ═══" -ForegroundColor Yellow
 Check "Windows 10/11 Pro+" { (Get-CimInstance Win32_OperatingSystem).Caption -match "Pro|Enterprise|Education" } $null
 
-# WSL2
 Write-Host "`n═══ WSL2 ═══" -ForegroundColor Yellow
 Check "WSL2 Feature" { (Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux).State -eq 'Enabled' } {
     Write-Host "    Enabling WSL..." -ForegroundColor Cyan
@@ -41,14 +39,12 @@ Check "Virtual Machine Platform" { (Get-WindowsOptionalFeature -Online -FeatureN
     Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart
 }
 
-# Hyper-V
 Write-Host "`n═══ Hyper-V (optional) ═══" -ForegroundColor Yellow
 Check "Hyper-V" { (Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V).State -eq 'Enabled' } {
     Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All -NoRestart
     Write-Host "    ⚠ Reboot required" -ForegroundColor Yellow
 }
 
-# Software
 Write-Host "`n═══ Software ═══" -ForegroundColor Yellow
 Check "Git" { Get-Command git -ErrorAction SilentlyContinue } {
     winget install --id Git.Git --accept-source-agreements --accept-package-agreements
@@ -56,11 +52,10 @@ Check "Git" { Get-Command git -ErrorAction SilentlyContinue } {
 Check "Podman" { Get-Command podman -ErrorAction SilentlyContinue } {
     winget install --id RedHat.Podman --accept-source-agreements --accept-package-agreements
 }
-Check "Podman Desktop" { Get-Command "podman-desktop" -ErrorAction SilentlyContinue -or (Test-Path "$env:LOCALAPPDATA\Programs\Podman Desktop") } {
+Check "Podman Desktop" { (Get-Command "podman-desktop" -ErrorAction SilentlyContinue) -or (Test-Path "$env:LOCALAPPDATA\Programs\Podman Desktop") } {
     winget install --id RedHat.Podman-Desktop --accept-source-agreements --accept-package-agreements
 }
 
-# Summary
 Write-Host "`n═══ Results ═══" -ForegroundColor Cyan
 Write-Host "  Passed: $pass  Failed: $fail  Fixed: $fixed" -ForegroundColor White
 if ($fail -eq 0 -or $fail -eq $fixed) {

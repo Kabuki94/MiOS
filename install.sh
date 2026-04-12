@@ -6,8 +6,13 @@ set -euo pipefail
 REPO="https://github.com/Kabuki94/CloudWS-bootc.git"
 DIR="${CLOUDWS_DIR:-$HOME/CloudWS-bootc}"
 
+# Read version from repo VERSION file, fallback to hardcoded
+VER="v0.1.3"
+_remote_ver=$(curl -fsSL "https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/VERSION" 2>/dev/null || true)
+[[ -n "$_remote_ver" ]] && VER="v${_remote_ver}"
+
 echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║  CloudWS v1.0 — Cloud Workstation OS                       ║"
+echo "║  CloudWS $VER — Cloud Workstation OS                       ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -18,7 +23,7 @@ echo ""
 echo "1) Clone repo + build OCI image locally"
 echo "2) Clone repo only (inspect first)"
 echo "3) Install to bare metal (requires root + target disk)"
-read -p "Choice [1-3]: " choice
+read -rp "Choice [1-3]: " choice
 
 case "$choice" in
   1)
@@ -65,18 +70,18 @@ case "$choice" in
     echo "Available disks:"
     lsblk -d -o NAME,SIZE,MODEL,TRAN | grep -v "^NAME"
     echo ""
-    read -p "Target disk (e.g., sda, nvme0n1): " disk
-    read -p "Enable LUKS encryption? (y/n): " use_luks
+    read -rp "Target disk (e.g., sda, nvme0n1): " disk
+    read -rp "Enable LUKS encryption? (y/n): " use_luks
     luks_flag=""
     if [ "$use_luks" = "y" ]; then
         while true; do
-            read -sp "LUKS passphrase: " lp1; echo
-            read -sp "Confirm passphrase: " lp2; echo
+            read -rsp "LUKS passphrase: " lp1; echo
+            read -rsp "Confirm passphrase: " lp2; echo
             if [ "$lp1" = "$lp2" ]; then luks_flag="--luks-passphrase $lp1"; break
             else echo "Passphrases do not match. Try again."; fi
         done
     fi
-    read -p "⚠ ALL DATA ON /dev/$disk WILL BE DESTROYED. Type 'yes' to continue: " confirm
+    read -rp "⚠ ALL DATA ON /dev/$disk WILL BE DESTROYED. Type 'yes' to continue: " confirm
     if [ "$confirm" = "yes" ]; then
         echo "Building image..."
         git clone "$REPO" /tmp/cloudws-build 2>/dev/null || true

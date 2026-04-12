@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    CloudWS v0.1.1 — Cloud Workstation OS Builder (Windows)
+    CloudWS v0.1.3 — Cloud Workstation OS Builder (Windows)
 
 .DESCRIPTION
     Secure build orchestrator with workflow selection.
@@ -37,7 +37,14 @@ $DefRegistry    = "ghcr.io/kabuki94/cloudws-bootc"
 $BuilderMachine = "cloudws-builder"
 $LocalImage     = "localhost/${ImageName}:${ImageTag}"
 $OutputFolder   = Join-Path $PWD "cloudws-deploy-out"
-$BIBImage       = "quay.io/centos-bootc/bootc-image-builder:latest"
+# BIB image selection: self-build uses CloudWS, otherwise centos-bootc
+      if ($SelfBuild) {
+          $BibImage = $RegistryImage
+          Write-Host "      ✓ Self-build: Using CloudWS as image builder" -ForegroundColor Green
+      } else {
+          $BibImage = "$BibImage"
+          Write-Host "      » Using centos-bootc BIB (first-build / fallback mode)" -ForegroundColor Yellow
+      }
 $RechunkImage   = "quay.io/centos-bootc/centos-bootc:stream10"
 $Timeout        = 30
 
@@ -625,7 +632,7 @@ if (Test-Path $TargetWsl) {
         $wslCPUs = [Math]::Max(4, $cpu)
         # Build .wslconfig content without here-string (avoids PS parser edge cases)
         $wslLines = @(
-            "# CloudWS v0.1.1 — WSL2 Configuration",
+            "# CloudWS v0.1.3 — WSL2 Configuration",
             "[wsl2]",
             "memory=${wslRAM}GB",
             "processors=${wslCPUs}",
