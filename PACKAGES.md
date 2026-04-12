@@ -117,42 +117,41 @@ adw-gtk3-theme
 
 ## GNOME Core Apps (OPTIONAL — uncomment to include)
 
-Essential GNOME Core Apps for a complete desktop experience.
-Commented-out apps are truly optional (connections, music, weather, maps, etc.).
-v2.0.2: Uncommented core desktop utilities (disk, sysmon, calc, text editor, etc.).
+Optional GNOME Core Apps. ALL commented out by default — uncomment to include.
+Epiphany (Flatpak browser) handles documents, photos, and media natively.
 
 ```packages-gnome-core-apps
-# ── Viewers ──
-papers
-loupe
-showtime
-gnome-text-editor
+# ── Viewers (uncomment to include) ──
+# papers
+# loupe
+# showtime
+# gnome-text-editor
 # ── Utilities ──
-gnome-disk-utility
-gnome-system-monitor
-baobab
+# gnome-disk-utility
+# gnome-system-monitor
+# baobab
 # gnome-connections
-gnome-tweaks
-file-roller
+# gnome-tweaks
+# file-roller
 # resources
-gnome-calculator
-gnome-calendar
+# gnome-calculator
+# gnome-calendar
 # gnome-contacts
-gnome-clocks
+# gnome-clocks
 # gnome-weather
 # gnome-maps
-gnome-characters
-gnome-font-viewer
+# gnome-characters
+# gnome-font-viewer
 # ── Media ──
 # gnome-music
-snapshot
-decibels
+# snapshot
+# decibels
 # cheese
 # ── System ──
 # gnome-logs
 # deja-dup
 # simple-scan
-seahorse
+# seahorse
 # gnome-boxes
 ```
 
