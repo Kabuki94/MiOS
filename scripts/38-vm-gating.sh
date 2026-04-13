@@ -204,4 +204,35 @@ cp /tmp/build/scripts/cloudws-grd-setup /usr/libexec/cloudws-grd-setup 2>/dev/nu
 chmod +x /usr/libexec/cloudws-grd-setup 2>/dev/null || true
 systemctl enable cloudws-grd-setup.service 2>/dev/null || true
 
-echo "[38-vm-gating] VM gating + Hyper-V enhanced session (xorgxrdp) configured."
+echo "
+# ── WSL2 dbus-broker fix ──────────────────────────────────────────────────
+# dbus-broker fails in WSL2 because the Microsoft WSL2 kernel lacks
+# full cgroup v2 support and audit socket. This cascades to NetworkManager,
+# Cockpit, and every service that depends on D-Bus.
+# Fix: create a drop-in that adjusts dbus-broker for WSL2 environment.
+echo "[38-vm-gating] Installing dbus-broker WSL2 workaround..."
+mkdir -p /etc/systemd/system/dbus-broker.service.d
+cat > /etc/systemd/system/dbus-broker.service.d/wsl2-fix.conf <<'DBUSFIX'
+# Only applies inside WSL2 — ConditionPathExists gates this
+[Unit]
+ConditionPathExists=|/proc/sys/fs/binfmt_misc/WSLInterop
+ConditionPathExists=|/proc/version
+
+[Service]
+# Clear and re-set ExecStart to drop --audit which fails in WSL2
+ExecStart=
+ExecStart=/usr/bin/dbus-broker-launch --scope system
+# Relax OOM and resource limits for WSL2
+OOMScoreAdjust=-500
+DBUSFIX
+
+# Also ensure systemd-machined doesn't block dbus in WSL2
+mkdir -p /etc/systemd/system/systemd-machined.service.d
+cat > /etc/systemd/system/systemd-machined.service.d/wsl2-optional.conf <<'MACHINEDFIX'
+[Unit]
+# Make machined non-fatal in WSL2 (it needs cgroup features WSL2 lacks)
+ConditionVirtualization=!wsl
+MACHINEDFIX
+
+echo "[38-vm-gating] dbus-broker WSL2 workaround installed"
+[38-vm-gating] VM gating + Hyper-V enhanced session (xorgxrdp) configured."

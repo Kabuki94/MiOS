@@ -136,4 +136,15 @@ Hidden=false
 X-GNOME-Autostart-enabled=true
 DESK
 
+
+# Ensure skel GTK3 also uses adw-gtk3-dark (for new user sessions)
+mkdir -p /etc/skel/.config/gtk-3.0
+cat > /etc/skel/.config/gtk-3.0/settings.ini <<'SKELGTK3'
+[Settings]
+gtk-theme-name=adw-gtk3-dark
+gtk-icon-theme-name=Adwaita
+gtk-cursor-theme-name=Bibata-Modern-Classic
+gtk-cursor-theme-size=24
+gtk-application-prefer-dark-theme=1
+SKELGTK3
 echo "[30-locale-theme] Dark theme configured for all toolkits."

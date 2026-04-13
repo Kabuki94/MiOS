@@ -157,4 +157,110 @@ else
     echo "[37-selinux] Install: selinux-policy-devel (provides checkmodule + semodule_package)"
 fi
 
-echo "[37-selinux] SELinux configuration complete."
+echo "
+# ── Additional SELinux modules for runtime denials (v2.1.1 fixes) ──
+
+# bootupctl accessing /boot/bootupd-state.json (read + open + getattr)
+if seinfo -t bootupd_t 2>/dev/null | grep -q bootupd_t; then
+    MODNAME="cloudws_bootupd_state"
+    cat > "/tmp/${MODNAME}.te" <<'SEMOD'
+module cloudws_bootupd_state 1.1;
+require {
+    type bootupd_t;
+    type boot_t;
+    class file { read open getattr lock ioctl };
+    class dir { read open getattr search };
+}
+allow bootupd_t boot_t:file { read open getattr lock ioctl };
+allow bootupd_t boot_t:dir { read open getattr search };
+SEMOD
+    checkmodule -M -m -o "/tmp/${MODNAME}.mod" "/tmp/${MODNAME}.te" 2>/dev/null && \
+    semodule_package -o "/tmp/${MODNAME}.pp" -m "/tmp/${MODNAME}.mod" 2>/dev/null && \
+    semodule -i "/tmp/${MODNAME}.pp" 2>/dev/null && \
+    echo "[37-selinux] ${MODNAME}: OK" || echo "[37-selinux] ${MODNAME}: FAILED"
+    rm -f "/tmp/${MODNAME}".{te,mod,pp}
+fi
+
+# systemd-resolved writing to resolve.hook socket
+if seinfo -t systemd_resolved_t 2>/dev/null | grep -q systemd_resolved_t; then
+    MODNAME="cloudws_resolved_hook"
+    cat > "/tmp/${MODNAME}.te" <<'SEMOD'
+module cloudws_resolved_hook 1.0;
+require {
+    type systemd_resolved_t;
+    type init_t;
+    class unix_stream_socket connectto;
+    class sock_file write;
+}
+allow systemd_resolved_t init_t:unix_stream_socket connectto;
+allow systemd_resolved_t init_t:sock_file write;
+SEMOD
+    checkmodule -M -m -o "/tmp/${MODNAME}.mod" "/tmp/${MODNAME}.te" 2>/dev/null && \
+    semodule_package -o "/tmp/${MODNAME}.pp" -m "/tmp/${MODNAME}.mod" 2>/dev/null && \
+    semodule -i "/tmp/${MODNAME}.pp" 2>/dev/null && \
+    echo "[37-selinux] ${MODNAME}: OK" || echo "[37-selinux] ${MODNAME}: FAILED"
+    rm -f "/tmp/${MODNAME}".{te,mod,pp}
+fi
+
+# accounts-daemon reading Malcontent WebFilter.xml (lnk_file + file read)
+if seinfo -t accountsd_t 2>/dev/null | grep -q accountsd_t; then
+    MODNAME="cloudws_accountsd_malcontent"
+    cat > "/tmp/${MODNAME}.te" <<'SEMOD'
+module cloudws_accountsd_malcontent 1.0;
+require {
+    type accountsd_t;
+    type usr_t;
+    class lnk_file { read getattr };
+    class file { read open getattr ioctl };
+    class dir { read open getattr search };
+}
+allow accountsd_t usr_t:lnk_file { read getattr };
+allow accountsd_t usr_t:file { read open getattr ioctl };
+allow accountsd_t usr_t:dir { read open getattr search };
+SEMOD
+    checkmodule -M -m -o "/tmp/${MODNAME}.mod" "/tmp/${MODNAME}.te" 2>/dev/null && \
+    semodule_package -o "/tmp/${MODNAME}.pp" -m "/tmp/${MODNAME}.mod" 2>/dev/null && \
+    semodule -i "/tmp/${MODNAME}.pp" 2>/dev/null && \
+    echo "[37-selinux] ${MODNAME}: OK" || echo "[37-selinux] ${MODNAME}: FAILED"
+    rm -f "/tmp/${MODNAME}".{te,mod,pp}
+fi
+
+# chcon requiring mac_admin capability
+if seinfo -t chcon_t 2>/dev/null | grep -q chcon_t; then
+    MODNAME="cloudws_chcon_macadmin"
+    cat > "/tmp/${MODNAME}.te" <<'SEMOD'
+module cloudws_chcon_macadmin 1.0;
+require {
+    type chcon_t;
+    class capability2 mac_admin;
+}
+allow chcon_t self:capability2 mac_admin;
+SEMOD
+    checkmodule -M -m -o "/tmp/${MODNAME}.mod" "/tmp/${MODNAME}.te" 2>/dev/null && \
+    semodule_package -o "/tmp/${MODNAME}.pp" -m "/tmp/${MODNAME}.mod" 2>/dev/null && \
+    semodule -i "/tmp/${MODNAME}.pp" 2>/dev/null && \
+    echo "[37-selinux] ${MODNAME}: OK" || echo "[37-selinux] ${MODNAME}: FAILED"
+    rm -f "/tmp/${MODNAME}".{te,mod,pp}
+fi
+
+# gdm-session-worker accessing .cache directory (add_name, write, create)
+if seinfo -t xdm_t 2>/dev/null | grep -q xdm_t; then
+    MODNAME="cloudws_gdm_session_cache"
+    cat > "/tmp/${MODNAME}.te" <<'SEMOD'
+module cloudws_gdm_session_cache 1.0;
+require {
+    type xdm_t;
+    type cache_home_t;
+    class dir { add_name write create read open getattr search setattr };
+    class file { create write read open getattr setattr };
+}
+allow xdm_t cache_home_t:dir { add_name write create read open getattr search setattr };
+allow xdm_t cache_home_t:file { create write read open getattr setattr };
+SEMOD
+    checkmodule -M -m -o "/tmp/${MODNAME}.mod" "/tmp/${MODNAME}.te" 2>/dev/null && \
+    semodule_package -o "/tmp/${MODNAME}.pp" -m "/tmp/${MODNAME}.mod" 2>/dev/null && \
+    semodule -i "/tmp/${MODNAME}.pp" 2>/dev/null && \
+    echo "[37-selinux] ${MODNAME}: OK" || echo "[37-selinux] ${MODNAME}: FAILED"
+    rm -f "/tmp/${MODNAME}".{te,mod,pp}
+fi
+[37-selinux] SELinux configuration complete."
