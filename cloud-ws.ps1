@@ -23,6 +23,10 @@
 
 #Requires -RunAsAdministrator
 $ErrorActionPreference = "Stop"
+
+# ── Self-Build defaults (initialized early — referenced throughout) ──
+$SelfBuild = $false
+$BibImage = "quay.io/centos-bootc/bootc-image-builder:latest"
 Set-StrictMode -Version Latest
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -285,6 +289,10 @@ if (-not $machineReady) {
 Write-OK "Builder ready: ${BuilderMachine}-root ($cpu CPUs, $([math]::Round($ram/1024))GB RAM)"
 $ErrorActionPreference = "Stop"
 
+
+# ── Self-Build defaults (initialized early — referenced throughout) ──
+$SelfBuild = $false
+$BibImage = "quay.io/centos-bootc/bootc-image-builder:latest"
 # ══════════════════════════════════════════════════════════════════════════════
 #  PHASE 1.5: PULL CLOUDWS HELPER IMAGE (self-building cycle)
 # ══════════════════════════════════════════════════════════════════════════════
@@ -337,6 +345,10 @@ if ($HelperImage) {
 }
 $ErrorActionPreference = "Stop"
 
+
+# ── Self-Build defaults (initialized early — referenced throughout) ──
+$SelfBuild = $false
+$BibImage = "quay.io/centos-bootc/bootc-image-builder:latest"
 # ══════════════════════════════════════════════════════════════════════════════
 #  PHASE 2: BUILD (or PULL)
 # ══════════════════════════════════════════════════════════════════════════════
@@ -406,6 +418,10 @@ if ($DoPull) {
         -v /var/lib/containers/storage:/var/lib/containers/storage `
         $RechunkImage /usr/libexec/bootc-base-imagectl rechunk $LocalImage $LocalImage
     $ErrorActionPreference = "Stop"
+
+# ── Self-Build defaults (initialized early — referenced throughout) ──
+$SelfBuild = $false
+$BibImage = "quay.io/centos-bootc/bootc-image-builder:latest"
     Write-OK "Rechunk complete"
 
     # Update helper image reference — this freshly built image IS the builder now
@@ -653,6 +669,10 @@ if (Test-Path $TargetWsl) {
 }
 $ErrorActionPreference = "Stop"
 
+
+# ── Self-Build defaults (initialized early — referenced throughout) ──
+$SelfBuild = $false
+$BibImage = "quay.io/centos-bootc/bootc-image-builder:latest"
 # ══════════════════════════════════════════════════════════════════════════════
 #  PHASE 4: REGISTRY PUSH (only if workflow includes push)
 # ══════════════════════════════════════════════════════════════════════════════
@@ -683,6 +703,10 @@ if ($DoPush -and $RegistryToken) {
         }
     } else { Write-Warn "Push failed" }
     $ErrorActionPreference = "Stop"
+
+# ── Self-Build defaults (initialized early — referenced throughout) ──
+$SelfBuild = $false
+$BibImage = "quay.io/centos-bootc/bootc-image-builder:latest"
 } elseif ($DoPush) {
     Write-Warn "Skipping push — no registry token provided"
 }
