@@ -161,6 +161,7 @@ echo "
 # ── Additional SELinux modules for runtime denials (v2.1.1 fixes) ──
 
 # bootupctl accessing /boot/bootupd-state.json (read + open + getattr)
+MODNAME=""
 if seinfo -t bootupd_t 2>/dev/null | grep -q bootupd_t; then
     MODNAME="cloudws_bootupd_state"
     cat > "/tmp/${MODNAME}.te" <<'SEMOD'
@@ -178,10 +179,11 @@ SEMOD
     semodule_package -o "/tmp/${MODNAME}.pp" -m "/tmp/${MODNAME}.mod" 2>/dev/null && \
     semodule -i "/tmp/${MODNAME}.pp" 2>/dev/null && \
     echo "[37-selinux] ${MODNAME}: OK" || echo "[37-selinux] ${MODNAME}: FAILED"
-    rm -f "/tmp/${MODNAME}".{te,mod,pp}
+    if [ -n "${MODNAME:-}" ]; then rm -f "/tmp/${MODNAME}"; fi.{te,mod,pp}
 fi
 
 # systemd-resolved writing to resolve.hook socket
+MODNAME=""
 if seinfo -t systemd_resolved_t 2>/dev/null | grep -q systemd_resolved_t; then
     MODNAME="cloudws_resolved_hook"
     cat > "/tmp/${MODNAME}.te" <<'SEMOD'
@@ -199,10 +201,11 @@ SEMOD
     semodule_package -o "/tmp/${MODNAME}.pp" -m "/tmp/${MODNAME}.mod" 2>/dev/null && \
     semodule -i "/tmp/${MODNAME}.pp" 2>/dev/null && \
     echo "[37-selinux] ${MODNAME}: OK" || echo "[37-selinux] ${MODNAME}: FAILED"
-    rm -f "/tmp/${MODNAME}".{te,mod,pp}
+    if [ -n "${MODNAME:-}" ]; then rm -f "/tmp/${MODNAME}"; fi.{te,mod,pp}
 fi
 
 # accounts-daemon reading Malcontent WebFilter.xml (lnk_file + file read)
+MODNAME=""
 if seinfo -t accountsd_t 2>/dev/null | grep -q accountsd_t; then
     MODNAME="cloudws_accountsd_malcontent"
     cat > "/tmp/${MODNAME}.te" <<'SEMOD'
@@ -222,10 +225,11 @@ SEMOD
     semodule_package -o "/tmp/${MODNAME}.pp" -m "/tmp/${MODNAME}.mod" 2>/dev/null && \
     semodule -i "/tmp/${MODNAME}.pp" 2>/dev/null && \
     echo "[37-selinux] ${MODNAME}: OK" || echo "[37-selinux] ${MODNAME}: FAILED"
-    rm -f "/tmp/${MODNAME}".{te,mod,pp}
+    if [ -n "${MODNAME:-}" ]; then rm -f "/tmp/${MODNAME}"; fi.{te,mod,pp}
 fi
 
 # chcon requiring mac_admin capability
+MODNAME=""
 if seinfo -t chcon_t 2>/dev/null | grep -q chcon_t; then
     MODNAME="cloudws_chcon_macadmin"
     cat > "/tmp/${MODNAME}.te" <<'SEMOD'
@@ -240,10 +244,11 @@ SEMOD
     semodule_package -o "/tmp/${MODNAME}.pp" -m "/tmp/${MODNAME}.mod" 2>/dev/null && \
     semodule -i "/tmp/${MODNAME}.pp" 2>/dev/null && \
     echo "[37-selinux] ${MODNAME}: OK" || echo "[37-selinux] ${MODNAME}: FAILED"
-    rm -f "/tmp/${MODNAME}".{te,mod,pp}
+    if [ -n "${MODNAME:-}" ]; then rm -f "/tmp/${MODNAME}"; fi.{te,mod,pp}
 fi
 
 # gdm-session-worker accessing .cache directory (add_name, write, create)
+MODNAME=""
 if seinfo -t xdm_t 2>/dev/null | grep -q xdm_t; then
     MODNAME="cloudws_gdm_session_cache"
     cat > "/tmp/${MODNAME}.te" <<'SEMOD'
@@ -261,6 +266,6 @@ SEMOD
     semodule_package -o "/tmp/${MODNAME}.pp" -m "/tmp/${MODNAME}.mod" 2>/dev/null && \
     semodule -i "/tmp/${MODNAME}.pp" 2>/dev/null && \
     echo "[37-selinux] ${MODNAME}: OK" || echo "[37-selinux] ${MODNAME}: FAILED"
-    rm -f "/tmp/${MODNAME}".{te,mod,pp}
+    if [ -n "${MODNAME:-}" ]; then rm -f "/tmp/${MODNAME}"; fi.{te,mod,pp}
 fi
 [37-selinux] SELinux configuration complete."
