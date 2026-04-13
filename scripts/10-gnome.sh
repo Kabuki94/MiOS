@@ -85,8 +85,26 @@ fc-cache -f /usr/share/fonts/geist 2>/dev/null || true
 # FIX: Retry download 3 times. VERIFY the cursors directory exists.
 #      FAIL THE BUILD if cursors are missing — a square cursor is unacceptable.
 # ═════════════════════════════════════════════════════════════════════════════
-echo "[10-gnome] Installing Bibata-Modern-Classic cursor v2.0.8 (MANDATORY)..."
-BIBATA_VER="2.0.8"
+echo "[10-gnome] Installing Bibata-Modern-Classic cursor (MANDATORY)..."
+BIBATA_VER=""
+BIBATA_FALLBACK="2.0.7"
+
+# Try GitHub API for latest release tag (strips leading 'v')
+BIBATA_VER=$(curl -sL "https://api.github.com/repos/ful1e5/Bibata_Cursor/releases/latest" \
+    | grep -m1 '"tag_name"' | sed 's/.*"v\?\([^"]*\)".*/\1/' 2>/dev/null || true)
+
+# Fallback if API fails (rate limit, network issue)
+if [ -z "$BIBATA_VER" ]; then
+    BIBATA_VER="$BIBATA_FALLBACK"
+    echo "[10-gnome]   GitHub API unavailable — using fallback v${BIBATA_VER}"
+else
+    echo "[10-gnome]   Latest release: v${BIBATA_VER}"
+fi
+
+BIBATA_URL="https://github.com/ful1e5/Bibata_Cursor/releases/download/v${BIBATA_VER}/Bibata-Modern-Classic.tar.xz"
+
+mkdir -p /usr/share/icons
+BIBATA_OK=0
 BIBATA_URL="https://github.com/ful1e5/Bibata_Cursor/releases/download/v${BIBATA_VER}/Bibata-Modern-Classic.tar.xz"
 BIBATA_DIR="/usr/share/icons/Bibata-Modern-Classic"
 mkdir -p /usr/share/icons
