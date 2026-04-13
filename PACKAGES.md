@@ -520,3 +520,13 @@ avahi
 avahi-tools
 nss-mdns
 ```
+
+
+### Phosh (Mobile Session)
+```packages-phosh
+phosh
+phoc
+squeekboard
+gnome-calls
+feedbackd
+```

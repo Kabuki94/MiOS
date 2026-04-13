@@ -1,0 +1,14 @@
+#!/bin/bash
+# CloudWS — Phosh session wrapper
+# Launches Phosh, then restores GNOME window controls on exit
+# so switching back to GNOME doesn't lose close/min/max buttons
+
+# Run phosh
+/usr/bin/phosh-session "$@"
+EXIT_CODE=$?
+
+# Restore GNOME button-layout after Phosh exit
+# Phosh sets button-layout='' which strips GNOME window controls
+gsettings set org.gnome.desktop.wm.preferences button-layout 'close,minimize,maximize:' 2>/dev/null || true
+
+exit $EXIT_CODE

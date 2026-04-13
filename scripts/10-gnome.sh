@@ -170,6 +170,14 @@ mkdir -p /etc/X11
 echo "Xcursor.theme: Bibata-Modern-Classic" > /etc/X11/Xresources 2>/dev/null || true
 echo "Xcursor.size: 24" >> /etc/X11/Xresources 2>/dev/null || true
 
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Phosh — Mobile session for portrait/tablet remote access
+# ═══════════════════════════════════════════════════════════════════════════════
+echo "[10-gnome] Installing Phosh mobile session..."
+install_packages_optional "phosh"
+# Make session wrapper executable
+chmod +x /usr/local/bin/phosh-session-wrapper 2>/dev/null || true
 # ═════════════════════════════════════════════════════════════════════════════
 # Flatpak Remotes
 # Disable filtered Fedora remote, use unfiltered Flathub for full catalog

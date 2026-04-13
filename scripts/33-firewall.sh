@@ -37,6 +37,12 @@ firewall-cmd --permanent --add-port=9090/tcp 2>/dev/null || true
 for iface in lo podman0 virbr0 cni0 flannel.1 waydroid0; do
     firewall-cmd --permanent --zone=trusted --add-interface="$iface" 2>/dev/null || true
 done
+
+# ── Cockpit — accessible from ALL zones ──
+for zone in public libvirt trusted; do
+    firewall-cmd --permanent --zone="$zone" --add-service=cockpit 2>/dev/null || true
+    firewall-cmd --permanent --zone="$zone" --add-port=9090/tcp 2>/dev/null || true
+done
 firewall-cmd --reload 2>/dev/null || true
 echo "[cloudws-firewall] Firewall configured"
 EOFW
