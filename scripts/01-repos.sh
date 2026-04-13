@@ -153,5 +153,14 @@ enabled=1
 priority=80
 EOREPO
 
+# ── NVIDIA Container Toolkit repo ───────────────────────────────────────────
+# Required for nvidia-container-toolkit + libnvidia-container on Rawhide base.
+# ucore-hci base already ships these, but Rawhide (CloudWS-1) needs the repo.
+echo "[01-repos] Adding NVIDIA Container Toolkit repo..."
+curl -fsSL https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo \
+    -o /etc/yum.repos.d/nvidia-container-toolkit.repo 2>/dev/null || true
+# Import GPG key to avoid interactive prompts during dnf install
+rpm --import https://nvidia.github.io/libnvidia-container/gpgkey 2>/dev/null || true
+
 echo "[01-repos] Done. ucore base kernel + F44 userspace + RPMFusion + Terra + CrowdSec."
 echo "[01-repos] Priority: CrowdSec(80) < Terra(85) < RPMFusion(90) < F44(95) < ucore(99)"

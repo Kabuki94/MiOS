@@ -26,6 +26,10 @@ install_packages_strict "gpu-mesa"
 echo "[11-hardware] Installing ROCm (optional)..."
 install_packages "gpu-amd-compute"
 
+# ── Intel GPU Compute (fault-tolerant — may not be on all architectures) ──
+echo "[11-hardware] Installing Intel compute runtime (fault-tolerant)..."
+install_packages "gpu-intel-compute" || true
+
 # ── NVIDIA: Verify ucore's pre-signed modules survived distro-sync ──────────
 echo "[11-hardware] Checking NVIDIA modules from ucore base..."
 if [[ -d "/lib/modules/$KVER/extra/nvidia" ]] || \

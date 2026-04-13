@@ -180,6 +180,22 @@ ROCm OpenCL/HIP for AMD compute workloads.
 ```packages-gpu-amd-compute
 rocm-opencl
 rocm-hip
+rocm-runtime
+rocm-smi
+rocminfo
+```
+
+## GPU Drivers — Intel Compute (oneAPI Level Zero)
+
+Intel GPU compute runtime for OpenCL and Level Zero API.
+Supports Intel Arc, Iris Xe, and integrated GPUs.
+All packages are in official Fedora repos — no extra repo needed.
+
+```packages-gpu-intel-compute
+intel-compute-runtime
+intel-media-driver
+level-zero
+intel-gpu-tools
 ```
 
 ## GPU Drivers — NVIDIA (akmod, builds for any NVIDIA card)
@@ -196,6 +212,7 @@ xorg-x11-drv-nvidia-cuda
 nvidia-container-toolkit
 nvidia-persistenced
 nvidia-settings
+xorg-x11-drv-nvidia-power
 ```
 
 ## Virtualization — KVM / QEMU / Libvirt
@@ -237,6 +254,11 @@ aardvark-dns
 slirp4netns
 composefs
 container-selinux
+qemu-img
+image-builder
+dracut-live
+squashfs-tools
+selinux-policy-devel
 ```
 
 ## Boot & Update Management
