@@ -57,6 +57,9 @@ EORENDER
 else
     echo "[cloudws-gpu-detect] Bare metal — NVIDIA enabled, hardware renderer"
     rm -f "$NVIDIA_CONF"
+    rm -f /etc/modprobe.d/cloudws-nvidia-blacklist.conf
+    # Load nvidia now that blacklist is removed
+    modprobe nvidia_drm 2>/dev/null || true
     rm -f "$RENDERER_CONF"
 
     # RTX 50-series (Blackwell) VFIO reset bug detection

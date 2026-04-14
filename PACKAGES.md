@@ -66,6 +66,7 @@ GNOME 50: X11 session removed upstream. Wayland-only (Fedora 43+ dropped X11).
 #    dconf, adwaita-icon-theme, adwaita-cursor-theme, pipewire, polkit) ──
 gnome-shell
 gnome-session-wayland-session
+gnome-session-xsession
 gnome-control-center
 gnome-keyring
 gdm

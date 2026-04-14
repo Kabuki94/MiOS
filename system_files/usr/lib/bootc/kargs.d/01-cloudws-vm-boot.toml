@@ -1,0 +1,7 @@
+# CloudWS v2.1.3: Verbose boot + serial console for Hyper-V debugging
+# Remove quiet/rhgb so systemd shows service status during boot.
+# Add serial console so Hyper-V COM port captures full boot log.
+
+[kargs]
+delete = ["quiet", "rhgb"]
+append = ["systemd.show-status=true", "console=ttyS0,115200n8", "console=tty0"]
