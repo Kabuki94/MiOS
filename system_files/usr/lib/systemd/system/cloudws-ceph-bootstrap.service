@@ -3,7 +3,7 @@ Description=CloudWS Ceph Single-Node Bootstrap
 After=network-online.target podman.service
 Wants=network-online.target
 ConditionPathExists=!/var/lib/ceph/.cloudws-bootstrapped
-ConditionVirtualization=!container
+ConditionVirtualization=no
 
 [Service]
 Type=oneshot

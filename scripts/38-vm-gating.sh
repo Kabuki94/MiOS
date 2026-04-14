@@ -204,7 +204,6 @@ cp /tmp/build/scripts/cloudws-grd-setup /usr/libexec/cloudws-grd-setup 2>/dev/nu
 chmod +x /usr/libexec/cloudws-grd-setup 2>/dev/null || true
 systemctl enable cloudws-grd-setup.service 2>/dev/null || true
 
-echo "
 # ── WSL2 dbus-broker fix ──────────────────────────────────────────────────
 # dbus-broker fails in WSL2 because the Microsoft WSL2 kernel lacks
 # full cgroup v2 support and audit socket. This cascades to NetworkManager,
@@ -235,4 +234,4 @@ ConditionVirtualization=!wsl
 MACHINEDFIX
 
 echo "[38-vm-gating] dbus-broker WSL2 workaround installed"
-[38-vm-gating] VM gating + Hyper-V enhanced session (xorgxrdp) configured.
+echo "[38-vm-gating] VM gating + Hyper-V enhanced session (xorgxrdp) configured."

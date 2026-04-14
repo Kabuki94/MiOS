@@ -113,18 +113,7 @@ GTK_THEME=adw-gtk3-dark
 EOENV
 
 # ═══ Flatpak overrides — dark theme + cursor + fonts ═══
-echo "
-# ── Compile GSchema overrides (THE correct way to set GNOME defaults) ──
-echo "[30-locale-theme] Compiling GSchema overrides..."
-if [ -f /usr/share/glib-2.0/schemas/90-cloudws.gschema.override ]; then
-    glib-compile-schemas /usr/share/glib-2.0/schemas/ 2>/dev/null || \
-        glib-compile-schemas --strict /usr/share/glib-2.0/schemas/ 2>/dev/null || true
-    echo "[30-locale-theme] ✓ GSchema overrides compiled"
-fi
-
-# ── Update dconf database (secondary to GSchema) ──
-dconf update 2>/dev/null || true
-[30-locale-theme] Applying Flatpak dark theme + filesystem overrides..."
+echo "[30-locale-theme] Applying Flatpak dark theme + filesystem overrides..."
 flatpak override --system --env=ADW_DEBUG_COLOR_SCHEME=prefer-dark 2>/dev/null || true
 flatpak override --system --env=XCURSOR_THEME=Bibata-Modern-Classic 2>/dev/null || true
 flatpak override --system --env=XCURSOR_SIZE=24 2>/dev/null || true
@@ -158,15 +147,12 @@ gtk-cursor-theme-name=Bibata-Modern-Classic
 gtk-cursor-theme-size=24
 gtk-application-prefer-dark-theme=1
 SKELGTK3
-echo "
 # ── Compile GSchema overrides (THE correct way to set GNOME defaults) ──
-echo "[30-locale-theme] Compiling GSchema overrides..."
 if [ -f /usr/share/glib-2.0/schemas/90-cloudws.gschema.override ]; then
-    glib-compile-schemas /usr/share/glib-2.0/schemas/ 2>/dev/null || \
-        glib-compile-schemas --strict /usr/share/glib-2.0/schemas/ 2>/dev/null || true
+    echo "[30-locale-theme] Compiling GSchema overrides..."
+    glib-compile-schemas /usr/share/glib-2.0/schemas/ 2>/dev/null || true
     echo "[30-locale-theme] ✓ GSchema overrides compiled"
 fi
-
-# ── Update dconf database (secondary to GSchema) ──
 dconf update 2>/dev/null || true
-[30-locale-theme] Dark theme configured for all toolkits."
+
+echo "[30-locale-theme] Dark theme configured for all toolkits."
