@@ -235,4 +235,4 @@ ConditionVirtualization=!wsl
 MACHINEDFIX
 
 echo "[38-vm-gating] dbus-broker WSL2 workaround installed"
-[38-vm-gating] VM gating + Hyper-V enhanced session (xorgxrdp) configured."
+[38-vm-gating] VM gating + Hyper-V enhanced session (xorgxrdp) configured.
