@@ -1,0 +1,15 @@
+[Unit]
+Description=CloudWS Ceph Single-Node Bootstrap
+After=network-online.target podman.service
+Wants=network-online.target
+ConditionPathExists=!/var/lib/ceph/.cloudws-bootstrapped
+ConditionVirtualization=!container
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/cloudws-ceph-bootstrap
+TimeoutStartSec=600
+
+[Install]
+WantedBy=multi-user.target

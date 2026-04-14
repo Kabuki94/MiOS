@@ -137,6 +137,41 @@ require { type svirt_t; type device_t; class chr_file { open read write map geta
 allow svirt_t device_t:chr_file { open read write map getattr };'
 
     # Build and install each policy individually
+    # v2.1.2: bootupctl /boot/bootupd-state.json access
+    CLOUDWS_POLICIES[bootupd_state]='
+module cloudws_bootupd_state 1.1;
+require { type bootupd_t; type boot_t; class file { read open getattr lock ioctl }; class dir { read open getattr search }; }
+allow bootupd_t boot_t:file { read open getattr lock ioctl };
+allow bootupd_t boot_t:dir { read open getattr search };'
+
+    # v2.1.2: systemd-resolved hook socket
+    CLOUDWS_POLICIES[resolved_hook]='
+module cloudws_resolved_hook 1.0;
+require { type systemd_resolved_t; type init_t; class unix_stream_socket connectto; class sock_file write; }
+allow systemd_resolved_t init_t:unix_stream_socket connectto;
+allow systemd_resolved_t init_t:sock_file write;'
+
+    # v2.1.2: accounts-daemon Malcontent WebFilter access
+    CLOUDWS_POLICIES[accountsd_malcontent]='
+module cloudws_accountsd_malcontent 1.0;
+require { type accountsd_t; type usr_t; class lnk_file { read getattr }; class file { read open getattr ioctl }; class dir { read open getattr search }; }
+allow accountsd_t usr_t:lnk_file { read getattr };
+allow accountsd_t usr_t:file { read open getattr ioctl };
+allow accountsd_t usr_t:dir { read open getattr search };'
+
+    # v2.1.2: chcon mac_admin capability
+    CLOUDWS_POLICIES[chcon_macadmin]='
+module cloudws_chcon_macadmin 1.0;
+require { type chcon_t; class capability2 mac_admin; }
+allow chcon_t self:capability2 mac_admin;'
+
+    # v2.1.2: gdm-session-worker full .cache access
+    CLOUDWS_POLICIES[gdm_session_cache]='
+module cloudws_gdm_session_cache 1.0;
+require { type xdm_t; type cache_home_t; class dir { add_name write create read open getattr search setattr }; class file { create write read open getattr setattr }; }
+allow xdm_t cache_home_t:dir { add_name write create read open getattr search setattr };
+allow xdm_t cache_home_t:file { create write read open getattr setattr };'
+
     for name in "${!CLOUDWS_POLICIES[@]}"; do
         echo "${CLOUDWS_POLICIES[$name]}" > "/tmp/cloudws_${name}.te"
         if checkmodule -M -m -o "/tmp/cloudws_${name}.mod" "/tmp/cloudws_${name}.te" 2>/dev/null && \

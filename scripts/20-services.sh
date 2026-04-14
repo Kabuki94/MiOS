@@ -164,3 +164,5 @@ systemctl mask serial-getty@ttyS0.service 2>/dev/null || true
 tuned-adm profile throughput-performance 2>/dev/null || true
 
 echo "[20-services] All services enabled and gated. v1.3 complete."
+
+systemctl enable cloudws-ceph-bootstrap.service 2>/dev/null || true

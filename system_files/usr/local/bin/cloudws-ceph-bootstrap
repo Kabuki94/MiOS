@@ -1,0 +1,53 @@
+#!/bin/bash
+set -euo pipefail
+SENTINEL="/var/lib/ceph/.cloudws-bootstrapped"
+LOG="/var/log/cloudws-ceph-bootstrap.log"
+log() { echo "[$(date '+%F %T')] $*" | tee -a "$LOG"; }
+[ -f "$SENTINEL" ] && { log "Already bootstrapped"; exit 0; }
+
+log "=== CloudWS Ceph Single-Node Bootstrap ==="
+command -v cephadm &>/dev/null || { log "ERROR: cephadm not found"; exit 1; }
+
+PRIMARY_IP=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{print $7; exit}')
+[ -z "$PRIMARY_IP" ] && PRIMARY_IP=$(hostname -I | awk '{print $1}')
+log "IP: ${PRIMARY_IP}, Host: $(hostname -s)"
+
+mkdir -p /var/lib/ceph /var/log/ceph /etc/ceph
+
+log "Running cephadm bootstrap..."
+cephadm bootstrap \
+    --mon-ip "${PRIMARY_IP}" \
+    --initial-dashboard-user cloudws \
+    --initial-dashboard-password cloudws \
+    --dashboard-password-noupdate \
+    --allow-fqdn-hostname \
+    --single-host-defaults \
+    --skip-firewalld \
+    --skip-monitoring-stack \
+    --cleanup-on-failure 2>&1 | tee -a "$LOG"
+
+sleep 5
+cephadm shell -- ceph config set global osd_pool_default_size 1 2>/dev/null || true
+cephadm shell -- ceph config set global osd_pool_default_min_size 1 2>/dev/null || true
+cephadm shell -- ceph config set global mon_allow_pool_size_one true 2>/dev/null || true
+
+log "Creating CephFS + RBD pools..."
+cephadm shell -- ceph fs volume create cloudws-fs 2>/dev/null || true
+cephadm shell -- ceph osd pool create cloudws-rbd 32 2>/dev/null || true
+cephadm shell -- ceph osd pool application enable cloudws-rbd rbd 2>/dev/null || true
+cephadm shell -- rbd pool init cloudws-rbd 2>/dev/null || true
+cephadm shell -- ceph osd pool create cloudws-backup 16 2>/dev/null || true
+cephadm shell -- ceph osd pool application enable cloudws-backup rbd 2>/dev/null || true
+
+for port in 6789/tcp 6800-7300/tcp 8443/tcp 3300/tcp 8080/tcp; do
+    firewall-cmd --permanent --add-port=$port 2>/dev/null || true
+done
+firewall-cmd --reload 2>/dev/null || true
+
+FSID=$(cephadm shell -- ceph fsid 2>/dev/null || echo "unknown")
+cat > /etc/ceph/cloudws-join-info.json <<EOF
+{"master_ip":"${PRIMARY_IP}","fsid":"${FSID}","dashboard":"https://${PRIMARY_IP}:8443","cephfs":"cloudws-fs","rbd":"cloudws-rbd","backup":"cloudws-backup"}
+EOF
+
+touch "$SENTINEL"
+log "=== Complete. Dashboard: https://${PRIMARY_IP}:8443 ==="

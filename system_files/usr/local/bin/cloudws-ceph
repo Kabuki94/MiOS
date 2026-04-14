@@ -1,0 +1,27 @@
+#!/bin/bash
+set -euo pipefail
+case "${1:-help}" in
+    status)    cephadm shell -- ceph status 2>/dev/null; cephadm shell -- ceph df 2>/dev/null ;;
+    bootstrap) /usr/local/bin/cloudws-ceph-bootstrap ;;
+    join)      MASTER="${2:?Usage: cloudws-ceph join <ip>}"
+               scp "cloudws@${MASTER}:/etc/ceph/ceph.conf" /etc/ceph/ && \
+               scp "cloudws@${MASTER}:/etc/ceph/ceph.client.admin.keyring" /etc/ceph/ && \
+               ssh "cloudws@${MASTER}" "cephadm shell -- ceph orch host add $(hostname -s) $(hostname -I|awk '{print $1}')" && \
+               echo "Joined. OSDs auto-provision on available disks." ;;
+    reset)     read -p "Type DESTROY to confirm: " c; [ "$c" = "DESTROY" ] || exit 1
+               FSID=$(grep fsid /etc/ceph/ceph.conf 2>/dev/null|awk '{print $3}')
+               cephadm rm-cluster --fsid "$FSID" --force 2>/dev/null || true
+               rm -rf /var/lib/ceph/* /etc/ceph/* /var/log/ceph/*
+               echo "Reset complete. Ready to join or re-bootstrap." ;;
+    mount)     P="${2:-/mnt/cephfs}"; mkdir -p "$P"
+               ceph-fuse "$P" --client_fs cloudws-fs 2>/dev/null && echo "Mounted at $P" ;;
+    unmount)   umount "${2:-/mnt/cephfs}" 2>/dev/null && echo "Unmounted" ;;
+    pools)     cephadm shell -- rados df 2>/dev/null ;;
+    snapshot)  cephadm shell -- rbd snap create "${2}@snap-$(date +%Y%m%d-%H%M%S)" ;;
+    snap-list) cephadm shell -- rbd snap ls "$2" 2>/dev/null ;;
+    snap-export) cephadm shell -- rbd export "${2}@${3}" - > "$4" && echo "Exported to $4" ;;
+    dashboard) [ -f /etc/ceph/cloudws-join-info.json ] && python3 -c "import json;j=json.load(open('/etc/ceph/cloudws-join-info.json'));print(f'Dashboard: {j[\"dashboard\"]}');print('User: cloudws / Pass: cloudws')" ;;
+    nodes)     cephadm shell -- ceph orch host ls 2>/dev/null ;;
+    logs)      journalctl -u 'ceph*' --no-pager -n 50 2>/dev/null ;;
+    *)         echo "cloudws-ceph: status|bootstrap|join <ip>|reset|mount|unmount|pools|snapshot <img>|snap-list <img>|snap-export <img> <snap> <file>|dashboard|nodes|logs" ;;
+esac

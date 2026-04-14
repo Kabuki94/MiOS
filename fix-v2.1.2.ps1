@@ -1,138 +1,148 @@
 <#
-.SYNOPSIS  CloudWS v2.1.2 — Fix 6 runtime issues + add Phosh session
+.SYNOPSIS  CloudWS v2.1.2 — 7 runtime fixes + Ceph single-node bootstrap
 .DESCRIPTION
-    1. Cockpit: external access on ALL interfaces (0.0.0.0 + firewall)
-    2. GTK theming: GSchema override + GTK3 settings.ini (the RIGHT way)
-    3. WSL2: dbus-broker drop-in + systemd-machined skip
-    4. Phosh: mobile session + squeekboard + portrait VM support
-    5. Window controls: permanent button-layout via GSchema (survives Phosh ↔ GNOME switches)
-    6. SELinux MODNAME: unbound variable fix in 37-selinux.sh
-
-    Run from repo root:
-      cd C:\Users\Kabu\OneDrive\Documents\GitHub\CloudWS-bootc
-      .\fix-v2.1.2.ps1
+    1. SELinux MODNAME: remove broken appended blocks, add to CLOUDWS_POLICIES array
+    2. Cockpit: external access on ALL interfaces
+    3. GTK theming: GSchema override (Bazzite pattern)
+    4. WSL2: dbus-broker + systemd-machined drop-ins
+    5. Phosh: mobile session + portrait VM
+    6. Window controls: survive Phosh/GNOME switches
+    7. Ceph: single-node pre-configured bootstrap + cloudws-ceph tool
 #>
 $ErrorActionPreference = "Stop"
 
-# Helper: write UTF-8 no BOM with LF line endings
 function Write-UnixFile {
     param([string]$Path, [string]$Content)
     $dir = Split-Path $Path -Parent
-    if ($dir -and -not (Test-Path $dir)) {
-        New-Item -ItemType Directory -Path $dir -Force | Out-Null
-    }
+    if ($dir -and -not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
     [System.IO.File]::WriteAllText(
         (Join-Path (Get-Location) $Path),
         $Content.Replace("`r`n", "`n"),
-        [System.Text.UTF8Encoding]::new($false)
-    )
+        [System.Text.UTF8Encoding]::new($false))
 }
 
-# ── Verify repo root ─────────────────────────────────────────────────
 if (-not (Test-Path "Containerfile") -or -not (Test-Path "scripts/build.sh")) {
-    Write-Host "  ERROR: Run from CloudWS-bootc repo root" -ForegroundColor Red
-    exit 1
+    Write-Host "  ERROR: Run from CloudWS-bootc repo root" -ForegroundColor Red; exit 1
 }
 
-Write-Host "`n  ╔══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "  ║  CloudWS v2.1.2 Runtime Fixes — 6 Issues + Phosh       ║" -ForegroundColor Cyan
-Write-Host "  ╚══════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
-
+Write-Host "`n  CloudWS v2.1.2 — 7 Fixes + Ceph Bootstrap`n" -ForegroundColor Cyan
 $changes = 0
 
 # ═══════════════════════════════════════════════════════════════════════
-# FIX 1: COCKPIT — Accessible from ALL interfaces
+# FIX 1: SELINUX — Remove broken MODNAME blocks, add to CLOUDWS_POLICIES
 # ═══════════════════════════════════════════════════════════════════════
-Write-Host "  [1/6] Cockpit — external access on all interfaces..." -ForegroundColor Yellow
+Write-Host "  [1/7] SELinux — CLOUDWS_POLICIES array fix..." -ForegroundColor Yellow
+$seScript = "scripts/37-selinux.sh"
+if (Test-Path $seScript) {
+    $se = [System.IO.File]::ReadAllText((Resolve-Path $seScript).Path)
 
-# 1a. cockpit.conf — AllowUnencrypted + wildcard Origins
-Write-UnixFile "system_files/etc/cockpit/cockpit.conf" @'
-# CloudWS — Cockpit web console configuration
-# Accessible from: localhost, VM host IP, container IP, any network interface
+    # Remove broken content after "SELinux configuration complete"
+    if ($se -match '(?s)(.*echo "\[37-selinux\] SELinux configuration complete\.").*$') {
+        $se = $Matches[1]
+        Write-Host "    ~ Removed broken appended MODNAME blocks" -ForegroundColor Green
+        $changes++
+    }
 
+    # Add new policies to CLOUDWS_POLICIES array (same safe pattern as existing)
+    $newPolicies = @'
+
+    # v2.1.2: bootupctl /boot/bootupd-state.json access
+    CLOUDWS_POLICIES[bootupd_state]='
+module cloudws_bootupd_state 1.1;
+require { type bootupd_t; type boot_t; class file { read open getattr lock ioctl }; class dir { read open getattr search }; }
+allow bootupd_t boot_t:file { read open getattr lock ioctl };
+allow bootupd_t boot_t:dir { read open getattr search };'
+
+    # v2.1.2: systemd-resolved hook socket
+    CLOUDWS_POLICIES[resolved_hook]='
+module cloudws_resolved_hook 1.0;
+require { type systemd_resolved_t; type init_t; class unix_stream_socket connectto; class sock_file write; }
+allow systemd_resolved_t init_t:unix_stream_socket connectto;
+allow systemd_resolved_t init_t:sock_file write;'
+
+    # v2.1.2: accounts-daemon Malcontent WebFilter access
+    CLOUDWS_POLICIES[accountsd_malcontent]='
+module cloudws_accountsd_malcontent 1.0;
+require { type accountsd_t; type usr_t; class lnk_file { read getattr }; class file { read open getattr ioctl }; class dir { read open getattr search }; }
+allow accountsd_t usr_t:lnk_file { read getattr };
+allow accountsd_t usr_t:file { read open getattr ioctl };
+allow accountsd_t usr_t:dir { read open getattr search };'
+
+    # v2.1.2: chcon mac_admin capability
+    CLOUDWS_POLICIES[chcon_macadmin]='
+module cloudws_chcon_macadmin 1.0;
+require { type chcon_t; class capability2 mac_admin; }
+allow chcon_t self:capability2 mac_admin;'
+
+    # v2.1.2: gdm-session-worker full .cache access
+    CLOUDWS_POLICIES[gdm_session_cache]='
+module cloudws_gdm_session_cache 1.0;
+require { type xdm_t; type cache_home_t; class dir { add_name write create read open getattr search setattr }; class file { create write read open getattr setattr }; }
+allow xdm_t cache_home_t:dir { add_name write create read open getattr search setattr };
+allow xdm_t cache_home_t:file { create write read open getattr setattr };'
+'@
+
+    if ($se -match '(\s+for name in "\$\{!CLOUDWS_POLICIES\[@\]\}")') {
+        $se = $se -replace '(\s+for name in "\$\{!CLOUDWS_POLICIES\[@\]\}")', "$newPolicies`n`$1"
+        Write-Host "    + 5 policies added to array" -ForegroundColor Green
+        $changes++
+    }
+    Write-UnixFile $seScript $se
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# FIX 2: COCKPIT
+# ═══════════════════════════════════════════════════════════════════════
+Write-Host "  [2/7] Cockpit — external access..." -ForegroundColor Yellow
+Write-UnixFile "system_files/etc/cockpit/cockpit.conf" @"
 [WebService]
 AllowUnencrypted = true
-Origins = https://localhost:9090 wss://localhost:9090
 LoginTitle = CloudWS Management Console
 MaxStartups = 10
 IdleTimeout = 15
-UrlRoot = /
 
 [Log]
 Fatal = criticals warnings
-'@
-Write-Host "    + system_files/etc/cockpit/cockpit.conf" -ForegroundColor Green
-$changes++
-
-# 1b. cockpit.socket override — listen on 0.0.0.0 and [::]
-Write-UnixFile "system_files/etc/systemd/system/cockpit.socket.d/listen-all.conf" @'
-# CloudWS — Cockpit listens on ALL interfaces (not just localhost)
+"@
+Write-UnixFile "system_files/etc/systemd/system/cockpit.socket.d/listen-all.conf" @"
 [Socket]
 ListenStream=
 ListenStream=0.0.0.0:9090
 ListenStream=[::]:9090
 FreeBind=yes
-'@
-Write-Host "    + cockpit.socket.d/listen-all.conf (0.0.0.0:9090)" -ForegroundColor Green
+"@
+Write-Host "    + cockpit.conf + socket override" -ForegroundColor Green
 $changes++
 
-# 1c. Patch 33-firewall.sh — add cockpit to all zones
 $fwScript = "scripts/33-firewall.sh"
 if (Test-Path $fwScript) {
     $fw = [System.IO.File]::ReadAllText((Resolve-Path $fwScript).Path)
     if ($fw -notmatch 'add-service.*cockpit') {
-        # Find the firewall init heredoc and inject cockpit rules before EOF or reload
-        $cockpitBlock = @'
-
-# ── Cockpit — accessible from ALL zones ──
-for zone in public libvirt trusted; do
-    firewall-cmd --permanent --zone="$zone" --add-service=cockpit 2>/dev/null || true
-    firewall-cmd --permanent --zone="$zone" --add-port=9090/tcp 2>/dev/null || true
-done
-'@
-        if ($fw -match 'firewall-cmd\s+--reload') {
-            $fw = $fw -replace '(firewall-cmd\s+--reload)', "$cockpitBlock`n`$1"
-        } else {
-            $fw += "`n$cockpitBlock`n"
-        }
+        $cb = "`n# Cockpit all zones`nfor zone in public libvirt trusted; do`n    firewall-cmd --permanent --zone=`"`$zone`" --add-service=cockpit 2>/dev/null || true`n    firewall-cmd --permanent --zone=`"`$zone`" --add-port=9090/tcp 2>/dev/null || true`ndone`n"
+        if ($fw -match 'firewall-cmd\s+--reload') { $fw = $fw -replace '(firewall-cmd\s+--reload)', "$cb`$1" }
+        else { $fw += $cb }
         Write-UnixFile $fwScript $fw
-        Write-Host "    ~ scripts/33-firewall.sh — cockpit port 9090 all zones" -ForegroundColor Green
+        Write-Host "    ~ 33-firewall.sh patched" -ForegroundColor Green
         $changes++
-    } else {
-        Write-Host "    - 33-firewall.sh already has cockpit rules" -ForegroundColor DarkGray
     }
 }
 
-Write-Host ""
-
 # ═══════════════════════════════════════════════════════════════════════
-# FIX 2: GTK THEMING — GSchema override (the correct approach)
+# FIX 3: GTK THEMING
 # ═══════════════════════════════════════════════════════════════════════
-Write-Host "  [2/6] GTK theming — GSchema override + GTK3 settings..." -ForegroundColor Yellow
-
-# 2a. GSchema override — THIS is the correct way to set GNOME defaults
-#     Bazzite/Bluefin use this pattern. dconf database is SECONDARY.
-#     GSchema overrides compile into the binary schema cache and apply
-#     to ALL users automatically without needing dconf update.
-Write-UnixFile "system_files/usr/share/glib-2.0/schemas/90-cloudws.gschema.override" @'
-# CloudWS — System-wide GNOME defaults
-# Compiled by glib-compile-schemas during build
-# These are defaults — users can override via dconf/gsettings
-
+Write-Host "  [3/7] GTK theming — GSchema override..." -ForegroundColor Yellow
+Write-UnixFile "system_files/usr/share/glib-2.0/schemas/90-cloudws.gschema.override" @"
 [org.gnome.desktop.interface]
 gtk-theme='adw-gtk3-dark'
 icon-theme='Adwaita'
 cursor-theme='Bibata-Modern-Classic'
 cursor-size=24
 color-scheme='prefer-dark'
-enable-animations=true
 font-name='Cantarell 11'
 monospace-font-name='Geist Mono 10'
 
 [org.gnome.desktop.wm.preferences]
 button-layout='close,minimize,maximize:'
-titlebar-font='Cantarell Bold 11'
-action-double-click-titlebar='toggle-maximize'
 
 [org.gnome.desktop.background]
 picture-uri='file:///usr/share/backgrounds/gnome/amber-l.jxl'
@@ -142,332 +152,201 @@ primary-color='#241f31'
 
 [org.gnome.desktop.screensaver]
 picture-uri='file:///usr/share/backgrounds/gnome/amber-d.jxl'
-picture-options='zoom'
-primary-color='#241f31'
-
-[org.gnome.desktop.peripherals.touchpad]
-tap-to-click=true
-natural-scroll=true
-
-[org.gnome.desktop.input-sources]
-xkb-options=['terminate:ctrl_alt_bksp']
-
-[org.gnome.desktop.privacy]
-remove-old-temp-files=true
-remove-old-trash-files=true
 
 [org.gnome.software]
 allow-updates=false
 download-updates=false
-'@
-Write-Host "    + 90-cloudws.gschema.override (theme, wallpaper, button-layout)" -ForegroundColor Green
+"@
+Write-UnixFile "system_files/etc/skel/.config/gtk-3.0/settings.ini" "[Settings]`ngtk-theme-name=adw-gtk3-dark`ngtk-icon-theme-name=Adwaita`ngtk-cursor-theme-name=Bibata-Modern-Classic`ngtk-cursor-theme-size=24`ngtk-application-prefer-dark-theme=1`n"
+Write-UnixFile "system_files/etc/skel/.config/gtk-4.0/settings.ini" "[Settings]`ngtk-cursor-theme-name=Bibata-Modern-Classic`ngtk-cursor-theme-size=24`n"
+Write-Host "    + GSchema + GTK3/4 skel" -ForegroundColor Green
 $changes++
 
-# 2b. GTK3 settings.ini for skel (new user sessions)
-Write-UnixFile "system_files/etc/skel/.config/gtk-3.0/settings.ini" @'
-[Settings]
-gtk-theme-name=adw-gtk3-dark
-gtk-icon-theme-name=Adwaita
-gtk-cursor-theme-name=Bibata-Modern-Classic
-gtk-cursor-theme-size=24
-gtk-application-prefer-dark-theme=1
-gtk-font-name=Cantarell 11
-'@
-Write-Host "    + skel/.config/gtk-3.0/settings.ini (adw-gtk3-dark)" -ForegroundColor Green
-$changes++
-
-# 2c. GTK4 settings for skel
-Write-UnixFile "system_files/etc/skel/.config/gtk-4.0/settings.ini" @'
-[Settings]
-gtk-cursor-theme-name=Bibata-Modern-Classic
-gtk-cursor-theme-size=24
-gtk-font-name=Cantarell 11
-'@
-Write-Host "    + skel/.config/gtk-4.0/settings.ini" -ForegroundColor Green
-$changes++
-
-# 2d. Patch 30-locale-theme.sh to compile GSchema + run dconf update
 $themeScript = "scripts/30-locale-theme.sh"
 if (Test-Path $themeScript) {
     $ts = [System.IO.File]::ReadAllText((Resolve-Path $themeScript).Path)
     if ($ts -notmatch 'glib-compile-schemas') {
-        $schemaBlock = @'
-
-# ── Compile GSchema overrides (THE correct way to set GNOME defaults) ──
-echo "[30-locale-theme] Compiling GSchema overrides..."
-if [ -f /usr/share/glib-2.0/schemas/90-cloudws.gschema.override ]; then
-    glib-compile-schemas /usr/share/glib-2.0/schemas/ 2>/dev/null || \
-        glib-compile-schemas --strict /usr/share/glib-2.0/schemas/ 2>/dev/null || true
-    echo "[30-locale-theme] ✓ GSchema overrides compiled"
-fi
-
-# ── Update dconf database (secondary to GSchema) ──
-dconf update 2>/dev/null || true
-'@
-        # Append before "Dark theme configured" or at end
-        if ($ts -match '\[30-locale-theme\].*Dark theme') {
-            $ts = $ts -replace '(\[30-locale-theme\].*Dark theme)', "$schemaBlock`n`$1"
-        } else {
-            $ts += "`n$schemaBlock`n"
-        }
+        $ts += "`n`necho `"[30-locale-theme] Compiling GSchema overrides...`"`nglib-compile-schemas /usr/share/glib-2.0/schemas/ 2>/dev/null || true`ndconf update 2>/dev/null || true`n"
         Write-UnixFile $themeScript $ts
-        Write-Host "    ~ 30-locale-theme.sh — glib-compile-schemas + dconf update" -ForegroundColor Green
+        Write-Host "    ~ 30-locale-theme.sh — glib-compile-schemas" -ForegroundColor Green
         $changes++
     }
 }
 
-Write-Host ""
+# ═══════════════════════════════════════════════════════════════════════
+# FIX 4: WSL2
+# ═══════════════════════════════════════════════════════════════════════
+Write-Host "  [4/7] WSL2 — dbus-broker + machined..." -ForegroundColor Yellow
+Write-UnixFile "system_files/etc/systemd/system/dbus-broker.service.d/wsl2-fix.conf" "[Unit]`nConditionPathExists=|/proc/sys/fs/binfmt_misc/WSLInterop`n`n[Service]`nExecStart=`nExecStart=/usr/bin/dbus-broker-launch --scope system`nOOMScoreAdjust=-500`n"
+Write-UnixFile "system_files/etc/systemd/system/systemd-machined.service.d/wsl2-optional.conf" "[Unit]`nConditionVirtualization=!wsl`n"
+Write-Host "    + WSL2 drop-ins" -ForegroundColor Green
+$changes++
 
 # ═══════════════════════════════════════════════════════════════════════
-# FIX 3: WSL2 — dbus-broker + systemd-machined
+# FIX 5: PHOSH
 # ═══════════════════════════════════════════════════════════════════════
-Write-Host "  [3/6] WSL2 — dbus-broker + systemd-machined fixes..." -ForegroundColor Yellow
+Write-Host "  [5/7] Phosh — mobile session..." -ForegroundColor Yellow
+Write-UnixFile "system_files/usr/share/wayland-sessions/phosh.desktop" "[Desktop Entry]`nName=Phosh (Mobile)`nComment=CloudWS mobile session`nExec=/usr/bin/phosh-session`nType=Application`nDesktopNames=Phosh;GNOME;`n"
+Write-Host "    + phosh.desktop" -ForegroundColor Green
+$changes++
 
-# 3a. dbus-broker drop-in — strip --audit flag in WSL2
-Write-UnixFile "system_files/etc/systemd/system/dbus-broker.service.d/wsl2-fix.conf" @'
-# CloudWS — dbus-broker WSL2 workaround
-# Microsoft WSL2 kernel lacks audit socket, causing dbus-broker to fail
-# with exit code 1, cascading to kill ALL D-Bus dependent services.
-# This drop-in strips --audit and only activates inside WSL2.
+$pkgMd = "PACKAGES.md"
+if ((Test-Path $pkgMd) -and ((Get-Content $pkgMd -Raw) -notmatch 'packages-phosh')) {
+    Add-Content -Path $pkgMd -Value "`n### Phosh (Mobile Session)`n``````packages-phosh`nphosh`nphoc`nsqueekboard`nfeedbackd`n```````n" -NoNewline
+    Write-Host "    ~ PACKAGES.md — phosh section" -ForegroundColor Green
+    $changes++
+}
 
+$gnomeScript = "scripts/10-gnome.sh"
+if ((Test-Path $gnomeScript) -and ((Get-Content $gnomeScript -Raw) -notmatch 'install_packages.*phosh')) {
+    $gs = [System.IO.File]::ReadAllText((Resolve-Path $gnomeScript).Path)
+    $gs += "`n`necho `"[10-gnome] Installing Phosh mobile session...`"`ninstall_packages_optional `"phosh`"`n"
+    Write-UnixFile $gnomeScript $gs
+    Write-Host "    ~ 10-gnome.sh — phosh install" -ForegroundColor Green
+    $changes++
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# FIX 6: WINDOW CONTROLS
+# ═══════════════════════════════════════════════════════════════════════
+Write-Host "  [6/7] Window controls — autostart restore..." -ForegroundColor Yellow
+Write-UnixFile "system_files/etc/xdg/autostart/cloudws-restore-buttons.desktop" "[Desktop Entry]`nType=Application`nName=CloudWS Window Controls`nExec=gsettings set org.gnome.desktop.wm.preferences button-layout 'close,minimize,maximize:'`nNoDisplay=true`nX-GNOME-Autostart-Phase=Applications`nOnlyShowIn=GNOME;`n"
+Write-Host "    + autostart restore" -ForegroundColor Green
+$changes++
+
+# ═══════════════════════════════════════════════════════════════════════
+# FIX 7: CEPH SINGLE-NODE BOOTSTRAP
+# ═══════════════════════════════════════════════════════════════════════
+Write-Host "  [7/7] Ceph — single-node bootstrap..." -ForegroundColor Yellow
+
+# systemd service
+Write-UnixFile "system_files/usr/lib/systemd/system/cloudws-ceph-bootstrap.service" @"
 [Unit]
-ConditionPathExists=|/proc/sys/fs/binfmt_misc/WSLInterop
+Description=CloudWS Ceph Single-Node Bootstrap
+After=network-online.target podman.service
+Wants=network-online.target
+ConditionPathExists=!/var/lib/ceph/.cloudws-bootstrapped
+ConditionVirtualization=!container
 
 [Service]
-ExecStart=
-ExecStart=/usr/bin/dbus-broker-launch --scope system
-OOMScoreAdjust=-500
-'@
-Write-Host "    + dbus-broker.service.d/wsl2-fix.conf" -ForegroundColor Green
-$changes++
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/cloudws-ceph-bootstrap
+TimeoutStartSec=600
 
-# 3b. systemd-machined — skip in WSL2
-Write-UnixFile "system_files/etc/systemd/system/systemd-machined.service.d/wsl2-optional.conf" @'
-# CloudWS — systemd-machined needs cgroup features WSL2 lacks
-[Unit]
-ConditionVirtualization=!wsl
-'@
-Write-Host "    + systemd-machined.service.d/wsl2-optional.conf" -ForegroundColor Green
-$changes++
+[Install]
+WantedBy=multi-user.target
+"@
+Write-Host "    + cloudws-ceph-bootstrap.service" -ForegroundColor Green
 
-Write-Host ""
-
-# ═══════════════════════════════════════════════════════════════════════
-# FIX 4: PHOSH SESSION — Mobile remote access + portrait VM support
-# ═══════════════════════════════════════════════════════════════════════
-Write-Host "  [4/6] Phosh — mobile session + portrait support..." -ForegroundColor Yellow
-
-# 4a. Phosh wayland session desktop file
-Write-UnixFile "system_files/usr/share/wayland-sessions/phosh.desktop" @'
-[Desktop Entry]
-Name=Phosh (Mobile)
-Comment=CloudWS mobile-optimized session (portrait/tablet)
-Exec=/usr/bin/phosh-session
-Type=Application
-DesktopNames=Phosh;GNOME;
-'@
-Write-Host "    + wayland-sessions/phosh.desktop" -ForegroundColor Green
-$changes++
-
-# 4b. Phosh session wrapper that restores GNOME button-layout on exit
-Write-UnixFile "system_files/usr/local/bin/phosh-session-wrapper" @'
+# Bootstrap script — runs on first boot, creates entire Ceph cluster
+$bootstrapScript = @'
 #!/bin/bash
-# CloudWS — Phosh session wrapper
-# Launches Phosh, then restores GNOME window controls on exit
-# so switching back to GNOME doesn't lose close/min/max buttons
+set -euo pipefail
+SENTINEL="/var/lib/ceph/.cloudws-bootstrapped"
+LOG="/var/log/cloudws-ceph-bootstrap.log"
+log() { echo "[$(date '+%F %T')] $*" | tee -a "$LOG"; }
+[ -f "$SENTINEL" ] && { log "Already bootstrapped"; exit 0; }
 
-# Run phosh
-/usr/bin/phosh-session "$@"
-EXIT_CODE=$?
+log "=== CloudWS Ceph Single-Node Bootstrap ==="
+command -v cephadm &>/dev/null || { log "ERROR: cephadm not found"; exit 1; }
 
-# Restore GNOME button-layout after Phosh exit
-# Phosh sets button-layout='' which strips GNOME window controls
-gsettings set org.gnome.desktop.wm.preferences button-layout 'close,minimize,maximize:' 2>/dev/null || true
+PRIMARY_IP=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{print $7; exit}')
+[ -z "$PRIMARY_IP" ] && PRIMARY_IP=$(hostname -I | awk '{print $1}')
+log "IP: ${PRIMARY_IP}, Host: $(hostname -s)"
 
-exit $EXIT_CODE
+mkdir -p /var/lib/ceph /var/log/ceph /etc/ceph
+
+log "Running cephadm bootstrap..."
+cephadm bootstrap \
+    --mon-ip "${PRIMARY_IP}" \
+    --initial-dashboard-user cloudws \
+    --initial-dashboard-password cloudws \
+    --dashboard-password-noupdate \
+    --allow-fqdn-hostname \
+    --single-host-defaults \
+    --skip-firewalld \
+    --skip-monitoring-stack \
+    --cleanup-on-failure 2>&1 | tee -a "$LOG"
+
+sleep 5
+cephadm shell -- ceph config set global osd_pool_default_size 1 2>/dev/null || true
+cephadm shell -- ceph config set global osd_pool_default_min_size 1 2>/dev/null || true
+cephadm shell -- ceph config set global mon_allow_pool_size_one true 2>/dev/null || true
+
+log "Creating CephFS + RBD pools..."
+cephadm shell -- ceph fs volume create cloudws-fs 2>/dev/null || true
+cephadm shell -- ceph osd pool create cloudws-rbd 32 2>/dev/null || true
+cephadm shell -- ceph osd pool application enable cloudws-rbd rbd 2>/dev/null || true
+cephadm shell -- rbd pool init cloudws-rbd 2>/dev/null || true
+cephadm shell -- ceph osd pool create cloudws-backup 16 2>/dev/null || true
+cephadm shell -- ceph osd pool application enable cloudws-backup rbd 2>/dev/null || true
+
+for port in 6789/tcp 6800-7300/tcp 8443/tcp 3300/tcp 8080/tcp; do
+    firewall-cmd --permanent --add-port=$port 2>/dev/null || true
+done
+firewall-cmd --reload 2>/dev/null || true
+
+FSID=$(cephadm shell -- ceph fsid 2>/dev/null || echo "unknown")
+cat > /etc/ceph/cloudws-join-info.json <<EOF
+{"master_ip":"${PRIMARY_IP}","fsid":"${FSID}","dashboard":"https://${PRIMARY_IP}:8443","cephfs":"cloudws-fs","rbd":"cloudws-rbd","backup":"cloudws-backup"}
+EOF
+
+touch "$SENTINEL"
+log "=== Complete. Dashboard: https://${PRIMARY_IP}:8443 ==="
 '@
-Write-Host "    + /usr/local/bin/phosh-session-wrapper" -ForegroundColor Green
+Write-UnixFile "system_files/usr/local/bin/cloudws-ceph-bootstrap" $bootstrapScript
+Write-Host "    + cloudws-ceph-bootstrap" -ForegroundColor Green
+
+# cloudws-ceph management CLI
+$cephCli = @'
+#!/bin/bash
+set -euo pipefail
+case "${1:-help}" in
+    status)    cephadm shell -- ceph status 2>/dev/null; cephadm shell -- ceph df 2>/dev/null ;;
+    bootstrap) /usr/local/bin/cloudws-ceph-bootstrap ;;
+    join)      MASTER="${2:?Usage: cloudws-ceph join <ip>}"
+               scp "cloudws@${MASTER}:/etc/ceph/ceph.conf" /etc/ceph/ && \
+               scp "cloudws@${MASTER}:/etc/ceph/ceph.client.admin.keyring" /etc/ceph/ && \
+               ssh "cloudws@${MASTER}" "cephadm shell -- ceph orch host add $(hostname -s) $(hostname -I|awk '{print $1}')" && \
+               echo "Joined. OSDs auto-provision on available disks." ;;
+    reset)     read -p "Type DESTROY to confirm: " c; [ "$c" = "DESTROY" ] || exit 1
+               FSID=$(grep fsid /etc/ceph/ceph.conf 2>/dev/null|awk '{print $3}')
+               cephadm rm-cluster --fsid "$FSID" --force 2>/dev/null || true
+               rm -rf /var/lib/ceph/* /etc/ceph/* /var/log/ceph/*
+               echo "Reset complete. Ready to join or re-bootstrap." ;;
+    mount)     P="${2:-/mnt/cephfs}"; mkdir -p "$P"
+               ceph-fuse "$P" --client_fs cloudws-fs 2>/dev/null && echo "Mounted at $P" ;;
+    unmount)   umount "${2:-/mnt/cephfs}" 2>/dev/null && echo "Unmounted" ;;
+    pools)     cephadm shell -- rados df 2>/dev/null ;;
+    snapshot)  cephadm shell -- rbd snap create "${2}@snap-$(date +%Y%m%d-%H%M%S)" ;;
+    snap-list) cephadm shell -- rbd snap ls "$2" 2>/dev/null ;;
+    snap-export) cephadm shell -- rbd export "${2}@${3}" - > "$4" && echo "Exported to $4" ;;
+    dashboard) [ -f /etc/ceph/cloudws-join-info.json ] && python3 -c "import json;j=json.load(open('/etc/ceph/cloudws-join-info.json'));print(f'Dashboard: {j[\"dashboard\"]}');print('User: cloudws / Pass: cloudws')" ;;
+    nodes)     cephadm shell -- ceph orch host ls 2>/dev/null ;;
+    logs)      journalctl -u 'ceph*' --no-pager -n 50 2>/dev/null ;;
+    *)         echo "cloudws-ceph: status|bootstrap|join <ip>|reset|mount|unmount|pools|snapshot <img>|snap-list <img>|snap-export <img> <snap> <file>|dashboard|nodes|logs" ;;
+esac
+'@
+Write-UnixFile "system_files/usr/local/bin/cloudws-ceph" $cephCli
+Write-Host "    + cloudws-ceph CLI" -ForegroundColor Green
 $changes++
 
-# 4c. Add phosh packages to PACKAGES.md
-$pkgMd = "PACKAGES.md"
-if (Test-Path $pkgMd) {
-    $pkg = [System.IO.File]::ReadAllText((Resolve-Path $pkgMd).Path)
-    if ($pkg -notmatch 'packages-phosh') {
-        $phoshBlock = @'
-
-### Phosh (Mobile Session)
-```packages-phosh
-phosh
-phoc
-squeekboard
-gnome-calls
-feedbackd
-```
-'@
-        # Insert before the last ``` block or at end
-        $pkg += "`n$phoshBlock`n"
-        Write-UnixFile $pkgMd $pkg
-        Write-Host "    ~ PACKAGES.md — added packages-phosh section" -ForegroundColor Green
-        $changes++
-    } else {
-        Write-Host "    - PACKAGES.md already has phosh packages" -ForegroundColor DarkGray
-    }
+$svcScript = "scripts/20-services.sh"
+if ((Test-Path $svcScript) -and ((Get-Content $svcScript -Raw) -notmatch 'cloudws-ceph-bootstrap')) {
+    $svc = [System.IO.File]::ReadAllText((Resolve-Path $svcScript).Path)
+    $svc += "`nsystemctl enable cloudws-ceph-bootstrap.service 2>/dev/null || true`n"
+    Write-UnixFile $svcScript $svc
+    Write-Host "    ~ 20-services.sh — ceph-bootstrap enabled" -ForegroundColor Green
+    $changes++
 }
 
-# 4d. Patch 10-gnome.sh to install phosh packages
-$gnomeScript = "scripts/10-gnome.sh"
-if (Test-Path $gnomeScript) {
-    $gs = [System.IO.File]::ReadAllText((Resolve-Path $gnomeScript).Path)
-    if ($gs -notmatch 'phosh') {
-        $phoshInstall = @'
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Phosh — Mobile session for portrait/tablet remote access
-# ═══════════════════════════════════════════════════════════════════════════════
-echo "[10-gnome] Installing Phosh mobile session..."
-install_packages_optional "phosh"
-# Make session wrapper executable
-chmod +x /usr/local/bin/phosh-session-wrapper 2>/dev/null || true
-'@
-        # Insert before the Flatpak section
-        if ($gs -match '# ═+\n# Flatpak Remotes') {
-            $gs = $gs -replace '(# ═+\n# Flatpak Remotes)', "$phoshInstall`n`$1"
-        } else {
-            # Fallback — insert before flatpak remote-add
-            $gs = $gs -replace '(echo "\[10-gnome\] Configuring Flatpak remotes)', "$phoshInstall`n`$1"
-        }
-        Write-UnixFile $gnomeScript $gs
-        Write-Host "    ~ scripts/10-gnome.sh — phosh install block added" -ForegroundColor Green
-        $changes++
-    }
-}
-
-Write-Host ""
-
 # ═══════════════════════════════════════════════════════════════════════
-# FIX 5: WINDOW CONTROLS — permanent button-layout
-# ═══════════════════════════════════════════════════════════════════════
-Write-Host "  [5/6] Window controls — permanent button-layout..." -ForegroundColor Yellow
-
-# 5a. Systemd service to restore button-layout on every login
-Write-UnixFile "system_files/etc/xdg/autostart/cloudws-restore-buttons.desktop" @'
-[Desktop Entry]
-Type=Application
-Name=CloudWS Window Controls Restore
-Comment=Ensures window buttons are always present after Phosh sessions
-Exec=gsettings set org.gnome.desktop.wm.preferences button-layout 'close,minimize,maximize:'
-NoDisplay=true
-X-GNOME-Autostart-Phase=Applications
-OnlyShowIn=GNOME;
-'@
-Write-Host "    + autostart/cloudws-restore-buttons.desktop" -ForegroundColor Green
-$changes++
-
-Write-Host "    (GSchema override in fix 2 already sets button-layout='close,minimize,maximize:')" -ForegroundColor DarkGray
-
-Write-Host ""
-
-# ═══════════════════════════════════════════════════════════════════════
-# FIX 6: SELINUX MODNAME — unbound variable
-# ═══════════════════════════════════════════════════════════════════════
-Write-Host "  [6/6] SELinux MODNAME — unbound variable fix..." -ForegroundColor Yellow
-
-$seScript = "scripts/37-selinux.sh"
-if (Test-Path $seScript) {
-    $se = [System.IO.File]::ReadAllText((Resolve-Path $seScript).Path)
-
-    # Initialize MODNAME="" before each if-guarded block
-    if ($se -match '(?m)^if seinfo -t \S+ .*?\n\s+MODNAME=') {
-        $se = $se -replace '(?m)^(if seinfo -t \S+ )', "MODNAME=`"`"`n`$1"
-        Write-Host "    ~ MODNAME='' initialized before each if-guard" -ForegroundColor Green
-        $changes++
-    } else {
-        Write-Host "    - MODNAME already initialized or pattern not found" -ForegroundColor DarkGray
-    }
-
-    # Wrap rm cleanup in safe guard
-    if ($se -match 'rm -f "/tmp/\$\{MODNAME\}"') {
-        $se = $se -replace 'rm -f "/tmp/\$\{MODNAME\}"', 'if [ -n "${MODNAME:-}" ]; then rm -f "/tmp/${MODNAME}"; fi'
-        Write-Host "    ~ rm cleanup wrapped in safe guard" -ForegroundColor Green
-        $changes++
-    }
-
-    # Also fix the .te .mod .pp cleanup pattern
-    if ($se -match 'rm -f "/tmp/\$\{MODNAME\}"\.') {
-        $se = $se -replace 'rm -f "/tmp/\$\{MODNAME\}"\.', 'if [ -n "${MODNAME:-}" ]; then rm -f "/tmp/${MODNAME}".'
-        Write-Host "    ~ .te/.mod/.pp cleanup wrapped" -ForegroundColor Green
-    }
-
-    Write-UnixFile $seScript $se
-}
-
-Write-Host ""
-
-# ═══════════════════════════════════════════════════════════════════════
-# SUMMARY
-# ═══════════════════════════════════════════════════════════════════════
-Write-Host "  ══════════════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "  $changes changes applied" -ForegroundColor White
-Write-Host ""
-
-# Verify critical new files exist
-$newFiles = @(
-    "system_files/etc/cockpit/cockpit.conf",
-    "system_files/etc/systemd/system/cockpit.socket.d/listen-all.conf",
-    "system_files/usr/share/glib-2.0/schemas/90-cloudws.gschema.override",
-    "system_files/etc/skel/.config/gtk-3.0/settings.ini",
-    "system_files/etc/skel/.config/gtk-4.0/settings.ini",
-    "system_files/etc/systemd/system/dbus-broker.service.d/wsl2-fix.conf",
-    "system_files/etc/systemd/system/systemd-machined.service.d/wsl2-optional.conf",
-    "system_files/usr/share/wayland-sessions/phosh.desktop",
-    "system_files/usr/local/bin/phosh-session-wrapper",
-    "system_files/etc/xdg/autostart/cloudws-restore-buttons.desktop"
-)
-$ok = 0; $fail = 0
-foreach ($f in $newFiles) {
-    if (Test-Path $f) {
-        Write-Host "    ✓ $f" -ForegroundColor Green
-        $ok++
-    } else {
-        Write-Host "    ✗ $f MISSING" -ForegroundColor Red
-        $fail++
-    }
-}
-Write-Host "    $ok created, $fail missing" -ForegroundColor $(if ($fail -eq 0) { "Green" } else { "Red" })
-
-Write-Host ""
-Write-Host "  ── SSH from Windows ──" -ForegroundColor DarkGray
-Write-Host "    ssh cloudws@<VM-IP>       (NOT ssh://IP:22)" -ForegroundColor DarkGray
-Write-Host "    ssh cloudws@172.17.165.159" -ForegroundColor DarkGray
-Write-Host ""
-
-$doPush = Read-Host "  Push to GitHub? (y/n)"
+Write-Host "`n  $changes changes. Push to GitHub? (y/n)" -ForegroundColor Cyan
+$doPush = Read-Host
 if ($doPush -eq 'y') {
-    Write-Host "`n  Staging..." -ForegroundColor Cyan
-    git add -A
-    git status --short
-
-    $msg = "fix: cockpit external access + GTK GSchema + WSL2 dbus + Phosh session
-
-v2.1.2 runtime fixes:
-- Cockpit: AllowUnencrypted, ListenStream=0.0.0.0:9090, firewall port 9090 all zones
-- Theme: GSchema override (adw-gtk3-dark, wallpaper, button-layout, fonts)
-- GTK3: skel settings.ini for adw-gtk3-dark
-- WSL2: dbus-broker drop-in strips --audit, systemd-machined ConditionVirtualization=!wsl
-- Phosh: mobile session (phosh, phoc, squeekboard), portrait VM support
-- Window controls: GSchema button-layout + autostart restore after Phosh
-- SELinux: MODNAME='' init before seinfo guards (set -u compat)
-- glib-compile-schemas in 30-locale-theme.sh"
-
-    git commit -m $msg
-    Write-Host "  Pushing to origin/main..." -ForegroundColor Cyan
-    $pushResult = git push origin main 2>&1
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "`n  ✓ Pushed. Rebuild: .\cloud-ws.ps1`n" -ForegroundColor Green
-    } else {
-        Write-Host $pushResult
-    }
+    git add -A; git status --short
+    git commit -m "fix: SELinux array + cockpit + GTK + WSL2 + Phosh + Ceph bootstrap (v2.1.2)"
+    git push origin main 2>&1 | ForEach-Object { Write-Host "  $_" }
+    if ($LASTEXITCODE -eq 0) { Write-Host "`n  Pushed. Rebuild: .\cloud-ws.ps1`n" -ForegroundColor Green }
 }
-
-Write-Host "  Done.`n" -ForegroundColor White

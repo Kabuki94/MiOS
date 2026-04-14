@@ -1,21 +1,14 @@
-# CloudWS — System-wide GNOME defaults
-# Compiled by glib-compile-schemas during build
-# These are defaults — users can override via dconf/gsettings
-
 [org.gnome.desktop.interface]
 gtk-theme='adw-gtk3-dark'
 icon-theme='Adwaita'
 cursor-theme='Bibata-Modern-Classic'
 cursor-size=24
 color-scheme='prefer-dark'
-enable-animations=true
 font-name='Cantarell 11'
 monospace-font-name='Geist Mono 10'
 
 [org.gnome.desktop.wm.preferences]
 button-layout='close,minimize,maximize:'
-titlebar-font='Cantarell Bold 11'
-action-double-click-titlebar='toggle-maximize'
 
 [org.gnome.desktop.background]
 picture-uri='file:///usr/share/backgrounds/gnome/amber-l.jxl'
@@ -25,19 +18,6 @@ primary-color='#241f31'
 
 [org.gnome.desktop.screensaver]
 picture-uri='file:///usr/share/backgrounds/gnome/amber-d.jxl'
-picture-options='zoom'
-primary-color='#241f31'
-
-[org.gnome.desktop.peripherals.touchpad]
-tap-to-click=true
-natural-scroll=true
-
-[org.gnome.desktop.input-sources]
-xkb-options=['terminate:ctrl_alt_bksp']
-
-[org.gnome.desktop.privacy]
-remove-old-temp-files=true
-remove-old-trash-files=true
 
 [org.gnome.software]
 allow-updates=false
