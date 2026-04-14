@@ -122,7 +122,7 @@ LG_VERSION="B7"
 mkdir -p /tmp/looking-glass-build
 cd /tmp/looking-glass-build
 
-git clone --depth=1 --branch "${LG_VERSION}" \
+git clone --depth=1 --recurse-submodules --branch "${LG_VERSION}" \
     https://github.com/gnif/LookingGlass.git 2>/dev/null || true
 
 if [ -d LookingGlass ]; then

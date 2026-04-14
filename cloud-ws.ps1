@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     CloudWS v0.1.3 — Cloud Workstation OS Builder (Windows)
 
@@ -569,12 +569,14 @@ if (Test-Path $TargetVhdx) {
         $vmSwitchObj = Get-VMSwitch | Where-Object SwitchType -eq "External" | Select-Object -First 1
         $vmSwitch = if ($vmSwitchObj) { $vmSwitchObj.Name } else { "Default Switch" }
         $vmCpu = [Math]::Max(4, $cpu)
-        $vmRamGB = [Math]::Max(8, [Math]::Floor(((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB) * 0.75))
-        $vmRam = [int64]$vmRamGB * 1GB
-        New-VM -Name $vmName -MemoryStartupBytes $vmRam -Generation 2 -VHDPath $TargetVhdx -SwitchName $vmSwitch | Out-Null
-        Set-VM -Name $vmName -ProcessorCount $vmCpu -DynamicMemory -MemoryMinimumBytes 4GB -MemoryMaximumBytes $vmRam
+        $totalRamBytes = (Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory
+        $vmRamMaxGB = [Math]::Floor($totalRamBytes / 1GB)
+        $vmRamGB = $vmRamMaxGB  # Display value
+        $vmRam = [int64]$totalRamBytes  # Full system RAM as dynamic max
+        New-VM -Name $vmName -MemoryStartupBytes 4GB -Generation 2 -VHDPath $TargetVhdx -SwitchName $vmSwitch | Out-Null
+        Set-VM -Name $vmName -ProcessorCount $vmCpu -DynamicMemory -MemoryMinimumBytes 4GB -MemoryMaximumBytes $vmRam -MemoryStartupBytes 4GB
         Set-VMFirmware -VMName $vmName -SecureBootTemplate "MicrosoftUEFICertificateAuthority"
-        Write-OK "Hyper-V VM '$vmName' created (CPUs: $vmCpu | RAM: ${vmRamGB}GB)"
+        Write-OK "Hyper-V VM '$vmName' created (CPUs: $vmCpu | RAM: 4GB startup → ${vmRamGB}GB max, dynamic)"
 
         # Start VM and wait for POST
         Write-Step "Starting VM..."

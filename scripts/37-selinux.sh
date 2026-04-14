@@ -1,8 +1,6 @@
 #!/bin/bash
-# CloudWS v2.1.2 — 37-selinux: Build-time SELinux policy fixes
+# CloudWS v2.1.3 — 37-selinux: Build-time SELinux policy fixes
 # Custom per-rule modules for known Fedora Rawhide / systemd 260 denials.
-# v2.1.2: Added bootupd_state, resolved_hook, accountsd_malcontent,
-#          chcon_macadmin, gdm_session_cache policies
 set -euo pipefail
 
 echo "[37-selinux] Applying SELinux build-time fixes..."
@@ -35,8 +33,6 @@ EOSEM
 fi
 
 # ═══ Custom policy modules ═══
-# CRITICAL: Use var=$((var + 1)) NOT ((var++)) — the latter returns exit 1
-# when the previous value is 0 under set -euo pipefail.
 if command -v checkmodule &>/dev/null && command -v semodule_package &>/dev/null; then
     echo "[37-selinux] Building custom SELinux policy modules..."
 
@@ -113,8 +109,6 @@ allow xdm_t cache_home_t:file { create write open getattr setattr };'
 module cloudws_homed_varhome 1.0;
 require { type systemd_homed_t; type home_root_t; class dir { read getattr open search }; }
 allow systemd_homed_t home_root_t:dir { read getattr open search };'
-
-    # ── v2.1.2: Runtime denial fixes ──
 
     CLOUDWS_POLICIES[bootupd_state]='
 module cloudws_bootupd_state 1.1;
