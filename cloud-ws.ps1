@@ -86,17 +86,7 @@ function Read-Timed {
     while ($sw.Elapsed.TotalSeconds -lt $Timeout -and -not [Console]::KeyAvailable) { Start-Sleep -Milliseconds 100 }
     if ([Console]::KeyAvailable) {
         if ($Secret) {
-            $secBuf = ""
-            while ($true) {
-                $key = [Console]::ReadKey($true)
-                if ($key.Key -eq 'Enter') { Write-Host ""; break }
-                if ($key.Key -eq 'Backspace') {
-                    if ($secBuf.Length -gt 0) { $secBuf = $secBuf.Substring(0, $secBuf.Length - 1); Write-Host "`b `b" -NoNewline }
-                } else {
-                    $secBuf += $key.KeyChar; Write-Host "*" -NoNewline
-                }
-            }
-            $buf = $secBuf
+            $buf = Read-Host -MaskInput
         } else {
             $buf = Read-Host
         }
