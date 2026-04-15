@@ -493,6 +493,7 @@ libXi-devel
 libXinerama-devel
 libXcursor-devel
 libXpresent-devel
+libXScrnSaver-devel
 libxkbcommon-x11-devel
 wayland-devel
 wayland-protocols-devel
@@ -527,7 +528,6 @@ nss-mdns
 ```packages-phosh
 phosh
 phoc
-squeekboard
 gnome-calls
 feedbackd
 ```

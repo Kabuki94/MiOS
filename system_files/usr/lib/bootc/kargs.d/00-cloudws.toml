@@ -1,15 +1,17 @@
-# CloudWS v1.3 — Kernel boot arguments
+# CloudWS v2.1.4 — Kernel boot arguments
 # Shipped via bootc kargs.d drop-in directory (bootc v1.11+)
 # These survive atomic updates and don't require bootloader modification.
 #
 # IOMMU (required for VFIO GPU passthrough)
 # Security hardening (adapted from SecureBlue)
 # NVIDIA DRM (required for Wayland + Gamescope)
+# Cgroup v2 unified hierarchy (required for K3s kubelet + modern systemd)
 
 kargs = [
     "iommu=pt",
     "nvidia-drm.modeset=1",
     "nvidia-drm.fbdev=1",
+    "systemd.unified_cgroup_hierarchy=1",
     "slab_nomerge",
     "init_on_alloc=1",
     "page_alloc.shuffle=1",
