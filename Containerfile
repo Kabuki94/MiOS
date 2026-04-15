@@ -90,9 +90,11 @@ RUN --mount=type=bind,from=ctx,source=/system_files,target=/tmp/sf \
     systemctl enable cloudws-grd-setup.service 2>/dev/null && echo "  ✓ cloudws-grd-setup" || echo "  ⚠ cloudws-grd-setup" && \
     systemctl enable cloudws-ceph-bootstrap.service 2>/dev/null && echo "  ✓ cloudws-ceph-bootstrap" || echo "  ⚠ cloudws-ceph-bootstrap" && \
     systemctl enable cloudws-verify-root.service 2>/dev/null && echo "  ✓ cloudws-verify-root" || echo "  ⚠ cloudws-verify-root" && \
+    systemctl enable cloudws-nvidia-cdi.service 2>/dev/null && echo "  ✓ cloudws-nvidia-cdi" || echo "  ⚠ cloudws-nvidia-cdi" &&
     systemctl enable k3s.service 2>/dev/null && echo "  ✓ k3s" || echo "  ⚠ k3s" && \
     systemctl enable var-home.mount 2>/dev/null && echo "  ✓ var-home.mount" || echo "  ⚠ var-home.mount" && \
     systemctl enable var-lib-containers.mount 2>/dev/null && echo "  ✓ var-lib-containers.mount" || echo "  ⚠ var-lib-containers.mount" && \
+    systemctl mask flatpak-add-fedora-repos.service 2>/dev/null || true && echo "  ✓ masked flatpak-add-fedora-repos" &&
     echo "── Service enablement complete ──"
 
 # ── STEP E: Post-build validation ────────────────────────────────────────────
@@ -139,7 +141,7 @@ RUN KVER=$(ls -1 /lib/modules/ | sort -V | tail -1) && \
     echo "── Regenerating GENERIC initramfs for kernel ${KVER} ──" && \
     if [ -n "$KVER" ]; then \
         rm -f "/lib/modules/${KVER}/initramfs.img" "/boot/initramfs-${KVER}.img" 2>/dev/null || true; \
-        DRACUT_NO_XATTR=1 dracut --force --no-hostonly --kver "$KVER" \
+        mkdir -p /root && DRACUT_NO_XATTR=1 /usr/bin/dracut --no-hostonly --reproducible --add ostree --kver "$KVER" \
             "/lib/modules/${KVER}/initramfs.img" 2>&1 || \
         echo "WARNING: dracut failed — disk image targets may not work"; \
     fi
@@ -157,7 +159,7 @@ LABEL ostree.bootable="1"
 LABEL org.opencontainers.image.title="CloudWS"
 LABEL org.opencontainers.image.description="Cloud Workstation OS — Immutable Fedora bootc with GNOME 50, KVM, K3s, NVIDIA"
 LABEL org.opencontainers.image.source="https://github.com/Kabuki94/CloudWS-bootc"
-LABEL org.opencontainers.image.version="2.1.1"
+LABEL org.opencontainers.image.version="2.2.0"
 LABEL io.artifacthub.package.license="MIT"
 
 CMD ["/sbin/init"]
