@@ -1,13 +1,8 @@
 # CloudWS v2.1.4: Verbose boot + serial console for Hyper-V debugging
 #
-# bootc kargs.d TOML format:
-#   - Top-level `kargs = [...]` array ONLY (flat list of strings to append)
-#   - Optional `match-architectures = ["x86_64"]` for conditional filtering
-#   - NO [section] headers, NO delete/append sub-keys
-#
-# NOTE: "quiet" and "rhgb" are NOT set by the ucore-hci base image,
-# so there is nothing to delete. If a downstream image adds them,
-# override via `bootc kargs edit` post-deploy (Day 2 operation).
+# bootc kargs.d format: flat kargs = [...] array ONLY.
+# NO [section] headers, NO delete/append sub-keys.
+# "quiet" and "rhgb" are NOT set by ucore-hci base — nothing to delete.
 
 kargs = [
     "systemd.show-status=true",

@@ -1,0 +1,95 @@
+name: Build & Test (Self-Hosted)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # Nightly Rawhide regression check — 03:00 UTC
+    - cron: '0 3 * * *'
+
+env:
+  IMAGE: localhost/cloudws:ci-${{ github.run_number }}
+  REGISTRY: ghcr.io/kabuki94/cloudws-bootc
+
+jobs:
+  build:
+    name: Build OCI Image
+    runs-on: [self-hosted, linux, privileged, builder]
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: podman build --no-cache -t $IMAGE .
+
+      - name: bootc container lint
+        run: podman run --rm $IMAGE bootc container lint
+
+      - name: Validate critical packages
+        run: |
+          podman run --rm $IMAGE bash -c '
+            MISSING=0
+            for pkg in gnome-shell gdm podman bootc libvirt firewalld cockpit tuned; do
+              if ! rpm -q "$pkg" >/dev/null 2>&1; then
+                echo "MISSING: $pkg"; MISSING=$((MISSING + 1))
+              fi
+            done
+            exit $MISSING
+          '
+
+      - name: Check systemd unit enablement
+        run: |
+          podman run --rm $IMAGE bash -c '
+            for unit in gdm.service libvirtd.socket cockpit.socket sshd.service; do
+              systemctl is-enabled "$unit" 2>/dev/null | grep -qE "enabled|static" || {
+                echo "NOT ENABLED: $unit"; exit 1
+              }
+            done
+          '
+
+  boot-test:
+    name: Ephemeral Boot Test
+    needs: build
+    runs-on: [self-hosted, linux, privileged, qemu]
+    timeout-minutes: 30
+    if: github.event_name == 'push' || github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate QCOW2 via BIB
+        run: |
+          mkdir -p output
+          sudo podman run --rm --privileged \
+            --security-opt label=type:unconfined_t \
+            -v /var/lib/containers/storage:/var/lib/containers/storage \
+            -v ./output:/output \
+            -v ./config/bib.toml:/config.toml:ro \
+            quay.io/centos-bootc/bootc-image-builder:latest \
+            build --type qcow2 --rootfs xfs $IMAGE
+
+      - name: Boot and smoke test
+        run: |
+          QCOW=$(find output -name '*.qcow2' | head -1)
+          ./scripts/bcvk-wrapper.sh "$QCOW" /tmp/serial.log
+          ./scripts/smoke-check.sh /tmp/serial.log
+
+      - name: Upload artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: boot-failure-logs
+          path: /tmp/serial.log
+
+  publish:
+    name: Publish to GHCR
+    needs: [build, boot-test]
+    runs-on: [self-hosted, linux, privileged, builder]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Push to registry
+        run: |
+          podman tag $IMAGE $REGISTRY:latest
+          podman push $REGISTRY:latest

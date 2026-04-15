@@ -1,0 +1,43 @@
+name: PR Lint
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  shellcheck:
+    name: ShellCheck + Hadolint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ShellCheck (scripts/)
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          scandir: scripts/
+          severity: warning
+
+      - name: Hadolint (Containerfile)
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Containerfile
+          failure-threshold: error
+
+      - name: Validate TOML syntax (kargs.d)
+        run: |
+          pip install toml
+          for f in system_files/usr/lib/bootc/kargs.d/*.toml; do
+            echo "Checking $f"
+            python3 -c "import toml; toml.load('$f')" || exit 1
+          done
+          echo "All TOML files valid"
+
+      - name: Check for footgun packages in PACKAGES.md
+        run: |
+          FOOTGUNS="gnome-initial-setup gnome-tour PackageKit"
+          for pkg in $FOOTGUNS; do
+            if grep -qE "^${pkg}$" PACKAGES.md; then
+              echo "FOOTGUN: $pkg found in PACKAGES.md"
+              exit 1
+            fi
+          done
+          echo "No footgun packages found"

@@ -1,0 +1,14 @@
+[Unit]
+Description=CloudWS Root Filesystem Verification
+DefaultDependencies=no
+Before=local-fs.target
+After=ostree-remount.service
+ConditionPathExists=/run/ostree-booted
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/cloudws/verify-root.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=local-fs.target
