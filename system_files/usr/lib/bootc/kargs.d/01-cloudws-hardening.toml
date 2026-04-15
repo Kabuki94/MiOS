@@ -1,0 +1,17 @@
+# CloudWS v2.2 — SecureBlue-adapted kernel hardening
+
+kargs = [
+    "slab_nomerge",
+    "init_on_alloc=1",
+    "init_on_free=1",
+    "page_alloc.shuffle=1",
+    "randomize_kstack_offset=on",
+    "pti=on",
+    "vsyscall=none",
+    "lockdown=confidentiality",
+    "spectre_v2=on",
+    "spec_store_bypass_disable=on",
+    "l1tf=full,force",
+    "gather_data_sampling=force"
+]
+match-architectures = ["x86_64"]

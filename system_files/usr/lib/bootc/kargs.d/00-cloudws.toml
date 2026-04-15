@@ -1,20 +1,16 @@
-# CloudWS v2.1.4 — Kernel boot arguments
-# Shipped via bootc kargs.d drop-in (bootc v1.11+)
-#
-# IOMMU (VFIO GPU passthrough)
-# Security hardening (SecureBlue-derived)
-# NVIDIA DRM (Wayland + Gamescope)
-# Cgroup v2 unified (K3s kubelet requirement)
+# CloudWS v2.2 — Core kernel boot arguments
+# bootc kargs.d (v1.13+). Format: bare kargs = [...] ONLY.
+# NO [kargs] table headers. NO delete/append keys.
 
 kargs = [
     "iommu=pt",
+    "amd_iommu=on",
     "nvidia-drm.modeset=1",
     "nvidia-drm.fbdev=1",
-    "systemd.unified_cgroup_hierarchy=1",
-    "slab_nomerge",
-    "init_on_alloc=1",
-    "page_alloc.shuffle=1",
-    "randomize_kstack_offset=on",
-    "pti=on",
-    "vsyscall=none"
+    "rd.driver.blacklist=nouveau",
+    "modprobe.blacklist=nouveau",
+    "systemd.show-status=true",
+    "console=tty0",
+    "console=ttyS0,115200n8"
 ]
+match-architectures = ["x86_64"]
