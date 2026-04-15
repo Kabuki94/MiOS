@@ -1,0 +1,31 @@
+#!/bin/bash
+# CloudWS boot diagnostic — shows system state on console
+echo "========================================"
+echo " CloudWS Boot Diagnostic"
+echo " $(date -u)"
+echo "========================================"
+echo ""
+echo "--- systemd version ---"
+systemctl --version | head -1
+echo ""
+echo "--- Failed units ---"
+systemctl --failed --no-pager 2>/dev/null || true
+echo ""
+echo "--- Key service status ---"
+for svc in dbus-broker gdm systemd-logind NetworkManager cockpit.socket sshd; do
+    STATUS=$(systemctl is-active "$svc" 2>/dev/null || echo "not-found")
+    echo "  $svc: $STATUS"
+done
+echo ""
+echo "--- Waiting/blocked jobs ---"
+systemctl list-jobs --no-pager 2>/dev/null | head -20 || true
+echo ""
+echo "--- SELinux status ---"
+getenforce 2>/dev/null || echo "SELinux: not available"
+echo ""
+echo "--- Filesystem mounts ---"
+mount | grep -E '(sda|nvme|vda|sysroot)' | head -10 || true
+echo ""
+echo "========================================"
+echo " Boot diagnostic complete"
+echo "========================================"
