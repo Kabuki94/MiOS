@@ -192,4 +192,5 @@ flatpak remote-modify --disable fedora 2>/dev/null || true
 # Essential Flatpaks
 # ═════════════════════════════════════════════════════════════════════════════
 echo "[10-gnome] Flatpaks will be installed on first boot (cloudws-flatpak-install.service)..."
-systemctl enable cloudws-flatpak-install.service
+# NOTE: cloudws-flatpak-install.service is enabled in Containerfile STEP D
+# (unit file lives in system_files/, not available during script execution)

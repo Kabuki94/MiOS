@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v1.3 — 20-services: Enable systemd services + bare-metal/VM gating
+# CloudWS v2.1.1 — 20-services: Enable systemd services + bare-metal/VM gating
 #
 # CHANGELOG v1.3:
 #   - systemd 260: cgroup v1 support REMOVED — all services must use cgroup v2
@@ -11,7 +11,7 @@
 set -euo pipefail
 
 echo "═══════════════════════════════════════════════════════════════════"
-echo "  CloudWS v1.3 — Service Configuration"
+echo "  CloudWS v2.1.1 — Service Configuration"
 echo "═══════════════════════════════════════════════════════════════════"
 
 # ─── Fix systemd unit file permissions ────────────────────────────────────────
@@ -72,9 +72,6 @@ OPTIONAL_SERVICES=(
     nfs-server
     rpcbind
     tailscaled
-    xrdp
-    xrdp-sesman
-    cloudws-hyperv-enhanced
     waydroid-container
     cloud-init
     cloud-init-local
@@ -157,12 +154,9 @@ ConditionVirtualization=no
 DROPIN
 fi
 
-# ─── serial-getty@ttyS0: mask everywhere ─────────────────────────────────────
-systemctl mask serial-getty@ttyS0.service 2>/dev/null || true
 
 # ─── TuneD: set throughput-performance profile ──────────────────────────────
 tuned-adm profile throughput-performance 2>/dev/null || true
 
 echo "[20-services] All services enabled and gated. v1.3 complete."
 
-systemctl enable cloudws-ceph-bootstrap.service 2>/dev/null || true

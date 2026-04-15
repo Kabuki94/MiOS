@@ -561,8 +561,9 @@ if (Test-Path $TargetVhdx) {
         $vmCpu = [Math]::Max(4, $cpu)
         $totalRamBytes = (Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory
         $vmRamMaxGB = [Math]::Floor($totalRamBytes / 1GB)
-        $vmRamGB = $vmRamMaxGB  # Display value
-        $vmRam = [int64]$totalRamBytes  # Full system RAM as dynamic max
+        $vmRamGB = [Math]::Floor($vmRam / 1GB)  # Display value (2MB-aligned)
+        $vmRamRaw = [int64]$totalRamBytes
+        $vmRam = [int64]([Math]::Floor($vmRamRaw / 2MB) * 2MB)  # Align to 2MB (Hyper-V requirement)
         New-VM -Name $vmName -MemoryStartupBytes 4GB -Generation 2 -VHDPath $TargetVhdx -SwitchName $vmSwitch | Out-Null
         Set-VM -Name $vmName -ProcessorCount $vmCpu -DynamicMemory -MemoryMinimumBytes 4GB -MemoryMaximumBytes $vmRam -MemoryStartupBytes 4GB
         Set-VMFirmware -VMName $vmName -SecureBootTemplate "MicrosoftUEFICertificateAuthority"

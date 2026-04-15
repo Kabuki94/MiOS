@@ -1,4 +1,4 @@
-# CloudWS v2.1 — Containerfile
+# CloudWS v2.1.1 — Containerfile
 # Build: podman build --no-cache --build-arg MAKEFLAGS="-j$(nproc)" -t cloudws:latest .
 # Lint:  podman run --rm cloudws:latest bootc container lint
 #
@@ -12,37 +12,14 @@
 #   NVIDIA kmod (pre-signed with ublue MOK — fixes SecureBoot kernel panic),
 #   nvidia-container-toolkit, CDI, SELinux policy.
 #
-# BUILD SCRIPTS (modularized):
-#   01-repos.sh        Fedora 44 overlay, RPMFusion, Terra, CrowdSec
-#   02-kernel.sh       Kernel extras, headers, KVER capture
-#   10-gnome.sh        GNOME 50 desktop, Flatpaks, Bibata cursor, Geist font
-#   11-hardware.sh     GPU drivers (Mesa, NVIDIA verify, ROCm, CDI)
-#   12-virt.sh         KVM, containers, Cockpit, gaming, Looking Glass
-#   13-ceph-k3s.sh     Ceph distributed storage + K3s Kubernetes
-#   20-services.sh     systemd service enable/gating + podman-auto-update
-#   30-locale-theme.sh skel/.bashrc, GTK/Qt/Electron dark theme
-#   31-user.sh         PAM, user creation, groups, sudoers
-#   32-hostname.sh     Unique per-instance hostname (systemd wildcard)
-#   33-firewall.sh     Firewall init script
-#   34-gpu-detect.sh   GPU auto-detect service
-#   35-init-service.sh Every-boot init, Podman GC timer, Avahi/mDNS
-#   36-tools.sh        cloudws CLI + all management tools
-#   37-selinux.sh      SELinux policy modules (15 custom modules)
-#   38-vm-gating.sh    VM service gating, Hyper-V enhanced session, xRDP
-#   39-desktop-polish.sh Cockpit webapp, fastfetch, MOTD, desktop entries
-#
-# CHANGELOG v2.1:
-#   - Cosign/SBOM OCI labels for image signing pipeline readiness
-#   - Logically-bound images directory (/usr/lib/bootc/bound-images.d/)
-#   - Improved restorecon: covers /usr/lib/bootc and /usr/lib/ostree paths
-#   - systemd unit enablement validation in post-build checks
-#   - LABEL placement before CMD (OCI spec compliance)
-#   - io.opencontainers.image.* labels for registry discoverability
-#   - New packages: dnf5-plugins (versionlock), bootupd
-#   - SecureBlue kernel hardening: init_on_free=1, lockdown=confidentiality
-#   - 3 new SELinux policies (cdi, quadlet, sysext)
-#   - Podman quadlet AutoUpdate=registry support
-#   - NVIDIA CDI as default mode (nvidia-container-toolkit v1.19+)
+# v2.1.1 FIXES:
+#   - FIX: systemctl enables moved AFTER system_files COPY (7 services were silently failing)
+#   - FIX: Generic initramfs with hostonly="no" + Hyper-V/virtio dracut modules
+#   - FIX: Plymouth handled via kernel cmdline, not service masking (prevents dependency deadlock)
+#   - FIX: xorgxrdp replaced with gnome-remote-desktop for Hyper-V Enhanced Session (Mutter 50 is Wayland-only)
+#   - FIX: bootc lint clean — /var content moved to /usr, tmpfiles.d for directories
+#   - FIX: Terra/CrowdSec repos disabled INSIDE image (fixes BIB ISO depsolve GPG failure)
+#   - FIX: Hyper-V memory alignment in cloud-ws.ps1
 
 # ── Stage 1: Build context (never enters final image) ────────────────────────
 FROM scratch AS ctx
@@ -60,6 +37,10 @@ ENV MAKEFLAGS=${MAKEFLAGS}
 ARG CLOUDWS_RAWHIDE_KERNEL=0
 ENV CLOUDWS_RAWHIDE_KERNEL=${CLOUDWS_RAWHIDE_KERNEL}
 
+# ── STEP A: Run all numbered build scripts ───────────────────────────────────
+# NOTE: system_files/ are NOT yet present. Scripts MUST NOT run
+# `systemctl enable` for any unit that lives in system_files/.
+# Those enables happen in STEP D below.
 RUN --mount=type=cache,dst=/var/cache/libdnf5 \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=tmpfs,dst=/tmp \
@@ -77,16 +58,15 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5 \
     PACKAGES_MD=/tmp/build/PACKAGES.md bash /tmp/build/scripts/build.sh && \
     rm -rf /tmp/build
 
-# /opt → /var/opt: writable /opt on immutable filesystem
+# ── STEP B: /opt → /var/opt (writable /opt on immutable filesystem) ──────────
 RUN rm -rf /opt && ln -s /var/opt /opt
 
-# Prepare directories for logically-bound images (bootc v1.13+)
-# Symlink .image quadlet files here to pre-pull containers during bootc upgrade.
+# ── STEP C: Prepare directories for logically-bound images (bootc v1.13+) ────
 RUN mkdir -p /usr/lib/bootc/bound-images.d
 
-# System file overlay (dconf, systemd units, modprobe.d, sysctl, etc.)
-# NOTE: On ucore, /usr/local is a symlink → /var/usrlocal. cp -a cannot
-# overwrite a symlink with a directory, so we handle /usr/local separately.
+# ── STEP D: System file overlay + service enablement ─────────────────────────
+# Copy ALL system_files, then enable every service unit that scripts couldn't.
+# This is the ONLY place where system_files-sourced units get enabled.
 RUN --mount=type=bind,from=ctx,source=/system_files,target=/tmp/sf \
     if [ -d /tmp/sf/usr/local ]; then \
         cp -a /tmp/sf/usr/local/. /usr/local/ 2>/dev/null || true; \
@@ -101,10 +81,21 @@ RUN --mount=type=bind,from=ctx,source=/system_files,target=/tmp/sf \
     find /etc/systemd/system -name "*.mount" -o -name "*.service" -o -name "*.conf" 2>/dev/null | xargs chmod 644 2>/dev/null || true && \
     find /usr/lib/systemd/system -name "*.mount" -o -name "*.service" -o -name "*.conf" 2>/dev/null | xargs chmod 644 2>/dev/null || true && \
     chmod +x /usr/bin/gamescope-session-steam /usr/bin/steamos-session-select 2>/dev/null || true && \
+    chmod +x /usr/libexec/cloudws-flatpak-install /usr/libexec/cloudws-boot-diag /usr/libexec/cloudws-grd-setup /usr/libexec/cloudws/verify-root.sh 2>/dev/null || true && \
     dconf update 2>/dev/null || true && \
-    restorecon -R /etc /var /boot /usr/lib/bootc /usr/lib/ostree 2>/dev/null || true
+    restorecon -R /etc /var /boot /usr/lib/bootc /usr/lib/ostree 2>/dev/null || true && \
+    echo "── Enabling system_files-sourced services ──" && \
+    systemctl enable cloudws-flatpak-install.service 2>/dev/null && echo "  ✓ cloudws-flatpak-install" || echo "  ⚠ cloudws-flatpak-install" && \
+    systemctl enable cloudws-boot-diag.service 2>/dev/null && echo "  ✓ cloudws-boot-diag" || echo "  ⚠ cloudws-boot-diag" && \
+    systemctl enable cloudws-grd-setup.service 2>/dev/null && echo "  ✓ cloudws-grd-setup" || echo "  ⚠ cloudws-grd-setup" && \
+    systemctl enable cloudws-ceph-bootstrap.service 2>/dev/null && echo "  ✓ cloudws-ceph-bootstrap" || echo "  ⚠ cloudws-ceph-bootstrap" && \
+    systemctl enable cloudws-verify-root.service 2>/dev/null && echo "  ✓ cloudws-verify-root" || echo "  ⚠ cloudws-verify-root" && \
+    systemctl enable k3s.service 2>/dev/null && echo "  ✓ k3s" || echo "  ⚠ k3s" && \
+    systemctl enable var-home.mount 2>/dev/null && echo "  ✓ var-home.mount" || echo "  ⚠ var-home.mount" && \
+    systemctl enable var-lib-containers.mount 2>/dev/null && echo "  ✓ var-lib-containers.mount" || echo "  ⚠ var-lib-containers.mount" && \
+    echo "── Service enablement complete ──"
 
-# Post-build validation: critical packages + systemd unit enablement
+# ── STEP E: Post-build validation ────────────────────────────────────────────
 RUN echo "── Post-build validation ──" && \
     MISSING=0 && \
     for pkg in gnome-shell gdm podman bootc libvirt kernel firewalld cockpit avahi tuned bootupd; do \
@@ -116,11 +107,11 @@ RUN echo "── Post-build validation ──" && \
         fi; \
     done && \
     echo "── Checking systemd unit enablement ──" && \
-    for unit in gdm.service libvirtd.socket cockpit.socket sshd.service tuned.service podman-auto-update.timer; do \
+    for unit in gdm.service libvirtd.socket cockpit.socket sshd.service tuned.service podman-auto-update.timer cloudws-flatpak-install.service cloudws-boot-diag.service k3s.service; do \
         if systemctl is-enabled "$unit" 2>/dev/null | grep -qE 'enabled|static'; then \
             echo "  ✓ $unit"; \
         else \
-            echo "  ⚠ $unit not enabled"; \
+            echo "  ⚠ $unit NOT ENABLED"; \
         fi; \
     done && \
     echo "── Footgun check ──" && \
@@ -131,26 +122,34 @@ RUN echo "── Post-build validation ──" && \
     done && \
     echo "── Validation complete ($MISSING critical missing) ──"
 
-# Disable third-party repos post-build (Bazzite pattern)
-RUN dnf config-manager setopt rpmfusion-free.enabled=0 2>/dev/null || true && \
-    dnf config-manager setopt rpmfusion-nonfree.enabled=0 2>/dev/null || true && \
-    dnf config-manager setopt rpmfusion-free-updates.enabled=0 2>/dev/null || true && \
-    dnf config-manager setopt rpmfusion-nonfree-updates.enabled=0 2>/dev/null || true && \
-    dnf config-manager setopt terra.enabled=0 2>/dev/null || true && \
-    dnf config-manager setopt fedora-44.enabled=0 2>/dev/null || true && \
-    dnf config-manager setopt fedora-44-updates.enabled=0 2>/dev/null || true && \
-    dnf config-manager setopt fedora-rawhide-kernel.enabled=0 2>/dev/null || true
+# ── STEP F: Disable ALL third-party repos (fixes BIB ISO depsolve) ───────────
+# BIB reads repo files from the container but resolves gpgkey=file:// against
+# its own filesystem. Disabled repos are skipped entirely.
+RUN for repo in rpmfusion-free rpmfusion-nonfree rpmfusion-free-updates rpmfusion-nonfree-updates \
+                terra fedora-44 fedora-44-updates fedora-rawhide-kernel crowdsec nvidia-container-toolkit; do \
+        dnf config-manager setopt "${repo}.enabled=0" 2>/dev/null || \
+        sed -i 's/^enabled=1/enabled=0/' "/etc/yum.repos.d/${repo}.repo" 2>/dev/null || true; \
+    done
 
-# Generate initramfs for BIB compatibility.
+# ── STEP G: Generate GENERIC initramfs for multi-surface boot ────────────────
+# CRITICAL: hostonly="no" in dracut drop-ins (from system_files) ensures the
+# initramfs includes Hyper-V (hv_storvsc, hv_vmbus), virtio, and NVMe drivers.
+# Without this, the VM cannot find its root disk and hangs silently.
 RUN KVER=$(ls -1 /lib/modules/ | sort -V | tail -1) && \
-    echo "── Generating initramfs for kernel ${KVER} ──" && \
-    if [ -n "$KVER" ] && [ ! -f "/lib/modules/${KVER}/initramfs.img" ] && \
-       [ ! -f "/boot/initramfs-${KVER}.img" ]; then \
-        dracut --force --kver "$KVER" "/boot/initramfs-${KVER}.img" 2>&1 || \
-        echo "WARNING: dracut failed — BIB disk image targets may not work"; \
-    else \
-        echo "── initramfs already exists for ${KVER} ──"; \
+    echo "── Regenerating GENERIC initramfs for kernel ${KVER} ──" && \
+    if [ -n "$KVER" ]; then \
+        rm -f "/lib/modules/${KVER}/initramfs.img" "/boot/initramfs-${KVER}.img" 2>/dev/null || true; \
+        DRACUT_NO_XATTR=1 dracut --force --no-hostonly --kver "$KVER" \
+            "/lib/modules/${KVER}/initramfs.img" 2>&1 || \
+        echo "WARNING: dracut failed — disk image targets may not work"; \
     fi
+
+# ── STEP H: Final lint cleanup ───────────────────────────────────────────────
+# Remove every file that triggers bootc container lint warnings.
+RUN rm -f /var/log/dnf5.log /var/log/*.log 2>/dev/null || true && \
+    rm -rf /var/cache/ldconfig 2>/dev/null || true && \
+    ldconfig 2>/dev/null || true && \
+    rm -rf /var/cache/ldconfig 2>/dev/null || true
 
 # OCI labels — placed BEFORE CMD per spec
 LABEL containers.bootc="1"
@@ -158,7 +157,7 @@ LABEL ostree.bootable="1"
 LABEL org.opencontainers.image.title="CloudWS"
 LABEL org.opencontainers.image.description="Cloud Workstation OS — Immutable Fedora bootc with GNOME 50, KVM, K3s, NVIDIA"
 LABEL org.opencontainers.image.source="https://github.com/Kabuki94/CloudWS-bootc"
-LABEL org.opencontainers.image.version="2.1.0"
+LABEL org.opencontainers.image.version="2.1.1"
 LABEL io.artifacthub.package.license="MIT"
 
 CMD ["/sbin/init"]

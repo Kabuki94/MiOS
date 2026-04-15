@@ -1,7 +1,13 @@
 #!/bin/bash
-# CloudWS — 13-ceph-k3s: Ceph distributed storage + K3s Kubernetes
+# CloudWS v2.1.1 — 13-ceph-k3s: Ceph distributed storage + K3s Kubernetes
 # Cephadm runs ALL server daemons as Podman containers.
 # Only client tools + orchestrator binary are baked into the image.
+#
+# v2.1.1 FIXES:
+#   - K3s manifests stored in /usr/share/cloudws/k3s-manifests/ (not /var)
+#     First-boot service copies them to /var/lib/rancher/k3s/server/manifests/
+#     This fixes bootc lint: /var content must use tmpfiles.d entries
+#   - systemctl enables moved to Containerfile STEP D (unit files in system_files/)
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
@@ -29,19 +35,18 @@ fi
 curl -sfL https://get.k3s.io -o /usr/local/bin/k3s-install.sh 2>/dev/null || true
 chmod +x /usr/local/bin/k3s-install.sh 2>/dev/null || true
 
-# ─── Pre-create directories ─────────────────────────────────────────────────
-mkdir -p /etc/ceph /etc/rancher/k3s \
-         /var/lib/ceph /var/log/ceph \
-         /var/lib/rancher/k3s/server/manifests
+# ─── Pre-create directories in /etc (persists across updates) ────────────────
+# NOTE: /var/lib/rancher is created by tmpfiles.d/cloudws-k3s.conf at boot.
+# Manifests live in /usr/share/cloudws/k3s-manifests/ and get copied on first boot.
+mkdir -p /etc/ceph /etc/rancher/k3s
 
 # ─── Make bootstrap script executable ────────────────────────────────────────
 chmod 755 /usr/local/bin/ceph-bootstrap.sh 2>/dev/null || true
 
-# ─── Enable services ─────────────────────────────────────────────────────────
-systemctl enable k3s.service 2>/dev/null || true
-systemctl enable ceph-bootstrap.service 2>/dev/null || true
-systemctl enable var-home.mount 2>/dev/null || true
-systemctl enable var-lib-containers.mount 2>/dev/null || true
+# ─── NOTE: Service enables are in Containerfile STEP D ───────────────────────
+# k3s.service, cloudws-ceph-bootstrap.service, var-home.mount,
+# var-lib-containers.mount all live in system_files/ and are enabled
+# AFTER the COPY step in the Containerfile.
 
 echo "[13-ceph-k3s] Ceph + K3s stack installed."
 echo "[13-ceph-k3s]   Ceph Dashboard:  https://<host>:8443 (after bootstrap)"
