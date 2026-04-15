@@ -191,57 +191,5 @@ flatpak remote-modify --disable fedora 2>/dev/null || true
 # ═════════════════════════════════════════════════════════════════════════════
 # Essential Flatpaks
 # ═════════════════════════════════════════════════════════════════════════════
-echo "[10-gnome] Installing essential Flatpaks..."
-flatpak install -y --noninteractive flathub org.gnome.Epiphany 2>/dev/null || \
-    flatpak install -y --noninteractive gnome-nightly org.gnome.Epiphany.Devel 2>/dev/null || true
-flatpak install -y --noninteractive flathub org.gnome.Logs 2>/dev/null || true
-flatpak install -y --noninteractive flathub com.mattjakeman.ExtensionManager 2>/dev/null || true
-flatpak install -y --noninteractive flathub io.podman_desktop.PodmanDesktop 2>/dev/null || true
-flatpak install -y --noninteractive flathub com.github.tchx84.Flatseal 2>/dev/null || true
-flatpak install -y --noninteractive flathub page.tesk.Refine 2>/dev/null || true
-flatpak install -y --noninteractive flathub org.localsend.localsend_app 2>/dev/null || true
-
-# ═════════════════════════════════════════════════════════════════════════════
-# Flatpak Theming
-# CRITICAL: ADW_DEBUG_COLOR_SCHEME=prefer-dark, NOT GTK_THEME=Adwaita-dark
-# GTK_THEME breaks libadwaita apps (controls, headerbar colors go wrong)
-# ═════════════════════════════════════════════════════════════════════════════
-echo "[10-gnome] Applying Flatpak dark theme + filesystem overrides..."
-flatpak override --system --env=ADW_DEBUG_COLOR_SCHEME=prefer-dark 2>/dev/null || true
-flatpak override --system --env=XCURSOR_THEME=Bibata-Modern-Classic 2>/dev/null || true
-flatpak override --system --env=XCURSOR_SIZE=24 2>/dev/null || true
-flatpak override --system --filesystem=xdg-config/gtk-3.0:ro 2>/dev/null || true
-flatpak override --system --filesystem=xdg-config/gtk-4.0:ro 2>/dev/null || true
-flatpak override --system --filesystem=/usr/share/icons:ro 2>/dev/null || true
-flatpak override --system --filesystem=/usr/share/fonts:ro 2>/dev/null || true
-
-# ═════════════════════════════════════════════════════════════════════════════
-# Waydroid — Pre-download GAPPS OTA images (baked into image, no first-boot)
-# Everything offline. No post-install services.
-# ═════════════════════════════════════════════════════════════════════════════
-echo "[10-gnome] Pre-downloading Waydroid GAPPS OTA images..."
-WAYDROID_IMG_DIR="/var/lib/waydroid/images"
-mkdir -p "$WAYDROID_IMG_DIR"
-curl -sL "https://ota.waydro.id/system" -o "$WAYDROID_IMG_DIR/system.zip" 2>/dev/null || true
-curl -sL "https://ota.waydro.id/vendor" -o "$WAYDROID_IMG_DIR/vendor.zip" 2>/dev/null || true
-if [ -f "$WAYDROID_IMG_DIR/system.zip" ] && [ -f "$WAYDROID_IMG_DIR/vendor.zip" ]; then
-    echo "[10-gnome] Waydroid OTA images cached ($(du -sh $WAYDROID_IMG_DIR | cut -f1))"
-else
-    echo "[10-gnome] WARNING: Waydroid OTA download failed — user must run: waydroid init -s GAPPS"
-fi
-
-# ═════════════════════════════════════════════════════════════════════════════
-# Network Discovery — Avahi / mDNS
-# ═════════════════════════════════════════════════════════════════════════════
-echo "[10-gnome] Installing Avahi/mDNS for .local network discovery..."
-install_packages "network-discovery"
-
-if [ -f /etc/nsswitch.conf ]; then
-    if ! grep -q 'mdns4_minimal' /etc/nsswitch.conf; then
-        sed -i 's/^hosts:.*/hosts:      files mdns4_minimal [NOTFOUND=return] dns myhostname/' /etc/nsswitch.conf
-    fi
-fi
-
-echo "[10-gnome] GNOME 50 desktop + network discovery installed."
-echo "[10-gnome] Cursor: Bibata-Modern-Classic ($(ls /usr/share/icons/Bibata-Modern-Classic/cursors/ | wc -l) cursors VERIFIED)"
-echo "[10-gnome] Flatpaks: 7 pre-installed from Flathub"
+echo "[10-gnome] Flatpaks will be installed on first boot (cloudws-flatpak-install.service)..."
+systemctl enable cloudws-flatpak-install.service

@@ -1,0 +1,14 @@
+[Unit]
+Description=CloudWS First-Boot Flatpak Installation
+ConditionPathExists=!/var/lib/cloudws/.flatpak-installed
+After=network-online.target
+Wants=network-online.target
+After=flatpak-add-fedora-repos.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/cloudws-flatpak-install
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

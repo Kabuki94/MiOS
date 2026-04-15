@@ -1,0 +1,36 @@
+#!/bin/bash
+# CloudWS v0.1.4 — First-boot Flatpak installation
+set -euo pipefail
+SENTINEL="/var/lib/cloudws/.flatpak-installed"
+FLATPAK_LIST="/etc/cloudws/flatpak-install.list"
+
+[ -f "$SENTINEL" ] && exit 0
+
+echo "[cloudws-flatpak] First-boot Flatpak installation..."
+
+flatpak remote-add --if-not-exists --system flathub \
+    https://dl.flathub.org/repo/flathub.flatpakrepo 2>/dev/null || true
+
+if [ -f "$FLATPAK_LIST" ]; then
+    INSTALLED=0; FAILED=0
+    while IFS= read -r line; do
+        [[ "$line" =~ ^[[:space:]]*# ]] && continue
+        [[ -z "${line// /}" ]] && continue
+        echo "[cloudws-flatpak]   Installing $line..."
+        if flatpak install --system -y --noninteractive flathub "$line" 2>&1; then
+            INSTALLED=$((INSTALLED + 1))
+        else
+            FAILED=$((FAILED + 1))
+        fi
+    done < "$FLATPAK_LIST"
+    echo "[cloudws-flatpak] Installed: $INSTALLED, Failed: $FAILED"
+fi
+
+flatpak override --system --env=GTK_THEME=Adwaita:dark 2>/dev/null || true
+flatpak override --system --env=ADW_DEBUG_COLOR_SCHEME=prefer-dark 2>/dev/null || true
+flatpak override --system --filesystem=xdg-config/gtk-3.0:ro 2>/dev/null || true
+flatpak override --system --filesystem=xdg-config/gtk-4.0:ro 2>/dev/null || true
+
+mkdir -p "$(dirname "$SENTINEL")"
+echo "Installed at $(date -u)" > "$SENTINEL"
+echo "[cloudws-flatpak] ✓ Complete"
