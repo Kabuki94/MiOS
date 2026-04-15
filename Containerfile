@@ -90,7 +90,11 @@ RUN --mount=type=bind,from=ctx,source=/system_files,target=/tmp/sf \
     systemctl enable cloudws-grd-setup.service 2>/dev/null && echo "  ✓ cloudws-grd-setup" || echo "  ⚠ cloudws-grd-setup" && \
     systemctl enable cloudws-ceph-bootstrap.service 2>/dev/null && echo "  ✓ cloudws-ceph-bootstrap" || echo "  ⚠ cloudws-ceph-bootstrap" && \
     systemctl enable cloudws-verify-root.service 2>/dev/null && echo "  ✓ cloudws-verify-root" || echo "  ⚠ cloudws-verify-root" && \
-    systemctl enable cloudws-nvidia-cdi.service 2>/dev/null && echo "  ✓ cloudws-nvidia-cdi" || echo "  ⚠ cloudws-nvidia-cdi" &&
+    systemctl enable cloudws-nvidia-cdi.service 2>/dev/null && echo "  ✓ cloudws-nvidia-cdi" || echo "  ⚠ cloudws-nvidia-cdi" && \
+    systemctl enable k3s.service 2>/dev/null && echo "  ✓ k3s" || echo "  ⚠ k3s" && \
+    systemctl enable var-home.mount 2>/dev/null && echo "  ✓ var-home.mount" || echo "  ⚠ var-home.mount" && \
+    systemctl enable var-lib-containers.mount 2>/dev/null && echo "  ✓ var-lib-containers.mount" || echo "  ⚠ var-lib-containers.mount" && \
+    echo "── Service enablement complete ──"
     systemctl enable k3s.service 2>/dev/null && echo "  ✓ k3s" || echo "  ⚠ k3s" && \
     systemctl enable var-home.mount 2>/dev/null && echo "  ✓ var-home.mount" || echo "  ⚠ var-home.mount" && \
     systemctl enable var-lib-containers.mount 2>/dev/null && echo "  ✓ var-lib-containers.mount" || echo "  ⚠ var-lib-containers.mount" && \

@@ -1,33 +1,23 @@
 #!/bin/bash
-# CloudWS v2.1.1 — 98-boot-config: Console output + boot diagnostics
-# Ensures the boot process is VISIBLE on all deployment surfaces.
-#
-# v2.1.1 CRITICAL FIX: Plymouth is disabled via kernel command line, NOT by
-# masking services. Masking plymouth-quit-wait.service creates a dependency
-# deadlock when GDM or other display managers have ordering dependencies on it.
-# This was a root cause of the Hyper-V boot hang — systemd would stall
-# waiting for a masked dependency that could never complete its ordering chain.
+# CloudWS v2.2 — 98-boot-config: Boot console + service configuration
+# Plymouth disable is handled by system_files/usr/lib/bootc/kargs.d/10-cloudws-console.toml
+# Console verbosity is handled by system_files/usr/lib/bootc/kargs.d/01-cloudws-vm-boot.toml
 set -euo pipefail
 
 echo "[98-boot-config] Configuring boot console output..."
 
-# ── Plymouth: disable via kernel cmdline (NOT masking) ───────────────────────
-# plymouth.enable=0 tells plymouth to no-op without breaking systemd's
-# dependency resolution. This is safer than masking because:
-#   1. Units that After=plymouth-quit-wait.service still resolve correctly
-#   2. No symlink-to-/dev/null that confuses systemd dependency graph
-#   3. The kernel parameter is honored before systemd even starts
-echo "[98-boot-config] Configuring plymouth disable via kernel cmdline..."
-mkdir -p /usr/lib/bootc/kargs.d
-cat > /usr/lib/bootc/kargs.d/10-cloudws-console.toml <<'EOF'
-# CloudWS: Visible boot output on all surfaces (Hyper-V, QEMU, bare metal)
-# plymouth.enable=0: disables plymouth splash without breaking systemd deps
-# console=tty0: ensures kernel messages go to primary virtual console
-# console=ttyS0,115200n8: serial console for headless/remote diagnosis
-[kargs]
-match-architectures = ["x86_64"]
-kargs = ["plymouth.enable=0", "console=tty0", "console=ttyS0,115200n8"]
-EOF
+# ── Verify kargs TOML files exist ──────────────────────────────────────────
+# These are static files from system_files/ — if missing, the overlay step failed.
+if [ -f /usr/lib/bootc/kargs.d/10-cloudws-console.toml ]; then
+    echo "[98-boot-config] Configuring plymouth disable via kernel cmdline..."
+else
+    echo "[98-boot-config] WARNING: 10-cloudws-console.toml not found — creating..."
+    mkdir -p /usr/lib/bootc/kargs.d
+    cat > /usr/lib/bootc/kargs.d/10-cloudws-console.toml << 'TOMLEOF'
+# CloudWS: Disable plymouth
+kargs = ["plymouth.enable=0"]
+TOMLEOF
+fi
 
 # ── Ensure agetty on tty1 ─────────────────────────────────────────────────
 # Even if GDM fails, we need a text console to diagnose.
@@ -46,13 +36,10 @@ systemctl enable serial-getty@ttyS0.service 2>/dev/null || true
 # ── NetworkManager-wait-online timeout ────────────────────────────────────
 echo "[98-boot-config] Setting NetworkManager-wait-online timeout..."
 mkdir -p /etc/systemd/system/NetworkManager-wait-online.service.d
-cat > /etc/systemd/system/NetworkManager-wait-online.service.d/timeout.conf <<'EOF'
+cat > /etc/systemd/system/NetworkManager-wait-online.service.d/timeout.conf << 'EOF'
 [Service]
 TimeoutStartSec=10
 EOF
-
-# ── NOTE: cloudws-boot-diag.service is enabled in Containerfile STEP D ────
-# The unit file lives in system_files/ and isn't available at script time.
 
 echo "[98-boot-config] ✓ Boot console configured"
 echo "[98-boot-config]   plymouth: disabled (kernel cmdline plymouth.enable=0)"
