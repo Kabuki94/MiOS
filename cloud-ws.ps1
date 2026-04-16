@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     CloudWS v0.1.3 — Cloud Workstation OS Builder (Windows)
 
@@ -86,7 +86,15 @@ function Read-Timed {
     while ($sw.Elapsed.TotalSeconds -lt $Timeout -and -not [Console]::KeyAvailable) { Start-Sleep -Milliseconds 100 }
     if ([Console]::KeyAvailable) {
         if ($Secret) {
-            $buf = Read-Host -MaskInput
+            if ($PSVersionTable.PSVersion.Major -ge 7) {
+                $buf = Read-Host -MaskInput
+            } else {
+                # Windows PowerShell 5.1 fallback (no -MaskInput parameter)
+                $sec  = Read-Host -AsSecureString
+                $bstr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($sec)
+                try   { $buf = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr) }
+                finally { [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
+            }
         } else {
             $buf = Read-Host
         }
