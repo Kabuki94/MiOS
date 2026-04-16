@@ -1,18 +1,22 @@
 #!/usr/bin/bash
-# 43-uupd-installer.sh - install uupd as the unified updater; disable competitors
+# 43-uupd-installer.sh - install uupd + greenboot (from PACKAGES.md
+# packages-updater section) and disable the updaters it supersedes.
 set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/packages.sh"
 
 log() { printf '[43-uupd] %s\n' "$*"; }
 
-# Enable ublue-os/packages COPR and install uupd
-dnf5 -y copr enable ublue-os/packages || true
-dnf5 -y install uupd
+# COPR already enabled by 05-enable-external-repos.sh (runs earlier)
+install_packages "updater"
 
-# Disable the updaters uupd supersedes (so they do not race)
+# Disable the updaters uupd supersedes
 systemctl disable bootc-fetch-apply-updates.timer 2>/dev/null || true
 systemctl disable rpm-ostreed-automatic.timer     2>/dev/null || true
 
 # Enable uupd.timer (shipped by the package)
-systemctl enable uupd.timer
+systemctl enable uupd.timer 2>/dev/null || log "WARN: uupd.timer not present (uupd install may have failed)"
 
-log "uupd installed; bootc-fetch-apply-updates and rpm-ostreed-automatic disabled"
+log "uupd configured; bootc-fetch-apply-updates.timer and rpm-ostreed-automatic.timer disabled"

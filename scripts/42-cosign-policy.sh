@@ -1,22 +1,18 @@
 #!/usr/bin/bash
-# 42-cosign-policy.sh - install cosign, trust policy, and registries.d
+# 42-cosign-policy.sh - verify cosign + trust policy landed
+# cosign is now in PACKAGES.md packages-containers section (v2.2 addition).
 set -euo pipefail
 
-log() { printf '[42-cosign-policy] %s\n' "$*"; }
+log() { printf '[42-cosign] %s\n' "$*"; }
 
-dnf5 -y install cosign
+command -v cosign >/dev/null 2>&1 && log "OK: cosign installed ($(cosign version --json 2>/dev/null | head -1))" \
+    || log "WARN: cosign not found - check packages-containers section of PACKAGES.md"
 
-# Policy.json and registries.d shipped under system_files/
-# Just verify they landed correctly.
 for f in \
     /etc/containers/policy.json \
     /etc/containers/registries.d/ghcr.io.yaml \
     /etc/pki/containers/ublue-cosign.pub \
     /etc/pki/containers/cloudws-cosign.pub
 do
-    if [[ -f "$f" ]]; then
-        log "present: $f"
-    else
-        log "WARN: missing $f (will be created at first boot by systemd-tmpfiles if needed)"
-    fi
+    [[ -f "$f" ]] && log "OK: $f" || log "WARN: missing $f"
 done

@@ -4,6 +4,22 @@ This file is both documentation and the **single source of truth** for all packa
 Build scripts parse the fenced code blocks below using `scripts/lib/packages.sh`.
 To add a package, add it to the appropriate section. One package per line.
 
+**CHANGELOG v2.2:**
+- Added uupd (unified updater replacing bootc-fetch-apply-updates.timer)
+- Added greenboot + greenboot-default-health-checks (auto-rollback on boot failure)
+- Added cosign (signed image verification for `bootc switch --enforce-container-sigpolicy`)
+- Added toolbox (companion to existing distrobox)
+- Added kubectl, helm (client tooling; k3s binary still from rancher install)
+- Added podman-plugins, podman-docker, containers-common
+- Added nvidia-container-selinux (missing SELinux policy for toolkit on bootc)
+- Added steam-devices (udev rules for controllers)
+- Added aide, openscap-scanner, scap-security-guide, libpwquality, setools-console, nftables (security)
+- Added cloud-init, wslu, python3-pip, libei (Podman-machine + WSL + desktop input)
+- Added freerdp, freerdp-libs, virt-viewer, qemu-device-display-virtio-gpu (remote/display)
+- NEW SECTION: packages-updater (uupd + greenboot) wired into 43-uupd-installer.sh
+- Fix: Containerfile removed external akmods FROM stages (ucore-hci bakes NVIDIA in)
+- Fix: scripts/41-47 no longer duplicate dnf installs - PACKAGES.md is now the
+       sole source of truth; 40-series scripts handle config+services only
 **CHANGELOG v2.1:**
 - Added bootupd (unified bootloader updates — Fedora 44 phase 1)
 - Added dnf5-plugins (versionlock support for critical package pinning)
@@ -214,6 +230,8 @@ nvidia-container-toolkit
 nvidia-persistenced
 nvidia-settings
 xorg-x11-drv-nvidia-power
+# v2.2 additions
+nvidia-container-selinux
 ```
 
 ## Virtualization — KVM / QEMU / Libvirt
@@ -231,6 +249,9 @@ swtpm-tools
 dnsmasq
 mdevctl
 libguestfs-tools
+# v2.2 additions
+virt-viewer
+qemu-device-display-virtio-gpu
 ```
 
 ## Container Runtime
@@ -260,6 +281,14 @@ image-builder
 dracut-live
 squashfs-tools
 selinux-policy-devel
+# v2.2 additions
+podman-plugins
+podman-docker
+containers-common
+toolbox
+cosign
+kubectl
+helm
 ```
 
 ## Boot & Update Management
@@ -307,6 +336,9 @@ hyperv-tools
 samba
 samba-client
 cifs-utils
+# v2.2 additions
+freerdp
+freerdp-libs
 ```
 
 ## Security
@@ -327,6 +359,14 @@ audit
 tpm2-tools
 clevis
 clevis-luks
+# v2.2 additions
+aide
+openscap-scanner
+scap-security-guide
+libpwquality
+nftables
+policycoreutils
+setools-console
 ```
 
 ## Gaming
@@ -350,6 +390,8 @@ mangohud
 vulkan-tools
 dosbox-staging
 protontricks
+# v2.2 additions
+steam-devices
 ```
 
 ## Guest Agents
@@ -461,6 +503,11 @@ bc
 distrobox
 just
 driverctl
+# v2.2 additions
+wslu
+python3-pip
+cloud-init
+libei
 ```
 
 ## Android — Waydroid
@@ -532,148 +579,17 @@ gnome-calls
 feedbackd
 ```
 
-<!-- CLOUDWS_V2_ADDITIONS_BEGIN -->
-# CloudWS-bootc v2.2.0 - Unified Image Package Extras
+## Updater -- uupd / Greenboot (v2.2)
 
-This file lists packages added in v2.2.0 for the unified-image / role-switched
-architecture. The build pipeline parses both PACKAGES.md and PACKAGES-UNIFIED-EXTRAS.md.
+uupd is the Universal Blue unified updater. It replaces `bootc-fetch-apply-updates.timer`,
+flatpak update timer, and distrobox update timer with a single Go binary that
+handles all three. Ships via ublue-os/packages COPR (enabled in 05-enable-external-repos.sh).
 
-## Build infrastructure
+Greenboot provides health-check driven auto-rollback: 3 failed boots triggers
+`bootc rollback` via grub boot_counter. Health checks live in /etc/greenboot/check/{required,wanted}.d/.
 
-```
-bootc
-bootc-image-builder
-cosign
-just
-skopeo
-buildah
-```
-
-## Machine-backend scaffolding
-
-```
-openssh-server
-openssh-clients
-sudo
-polkit
-cloud-init
-qemu-guest-agent
-spice-vdagent
-wslu
-python3-pip
-```
-
-## Security / supply chain
-
-```
-crowdsec
-crowdsec-firewall-bouncer-nftables
-nftables
-firewalld
-usbguard
-audit
-aide
-openscap-scanner
-scap-security-guide
-libpwquality
-policycoreutils
-policycoreutils-python-utils
-setools-console
-```
-
-## Container / Kubernetes runtime
-
-```
-podman
-podman-plugins
-podman-docker
-containers-common
-toolbox
-distrobox
-k3s
-kubectl
-helm
-```
-
-## NVIDIA stack (COPY --from=ublue-os akmods in Containerfile; these are the userspace deps)
-
-```
-nvidia-container-toolkit
-nvidia-container-toolkit-base
-nvidia-container-selinux
-libnvidia-container-tools
-```
-
-## Virtualization / VFIO
-
-```
-libvirt
-libvirt-daemon-kvm
-libvirt-dbus
-qemu-kvm
-qemu-device-display-virtio-gpu
-edk2-ovmf
-swtpm
-swtpm-tools
-virt-install
-virt-viewer
-virt-manager
-libguestfs-tools
-dnsmasq
-cockpit
-cockpit-machines
-cockpit-storaged
-cockpit-networkmanager
-cockpit-podman
-```
-
-## HA + storage (Ceph/Pacemaker)
-
-```
-pacemaker
-corosync
-pcs
-fence-agents-all
-resource-agents
-sbd
-ceph-common
-ceph-base
-```
-
-## Updater
-
-```
+```packages-updater
 uupd
 greenboot
 greenboot-default-health-checks
 ```
-
-## Desktop / Wayland
-
-```
-gnome-shell
-gnome-session-wayland-session
-gnome-session-xsession
-gdm
-gnome-control-center
-gnome-remote-desktop
-freerdp
-freerdp-libs
-pipewire
-pipewire-pulseaudio
-wireplumber
-xdg-desktop-portal
-xdg-desktop-portal-gnome
-libei
-```
-
-## Gaming (Gamescope session + Steam; optional via FEATURES=gamescope)
-
-```
-gamescope
-steam
-steam-devices
-mangohud
-gamemode
-```
-<!-- CLOUDWS_V2_ADDITIONS_END -->
