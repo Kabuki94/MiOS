@@ -46,3 +46,23 @@ cloudws-resume-updates:
 cloudws-verity-status:
     @grep -E 'composefs|enabled' /usr/lib/ostree/prepare-root.conf 2>/dev/null || echo "prepare-root.conf not present"
     @mount | grep -E 'composefs|overlay' || true
+# -------- Looking Glass (BAKED IN since v2.2.2) ----------------------------
+
+# Enable kvmfr autoload at boot (required for Looking Glass)
+cloudws-looking-glass-enable:
+    sudo systemctl enable --now cloudws-kvmfr-load.service
+    @echo "kvmfr enabled. Reboot or run: sudo modprobe kvmfr"
+    @echo "Then run: looking-glass-client"
+
+cloudws-looking-glass-disable:
+    sudo systemctl disable --now cloudws-kvmfr-load.service
+    sudo modprobe -r kvmfr 2>/dev/null || true
+
+# Show Looking Glass status
+cloudws-looking-glass-status:
+    @echo "== kvmfr module =="
+    @lsmod | grep kvmfr || echo "(not loaded)"
+    @echo "== /dev/kvmfr0 =="
+    @ls -la /dev/kvmfr0 2>/dev/null || echo "(device absent)"
+    @echo "== client binary =="
+    @which looking-glass-client && looking-glass-client --version 2>&1 | head -3
