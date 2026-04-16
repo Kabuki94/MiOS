@@ -1,4 +1,4 @@
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { Write-Host '  Run as Administrator!' -ForegroundColor Red; return }
+﻿if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { Write-Host '  Run as Administrator!' -ForegroundColor Red; return }
 <#
 .SYNOPSIS  CloudWS Preflight — Check and install prerequisites
 .DESCRIPTION

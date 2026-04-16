@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS  Push CloudWS v2.1+ to GitHub — handles flat downloads + production files
 .DESCRIPTION
     Downloads from Claude are FLAT. This script:
