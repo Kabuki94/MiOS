@@ -1,0 +1,40 @@
+#!/usr/bin/bash
+# WSL first-boot: host keys, Podman socket, SSH pubkey injection, role pin
+set -euo pipefail
+
+log() { printf '[cloudws-wsl] %s\n' "$*"; }
+
+# Ensure sshd host keys
+ssh-keygen -A 2>/dev/null || true
+
+# Enable Podman API socket for remote access
+systemctl start podman.socket 2>/dev/null || true
+
+# Pin role=headless on WSL unless user overrode via /etc/cloudws/role.conf
+if [[ ! -f /etc/cloudws/role.conf ]]; then
+    mkdir -p /etc/cloudws
+    cat > /etc/cloudws/role.conf <<EOF
+ROLE=headless
+PROFILE=wsl
+FEATURES=nocloud-init
+EOF
+    log "pinned role=headless for WSL"
+fi
+
+# Inject Windows-side Podman key if present
+WIN_KEY="/mnt/c/ProgramData/containers/podman/id_rsa.pub"
+if [[ -r "$WIN_KEY" ]]; then
+    USER_HOME="$(getent passwd core | cut -d: -f6)"
+    mkdir -p "$USER_HOME/.ssh"
+    touch    "$USER_HOME/.ssh/authorized_keys"
+    if ! grep -qFx "$(cat "$WIN_KEY")" "$USER_HOME/.ssh/authorized_keys"; then
+        cat "$WIN_KEY" >> "$USER_HOME/.ssh/authorized_keys"
+        log "injected Podman-Desktop key into core user authorized_keys"
+    fi
+    chown -R core:core "$USER_HOME/.ssh"
+    chmod 700 "$USER_HOME/.ssh"
+    chmod 600 "$USER_HOME/.ssh/authorized_keys"
+fi
+
+# Trigger role resolver now
+systemctl start cloudws-role.service 2>/dev/null || true

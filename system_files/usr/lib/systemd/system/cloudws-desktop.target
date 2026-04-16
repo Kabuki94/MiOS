@@ -1,0 +1,8 @@
+[Unit]
+Description=CloudWS Desktop role (GNOME, Gamescope, libvirt, KVM/VFIO)
+Requires=multi-user.target graphical.target
+After=multi-user.target graphical.target
+AllowIsolate=yes
+
+[Install]
+Alias=default.target.cloudws-desktop

@@ -1,0 +1,25 @@
+{
+  "default": [{"type": "insecureAcceptAnything"}],
+  "transports": {
+    "docker": {
+      "ghcr.io/kabuki94/cloudws-bootc": [{
+        "type": "sigstoreSigned",
+        "keyPath": "/etc/pki/containers/cloudws-cosign.pub",
+        "signedIdentity": {"type": "matchRepository"}
+      }],
+      "ghcr.io/ublue-os": [{
+        "type": "sigstoreSigned",
+        "keyPath": "/etc/pki/containers/ublue-cosign.pub",
+        "signedIdentity": {"type": "matchRepoDigestOrExact"}
+      }],
+      "quay.io/fedora":         [{"type": "insecureAcceptAnything"}],
+      "quay.io/centos-bootc":   [{"type": "insecureAcceptAnything"}],
+      "quay.io/podman":         [{"type": "insecureAcceptAnything"}],
+      "registry.fedoraproject.org": [{"type": "insecureAcceptAnything"}],
+      "registry.access.redhat.com": [{"type": "insecureAcceptAnything"}]
+    },
+    "docker-daemon": {
+      "": [{"type": "insecureAcceptAnything"}]
+    }
+  }
+}

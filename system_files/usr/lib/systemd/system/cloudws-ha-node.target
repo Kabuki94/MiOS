@@ -1,0 +1,9 @@
+[Unit]
+Description=CloudWS HA role (Pacemaker+Corosync, Ceph monitor/OSD)
+Requires=multi-user.target
+After=multi-user.target
+AllowIsolate=yes
+Wants=corosync.service pacemaker.service
+
+[Install]
+Alias=default.target.cloudws-ha-node

@@ -1,0 +1,28 @@
+#!/usr/bin/bash
+# Select NVIDIA CDI generation mode: WSL vs bare-metal vs VM
+set -euo pipefail
+
+CDI_OUT=/var/run/cdi/nvidia.yaml
+mkdir -p "$(dirname "$CDI_OUT")"
+
+log() { printf '[cloudws-cdi] %s\n' "$*"; }
+
+if ! command -v nvidia-ctk >/dev/null 2>&1; then
+    log "nvidia-ctk not present; skipping CDI generation"
+    exit 0
+fi
+
+MODE="auto"
+if [[ -e /dev/dxg ]]; then
+    MODE="wsl"
+    log "WSL2 detected (/dev/dxg present)"
+elif ! ls /dev/nvidia* 2>/dev/null | grep -q .; then
+    log "no NVIDIA device nodes; no GPU in this environment - skipping CDI"
+    exit 0
+fi
+
+nvidia-ctk cdi generate --mode="$MODE" --output="$CDI_OUT" || {
+    log "WARN: CDI generation failed (mode=$MODE); continuing"
+    exit 0
+}
+log "CDI spec written to $CDI_OUT (mode=$MODE)"

@@ -1,0 +1,8 @@
+[Unit]
+Description=CloudWS Headless role (SSH + Podman + uupd, for VMs/Podman-machine/WSL)
+Requires=multi-user.target
+After=multi-user.target
+AllowIsolate=yes
+
+[Install]
+Alias=default.target.cloudws-headless

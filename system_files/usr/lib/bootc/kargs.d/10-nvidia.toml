@@ -1,0 +1,9 @@
+# NVIDIA kargs for CloudWS-bootc - applied by bootc; survive upgrades.
+# Blacklist happens via /etc/modprobe.d/ at runtime if role is VM (no GPU).
+kargs = [
+  "rd.driver.blacklist=nouveau",
+  "modprobe.blacklist=nouveau",
+  "nvidia-drm.modeset=1",
+  "nvidia-drm.fbdev=1",
+  "nvidia.NVreg_PreserveVideoMemoryAllocations=1",
+]

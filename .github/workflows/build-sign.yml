@@ -1,0 +1,86 @@
+name: Build, sign, attest, push
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+  attestations: write
+
+env:
+  IMAGE_NAME: cloudws-bootc
+  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman buildah skopeo
+          sudo loginctl enable-linger $USER || true
+
+      - name: Free up runner disk
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost /opt/hostedtoolcache
+          sudo docker system prune -af || true
+          df -h
+
+      - name: Build image (BuildKit via buildah)
+        id: build
+        run: |
+          buildah bud \
+            --jobs=2 \
+            --layers=true \
+            --file=Containerfile \
+            --tag=localhost/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            --tag=localhost/${{ env.IMAGE_NAME }}:latest \
+            .
+
+      - name: Log in to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | buildah login \
+            -u "${{ github.actor }}" \
+            --password-stdin \
+            ghcr.io
+
+      - name: Push to GHCR
+        id: push
+        run: |
+          buildah push \
+            --digestfile /tmp/digest.txt \
+            localhost/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            docker://${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          buildah push \
+            localhost/${{ env.IMAGE_NAME }}:latest \
+            docker://${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          DIGEST=$(cat /tmp/digest.txt)
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign (keyless, Fulcio OIDC)
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          cosign sign --yes \
+            "${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.push.outputs.digest }}"
+
+      - name: Attest build provenance (SLSA)
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true

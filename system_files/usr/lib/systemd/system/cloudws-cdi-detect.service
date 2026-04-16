@@ -1,0 +1,12 @@
+[Unit]
+Description=CloudWS CDI spec detection (WSL vs bare metal vs VM)
+Before=nvidia-cdi-refresh.service
+After=local-fs.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/libexec/cloudws/select-cdi-spec
+
+[Install]
+WantedBy=multi-user.target

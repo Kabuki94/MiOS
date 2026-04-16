@@ -1,0 +1,7 @@
+# Boot-time hardening (NVIDIA-safe subset). Does NOT include page_alloc.shuffle
+# or init_on_alloc=1 globally (can interfere with large CUDA allocations).
+kargs = [
+  "slab_nomerge",
+  "lockdown=integrity",
+  "module.sig_enforce=0",
+]

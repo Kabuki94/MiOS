@@ -1,0 +1,16 @@
+[Unit]
+Description=CloudWS role resolver (applies default target based on role.conf)
+DefaultDependencies=no
+After=local-fs.target systemd-tmpfiles-setup.service
+Before=basic.target shutdown.target
+Conflicts=shutdown.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/libexec/cloudws/role-apply
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=sysinit.target

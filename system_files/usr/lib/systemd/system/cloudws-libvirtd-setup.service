@@ -1,0 +1,15 @@
+[Unit]
+Description=CloudWS first-boot libvirtd wiring
+ConditionPathExists=!/var/lib/cloudws/libvirtd-setup.done
+ConditionVirtualization=no
+After=libvirtd.service
+Wants=libvirtd.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/libexec/cloudws/libvirtd-firstboot
+ExecStartPost=/usr/bin/install -Dm0644 /dev/null /var/lib/cloudws/libvirtd-setup.done
+
+[Install]
+WantedBy=cloudws-firstboot.target

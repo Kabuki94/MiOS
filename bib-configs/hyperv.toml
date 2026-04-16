@@ -1,0 +1,11 @@
+# Hyper-V VHDX target
+[customizations.kernel]
+append = "cloudws.role=desktop console=tty1"
+
+[[customizations.filesystem]]
+mountpoint = "/"
+minsize = "40 GiB"
+
+[[customizations.filesystem]]
+mountpoint = "/var"
+minsize = "80 GiB"

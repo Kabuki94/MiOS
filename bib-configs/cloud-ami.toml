@@ -1,0 +1,7 @@
+# AWS AMI target
+[customizations.kernel]
+append = "cloudws.role=headless"
+
+[[customizations.filesystem]]
+mountpoint = "/"
+minsize = "20 GiB"

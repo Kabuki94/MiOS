@@ -1,0 +1,7 @@
+# QEMU/libvirt qcow2 target (btrfs - verity-capable)
+[customizations.kernel]
+append = "cloudws.role=desktop"
+
+[[customizations.filesystem]]
+mountpoint = "/"
+minsize = "40 GiB"
