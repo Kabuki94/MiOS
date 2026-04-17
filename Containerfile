@@ -65,7 +65,7 @@ COPY --from=ctx /ctx /ctx
 # CloudWS v2.1.6: delegate system_files overlay to the script so the
 # /usr/local -> /var/usrlocal symlink on ucore/bootc bases is handled
 # correctly (previous inline cp -a failed with 'File exists').
-RUN /ctx/scripts/08-system-files-overlay.sh
+RUN bash /ctx/scripts/08-system-files-overlay.sh
 
 # DNF defaults: no weak deps, no docs, protect running kernel
 RUN mkdir -p /etc/dnf \
