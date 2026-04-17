@@ -23,7 +23,7 @@ Performed a line-by-line audit using `PSScriptAnalyzer` and `shellcheck`.
 
 #### Bash (`shellcheck`)
 - **`scripts/bcvk-wrapper.sh`**: Fixed SC2054 (unquoted elements containing commas in array declarations). E.g., `QEMU_ARGS=( -nic user,model=virtio )` -> `QEMU_ARGS=( -nic "user,model=virtio" )`.
-- **`scripts/10-gnome.sh`**: Fixed SC2038. Avoided `find | xargs` for file copying (fails on non-alphanumeric filenames). Used `find ... -exec cp {} /dest/ \;`.
+- **`scripts/10-gnome.sh`**: Fixed SC2038 (`find | xargs` failing due to non-alphanumeric safety). Used `find ... \( ... \) -exec cp {} /dest/ \;`. Note: `action-shellcheck@2.0.0` in CI/CD runs strictly and considers SC2038 a fatal failure.
 - **`scripts/02-kernel.sh`**: Fixed SC2155. Separated declaration and assignment to avoid masking exit codes: `KVER=$(...)` then `export KVER`.
 - **`scripts/11-hardware.sh`, `scripts/12-virt.sh`, `scripts/52-bake-kvmfr.sh`**: Fixed SC2012. Replaced `ls -1 /dir/ | sort` with `find /dir/ -mindepth 1 -maxdepth 1 -printf "%f\n" | sort`.
 
