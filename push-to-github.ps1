@@ -346,7 +346,7 @@ if (-not $status) {
     $msg = Read-Host "`n  Commit message (Enter = default)"
     if (-not $msg) { $msg = $defaultMsg }
 
-    git commit -m $msg
+    git commit -m "$msg"
     Write-Host "  Pushing..." -ForegroundColor Cyan
     git push -u origin $Branch 2>&1 | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
 
