@@ -62,14 +62,10 @@ COPY --from=ctx /ctx /ctx
 # Overlay system_files/ onto the rootfs. Two-stage to handle the
 # /usr/local -> /var/usrlocal symlink on ucore/FCOS bases.
 # ---------------------------------------------------------------------------
-RUN set -e; \
-    # Stage 1: everything except usr/local (tar handles ownership, modes, xattrs) \
-    tar -C /ctx/system_files -cf - --exclude='./usr/local' . | tar -C / -xf -; \
-    # Stage 2: usr/local CONTENTS (cp -a src/. dst/ follows the dst symlink) \
-    if [ -d /ctx/system_files/usr/local ]; then \
-        cp -a /ctx/system_files/usr/local/. /usr/local/; \
-    fi; \
-    echo "[overlay] system_files applied (stage1=tar, stage2=cp through /usr/local)"
+# CloudWS v2.1.6: delegate system_files overlay to the script so the
+# /usr/local -> /var/usrlocal symlink on ucore/bootc bases is handled
+# correctly (previous inline cp -a failed with 'File exists').
+RUN /ctx/scripts/08-system-files-overlay.sh
 
 # DNF defaults: no weak deps, no docs, protect running kernel
 RUN mkdir -p /etc/dnf \

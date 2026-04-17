@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# ============================================================================
+# scripts/08-system-files-overlay.sh - CloudWS-bootc v2.1.6
+# ----------------------------------------------------------------------------
+# Overlay /ctx/system_files/ onto the rootfs during the Containerfile build,
+# correctly handling the /usr/local -> /var/usrlocal symlink that ships on
+# ucore / Fedora CoreOS / bootc images. Replaces the failing inline RUN:
+#
+#   RUN ... cp -a /ctx/system_files/usr/local/. /usr/local/
+#   cp: cannot create directory '/usr/local/': File exists
+#
+# The root cause is that /usr/local is a SYMLINK on these bases; `cp -a` with
+# a trailing slash on the destination tries to create /usr/local as a
+# directory, which collides with the existing symlink. The fix is to write
+# through the symlink by tar-piping into /var/usrlocal directly.
+#
+# This script is idempotent and safe to call repeatedly.
+#
+# USAGE (from the Containerfile):
+#     RUN /ctx/scripts/08-system-files-overlay.sh
+# ============================================================================
+set -euo pipefail
+
+# shellcheck source=lib/common.sh
+source "$(dirname "$0")/lib/common.sh"
+
+CTX="${CTX:-/ctx}"
+SRC="${CTX}/system_files"
+
+if [[ ! -d "${SRC}" ]]; then
+    log "08-overlay: no ${SRC} directory; nothing to overlay"
+    exit 0
+fi
+
+log "08-overlay: starting 2-stage overlay (ucore /usr/local symlink aware)"
+
+# --- Stage 1: everything except /usr/local ---------------------------------
+# tar|tar preserves permissions, ownership, timestamps, xattrs (when
+# supported on both sides) and avoids `cp`'s trailing-slash quirks.
+log "  stage 1: overlay everything except /usr/local"
+tar -C "${SRC}" -cf - --exclude='./usr/local' . | tar -C / --no-overwrite-dir -xf -
+
+# --- Stage 2: /usr/local via /var/usrlocal ---------------------------------
+# /usr/local is a symlink to /var/usrlocal on ucore/FCOS-lineage images.
+# Writing through the symlink (tar -C /var/usrlocal) is the clean fix.
+# On pure Fedora bootc bases where /usr/local is a real dir, writing to
+# /var/usrlocal still works after we create it - we then ALSO overlay the
+# real /usr/local so behaviour is identical on both lineages.
+if [[ -d "${SRC}/usr/local" ]]; then
+    log "  stage 2: overlay /usr/local content"
+    if [[ -L /usr/local ]]; then
+        log "    /usr/local is a symlink -> $(readlink /usr/local); writing through"
+        install -d -m 0755 /var/usrlocal
+        tar -C "${SRC}/usr/local" -cf - . | tar -C /var/usrlocal --no-overwrite-dir -xf -
+    else
+        log "    /usr/local is a real directory; writing directly"
+        tar -C "${SRC}/usr/local" -cf - . | tar -C /usr/local --no-overwrite-dir -xf -
+    fi
+else
+    log "  stage 2: skipped (no ${SRC}/usr/local)"
+fi
+
+log "08-overlay: complete"

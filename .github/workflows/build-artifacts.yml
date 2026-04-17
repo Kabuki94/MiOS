@@ -1,0 +1,140 @@
+name: build-artifacts
+
+# Matrix build of QCOW2 / VHDX / ISO via bootc-image-builder.
+# EXPENSIVE (20-40 min per leg on ubuntu-24.04) - triggers:
+#   - manual dispatch
+#   - weekly cron (Sundays 05:00 UTC)
+#   - post-build success from build-test
+on:
+  workflow_dispatch:
+    inputs:
+      image-tag:
+        description: "Tag of ghcr.io/kabuki94/cloudws-bootc to convert"
+        required: false
+        default: "latest"
+  schedule:
+    - cron: "0 5 * * 0"
+  workflow_run:
+    workflows: ["build-test"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: read
+
+env:
+  IMAGE: ghcr.io/kabuki94/cloudws-bootc
+  BIB_IMAGE: quay.io/centos-bootc/bootc-image-builder:latest
+  ROOTFS: ext4
+
+jobs:
+  build-artifact:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - artifact: qcow2
+            bib-type: qcow2
+            config:   bib-configs/qcow2.toml
+            out-subdir: qcow2
+            out-file:   disk.qcow2
+          - artifact: vhdx
+            bib-type: vhd
+            config:   bib-configs/vhdx.toml
+            out-subdir: vpc
+            out-file:   disk.vhd
+          - artifact: iso
+            bib-type: anaconda-iso
+            config:   bib-configs/iso.toml
+            out-subdir: bootiso
+            out-file:   install.iso
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Free runner disk (~40 GB)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
+
+      - name: Install qemu-utils (for VHDX post-convert)
+        if: matrix.artifact == 'vhdx'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-utils
+
+      - name: Resolve image ref
+        id: tag
+        run: |
+          TAG="${{ github.event.inputs.image-tag || 'latest' }}"
+          echo "IMAGE_REF=${{ env.IMAGE }}:${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull bootc image into local storage
+        run: sudo podman pull "${{ steps.tag.outputs.IMAGE_REF }}"
+
+      - name: Build with bootc-image-builder
+        run: |
+          mkdir -p output
+          sudo podman run \
+            --rm \
+            --privileged \
+            --pull=newer \
+            --security-opt label=type:unconfined_t \
+            -v "${{ github.workspace }}/${{ matrix.config }}:/config.toml:ro" \
+            -v "${{ github.workspace }}/output:/output" \
+            -v /var/lib/containers/storage:/var/lib/containers/storage \
+            "${{ env.BIB_IMAGE }}" \
+            --type "${{ matrix.bib-type }}" \
+            --rootfs "${{ env.ROOTFS }}" \
+            --use-librepo=True \
+            --chown "$(id -u):$(id -g)" \
+            "${{ steps.tag.outputs.IMAGE_REF }}"
+
+      - name: Convert VHD -> VHDX (Hyper-V native)
+        if: matrix.artifact == 'vhdx'
+        run: |
+          qemu-img convert -p -f vpc -O vhdx -o subformat=dynamic \
+            "output/vpc/disk.vhd" "output/cloudws.vhdx"
+          ls -lh output/cloudws.vhdx
+
+      - name: Compute artifact path
+        id: path
+        run: |
+          if [ "${{ matrix.artifact }}" = "vhdx" ]; then
+            echo "ARTIFACT_PATH=output/cloudws.vhdx" >> "$GITHUB_OUTPUT"
+          else
+            echo "ARTIFACT_PATH=output/${{ matrix.out-subdir }}/${{ matrix.out-file }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checksum
+        run: |
+          AP='${{ steps.path.outputs.ARTIFACT_PATH }}'
+          ( cd "$(dirname "$AP")" && sha256sum "$(basename "$AP")" > "$(basename "$AP").sha256" )
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudws-${{ matrix.artifact }}
+          path: |
+            ${{ steps.path.outputs.ARTIFACT_PATH }}
+            ${{ steps.path.outputs.ARTIFACT_PATH }}.sha256
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0

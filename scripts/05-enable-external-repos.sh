@@ -1,60 +1,109 @@
-#!/usr/bin/bash
-# 05-enable-external-repos.sh - enable every external repo unified packages
-# depend on. Runs ONCE, after 01-repos.sh and 02-kernel.sh.
+#!/usr/bin/env bash
+# ============================================================================
+# scripts/05-enable-external-repos.sh
+# ----------------------------------------------------------------------------
+# Enable external DNF repositories for CloudWS-bootc (Fedora 44 / Rawhide).
+# Idempotent; fails fast; uses ${DNF_SETOPT[@]} from scripts/lib/common.sh.
+# RPM Fusion is intentionally NOT handled here — see 01-repos.sh.
 #
-# v2.2.8 fix:
-#   - Strip sslcacert= line from CrowdSec's packagecloud .repo file. The
-#     packagecloud install script writes sslcacert=/etc/pki/tls/certs/ca-bundle.crt
-#     which curl inside the buildroot can't open, producing Curl (77) on every
-#     subsequent dnf refresh. Removing the line makes curl fall back to the
-#     system default trust store, which works fine.
+# v2.1.6 CHANGES:
+#   - removed redundant RPM Fusion install block (was using `rpm -E %fedora`
+#     which yielded 41/43 from the base image and clobbered 01-repos.sh's
+#     explicit F44 pin).
+#   - replaced dnf5 with dnf throughout (consistency with 01-repos.sh and
+#     lib/packages.sh; on F44 `dnf` is dnf5 via symlink anyway).
+#   - adopted ${DNF_SETOPT[@]} for every mutating invocation.
+# ============================================================================
 set -euo pipefail
 
-log() { printf '[50-repos] %s\n' "$*"; }
+# shellcheck source=lib/common.sh
+source "$(dirname "$0")/lib/common.sh"
 
-FEDORA_VER="$(rpm -E %fedora 2>/dev/null || echo 41)"
-log "Fedora version detected: $FEDORA_VER"
+REPO_DIR=/etc/yum.repos.d
 
-# RPM Fusion is already enabled in 01-repos.sh with explicit F44 priority.
+# --- 1. Terra (fyralabs) ----------------------------------------------------
+# Patched WINE/Mesa/miscellaneous packages missing from Fedora + RPM Fusion.
+if [[ ! -f "${REPO_DIR}/terra.repo" ]]; then
+    log "enabling Terra repo (fyralabs)"
+    curl -fsSL \
+        https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo \
+        -o "${REPO_DIR}/terra.repo"
+else
+    log "Terra repo already present — skipping"
+fi
 
-# --- COPRs ------------------------------------------------------------------
-log "enabling ublue-os/packages (for uupd; already enabled in 43 but idempotent)"
-dnf -y copr enable ublue-os/packages || true
+# --- 2. Visual Studio Code (Microsoft) --------------------------------------
+if [[ ! -f "${REPO_DIR}/vscode.repo" ]]; then
+    log "enabling VS Code repo (Microsoft)"
+    rpm --import https://packages.microsoft.com/keys/microsoft.asc
+    cat > "${REPO_DIR}/vscode.repo" <<'EOF'
+[code]
+name=Visual Studio Code
+baseurl=https://packages.microsoft.com/yumrepos/vscode
+enabled=1
+autorefresh=1
+type=rpm-md
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc
+EOF
+else
+    log "VS Code repo already present — skipping"
+fi
 
-log "enabling hikariknight/looking-glass-kvmfr (for akmod-kvmfr)"
-dnf -y copr enable hikariknight/looking-glass-kvmfr || true
+# --- 3. 1Password -----------------------------------------------------------
+if [[ ! -f "${REPO_DIR}/1password.repo" ]]; then
+    log "enabling 1Password repo"
+    rpm --import https://downloads.1password.com/linux/keys/1password.asc
+    cat > "${REPO_DIR}/1password.repo" <<'EOF'
+[1password]
+name=1Password Stable Channel
+baseurl=https://downloads.1password.com/linux/rpm/stable/$basearch
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://downloads.1password.com/linux/keys/1password.asc
+EOF
+else
+    log "1Password repo already present — skipping"
+fi
 
-log "enabling @bazzite-org/bazzite (for patched gamescope + steam-devices udev)"
-dnf -y copr enable bazzite-org/bazzite || true
+# --- 4. Tailscale -----------------------------------------------------------
+if [[ ! -f "${REPO_DIR}/tailscale.repo" ]]; then
+    log "enabling Tailscale repo"
+    dnf "${DNF_SETOPT[@]}" -y config-manager addrepo \
+        --overwrite \
+        --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo
+else
+    log "Tailscale repo already present — skipping"
+fi
 
-log "enabling @bazzite-org/bazzite-multilib (for 32-bit Steam deps)"
-dnf -y copr enable bazzite-org/bazzite-multilib || true
+# --- 5. Docker CE (required when podman-docker is removed) ------------------
+if [[ ! -f "${REPO_DIR}/docker-ce.repo" ]]; then
+    log "enabling Docker CE repo"
+    dnf "${DNF_SETOPT[@]}" -y config-manager addrepo \
+        --overwrite \
+        --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
+else
+    log "Docker CE repo already present — skipping"
+fi
 
-# --- CrowdSec packagecloud --------------------------------------------------
-log "enabling CrowdSec packagecloud repo"
-curl -fsSL https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.rpm.sh | bash || \
-    log "WARN: CrowdSec repo setup failed"
+# --- 6. Google Chrome -------------------------------------------------------
+if [[ ! -f "${REPO_DIR}/google-chrome.repo" ]]; then
+    log "enabling Google Chrome repo"
+    rpm --import https://dl.google.com/linux/linux_signing_key.pub
+    cat > "${REPO_DIR}/google-chrome.repo" <<'EOF'
+[google-chrome]
+name=google-chrome
+baseurl=https://dl.google.com/linux/chrome/rpm/stable/$basearch
+enabled=1
+gpgcheck=1
+gpgkey=https://dl.google.com/linux/linux_signing_key.pub
+EOF
+else
+    log "Google Chrome repo already present — skipping"
+fi
 
-# Neutralize sslcacert= lines that point at paths curl can't open inside the
-# buildroot. Applies to every .repo file dropped by the packagecloud script.
-# This prevents the "Curl error (77): Problem with the SSL CA cert" spam
-# that otherwise appears on every dnf refresh for the rest of the build.
-for repo in /etc/yum.repos.d/crowdsec_crowdsec*.repo; do
-    if [[ -f "$repo" ]]; then
-        sed -i '/^sslcacert=/d' "$repo"
-        log "stripped sslcacert= from $(basename "$repo")"
-    fi
-done
+log "external repos enabled; refreshing metadata"
+dnf "${DNF_SETOPT[@]}" -y makecache
 
-# --- K3s: official rpm repo via rancher -------------------------------------
-log "installing K3s selinux context (k3s binary installed via script at runtime)"
-# K3s itself is a single binary; install the SELinux policy RPM now so the
-# binary works at runtime without policy violations.
-dnf -y install https://rpm.rancher.io/k3s/stable/common/coreos/noarch/k3s-selinux-1.6-1.coreos.noarch.rpm || \
-    log "WARN: k3s-selinux install failed; will need alternative path"
-
-# --- Waydroid needs LXC from Fedora + their repo for waydroid itself --------
-# Waydroid is in Fedora proper as of F38+, so no extra repo needed.
-# Just making sure fedora/fedora-updates are accessible.
-
-log "all external repos enabled"
+log "05-enable-external-repos.sh complete"
