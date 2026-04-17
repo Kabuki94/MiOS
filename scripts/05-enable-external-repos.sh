@@ -1,6 +1,13 @@
 #!/usr/bin/bash
-# 50-install-repos.sh - enable every external repo unified packages depend on.
-# Runs ONCE, before 51-install-unified-packages.sh.
+# 05-enable-external-repos.sh - enable every external repo unified packages
+# depend on. Runs ONCE, after 01-repos.sh and 02-kernel.sh.
+#
+# v2.2.8 fix:
+#   - Strip sslcacert= line from CrowdSec's packagecloud .repo file. The
+#     packagecloud install script writes sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+#     which curl inside the buildroot can't open, producing Curl (77) on every
+#     subsequent dnf refresh. Removing the line makes curl fall back to the
+#     system default trust store, which works fine.
 set -euo pipefail
 
 log() { printf '[50-repos] %s\n' "$*"; }
@@ -32,6 +39,17 @@ dnf5 -y copr enable bazzite-org/bazzite-multilib || true
 log "enabling CrowdSec packagecloud repo"
 curl -fsSL https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.rpm.sh | bash || \
     log "WARN: CrowdSec repo setup failed"
+
+# Neutralize sslcacert= lines that point at paths curl can't open inside the
+# buildroot. Applies to every .repo file dropped by the packagecloud script.
+# This prevents the "Curl error (77): Problem with the SSL CA cert" spam
+# that otherwise appears on every dnf refresh for the rest of the build.
+for repo in /etc/yum.repos.d/crowdsec_crowdsec*.repo; do
+    if [[ -f "$repo" ]]; then
+        sed -i '/^sslcacert=/d' "$repo"
+        log "stripped sslcacert= from $(basename "$repo")"
+    fi
+done
 
 # --- K3s: official rpm repo via rancher -------------------------------------
 log "installing K3s selinux context (k3s binary installed via script at runtime)"

@@ -211,8 +211,8 @@ All packages are in official Fedora repos — no extra repo needed.
 ```packages-gpu-intel-compute
 intel-compute-runtime
 intel-media-driver
-level-zero
-intel-gpu-tools
+# level-zero REMOVED: not in F44 repos as standalone package.
+# intel-gpu-tools REMOVED: needs libproc2.so.0 missing in F44.
 ```
 
 ## GPU Drivers — NVIDIA (akmod, builds for any NVIDIA card)
@@ -264,7 +264,6 @@ podman-compose
 buildah
 skopeo
 bootc
-bootc-image-builder
 osbuild
 osbuild-composer
 osbuild-selinux
@@ -282,11 +281,12 @@ dracut-live
 squashfs-tools
 selinux-policy-devel
 # v2.2 additions
-podman-plugins
-podman-docker
+# podman-docker REMOVED: conflicts with moby-engine shipped by ucore-hci base.
+# bootc-image-builder REMOVED: not in F44 repos; pulled as container at targets time.
+# podman-plugins REMOVED: not in F44 repos.
+# cosign REMOVED: not in F44 repos. Install via COPR or go-install if needed.
 containers-common
 toolbox
-cosign
 kubectl
 helm
 ```
@@ -367,6 +367,11 @@ libpwquality
 nftables
 policycoreutils
 setools-console
+# v2.3 additions
+# iptables-legacy: WSL2 kernel does NOT support nftables. Without this package
+#   iptables-nft fails and Podman networking breaks inside WSL. Safe on bare
+#   metal - coexists with nftables, only invoked when WSLInterop is detected.
+iptables-legacy
 ```
 
 ## Gaming

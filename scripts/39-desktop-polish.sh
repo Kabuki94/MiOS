@@ -1,6 +1,19 @@
 #!/bin/bash
-# CloudWS v2.0 — 39-desktop-polish: Desktop entries, Cockpit webapp, MOTD
+# CloudWS v2.3.1 — 39-desktop-polish: Desktop entries, Cockpit webapp, MOTD
+#
+# CHANGELOG v2.3.1:
+#   - FIX: cloudws-motd source path was /tmp/build/scripts/ (never exists).
+#     Scripts run from /ctx/scripts/ in the buildroot. The bogus path + the
+#     `|| true` swallowed the failure silently, so /usr/libexec/cloudws-motd
+#     was never created. profile.d/cloudws-motd.sh falls back to it when
+#     fastfetch is missing, so terminal MOTD printed nothing on every
+#     v2.0-v2.2 image.
+#   - FIX: SCRIPT_DIR-relative copy so this works whether build.sh invokes
+#     us from /ctx/scripts/ or any other future path. If the source is
+#     missing, FAIL LOUDLY (remove the silencing `|| true`) so it can't
+#     regress unnoticed.
 set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "[39-desktop-polish] Final desktop polish..."
 
@@ -56,9 +69,19 @@ Keywords=ceph;storage;
 EODESKTOP
 
 # ═══ MOTD DASHBOARD ═══
+# Source lives alongside this script (scripts/cloudws-motd in the repo,
+# /ctx/scripts/cloudws-motd at build time). SCRIPT_DIR resolves both.
+# If the source file is missing, FAIL - better to break the build than
+# ship an image with no MOTD.
 echo "[39-desktop-polish] Installing CloudWS MOTD dashboard..."
-cp /tmp/build/scripts/cloudws-motd /usr/libexec/cloudws-motd 2>/dev/null || true
-chmod +x /usr/libexec/cloudws-motd 2>/dev/null || true
+MOTD_SRC="${SCRIPT_DIR}/cloudws-motd"
+if [[ ! -f "$MOTD_SRC" ]]; then
+    echo "[39-desktop-polish] FATAL: cloudws-motd not found at $MOTD_SRC"
+    echo "[39-desktop-polish]        scripts/cloudws-motd must be present in repo"
+    exit 1
+fi
+install -D -m 0755 "$MOTD_SRC" /usr/libexec/cloudws-motd
+echo "[39-desktop-polish] ✓ /usr/libexec/cloudws-motd installed ($(wc -l <"$MOTD_SRC") lines)"
 
 # ═══ FASTFETCH CONFIG — services dashboard on terminal open ═══
 echo "[39-desktop-polish] Installing fastfetch system config..."
@@ -189,17 +212,23 @@ cat > /etc/fastfetch/config.jsonc <<'EOFF'
 EOFF
 
 # ═══ PROFILE.D — fastfetch + MOTD on terminal/TTY open ═══
+# fastfetch is the preferred frontend (ships its own per-service probes);
+# cloudws-motd is the fallback. With v2.3.1 the 12-virt.sh containers section
+# now completes, so "utils" gets installed, so fastfetch IS present - but we
+# keep the fallback for minimal images that skip the utils section.
 echo "[39-desktop-polish] Updating profile.d for terminal/TTY..."
 cat > /etc/profile.d/cloudws-motd.sh <<'EOPROFILE'
-# CloudWS v2.0 — Terminal/TTY dashboard
-# Shows fastfetch with services on interactive login
+# CloudWS v2.3.1 — Terminal/TTY dashboard
+# Shows fastfetch services panel on interactive login.
+# Suppress with:  export CLOUDWS_NO_MOTD=1
 if [[ $- == *i* ]] && [ -z "${CLOUDWS_NO_MOTD:-}" ]; then
     if command -v fastfetch &>/dev/null; then
         fastfetch 2>/dev/null || true
-    else
+    elif [[ -x /usr/libexec/cloudws-motd ]]; then
         /usr/libexec/cloudws-motd 2>/dev/null || true
     fi
 fi
 EOPROFILE
+chmod 0644 /etc/profile.d/cloudws-motd.sh
 
 echo "[39-desktop-polish] Desktop polish complete."

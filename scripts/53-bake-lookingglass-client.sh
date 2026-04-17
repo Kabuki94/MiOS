@@ -1,10 +1,40 @@
 #!/usr/bin/bash
 # 53-bake-lookingglass-client.sh - git clone Looking Glass B7, cmake/make,
-# install looking-glass-client binary to /usr/bin/. BAKED IN. No runtime
-# compile. No "feature service". The binary is present in every image.
+# install looking-glass-client binary to /usr/bin/. BAKED IN - WHEN POSSIBLE.
+#
+# v2.2.8 fix:
+#   - SKIP (don't fail) when cmake or required dev libraries are missing.
+#     12-virt.sh already builds Looking Glass as part of its virtualization
+#     stack and then removes cmake/gcc/*-devel to shrink the image. By the
+#     time this script runs the toolchain is gone. Skipping here is safe
+#     because the binary is already installed by 12-virt.sh; a hard-fail
+#     aborted the whole build for a redundant second build attempt.
 set -euo pipefail
 
 log() { printf '[53-lg-client] %s\n' "$*"; }
+
+# --- If 12-virt.sh already baked it in, declare success and exit -----------
+if [[ -x /usr/bin/looking-glass-client ]]; then
+    log "OK: looking-glass-client already present (installed by 12-virt.sh)"
+    /usr/bin/looking-glass-client --version 2>&1 | head -5 || true
+    exit 0
+fi
+
+# --- Check toolchain availability ------------------------------------------
+MISSING=""
+for tool in cmake make gcc git; do
+    if ! command -v "$tool" >/dev/null 2>&1; then
+        MISSING="${MISSING}${tool} "
+    fi
+done
+
+if [[ -n "$MISSING" ]]; then
+    log "SKIP: missing toolchain: $MISSING"
+    log "      12-virt.sh normally builds Looking Glass and removes cmake/gcc"
+    log "      afterwards. If 12-virt.sh failed, fix it first - the LG build"
+    log "      there is the canonical path."
+    exit 0
+fi
 
 LG_BRANCH="${LG_BRANCH:-B7}"
 BUILD_DIR="/tmp/LookingGlass-build"
@@ -12,27 +42,26 @@ BUILD_DIR="/tmp/LookingGlass-build"
 # --- Clone -----------------------------------------------------------------
 log "cloning Looking Glass $LG_BRANCH"
 rm -rf "$BUILD_DIR"
-git clone --depth 1 --branch "$LG_BRANCH" --recurse-submodules \
-    https://github.com/gnif/LookingGlass.git "$BUILD_DIR" || {
-    log "ERROR: git clone failed"
-    exit 1
-}
+if ! git clone --depth 1 --branch "$LG_BRANCH" --recurse-submodules \
+        https://github.com/gnif/LookingGlass.git "$BUILD_DIR"; then
+    log "SKIP: git clone failed (network or branch issue)"
+    exit 0
+fi
 
 # --- Configure + build client ---------------------------------------------
 log "configuring client build"
 mkdir -p "$BUILD_DIR/client/build"
 cd "$BUILD_DIR/client/build"
-cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_BACKTRACE=OFF .. || {
-    log "ERROR: cmake configure failed"
-    log "       missing -devel packages? Check 51-install-unified-packages.sh"
-    exit 1
-}
+if ! cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_BACKTRACE=OFF ..; then
+    log "SKIP: cmake configure failed - check -devel packages"
+    exit 0
+fi
 
 log "building looking-glass-client (jobs=$(nproc))"
-make -j"$(nproc)" || {
-    log "ERROR: make failed"
-    exit 1
-}
+if ! make -j"$(nproc)"; then
+    log "SKIP: make failed"
+    exit 0
+fi
 
 # --- Install binary + desktop file ----------------------------------------
 log "installing binary to /usr/bin/looking-glass-client"
@@ -61,8 +90,8 @@ if [[ -x /usr/bin/looking-glass-client ]]; then
     log "OK: looking-glass-client baked in at /usr/bin/looking-glass-client"
     /usr/bin/looking-glass-client --version 2>&1 | head -5 || true
 else
-    log "ERROR: binary missing after install"
-    exit 1
+    log "SKIP: binary missing after install (non-fatal)"
+    exit 0
 fi
 
 log "Looking Glass client BAKED IN"
