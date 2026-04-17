@@ -13,11 +13,11 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Cosign keyless image signing via Fulcio/Rekor OIDC
 - Weekly GHCR cleanup of untagged images (keep 7 most recent)
 - `CONTRIBUTING.md` with project conventions and submission workflow
-- `UPGRADE.md` with step-by-step upgrade, rollback, and troubleshooting
-- `SECURITY.md` with complete hardening checklist and override instructions
-- `HARDWARE.md` with GPU/CPU/platform support matrix
-- `DIAGNOSTICS.md` with logging, journal, and diagnostic bundle guide
-- `BACKUP.md` with backup/restore strategy for `/var` and `/home`
+- `docs/UPGRADE.md` with step-by-step upgrade, rollback, and troubleshooting
+- `docs/SECURITY.md` with complete hardening checklist and override instructions
+- `docs/HARDWARE.md` with GPU/CPU/platform support matrix
+- `docs/DIAGNOSTICS.md` with logging, journal, and diagnostic bundle guide
+- `docs/BACKUP.md` with backup/restore strategy for `/var` and `/home`
 - GitHub issue templates (bug report, feature request, security)
 - Pull request template with CloudWS-specific checklist
 
