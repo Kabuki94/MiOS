@@ -9,7 +9,7 @@ _ip() { ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="s
 IP=$(_ip); [[ -z "$IP" ]] && IP="127.0.0.1"
 HN=$(hostname -s 2>/dev/null || echo "CloudWS")
 _l() { printf '\e]8;;%s\e\\%s\e]8;;\e\\' "$1" "$2"; }
-C='\033[0;36m';W='\033[1;37m';G='\033[0;32m';Y='\033[0;33m';D='\033[0;90m';N='\033[0m'
+C='\033[0;36m';W='\033[1;37m';G='\033[0;32m';D='\033[0;90m';N='\033[0m'
 _s() { systemctl is-active --quiet "$1" 2>/dev/null && printf "${G}●${N}" || printf "${D}○${N}"; }
 
 echo ""
