@@ -69,7 +69,7 @@ echo "[10-gnome] Installing Geist font family..."
 mkdir -p /usr/share/fonts/geist
 git clone --depth=1 https://github.com/vercel/geist-font.git /tmp/geist-font 2>/dev/null || true
 if [ -d /tmp/geist-font ]; then
-    find /tmp/geist-font -name "*.otf" -o -name "*.ttf" | xargs -I{} cp {} /usr/share/fonts/geist/ 2>/dev/null || true
+    find /tmp/geist-font \( -name "*.otf" -o -name "*.ttf" \) -exec cp {} /usr/share/fonts/geist/ \; 2>/dev/null || true
     rm -rf /tmp/geist-font
 fi
 fc-cache -f /usr/share/fonts/geist 2>/dev/null || true
