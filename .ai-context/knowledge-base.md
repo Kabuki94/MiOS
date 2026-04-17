@@ -40,6 +40,7 @@ Performed a line-by-line audit using `PSScriptAnalyzer` and `shellcheck`.
 
 #### Container & YAML Validation
 - Ran `hadolint` on `Containerfile` and `yamllint` on `.github/workflows/`, `renovate.json`, and `image-versions.yml`. Confirmed structures are valid and functional.
+- **GitHub Actions (Cosign Authentication)**: Fixed a bug where `cosign sign` was failing with `UNAUTHORIZED: unauthenticated`. The `buildah`/`podman` login commands store credentials in `~/.config/containers/auth.json`, which `cosign` ignores (it strictly looks for `~/.docker/config.json`). Added the official `docker/login-action@v3` step immediately alongside the buildah/podman logins. This safely populates the docker credential store, allowing `cosign` to inherit the authentication context and push signatures to GHCR.
 
 ## Development Guidelines
 - **PowerShell**: Avoid `Invoke-Expression`. Do not use empty `catch` blocks. Use `[SecureString]` for sensitive data.
