@@ -1,0 +1,21 @@
+# CloudWS-bootc v2.1.5 - universal GPU kernel arguments
+# ----------------------------------------------------------------------------
+# bootc kargs.d schema: flat `kargs = [...]` array at document root.
+# NO [kargs] section header. NO delete mechanism. `match-architectures` is
+# optional and takes a flat string array.
+# Reference: https://bootc.dev/bootc/building/kernel-arguments.html
+#
+# These args are chosen to be safe on ALL hardware variants:
+#   * iommu=pt            - required for VFIO/PCI passthrough; no-op without IOMMU
+#   * nouveau blacklist   - prevents nouveau-vs-nvidia-akmod collisions; harmless
+#                           on AMD/Intel (nouveau isn't loaded anyway)
+# NVIDIA-specific args (nvidia-drm.modeset=1, nvidia-drm.fbdev=1) live in
+# modprobe.d options, NOT kargs — those crash early boot on hardware without
+# the NVIDIA module loaded.
+# ----------------------------------------------------------------------------
+kargs = [
+  "iommu=pt",
+  "rd.driver.blacklist=nouveau",
+  "modprobe.blacklist=nouveau",
+]
+match-architectures = ["x86_64"]
