@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.9
 # ============================================================================
-# CloudWS-bootc - Unified Image (v2.3.4)
+# CloudWS-bootc - Unified Image (v2.3.5)
 # ============================================================================
 # One image. Every role. Every surface. Every GPU vendor.
 #
@@ -10,7 +10,19 @@
 # AMD:      Mesa + ROCm in-image (PACKAGES.md packages-gpu-amd-compute)
 # Intel:    intel-compute-runtime + intel-media-driver (packages-gpu-intel-compute)
 #
-# v2.3.4 fixes v2.3.3's three runtime failures:
+# v2.3.5 fixes the docs-restructure fallout from commit 0eff8d8:
+#
+#   1) PACKAGES.md was relocated from the repo root to docs/PACKAGES.md
+#      together with the other long-form docs. The ctx stage still copied
+#      from the old path, so every subsequent build failed at the
+#      build-context stage with
+#         COPY PACKAGES.md /ctx/PACKAGES.md  -> no such file
+#      The COPY directive below is now `docs/PACKAGES.md -> /ctx/PACKAGES.md`
+#      so `scripts/lib/packages.sh` (unchanged, still reads /ctx/PACKAGES.md)
+#      keeps working without modification. No other moved doc is consumed
+#      by the build pipeline — only PACKAGES.md had to be re-pathed.
+#
+# v2.3.4 fixed v2.3.3's three runtime failures:
 #
 #   1) bootc container lint REJECTED 01-cloudws-vm-boot.toml with
 #        Linting: Unexpected runtime error running lint bootc-kargs:
@@ -54,17 +66,19 @@ ARG BASE_IMAGE=ghcr.io/ublue-os/ucore-hci:stable-nvidia
 # ctx stage: build context (scripts, system_files, manifests, overlay dirs)
 # ----------------------------------------------------------------------------
 FROM scratch AS ctx
-COPY scripts/        /ctx/scripts/
-COPY system_files/   /ctx/system_files/
-COPY PACKAGES.md     /ctx/PACKAGES.md
-COPY VERSION         /ctx/VERSION
-COPY bib-configs/    /ctx/bib-configs/
+COPY scripts/           /ctx/scripts/
+COPY system_files/      /ctx/system_files/
+# v2.3.5: PACKAGES.md moved to docs/ during the docs consolidation; re-path
+# the COPY so /ctx/PACKAGES.md (the path packages.sh reads) stays stable.
+COPY docs/PACKAGES.md   /ctx/PACKAGES.md
+COPY VERSION            /ctx/VERSION
+COPY bib-configs/       /ctx/bib-configs/
 # v2.3.4: passthrough plumbing staging dirs consumed by 35-gpu-passthrough.sh
-COPY systemd/        /ctx/systemd/
-COPY udev/           /ctx/udev/
-COPY tmpfiles.d/     /ctx/tmpfiles.d/
-COPY sysusers.d/     /ctx/sysusers.d/
-COPY kargs.d/        /ctx/kargs.d/
+COPY systemd/           /ctx/systemd/
+COPY udev/              /ctx/udev/
+COPY tmpfiles.d/        /ctx/tmpfiles.d/
+COPY sysusers.d/        /ctx/sysusers.d/
+COPY kargs.d/           /ctx/kargs.d/
 
 # ----------------------------------------------------------------------------
 # main stage
@@ -75,7 +89,7 @@ LABEL org.opencontainers.image.title="CloudWS-bootc"
 LABEL org.opencontainers.image.description="Unified immutable cloud-native workstation OS (desktop/k3s/ha/hybrid)"
 LABEL org.opencontainers.image.source="https://github.com/Kabuki94/CloudWS-bootc"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
-LABEL org.opencontainers.image.version="2.3.4"
+LABEL org.opencontainers.image.version="2.3.5"
 LABEL containers.bootc="1"
 
 # Build context mounted read-only
