@@ -73,7 +73,7 @@ to `/dev/kfd`. That label is the domain for the container **runtime itself**
 The correct minimal-privilege path is the `container_use_devices` boolean,
 which grants `container_t` read/write/map on the device classes involved.
 CloudWS persists this at build time via `semanage boolean` and re-sets it
-at each boot via `cloudws-gpu-detect.service` as a safety net.
+at each boot via `cloudws-gpu-status.service` as a safety net.
 
 ### kargs.d: flat `kargs = [...]` only
 
@@ -94,7 +94,7 @@ without the NVIDIA module loaded.
    the NVIDIA module blacklist on bare metal (bootc first-boot script).
 2. **udev** fires `/usr/lib/udev/rules.d/99-cloudws-gpu.rules`, pinning
    perms on `/dev/dri/*`, `/dev/kfd`, and `/dev/nvidia*`.
-3. **`cloudws-gpu-detect.service`** (Type=oneshot, umbrella) writes
+3. **`cloudws-gpu-status.service`** (Type=oneshot, umbrella) writes
    `/run/cloudws/gpu-passthrough.status` with detected vendors and
    virtualization type; re-asserts the `container_use_devices` boolean.
 4. **`cloudws-gpu-{nvidia,amd,intel}.service`** run in parallel, each
@@ -147,7 +147,7 @@ No boot failure, no error spam, no wasted time.
 cat /run/cloudws/gpu-passthrough.status
 
 # 2. Check vendor service state
-systemctl status cloudws-gpu-detect \
+systemctl status cloudws-gpu-status \
                  cloudws-gpu-nvidia \
                  cloudws-gpu-amd \
                  cloudws-gpu-intel
@@ -195,7 +195,7 @@ ausearch -m AVC -ts recent | tail -20  # look for denied { read write } on xserv
 ```
 scripts/35-gpu-passthrough.sh                              # build-time installer
 scripts/cloud-ws-builder.ps1                               # Windows-side builder
-systemd/cloudws-gpu-detect.service                         # umbrella oneshot
+systemd/cloudws-gpu-status.service                         # umbrella oneshot
 systemd/cloudws-gpu-nvidia.service                         # NVIDIA plumbing
 systemd/cloudws-gpu-amd.service                            # AMD KFD/DRI
 systemd/cloudws-gpu-intel.service                          # Intel DRI

@@ -1,7 +1,7 @@
 #!/bin/bash
 # CloudWS v2.2 — 98-boot-config: Boot console + service configuration
 # Plymouth disable is handled by system_files/usr/lib/bootc/kargs.d/10-cloudws-console.toml
-# Console verbosity is handled by system_files/usr/lib/bootc/kargs.d/01-cloudws-vm-boot.toml
+# Console verbosity is handled by system_files/usr/lib/bootc/kargs.d/00-cloudws.toml + 10-cloudws-verbose.toml
 set -euo pipefail
 
 echo "[98-boot-config] Configuring boot console output..."

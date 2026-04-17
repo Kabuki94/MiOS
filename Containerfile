@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.9
 # ============================================================================
-# CloudWS-bootc - Unified Image (v2.3.3)
+# CloudWS-bootc - Unified Image (v2.3.4)
 # ============================================================================
 # One image. Every role. Every surface. Every GPU vendor.
 #
@@ -10,31 +10,48 @@
 # AMD:      Mesa + ROCm in-image (PACKAGES.md packages-gpu-amd-compute)
 # Intel:    intel-compute-runtime + intel-media-driver (packages-gpu-intel-compute)
 #
-# v2.3.3 fixes v2.3.2's overlay failure at STEP 9/13:
-#     cp: cannot overwrite non-directory '/./usr/local' with directory
-#     '/ctx/system_files/./usr/local'
+# v2.3.4 fixes v2.3.3's three runtime failures:
 #
-#   Root cause: ucore-hci (inheriting from Fedora CoreOS) ships /usr/local
-#   as a SYMLINK to /var/usrlocal (the OSTree upstream recommendation,
-#   documented in bootc filesystem guidance). Our system_files/ has a real
-#   directory usr/local/bin/ with 4 scripts. cp -a (and plain tar-pipe)
-#   both refuse to overlay a directory onto a symlink.
+#   1) bootc container lint REJECTED 01-cloudws-vm-boot.toml with
+#        Linting: Unexpected runtime error running lint bootc-kargs:
+#        Parsing 01-cloudws-vm-boot.toml
+#      The file used the Copilot-flavoured
+#          [kargs]
+#          delete = [...]
+#          append = [...]
+#      layout. bootc kargs.d only accepts a flat root-level
+#          kargs = [ ... ]
+#      array; there is NO delete mechanism and NO [kargs] table header.
+#      All content was already provided by 00-cloudws.toml and
+#      10-cloudws-verbose.toml (systemd.show-status=true, serial console,
+#      plymouth.enable=0), so the file is deleted outright. The
+#      "strip quiet/rhgb" intent remains achievable because plymouth is
+#      disabled and systemd.show-status=true forces status output
+#      regardless of quiet/rhgb surviving in the base image cmdline.
 #
-#   Fix: two-stage overlay.
-#     1. tar-pipe everything EXCEPT ./usr/local into /
-#     2. cp -a the CONTENTS of system_files/usr/local/ into /usr/local/
-#        The cp-a-of-contents form follows the symlink: files land at
-#        /var/usrlocal/bin/* and the symlink itself is preserved.
+#   2) 35-gpu-passthrough.sh FAILED:
+#        install: cannot stat '/ctx/systemd/cloudws-gpu-detect.service'
+#      The ctx stage copied scripts/, system_files/, PACKAGES.md, VERSION,
+#      and bib-configs/, but NOT the top-level passthrough overlay dirs
+#      (systemd/, udev/, tmpfiles.d/, sysusers.d/, kargs.d/). Those are
+#      now included below.
 #
-#   Tested: works for both layouts (symlink dst -> follows; real dir dst
-#   -> merges). Safe for Fedora bootc AND ucore-hci.
+#   3) Name collision between 34-gpu-detect.sh (heredoc-writes
+#      cloudws-gpu-detect.service with VM NVIDIA-blacklist + hardware-
+#      renderer + RTX 50-series detection logic) and
+#      systemd/cloudws-gpu-detect.service (v2.1.5 passthrough-umbrella
+#      status dumper). Both targeted /usr/lib/systemd/system/
+#      cloudws-gpu-detect.service. Renamed the umbrella to
+#      cloudws-gpu-status.service so both coexist; 35-gpu-passthrough.sh
+#      updated to match.
 #
+# v2.3.3 fixed overlay failure at STEP 9/13 (/usr/local symlink) - kept.
 # ============================================================================
 
 ARG BASE_IMAGE=ghcr.io/ublue-os/ucore-hci:stable-nvidia
 
 # ----------------------------------------------------------------------------
-# ctx stage: build context (scripts, system_files, manifests)
+# ctx stage: build context (scripts, system_files, manifests, overlay dirs)
 # ----------------------------------------------------------------------------
 FROM scratch AS ctx
 COPY scripts/        /ctx/scripts/
@@ -42,6 +59,12 @@ COPY system_files/   /ctx/system_files/
 COPY PACKAGES.md     /ctx/PACKAGES.md
 COPY VERSION         /ctx/VERSION
 COPY bib-configs/    /ctx/bib-configs/
+# v2.3.4: passthrough plumbing staging dirs consumed by 35-gpu-passthrough.sh
+COPY systemd/        /ctx/systemd/
+COPY udev/           /ctx/udev/
+COPY tmpfiles.d/     /ctx/tmpfiles.d/
+COPY sysusers.d/     /ctx/sysusers.d/
+COPY kargs.d/        /ctx/kargs.d/
 
 # ----------------------------------------------------------------------------
 # main stage
@@ -52,7 +75,7 @@ LABEL org.opencontainers.image.title="CloudWS-bootc"
 LABEL org.opencontainers.image.description="Unified immutable cloud-native workstation OS (desktop/k3s/ha/hybrid)"
 LABEL org.opencontainers.image.source="https://github.com/Kabuki94/CloudWS-bootc"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
-LABEL org.opencontainers.image.version="2.3.3"
+LABEL org.opencontainers.image.version="2.3.4"
 LABEL containers.bootc="1"
 
 # Build context mounted read-only

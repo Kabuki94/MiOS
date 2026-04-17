@@ -6,16 +6,20 @@
 # This runs INSIDE the Containerfile build. No runtime compile. BAKED IN -
 # WHEN POSSIBLE.
 #
-# v2.2.8 fix:
-#   - SKIP (don't fail) when kernel-devel for the running ucore-hci kernel is
-#     not available in the F44 repos. The ucore-hci base frequently ships a
-#     slightly older kernel than what F44 currently hosts (e.g. base is
-#     6.19.10 but F44 only has kernel-devel-6.19.12). Project principle
-#     "never upgrade base kernel packages in-container" means we cannot
-#     promote the kernel to match, so kvmfr has to be built at runtime or
-#     skipped. Looking Glass still works in IVSHMEM-only mode, so skipping
-#     here is NOT fatal to the image. The old hard-fail blocked the build
-#     entirely.
+# v2.3.4 fix (supersedes v2.2.8):
+#   The previous `if ! dnf5 -y install ... 2>/dev/null; then ... fi` plus
+#
+#       AVAIL_REPO="$(dnf5 --showduplicates repoquery ... | tail -5 | tr ...)"
+#
+#   was tripping the whole script with exit 2 BEFORE reaching the graceful-
+#   skip block. Root cause: `VAR="$(failing-pipeline)"` under set -euo pipefail
+#   causes set -e to fire on the assignment when the pipeline's first command
+#   exits non-zero (pipefail promotes the failure). Verified with a reproducer.
+#
+#   Fix: wrap every dnf5/rpm/dnf5-repoquery call in an explicit
+#   `set +e` / `RC=$?` / `set -e` guard. Drop the unreliable repoquery
+#   diagnostic entirely - the log line is still informative without it.
+#   Looking Glass still runs IVSHMEM-only without kvmfr.
 set -euo pipefail
 
 log() { printf '[52-kvmfr] %s\n' "$*"; }
@@ -30,39 +34,48 @@ fi
 log "building against kernel: $KVER"
 
 # --- Try to get kernel-devel-$KVER exactly matched -------------------------
-SKIP_REASON=""
 if [[ ! -d "/usr/src/kernels/$KVER" ]]; then
     log "installing kernel-devel-$KVER"
-    if ! dnf5 -y install "kernel-devel-$KVER" 2>/dev/null; then
-        if ! dnf5 -y install "kernel-devel-uname-r = $KVER" 2>/dev/null; then
-            AVAIL="$(rpm -qa 'kernel-devel*' 2>/dev/null | tr '\n' ' ')"
-            AVAIL_REPO="$(dnf5 --showduplicates repoquery kernel-devel 2>/dev/null | tail -5 | tr '\n' ' ')"
-            SKIP_REASON="no exact kernel-devel for $KVER (installed: ${AVAIL:-none}; repo has: ${AVAIL_REPO:-none})"
-        fi
+    set +e
+    dnf5 -y install "kernel-devel-$KVER" >/dev/null 2>&1
+    RC=$?
+    set -e
+    if [[ $RC -ne 0 ]]; then
+        set +e
+        AVAIL="$(rpm -qa 'kernel-devel*' 2>/dev/null | tr '\n' ' ')"
+        set -e
+        log "SKIP: no exact kernel-devel for $KVER (dnf5 rc=$RC; installed: ${AVAIL:-none})"
+        log "      The ucore-hci base kernel $KVER is typically newer/older than"
+        log "      F44's repo-published kernel-devel. Project principle is 'never"
+        log "      upgrade base kernel in-container', so kvmfr is skipped here."
+        log "      Looking Glass still works in IVSHMEM-only mode. To enable kvmfr"
+        log "      on the booted image once the kernel matches, run:"
+        log "         sudo dnf5 install kernel-devel-\$(uname -r) akmod-kvmfr"
+        log "         sudo akmods --force --kernels \$(uname -r)"
+        exit 0
     fi
-fi
-
-if [[ -n "$SKIP_REASON" ]]; then
-    log "SKIP: $SKIP_REASON"
-    log "      Looking Glass will work in IVSHMEM-only mode. To enable the"
-    log "      kvmfr kmod, build it at runtime once the kernel matches, e.g.:"
-    log "         sudo dnf5 install kernel-devel-\$(uname -r) akmod-kvmfr"
-    log "         sudo akmods --force --kernels \$(uname -r)"
-    exit 0
 fi
 
 # --- Install akmod-kvmfr (from hikariknight/looking-glass-kvmfr COPR) ------
 log "installing akmod-kvmfr"
-if ! dnf5 -y install akmod-kvmfr 2>/dev/null; then
-    log "SKIP: akmod-kvmfr install failed (COPR unreachable or package missing)"
+set +e
+dnf5 -y install akmod-kvmfr >/dev/null 2>&1
+RC=$?
+set -e
+if [[ $RC -ne 0 ]]; then
+    log "SKIP: akmod-kvmfr install failed (rc=$RC; COPR unreachable or package missing)"
     log "      verify COPR enabled: dnf5 copr list | grep looking-glass-kvmfr"
     exit 0
 fi
 
 # --- Force-build kvmfr kmod for this kernel --------------------------------
 log "running akmods --force --kernels $KVER"
-if ! akmods --force --kernels "$KVER" 2>&1 | sed 's/^/[akmods] /'; then
-    log "SKIP: akmods build failed"
+set +e
+akmods --force --kernels "$KVER" 2>&1 | sed 's/^/[akmods] /'
+RC=${PIPESTATUS[0]}
+set -e
+if [[ $RC -ne 0 ]]; then
+    log "SKIP: akmods build failed (rc=$RC)"
     log "      checking /var/cache/akmods/kvmfr/ for build log..."
     find /var/cache/akmods/ -name '*.log' -exec tail -50 {} \; 2>/dev/null || true
     exit 0

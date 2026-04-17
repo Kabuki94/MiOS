@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
 # ============================================================================
-# CloudWS-bootc v2.1.5 - 35-gpu-passthrough.sh
+# CloudWS-bootc v2.3.4 - 35-gpu-passthrough.sh
 # ----------------------------------------------------------------------------
 # Installs per-vendor systemd units, udev rules, tmpfiles, sysusers, kargs.d,
 # and SELinux booleans for universal GPU container passthrough on bootc.
 #
-# Runs AFTER 34-gpu-detect.sh (which handles the NVIDIA-blacklist-on-VM dance).
+# Runs AFTER 34-gpu-detect.sh (which handles the VM NVIDIA-blacklist dance
+# via its own /usr/lib/systemd/system/cloudws-gpu-detect.service).
+#
+# v2.3.4: renamed cloudws-gpu-detect.service -> cloudws-gpu-status.service
+# at both the install target and the multi-user.target.wants symlink so we
+# no longer clobber 34-gpu-detect.sh's unit. Both services now coexist.
 # Pure build-time installer: does NOT inspect host hardware.
 # ============================================================================
 set -euo pipefail
@@ -18,10 +23,10 @@ log "Starting GPU passthrough plumbing install"
 SRC_ROOT="${SRC_ROOT:-/ctx}"
 
 # ----------------------------------------------------------------------------
-# Systemd units (per-vendor + umbrella)
+# Systemd units (per-vendor + umbrella status)
 # ----------------------------------------------------------------------------
 install -d -m 0755 /usr/lib/systemd/system
-install -m 0644 "${SRC_ROOT}/systemd/cloudws-gpu-detect.service"  /usr/lib/systemd/system/
+install -m 0644 "${SRC_ROOT}/systemd/cloudws-gpu-status.service"  /usr/lib/systemd/system/
 install -m 0644 "${SRC_ROOT}/systemd/cloudws-gpu-nvidia.service"  /usr/lib/systemd/system/
 install -m 0644 "${SRC_ROOT}/systemd/cloudws-gpu-amd.service"     /usr/lib/systemd/system/
 install -m 0644 "${SRC_ROOT}/systemd/cloudws-gpu-intel.service"   /usr/lib/systemd/system/
@@ -60,7 +65,7 @@ install -m 0644 "${SRC_ROOT}/sysusers.d/50-cloudws-gpu.conf" /usr/lib/sysusers.d
 # ----------------------------------------------------------------------------
 WANTS=/usr/lib/systemd/system/multi-user.target.wants
 install -d -m 0755 "${WANTS}"
-ln -sf ../cloudws-gpu-detect.service "${WANTS}/cloudws-gpu-detect.service"
+ln -sf ../cloudws-gpu-status.service "${WANTS}/cloudws-gpu-status.service"
 ln -sf ../cloudws-gpu-nvidia.service "${WANTS}/cloudws-gpu-nvidia.service"
 ln -sf ../cloudws-gpu-amd.service    "${WANTS}/cloudws-gpu-amd.service"
 ln -sf ../cloudws-gpu-intel.service  "${WANTS}/cloudws-gpu-intel.service"
@@ -74,11 +79,11 @@ fi
 # ----------------------------------------------------------------------------
 # SELinux: enable container_use_devices boolean so containers can touch
 # /dev/kfd and /dev/dri with the default container_t domain. This is the
-# minimal-privilege path for AMD/Intel compute — NOT container_runtime_t.
+# minimal-privilege path for AMD/Intel compute - NOT container_runtime_t.
 #
 # Baking via `semanage boolean` at build time is best-effort; on images where
 # the SELinux policy store is not mutable during build, the runtime
-# cloudws-gpu-detect.service sets it again (non-persistent) at every boot.
+# cloudws-gpu-status.service sets it again (non-persistent) at every boot.
 # ----------------------------------------------------------------------------
 if command -v semanage >/dev/null 2>&1 && [[ -d /etc/selinux/targeted ]]; then
   if semanage boolean -m --on container_use_devices 2>/dev/null; then
