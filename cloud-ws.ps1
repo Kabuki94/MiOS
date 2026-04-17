@@ -108,27 +108,27 @@ function Read-Timed {
 function Get-SHA512Hash {
     # Generate a SHA-512 crypt hash ($6$...) compatible with chpasswd -e
     # Prefers CloudWS helper image (has openssl), falls back to alpine/python
-    param([string]$Password)
+    param([string]$SecretText)
     $salt = -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 16 | ForEach-Object { [char]$_ })
 
     $hash = $null
 
     # Try CloudWS helper image first (openssl is already installed)
     if ($HelperImage) {
-        $hash = & podman run --rm $HelperImage openssl passwd -6 -salt "$salt" "$Password" 2>$null
+        $hash = & podman run --rm $HelperImage openssl passwd -6 -salt "$salt" "$SecretText" 2>$null
         if ($LASTEXITCODE -eq 0 -and $hash -match '^\$6\$') { return $hash.Trim() }
     }
 
     # Fallback: alpine + openssl
-    $hash = & podman run --rm $FallbackHash sh -c "apk add --quiet openssl >/dev/null 2>&1 && openssl passwd -6 -salt '$salt' '$Password'" 2>$null
+    $hash = & podman run --rm $FallbackHash sh -c "apk add --quiet openssl >/dev/null 2>&1 && openssl passwd -6 -salt '$salt' '$SecretText'" 2>$null
     if ($LASTEXITCODE -eq 0 -and $hash -match '^\$6\$') { return $hash.Trim() }
 
     # Fallback: python
-    $hash = & podman run --rm docker.io/library/python:3-slim python3 -c "import crypt; print(crypt.crypt('$Password', crypt.mksalt(crypt.METHOD_SHA512)))" 2>$null
+    $hash = & podman run --rm docker.io/library/python:3-slim python3 -c "import crypt; print(crypt.crypt('$SecretText', crypt.mksalt(crypt.METHOD_SHA512)))" 2>$null
     return $hash.Trim()
 }
 
-function Clean-BIBTemp { foreach ($d in "image","vpc","qcow2","bootiso") { Get-ChildItem $OutputFolder -Directory -Filter $d -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue } }
+function Clear-BIBTemp { foreach ($d in "image","vpc","qcow2","bootiso") { Get-ChildItem $OutputFolder -Directory -Filter $d -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue } }
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  BANNER + WORKFLOW MENU
@@ -167,8 +167,6 @@ Write-Phase "0" "Configuration"
 if ($DoCustom) {
     $U = Read-Timed "Username:" $DefUser
     $P = Read-Timed "Password:" $DefPass -Secret
-    $hostnameMode = Read-Timed "Hostname mode (static/random):" "random"
-    $customHostname = if ($hostnameMode -eq "static") { Read-Timed "Hostname:" "cloudws" } else { "" }
     $luksIn = Read-Timed "Enable LUKS encryption? (y/N):" "N"
     $UseLuks = $luksIn -match "^[yY]"
     $LuksPass = if ($UseLuks) { Read-Timed "LUKS passphrase:" "cloudws" -Secret } else { "" }
@@ -176,8 +174,6 @@ if ($DoCustom) {
 } else {
     $U = $DefUser
     $P = $DefPass
-    $customHostname = ""
-    $hostnameMode = "random"
     $UseLuks = $false
     $LuksPass = ""
     $RegistryUrl = $DefRegistry
@@ -244,7 +240,7 @@ $ErrorActionPreference = "Continue"
 # recreate from scratch. This handles the "inspect passes but VM is gone" bug.
 $machineReady = $false
 
-$vmCheck = & podman machine inspect $BuilderMachine 2>&1
+$null = & podman machine inspect $BuilderMachine 2>&1
 if ($LASTEXITCODE -eq 0) {
     Write-Step "Found existing '$BuilderMachine' — verifying VM is intact..."
     & podman machine stop $BuilderMachine 2>$null; Start-Sleep 2
@@ -332,7 +328,7 @@ if ($LASTEXITCODE -eq 0) {
 $BIBSelfBuild = $false
 if ($HelperImage) {
     $ErrorActionPreference = "Continue"
-    $bibCheck = & podman run --rm $HelperImage which bootc-image-builder 2>$null
+    $null = & podman run --rm $HelperImage which bootc-image-builder 2>$null
     if ($LASTEXITCODE -eq 0) {
         $BIBImage = $HelperImage
         $BIBSelfBuild = $true
@@ -367,7 +363,7 @@ if ($DoPull) {
 
     # ── Hash the password BEFORE injection ──
     Write-Step "Pre-hashing credentials (plaintext will NOT appear in build log)..."
-    $passHash = Get-SHA512Hash -Password $P
+    $passHash = Get-SHA512Hash -SecretText $P
     if (-not $passHash -or $passHash -notmatch '^\$6\$') {
         Write-Fatal "Failed to generate password hash. Check podman connectivity."
     }
@@ -425,7 +421,7 @@ $BibImage = "quay.io/centos-bootc/bootc-image-builder:latest"
     # Update helper image reference — this freshly built image IS the builder now
     $HelperImage = $LocalImage
     # Check if freshly built image can serve as BIB for deployment targets
-    $bibCheck = & podman run --rm $LocalImage which bootc-image-builder 2>$null
+    $null = & podman run --rm $LocalImage which bootc-image-builder 2>$null
     if ($LASTEXITCODE -eq 0) {
         $BIBImage = $LocalImage
         $BIBSelfBuild = $true
@@ -489,7 +485,7 @@ function Get-BIBArgs {
 
 # ── RAW ──
 Write-Step "TARGET 1 — RAW disk image..."
-Clean-BIBTemp
+Clear-BIBTemp
 $rawArgs = Get-BIBArgs "raw"
 & podman @rawArgs 2>&1
 if ($LASTEXITCODE -eq 0) {
@@ -499,7 +495,7 @@ if ($LASTEXITCODE -eq 0) {
 
 # ── VHDX ──
 Write-Step "TARGET 2 — VHD → VHDX (Hyper-V Gen2)..."
-Clean-BIBTemp
+Clear-BIBTemp
 $vhdArgs = Get-BIBArgs "vhd"
 & podman @vhdArgs 2>&1
 if ($LASTEXITCODE -eq 0) {
@@ -520,7 +516,7 @@ if ($LASTEXITCODE -eq 0) {
                 "apk add --quiet qemu-img && qemu-img convert -f vpc -O vhdx /data/disk.vhd /data/cloudws-hyperv.vhdx"
         }
         Remove-Item $vhdSrc -Force -ErrorAction SilentlyContinue
-        Clean-BIBTemp
+        Clear-BIBTemp
         if (Test-Path $TargetVhdx) { Write-OK "VHDX: $(Get-FileSize $TargetVhdx)" }
         else { Write-Warn "VHDX conversion failed — qemu-img error" }
     } else {
@@ -541,7 +537,7 @@ else { Write-Warn "WSL export failed" }
 
 # ── ISO ──
 Write-Step "TARGET 4 — Anaconda installer ISO..."
-Clean-BIBTemp
+Clear-BIBTemp
 $isoArgs = Get-BIBArgs "anaconda-iso"
 & podman @isoArgs 2>&1
 if ($LASTEXITCODE -eq 0) {
@@ -568,10 +564,9 @@ if (Test-Path $TargetVhdx) {
         $vmSwitch = if ($vmSwitchObj) { $vmSwitchObj.Name } else { "Default Switch" }
         $vmCpu = [Math]::Max(4, $cpu)
         $totalRamBytes = (Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory
-        $vmRamMaxGB = [Math]::Floor($totalRamBytes / 1GB)
-        $vmRamGB = [Math]::Floor($vmRam / 1GB)  # Display value (2MB-aligned)
         $vmRamRaw = [int64]$totalRamBytes
         $vmRam = [int64]([Math]::Floor($vmRamRaw / 2MB) * 2MB)  # Align to 2MB (Hyper-V requirement)
+        $vmRamGB = [Math]::Floor($vmRam / 1GB)  # Display value (2MB-aligned)
         New-VM -Name $vmName -MemoryStartupBytes 4GB -Generation 2 -VHDPath $TargetVhdx -SwitchName $vmSwitch | Out-Null
         Set-VM -Name $vmName -ProcessorCount $vmCpu -DynamicMemory -MemoryMinimumBytes 4GB -MemoryMaximumBytes $vmRam -MemoryStartupBytes 4GB
         Set-VMFirmware -VMName $vmName -SecureBootTemplate "MicrosoftUEFICertificateAuthority"
