@@ -5,8 +5,11 @@ set -euo pipefail
 
 log() { printf '[42-cosign] %s\n' "$*"; }
 
-command -v cosign >/dev/null 2>&1 && log "OK: cosign installed ($(cosign version --json 2>/dev/null | head -1))" \
-    || log "WARN: cosign not found - check packages-containers section of PACKAGES.md"
+if command -v cosign >/dev/null 2>&1; then
+    log "OK: cosign installed ($(cosign version --json 2>/dev/null | head -1))"
+else
+    log "WARN: cosign not found - check packages-containers section of PACKAGES.md"
+fi
 
 for f in \
     /etc/containers/policy.json \
@@ -14,5 +17,9 @@ for f in \
     /etc/pki/containers/ublue-cosign.pub \
     /etc/pki/containers/cloudws-cosign.pub
 do
-    [[ -f "$f" ]] && log "OK: $f" || log "WARN: missing $f"
+    if [[ -f "$f" ]]; then
+        log "OK: $f"
+    else
+        log "WARN: missing $f"
+    fi
 done

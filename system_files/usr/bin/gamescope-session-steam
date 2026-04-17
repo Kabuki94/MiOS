@@ -31,7 +31,8 @@ if [ "${ENABLE_GAMESCOPE_HDR:-0}" = "1" ]; then
 fi
 
 if [ -n "${GAMESCOPE_EXTRA_ARGS:-}" ]; then
-    GAMESCOPE_ARGS+=( $GAMESCOPE_EXTRA_ARGS )
+    read -ra extra_args <<< "$GAMESCOPE_EXTRA_ARGS"
+    GAMESCOPE_ARGS+=( "${extra_args[@]}" )
 fi
 
 STEAM_ARGS=(

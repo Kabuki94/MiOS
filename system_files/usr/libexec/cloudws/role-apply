@@ -18,7 +18,7 @@ PROFILE=""
 FEATURES=""
 
 if [[ -r /proc/cmdline ]]; then
-    for tok in $(cat /proc/cmdline); do
+    for tok in $(< /proc/cmdline); do
         case "$tok" in
             cloudws.role=*)     ROLE="${tok#cloudws.role=}" ;;
             cloudws.profile=*)  PROFILE="${tok#cloudws.profile=}" ;;
@@ -39,7 +39,7 @@ if [[ -z "$ROLE" ]] && [[ -e /dev/dxg || -f /proc/sys/fs/binfmt_misc/WSLInterop 
 fi
 
 # No GPU + no graphics session inherited -> headless (Hyper-V gen2, cloud VMs)
-if [[ -z "$ROLE" ]] && ! ls /dev/dri/renderD* 2>/dev/null | grep -q .; then
+if [[ -z "$ROLE" ]] && ! compgen -G "/dev/dri/renderD*" >/dev/null; then
     # Also no GNOME session file selection hint
     if [[ ! -e /sys/class/drm/card0 ]]; then
         ROLE="headless"

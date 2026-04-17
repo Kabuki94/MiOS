@@ -82,7 +82,7 @@ EOMP
 
 # ??? FIX HOME DIRECTORY OWNERSHIP ???
 echo "[31-user] Fixing home directory ownership..."
-for u in $(awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd); do
+awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd | while read -r u; do
     home=$(getent passwd "$u" | cut -d: -f6)
     if [ -d "$home" ]; then
         uid=$(id -u "$u"); gid=$(id -g "$u")

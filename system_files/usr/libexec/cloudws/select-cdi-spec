@@ -16,7 +16,7 @@ MODE="auto"
 if [[ -e /dev/dxg ]]; then
     MODE="wsl"
     log "WSL2 detected (/dev/dxg present)"
-elif ! ls /dev/nvidia* 2>/dev/null | grep -q .; then
+elif ! compgen -G "/dev/nvidia*" >/dev/null; then
     log "no NVIDIA device nodes; no GPU in this environment - skipping CDI"
     exit 0
 fi

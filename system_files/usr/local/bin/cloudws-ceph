@@ -8,7 +8,7 @@ case "${1:-help}" in
                scp "cloudws@${MASTER}:/etc/ceph/ceph.client.admin.keyring" /etc/ceph/ && \
                ssh "cloudws@${MASTER}" "cephadm shell -- ceph orch host add $(hostname -s) $(hostname -I|awk '{print $1}')" && \
                echo "Joined. OSDs auto-provision on available disks." ;;
-    reset)     read -p "Type DESTROY to confirm: " c; [ "$c" = "DESTROY" ] || exit 1
+    reset)     read -r -p "Type DESTROY to confirm: " c; [ "$c" = "DESTROY" ] || exit 1
                FSID=$(grep fsid /etc/ceph/ceph.conf 2>/dev/null|awk '{print $3}')
                cephadm rm-cluster --fsid "$FSID" --force 2>/dev/null || true
                rm -rf /var/lib/ceph/* /etc/ceph/* /var/log/ceph/*
