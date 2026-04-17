@@ -56,12 +56,19 @@ jobs:
             --tag=localhost/${IMAGE_NAME}:latest \
             .
 
-      - name: Log in to GHCR
+      - name: Log in to GHCR (for buildah)
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | buildah login \
             -u "${{ github.actor }}" \
             --password-stdin \
             ghcr.io
+
+      - name: Log in to GHCR (for cosign)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push to GHCR
         id: push
