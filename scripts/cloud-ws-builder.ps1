@@ -101,11 +101,11 @@ $needsRecreate = $false
 if ($existing) {
   # Podman's inspect schema varies slightly across versions; try both shapes.
   $curCpus    = 0; $curMem = 0; $curRootful = $false
-  try { $curCpus    = [int] $existing.Resources.CPUs }      catch {}
-  try { $curMem     = [int] $existing.Resources.Memory }    catch {}
-  try { $curRootful = [bool]$existing.Rootful }             catch {}
-  if (-not $curCpus)    { try { $curCpus    = [int] $existing.CPUs }    catch {} }
-  if (-not $curMem)     { try { $curMem     = [int] $existing.Memory }  catch {} }
+  try { $curCpus    = [int] $existing.Resources.CPUs }      catch { $null }
+  try { $curMem     = [int] $existing.Resources.Memory }    catch { $null }
+  try { $curRootful = [bool]$existing.Rootful }             catch { $null }
+  if (-not $curCpus)    { try { $curCpus    = [int] $existing.CPUs }    catch { $null } }
+  if (-not $curMem)     { try { $curMem     = [int] $existing.Memory }  catch { $null } }
 
   Log "Existing '$MachineName': CPUs=$curCpus Memory=${curMem}MiB Rootful=$curRootful State=$($existing.State)"
 

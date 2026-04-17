@@ -135,7 +135,7 @@ if [ "$BIBATA_OK" -eq 0 ] || [ ! -d "$BIBATA_DIR/cursors" ]; then
     exit 1
 fi
 
-echo "[10-gnome] ✓ Bibata cursor installed: $(ls "$BIBATA_DIR/cursors/" | wc -l) cursors"
+echo "[10-gnome] ✓ Bibata cursor installed: $(find "$BIBATA_DIR/cursors/" -mindepth 1 -maxdepth 1 | wc -l) cursors"
 
 # Comprehensive cursor default — every layer that reads cursor theme
 # 1. Default cursor theme for X11 (read by ALL X clients including xRDP)

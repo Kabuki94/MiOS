@@ -428,8 +428,10 @@ switch ($buildChoice) {
     "1" {
         Write-Host "`n  Launching installer..." -ForegroundColor Cyan
         Set-ExecutionPolicy Bypass -Scope Process -Force
-        $pf = Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/install.ps1" -UseBasicParsing
-        Invoke-Expression $pf.Content
+        $tmp = New-TemporaryFile
+        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/install.ps1" -OutFile $tmp.FullName -UseBasicParsing
+        & $tmp.FullName
+        Remove-Item $tmp.FullName -ErrorAction SilentlyContinue
     }
     "2" {
         Write-Host "`n  To run smoke tests locally:" -ForegroundColor Cyan

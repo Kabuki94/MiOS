@@ -7,7 +7,7 @@ $RepoUrl = "https://github.com/Kabuki94/CloudWS-bootc"
 
 # Read version from repo VERSION file, fallback to hardcoded
 $Ver = "v0.1.3"
-try { $Ver = "v" + (Invoke-WebRequest -Uri "$RepoUrl/raw/main/VERSION" -UseBasicParsing).Content.Trim() } catch {}
+try { $Ver = "v" + (Invoke-WebRequest -Uri "$RepoUrl/raw/main/VERSION" -UseBasicParsing).Content.Trim() } catch { Write-Verbose "Failed to fetch version: $_" }
 
 Write-Host ""
 Write-Host "  +==============================================================+" -ForegroundColor Cyan
@@ -22,7 +22,10 @@ $choice = Read-Host "  Choice [1-3]"
 switch ($choice) {
     "1" {
         try {
-            Invoke-Expression (Invoke-WebRequest -Uri "$RepoUrl/raw/main/preflight.ps1" -UseBasicParsing).Content
+            $tmp = New-TemporaryFile
+            Invoke-WebRequest -Uri "$RepoUrl/raw/main/preflight.ps1" -OutFile $tmp.FullName -UseBasicParsing
+            & $tmp.FullName
+            Remove-Item $tmp.FullName -ErrorAction SilentlyContinue
         }
         catch {
             Write-Host "  Preflight failed: $_" -ForegroundColor Red

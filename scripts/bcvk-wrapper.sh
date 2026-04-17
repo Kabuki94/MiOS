@@ -33,7 +33,7 @@ QEMU_ARGS=(
     -cpu host
     -enable-kvm
     -drive "file=$QCOW,if=virtio,cache=none,format=qcow2"
-    -nic user,model=virtio
+    -nic "user,model=virtio"
     -nographic
     -serial "file:$SERIAL_LOG"
     -no-reboot

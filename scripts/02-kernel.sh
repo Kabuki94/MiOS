@@ -24,7 +24,8 @@ install_packages_strict "kernel"
 
 # Capture KVER for akmod builds later.
 # The base image kernel is the only one installed; grab it.
-export KVER=$(ls -1 /lib/modules/ | sort -V | tail -1)
+KVER=$(find /lib/modules/ -mindepth 1 -maxdepth 1 -printf "%f\n" | sort -V | tail -1)
+export KVER
 echo "[02-kernel] Kernel version: $KVER"
 echo "$KVER" > /tmp/cloudws-kver
 

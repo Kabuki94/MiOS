@@ -66,14 +66,7 @@ if ($content.Contains($old)) {
 }
 
 git add cloud-ws.ps1
-git commit -m "fix: token paste bug — replace ReadKey loop with Read-Host -MaskInput
-
-[Console]::ReadKey loop in Read-Timed -Secret doesn't detect Enter
-after paste in PowerShell 7.6/Windows Terminal. Each Enter press
-adds another masked character instead of submitting.
-
-Read-Host -MaskInput (PS 7.1+) handles paste, Enter, backspace
-natively with * masking."
+git commit -m "fix: token paste bug — replace ReadKey loop with Read-Host -MaskInput`n`n[Console]::ReadKey loop in Read-Timed -Secret doesn't detect Enter`nafter paste in PowerShell 7.6/Windows Terminal. Each Enter press`nadds another masked character instead of submitting.`n`nRead-Host -MaskInput (PS 7.1+) handles paste, Enter, backspace`nnatively with * masking."
 git push origin main 2>&1 | ForEach-Object { Write-Host "  $_" }
 if ($LASTEXITCODE -eq 0) {
     Write-Host "`n  ✓ Pushed. Re-clone and rebuild.`n" -ForegroundColor Green

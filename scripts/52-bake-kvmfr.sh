@@ -21,7 +21,7 @@ set -euo pipefail
 log() { printf '[52-kvmfr] %s\n' "$*"; }
 
 # --- Detect the kernel version shipped in the base image -------------------
-KVER="$(ls /usr/lib/modules/ 2>/dev/null | head -n1)"
+KVER="$(find /usr/lib/modules/ -mindepth 1 -maxdepth 1 -printf "%f\n" 2>/dev/null | sort -V | tail -1)"
 if [[ -z "$KVER" ]]; then
     log "WARN: no kernel modules directory; cannot determine kernel version"
     log "      skipping kvmfr bake - Looking Glass will run in IVSHMEM-only mode"
