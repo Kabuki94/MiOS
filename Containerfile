@@ -1,35 +1,34 @@
 # syntax=docker/dockerfile:1.9
 # ============================================================================
-# CloudWS-bootc - Unified Image (v2.3.2)
+# CloudWS-bootc - Unified Image (v2.3.3)
 # ============================================================================
 # One image. Every role. Every surface. Every GPU vendor.
 #
 # Base:     ghcr.io/ublue-os/ucore-hci:stable-nvidia
 #           Already ships signed NVIDIA kmods (kmod-nvidia-open) matched to
-#           the ucore-hci kernel. That's exactly what an akmods-nvidia COPY
-#           layer would provide - they share a build pipeline.
+#           the ucore-hci kernel.
 # AMD:      Mesa + ROCm in-image (PACKAGES.md packages-gpu-amd-compute)
 # Intel:    intel-compute-runtime + intel-media-driver (packages-gpu-intel-compute)
 #
-# v2.3.2 removes the broken akmods-nvidia COPY layer attempted in v2.3.0:
-#   - buildah does NOT expand `ARG` variables in `COPY --from=<image>:${TAG}`
-#     the way Docker BuildKit does. The workflow uses `buildah bud`.
-#     v2.3.0's COPY resolved to a literal ":--:" and failed the build.
-#   - The image name was wrong anyway: ublue publishes `akmods-nvidia`
-#     (with kmod-nvidia-open inside), not `akmods-nvidia-open`.
-#   - Fundamentally: ucore-hci:stable-nvidia IS BUILT from akmods-nvidia
-#     RPMs. COPY-ing them again on top would be redundant and introduce
-#     RPM conflicts, not redundancy. The kernel-mismatch failure mode in
-#     v2.2.x is solved by graceful-skip logic in 11-hardware.sh and
-#     52-bake-kvmfr.sh, not by a second NVIDIA source.
+# v2.3.3 fixes v2.3.2's overlay failure at STEP 9/13:
+#     cp: cannot overwrite non-directory '/./usr/local' with directory
+#     '/ctx/system_files/./usr/local'
 #
-# v2.3.0/v2.3.1 kept:
-#   - OVERLAY system_files/ onto / BEFORE build.sh runs. The root-cause fix
-#     for every "Unit cloudws-*.service does not exist" warning in v2.2.x.
+#   Root cause: ucore-hci (inheriting from Fedora CoreOS) ships /usr/local
+#   as a SYMLINK to /var/usrlocal (the OSTree upstream recommendation,
+#   documented in bootc filesystem guidance). Our system_files/ has a real
+#   directory usr/local/bin/ with 4 scripts. cp -a (and plain tar-pipe)
+#   both refuse to overlay a directory onto a symlink.
 #
-# Roles:  desktop | k3s-master | k3s-worker | ha-node | hybrid | headless
-#         Set via /etc/cloudws/role.conf or kernel cmdline cloudws.role=...
-#         Applied by cloudws-role.service on boot.
+#   Fix: two-stage overlay.
+#     1. tar-pipe everything EXCEPT ./usr/local into /
+#     2. cp -a the CONTENTS of system_files/usr/local/ into /usr/local/
+#        The cp-a-of-contents form follows the symlink: files land at
+#        /var/usrlocal/bin/* and the symlink itself is preserved.
+#
+#   Tested: works for both layouts (symlink dst -> follows; real dir dst
+#   -> merges). Safe for Fedora bootc AND ucore-hci.
+#
 # ============================================================================
 
 ARG BASE_IMAGE=ghcr.io/ublue-os/ucore-hci:stable-nvidia
@@ -53,21 +52,24 @@ LABEL org.opencontainers.image.title="CloudWS-bootc"
 LABEL org.opencontainers.image.description="Unified immutable cloud-native workstation OS (desktop/k3s/ha/hybrid)"
 LABEL org.opencontainers.image.source="https://github.com/Kabuki94/CloudWS-bootc"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
-LABEL org.opencontainers.image.version="2.3.2"
+LABEL org.opencontainers.image.version="2.3.3"
 LABEL containers.bootc="1"
 
 # Build context mounted read-only
 COPY --from=ctx /ctx /ctx
 
 # ---------------------------------------------------------------------------
-# Overlay system_files/ onto the rootfs BEFORE any script runs. This is the
-# single most important change in the v2.3 series - all 40+ systemd units,
-# preset entries, dconf profiles, kargs.d TOMLs, greenboot checks, sysctl
-# drop-ins, and policy.json come from system_files/. Without this step every
-# `systemctl enable cloudws-<foo>.service` downstream silently fails because
-# the unit file lives only at /ctx/system_files/.
+# Overlay system_files/ onto the rootfs. Two-stage to handle the
+# /usr/local -> /var/usrlocal symlink on ucore/FCOS bases.
 # ---------------------------------------------------------------------------
-RUN cp -a /ctx/system_files/. /
+RUN set -e; \
+    # Stage 1: everything except usr/local (tar handles ownership, modes, xattrs) \
+    tar -C /ctx/system_files -cf - --exclude='./usr/local' . | tar -C / -xf -; \
+    # Stage 2: usr/local CONTENTS (cp -a src/. dst/ follows the dst symlink) \
+    if [ -d /ctx/system_files/usr/local ]; then \
+        cp -a /ctx/system_files/usr/local/. /usr/local/; \
+    fi; \
+    echo "[overlay] system_files applied (stage1=tar, stage2=cp through /usr/local)"
 
 # DNF defaults: no weak deps, no docs, protect running kernel
 RUN mkdir -p /etc/dnf \
