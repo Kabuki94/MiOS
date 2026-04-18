@@ -28,7 +28,6 @@ folder-children=['Gaming', 'System', 'Virtualization', 'Wine']
 
 [org/gnome/desktop/app-folders/folders/Gaming]
 name='Gaming'
-categories=['Game']
 apps=['steam.desktop', 'net.lutris.Lutris.desktop', 'com.usebottles.bottles.desktop', 'dosbox-staging.desktop', 'io.github.dosbox-staging.desktop', 'protontricks.desktop', 'net.davidotek.pupgui2.desktop', 'org.gnome.Games.desktop']
 
 [org/gnome/desktop/app-folders/folders/System]
@@ -37,7 +36,6 @@ apps=['org.gnome.Settings.desktop', 'cockpit.desktop', 'nvidia-settings.desktop'
 
 [org/gnome/desktop/app-folders/folders/Virtualization]
 name='Virtualization'
-categories=['Emulator']
 apps=['virt-manager.desktop', 'Waydroid.desktop', 'waydroid.desktop', 'remote-viewer.desktop', 'org.gnome.Boxes.desktop']
 
 [org/gnome/desktop/app-folders/folders/Wine]

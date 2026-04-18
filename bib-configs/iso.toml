@@ -7,7 +7,7 @@
 #       this build leg will fail. Containerfile installs these in v2.1.6.
 
 [customizations.kernel]
-append = "nvidia-drm.modeset=1 nvidia-drm.fbdev=1 rd.driver.blacklist=nouveau modprobe.blacklist=nouveau iommu=pt"
+append = "rd.driver.blacklist=nouveau modprobe.blacklist=nouveau iommu=pt"
 
 [[customizations.filesystem]]
 mountpoint = "/"

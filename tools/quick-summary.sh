@@ -112,7 +112,7 @@ EOF
                         n=${n%%/*}
                         device_count=$(find /sys/kernel/iommu_groups/$n/devices/ -type l | wc -l)
                         if [ "$device_count" -le 2 ]; then
-                            ((isolated++))
+                            isolated=$((isolated + 1))
                         fi
                         break
                     fi
@@ -211,7 +211,7 @@ EOF
         echo -e "  ${GREEN}✓${NC} GPU Detected"
     else
         echo -e "  ${YELLOW}⚠${NC} No discrete GPU"
-        ((warnings++))
+        warnings=$((warnings + 1))
     fi
     
     echo -e "\n${BOLD}Recommended Components:${NC}"
@@ -220,14 +220,14 @@ EOF
         echo -e "  ${GREEN}✓${NC} UEFI Boot"
     else
         echo -e "  ${YELLOW}⚠${NC} Legacy BIOS (UEFI recommended)"
-        ((warnings++))
+        warnings=$((warnings + 1))
     fi
     
     if [ -e /dev/tpm0 ]; then
         echo -e "  ${GREEN}✓${NC} TPM 2.0"
     else
         echo -e "  ${YELLOW}⚠${NC} No TPM (needed for Win11)"
-        ((warnings++))
+        warnings=$((warnings + 1))
     fi
     
     # Final verdict

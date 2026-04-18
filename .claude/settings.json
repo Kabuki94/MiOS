@@ -1,7 +1,12 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "_comment": "Claude Code project settings for CloudWS-bootc. This file is checked into the repo so every dev who opens the project inherits the same tool permissions. User-specific overrides go in .claude/settings.local.json (which is gitignored).",
-
+  "env": {
+    "CLOUDWS_REPO": "github.com/Kabuki94/CloudWS-bootc",
+    "CLOUDWS_IMAGE": "ghcr.io/kabuki94/cloudws-bootc:latest",
+    "CLOUDWS_BASE_PRIMARY": "ghcr.io/ublue-os/ucore-hci:stable-nvidia",
+    "CLOUDWS_BASE_SECONDARY": "quay.io/fedora/fedora-bootc:rawhide"
+  },
+  "includeCoAuthoredBy": true,
   "permissions": {
     "allow": [
       "Bash(git status)",
@@ -11,7 +16,6 @@
       "Bash(git branch:*)",
       "Bash(git remote -v)",
       "Bash(git fetch:*)",
-
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(grep:*)",
@@ -22,7 +26,6 @@
       "Bash(wc:*)",
       "Bash(tree:*)",
       "Bash(file:*)",
-
       "Bash(shellcheck:*)",
       "Bash(hadolint:*)",
       "Bash(yamllint:*)",
@@ -30,15 +33,15 @@
       "Bash(prettier --check:*)",
       "Bash(taplo check:*)",
       "Bash(taplo lint:*)",
-
       "Bash(just --list)",
       "Bash(just --summary)",
-
       "Bash(podman build --target ctx:*)",
       "Bash(podman images)",
-      "Bash(podman inspect:*)"
+      "Bash(podman inspect:*)",
+      "Bash(git -C \"d:/Documents/Github/CloudWS-bootc\" log --oneline -5)",
+      "Bash(GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND=\"ssh -o BatchMode=yes\" git -C \"d:/Documents/Github/CloudWS-bootc\" status --short)",
+      "Bash(echo \"EXIT:$?\")"
     ],
-
     "deny": [
       "Bash(git push:*)",
       "Bash(podman push:*)",
@@ -51,15 +54,12 @@
       "Bash(mkfs:*)",
       "Bash(bootc install:*)",
       "Bash(bootc switch:*)",
-
       "Edit(docs/PACKAGES.md)",
       "Edit(VERSION)",
       "Edit(CHANGELOG.md)",
       "Edit(.ai-context/knowledge-base.md)",
-
       "Edit(.github/workflows/build-sign.yml)",
       "Edit(.github/workflows/build-artifacts.yml)",
-
       "Write(/etc/**)",
       "Write(/usr/**)",
       "Write(/var/**)",
@@ -68,7 +68,6 @@
       "Write(~/.gnupg/**)",
       "Write(~/.config/gh/**)"
     ],
-
     "ask": [
       "Bash(podman build:*)",
       "Bash(just build:*)",
@@ -81,7 +80,6 @@
       "Bash(sbctl:*)",
       "Bash(systemctl:*)",
       "Bash(virsh:*)",
-
       "Edit(Containerfile)",
       "Edit(kargs.d/**)",
       "Edit(system_files/etc/**)",
@@ -89,16 +87,7 @@
       "Edit(scripts/lib/**)"
     ]
   },
-
-  "env": {
-    "CLOUDWS_REPO": "github.com/Kabuki94/CloudWS-bootc",
-    "CLOUDWS_IMAGE": "ghcr.io/kabuki94/cloudws-bootc:latest",
-    "CLOUDWS_BASE_PRIMARY": "ghcr.io/ublue-os/ucore-hci:stable-nvidia",
-    "CLOUDWS_BASE_SECONDARY": "quay.io/fedora/fedora-bootc:rawhide"
-  },
-
-  "includeCoAuthoredBy": true,
-
+  "_comment": "Claude Code project settings for CloudWS-bootc. This file is checked into the repo so every dev who opens the project inherits the same tool permissions. User-specific overrides go in .claude/settings.local.json (which is gitignored).",
   "_notes": [
     "Permissions follow the CLAUDE.md §4 deliverable contract: Claude Code may freely inspect the repo but must ask before mutating anything that lands in a build artifact or a signed image.",
     "The deny list covers the files CLAUDE.md §8 says must not be touched without explicit human review: VERSION, CHANGELOG.md, docs/PACKAGES.md, the historical audit log, and signing/artifact workflows.",

@@ -68,7 +68,7 @@ check_requirements() {
     for script in "${scripts[@]}"; do
         if [ ! -f "$SCRIPT_DIR/$script" ]; then
             print_error "Missing: $script"
-            ((missing++))
+            missing=$((missing + 1))
         else
             print_success "Found: $script"
         fi

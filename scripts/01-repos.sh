@@ -100,31 +100,6 @@ fi
 echo "[01-repos] Ensuring F44 ca-certificates is installed..."
 dnf install -y ca-certificates p11-kit-trust 2>&1 | tail -5 || true
 
-# ── Rawhide kernel — DISABLED BY DEFAULT ────────────────────────────────────
-if [ "${CLOUDWS_RAWHIDE_KERNEL:-0}" = "1" ]; then
-    echo "[01-repos] RAWHIDE KERNEL: Installing Fedora Rawhide kernel repo..."
-    cat > /etc/yum.repos.d/fedora-rawhide-kernel.repo <<'EOREPO'
-[fedora-rawhide-kernel]
-name=Fedora Rawhide - Kernel Only - $basearch
-metalink=https://mirrors.fedoraproject.org/metalink?repo=rawhide&arch=$basearch
-enabled=1
-repo_gpgcheck=0
-type=rpm
-gpgcheck=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-rawhide-$basearch
-skip_if_unavailable=True
-includepkgs=kernel,kernel-core,kernel-modules,kernel-modules-core,kernel-modules-extra,kernel-devel,kernel-devel-matched,kernel-headers
-priority=50
-EOREPO
-    echo "[01-repos] RAWHIDE KERNEL: Installing latest rawhide kernel..."
-    dnf install -y kernel kernel-core kernel-modules kernel-modules-core \
-        kernel-modules-extra kernel-devel kernel-devel-matched 2>&1 | tail -15 || {
-        echo "[01-repos] WARNING: Rawhide kernel install failed — using base image kernel"
-    }
-else
-    echo "[01-repos] Using base image kernel (rawhide kernel disabled — set CLOUDWS_RAWHIDE_KERNEL=1 to enable)"
-fi
-
 # ── RPMFusion ───────────────────────────────────────────────────────────────
 echo "[01-repos] Installing RPMFusion Free + Nonfree for Fedora 44..."
 dnf install -y \

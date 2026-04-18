@@ -265,7 +265,7 @@ configure_vm_pinning() {
         fi
         echo ""
         
-        ((counter++))
+        counter=$((counter + 1))
     done <<< "$vm_list"
     
     read -p "Select VM to configure (number or name): " vm_selection
@@ -787,7 +787,7 @@ view_configurations() {
         echo -e "${CYAN}Ã¢â€¢Å¡Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢${NC}"
         echo ""
         
-        ((counter++))
+        counter=$((counter + 1))
     done
     
     read -p "Press Enter to return to menu..."
@@ -813,7 +813,7 @@ remove_configuration() {
     for config in "$CONFIG_DIR"/*.conf; do
         local vm_name=$(basename "$config" .conf)
         echo -e "  ${TEAL}${counter})${NC} ${vm_name}"
-        ((counter++))
+        counter=$((counter + 1))
     done
     
     echo ""
@@ -873,7 +873,7 @@ test_hook() {
     for config in "$CONFIG_DIR"/*.conf; do
         local vm_name=$(basename "$config" .conf)
         echo -e "  ${TEAL}${counter})${NC} ${vm_name}"
-        ((counter++))
+        counter=$((counter + 1))
     done
     
     echo ""
@@ -1006,7 +1006,7 @@ generate_xml_snippets() {
     for config in "$CONFIG_DIR"/*.conf; do
         local vm_name=$(basename "$config" .conf)
         echo -e "  ${TEAL}${counter})${NC} ${vm_name}"
-        ((counter++))
+        counter=$((counter + 1))
     done
     
     echo ""
@@ -1064,11 +1064,11 @@ EOFXML
             local end="${BASH_REMATCH[2]}"
             for ((cpu=start; cpu<=end; cpu++)); do
                 echo "  <vcpupin vcpu='$vcpu_idx' cpuset='$cpu'/>"
-                ((vcpu_idx++))
+                vcpu_idx=$((vcpu_idx + 1))
             done
         elif [[ "$range" =~ ^[0-9]+$ ]]; then
             echo "  <vcpupin vcpu='$vcpu_idx' cpuset='$range'/>"
-            ((vcpu_idx++))
+            vcpu_idx=$((vcpu_idx + 1))
         fi
     done
     
@@ -1118,11 +1118,11 @@ EOFXML
                 local end="${BASH_REMATCH[2]}"
                 for ((cpu=start; cpu<=end; cpu++)); do
                     echo "  <vcpupin vcpu='$vcpu_idx' cpuset='$cpu'/>" >> "$output_file"
-                    ((vcpu_idx++))
+                    vcpu_idx=$((vcpu_idx + 1))
                 done
             elif [[ "$range" =~ ^[0-9]+$ ]]; then
                 echo "  <vcpupin vcpu='$vcpu_idx' cpuset='$range'/>" >> "$output_file"
-                ((vcpu_idx++))
+                vcpu_idx=$((vcpu_idx + 1))
             fi
         done
         
@@ -1248,7 +1248,7 @@ verify_hooks() {
         # Check config file
         if [[ ! -f "$config" ]]; then
             echo -e "  ${CORAL}Ã¢Å“â€” Config file missing${NC}"
-            ((errors++))
+            errors=$((errors + 1))
         else
             echo -e "  ${SUCCESS}Ã¢Å“" Config file present${NC}"
         fi
@@ -1256,7 +1256,7 @@ verify_hooks() {
         # Check hook directory
         if [[ ! -d "$HOOK_DIR/qemu.d/${vm_name}" ]]; then
             echo -e "  ${CORAL}Ã¢Å“â€” Hook directory missing${NC}"
-            ((errors++))
+            errors=$((errors + 1))
         else
             echo -e "  ${SUCCESS}Ã¢Å“" Hook directory present${NC}"
         fi
@@ -1264,7 +1264,7 @@ verify_hooks() {
         # Check prepare hook
         if [[ ! -x "$HOOK_DIR/qemu.d/${vm_name}/prepare/begin/cpu-pin.sh" ]]; then
             echo -e "  ${CORAL}Ã¢Å“â€” Prepare hook missing or not executable${NC}"
-            ((errors++))
+            errors=$((errors + 1))
         else
             echo -e "  ${SUCCESS}Ã¢Å“" Prepare hook executable${NC}"
         fi
@@ -1272,7 +1272,7 @@ verify_hooks() {
         # Check release hook
         if [[ ! -x "$HOOK_DIR/qemu.d/${vm_name}/release/end/cpu-cleanup.sh" ]]; then
             echo -e "  ${CORAL}Ã¢Å“â€” Release hook missing or not executable${NC}"
-            ((errors++))
+            errors=$((errors + 1))
         else
             echo -e "  ${SUCCESS}Ã¢Å“" Release hook executable${NC}"
         fi

@@ -5,8 +5,6 @@
 kargs = [
     "iommu=pt",
     "amd_iommu=on",
-    "nvidia-drm.modeset=1",
-    "nvidia-drm.fbdev=1",
     "rd.driver.blacklist=nouveau",
     "modprobe.blacklist=nouveau",
     "systemd.show-status=true",

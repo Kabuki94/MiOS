@@ -86,9 +86,11 @@ echo ""
 log_ts "==> Removing base image bloat..."
 for bloat_pkg in PackageKit gnome-tour gnome-initial-setup; do
     if rpm -q "$bloat_pkg" > /dev/null 2>&1; then
-        dnf remove -y --noautoremove "$bloat_pkg" 2>/dev/null && \
-            echo "  ✓ Removed $bloat_pkg" || \
+        if dnf remove -y --noautoremove "$bloat_pkg" 2>/dev/null; then
+            echo "  ✓ Removed $bloat_pkg"
+        else
             echo "  ⚠ Could not remove $bloat_pkg (dependency cascade)"
+        fi
     fi
 done
 

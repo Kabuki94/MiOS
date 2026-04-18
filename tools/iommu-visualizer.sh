@@ -75,8 +75,8 @@ visualize_groups() {
             color=$(get_device_color "$device_info")
             
             printf "${BOLD}Group %2s:${NC} ${color}%s${NC}\n" "$n" "$device_info"
-            
-            ((group_count++))
+
+            group_count=$((group_count + 1))
             
             # Track GPU groups
             if echo "$device_info" | grep -qi "VGA\|3D"; then

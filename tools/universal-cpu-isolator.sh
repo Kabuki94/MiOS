@@ -958,9 +958,9 @@ configure_systemd_affinity() {
     
     for pid in $(ps -eo pid --no-headers); do
         if taskset -cp "$host_cpus" "$pid" &>/dev/null; then
-            ((moved++))
+            moved=$((moved + 1))
         else
-            ((failed++))
+            failed=$((failed + 1))
         fi
     done
     
@@ -1070,9 +1070,9 @@ case "\$1" in
         
         for pid in \$(ps -eo pid --no-headers); do
             if taskset -cp \$HOST_CPUS \$pid 2>/dev/null; then
-                ((moved++))
+                moved=$((moved + 1))
             else
-                ((failed++))
+                failed=$((failed + 1))
             fi
             
             # Show progress every 100 processes
@@ -1100,9 +1100,9 @@ case "\$1" in
         
         for pid in \$(ps -eo pid --no-headers); do
             if taskset -cp \$all_cpus \$pid 2>/dev/null; then
-                ((moved++))
+                moved=$((moved + 1))
             else
-                ((failed++))
+                failed=$((failed + 1))
             fi
         done
         
@@ -1227,7 +1227,7 @@ generate_summary() {
     local cpu_index=0
     for cpu in "${ISOLATED_CPUS[@]}"; do
         echo "    <vcpupin vcpu='$cpu_index' cpuset='$cpu'/>"
-        ((cpu_index++))
+        cpu_index=$((cpu_index + 1))
         [[ $cpu_index -ge 4 ]] && break  # Show only first 4 as example
     done
     [[ ${#ISOLATED_CPUS[@]} -gt 4 ]] && echo "    <!-- ... additional pins ... -->"

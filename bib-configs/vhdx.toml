@@ -11,7 +11,7 @@ key      = "ssh-ed25519 AAAA_REPLACE_WITH_REAL_PUBKEY cloudws@operator"
 groups   = ["wheel", "render", "video"]
 
 [customizations.kernel]
-append = "nvidia-drm.modeset=1 nvidia-drm.fbdev=1 rd.driver.blacklist=nouveau modprobe.blacklist=nouveau iommu=pt"
+append = "rd.driver.blacklist=nouveau modprobe.blacklist=nouveau iommu=pt"
 
 [[customizations.filesystem]]
 mountpoint = "/"
