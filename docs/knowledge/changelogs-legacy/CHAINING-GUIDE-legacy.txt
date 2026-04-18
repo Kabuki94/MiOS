@@ -1,0 +1,355 @@
+╔═══════════════════════════════════════════════════════════════╗
+║        HOW TO CHAIN & RUN PROFILER SCRIPTS                    ║
+║           Multiple Ways to Use the Toolkit                    ║
+╚═══════════════════════════════════════════════════════════════╝
+
+
+You now have FOUR different ways to run the profiler tools!
+
+
+═══════════════════════════════════════════════════════════════
+METHOD 1: INTERACTIVE MENU (EASIEST & MOST FLEXIBLE)
+═══════════════════════════════════════════════════════════════
+
+✨ RECOMMENDED FOR: First-time users, exploratory analysis
+
+Command:
+  $ sudo ./profiler-menu.sh
+
+Features:
+  • Interactive menu interface
+  • Choose which tools to run
+  • See what's already been run (checkmarks)
+  • View results without leaving menu
+  • Compare profiles from menu
+  • Quick system status check
+  • Built-in help
+
+Perfect when:
+  - You want control over what runs
+  - Learning the tools
+  - Only need specific checks
+  - Want to compare multiple profiles
+
+
+═══════════════════════════════════════════════════════════════
+METHOD 2: SIMPLE CHAIN RUNNER (FULLY AUTOMATED)
+═══════════════════════════════════════════════════════════════
+
+✨ RECOMMENDED FOR: Complete automated profiling
+
+Command:
+  $ sudo ./run-all-profilers.sh
+
+What it does:
+  1. Runs quick-summary.sh
+  2. Runs iommu-visualizer.sh
+  3. Runs system-profiler.sh
+  4. Generates comprehensive summary report
+
+Output:
+  ~/profiler-run-TIMESTAMP/
+    ├── 00-SUMMARY.txt
+    ├── 01-quick-summary.txt
+    ├── 02-iommu-analysis.txt
+    └── 03-full-system-profile.txt
+
+Time: 5-8 minutes total
+
+Perfect when:
+  - Need complete documentation
+  - Documenting new hardware
+  - Creating baseline before changes
+  - Want everything in one go
+
+
+═══════════════════════════════════════════════════════════════
+METHOD 3: CLOUD-WS ASSESSMENT (SMART ANALYSIS)
+═══════════════════════════════════════════════════════════════
+
+✨ RECOMMENDED FOR: Hardware validation & compatibility
+
+Command:
+  $ sudo ./cloud-ws-assess.sh
+
+What it does:
+  1. Runs all profilers
+  2. Analyzes results intelligently
+  3. Scores system 0-10
+  4. Provides verdict (EXCELLENT/GOOD/PARTIAL/NOT READY)
+  5. Lists specific recommendations
+
+Output:
+  ~/cloud-ws-assessment-TIMESTAMP/
+    ├── 00-COMPATIBILITY-REPORT.txt  ⭐ START HERE!
+    ├── 01-quick-summary.txt
+    ├── 02-iommu-analysis.txt
+    └── 03-full-profile.txt
+
+Time: 5-8 minutes total
+
+Perfect when:
+  - Validating new hardware for Cloud-WS
+  - Need pass/fail verdict
+  - Want actionable recommendations
+  - Assessing compatibility
+
+
+═══════════════════════════════════════════════════════════════
+METHOD 4: MANUAL (MAXIMUM CONTROL)
+═══════════════════════════════════════════════════════════════
+
+✨ RECOMMENDED FOR: Specific checks, troubleshooting
+
+Commands:
+  $ ./quick-summary.sh              # 30 seconds
+  $ sudo ./iommu-visualizer.sh      # 1-2 minutes  
+  $ sudo ./system-profiler.sh       # 3-5 minutes
+  $ ./profile-compare.sh old.txt new.txt
+
+Perfect when:
+  - Only need one specific check
+  - Troubleshooting specific issue
+  - Comparing before/after
+  - Building custom workflow
+
+
+═══════════════════════════════════════════════════════════════
+WHICH METHOD SHOULD YOU USE?
+═══════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────┐
+│ YOUR SITUATION                → RECOMMENDED METHOD            │
+├──────────────────────────────────────────────────────────────┤
+│ First time using tools        → profiler-menu.sh             │
+│ New hardware validation       → cloud-ws-assess.sh           │
+│ Complete documentation        → run-all-profilers.sh         │
+│ Just checking GPU passthrough → iommu-visualizer.sh          │
+│ Quick health check            → quick-summary.sh             │
+│ Daily monitoring              → quick-summary.sh             │
+│ Before/after comparison       → Manual (run twice)           │
+│ Troubleshooting issue         → profiler-menu.sh             │
+│ Building hardware database    → run-all-profilers.sh         │
+│ CI/CD integration             → Manual scripts               │
+└──────────────────────────────────────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════
+EXAMPLE WORKFLOWS
+═══════════════════════════════════════════════════════════════
+
+SCENARIO 1: New System - First Check
+─────────────────────────────────────
+$ sudo ./profiler-menu.sh
+# Choose option 1 (Quick Summary)
+# Review results
+# If good, choose option 4 (Run All)
+
+
+SCENARIO 2: Hardware Validation
+────────────────────────────────
+$ sudo ./cloud-ws-assess.sh
+# Wait 5-8 minutes
+# Read 00-COMPATIBILITY-REPORT.txt
+# Get clear verdict and score
+
+
+SCENARIO 3: GPU Passthrough Planning
+─────────────────────────────────────
+$ sudo ./iommu-visualizer.sh
+# Interactive menu appears
+# Choose option 2 (GPU analysis only)
+# Check for "Isolated GPUs"
+
+
+SCENARIO 4: Complete Documentation
+───────────────────────────────────
+$ sudo ./run-all-profilers.sh
+# Generates 4 comprehensive reports
+# Perfect for baseline documentation
+
+
+SCENARIO 5: Troubleshooting After Update
+─────────────────────────────────────────
+# Before update:
+$ sudo ./system-profiler.sh
+$ cp ~/system-profile/system-profile-*.txt before-update.txt
+
+# After update:
+$ sudo ./system-profiler.sh
+
+# Compare:
+$ ./profile-compare.sh before-update.txt \
+    ~/system-profile/system-profile-*.txt
+
+
+SCENARIO 6: Daily Monitoring
+─────────────────────────────
+$ ./quick-summary.sh
+# Takes 30 seconds
+# Shows any major changes
+
+
+═══════════════════════════════════════════════════════════════
+CUSTOM CHAINING IN YOUR OWN SCRIPTS
+═══════════════════════════════════════════════════════════════
+
+You can easily integrate these tools into your own scripts:
+
+Example 1: Pre-Installation Check
+──────────────────────────────────
+#!/bin/bash
+
+echo "Checking system before Cloud-WS installation..."
+
+# Run quick check
+if ! ./quick-summary.sh | grep -q "System ready"; then
+    echo "System not ready! Check requirements."
+    exit 1
+fi
+
+# Check GPU passthrough
+if sudo ./iommu-visualizer.sh --no-menu | grep -q "Isolated GPUs"; then
+    echo "GPU passthrough: READY"
+    ENABLE_PASSTHROUGH=true
+else
+    echo "GPU passthrough: LIMITED"
+    ENABLE_PASSTHROUGH=false
+fi
+
+# Create baseline
+sudo ./system-profiler.sh
+
+# Continue with installation...
+
+
+Example 2: Conditional Profiling
+─────────────────────────────────
+#!/bin/bash
+
+# Always do quick check
+./quick-summary.sh
+
+# Only profile if GPU detected
+if lspci | grep -q "VGA"; then
+    echo "GPU detected - analyzing IOMMU..."
+    sudo ./iommu-visualizer.sh --no-menu
+fi
+
+# Full profile on Sundays
+if [ "$(date +%u)" -eq 7 ]; then
+    echo "Sunday - running full profile..."
+    sudo ./system-profiler.sh
+fi
+
+
+Example 3: Parallel Execution (Advanced)
+─────────────────────────────────────────
+#!/bin/bash
+
+# Run multiple systems in parallel
+for host in ws1 ws2 ws3 ws4; do
+    (
+        echo "Profiling $host..."
+        ssh $host 'bash -s' < run-all-profilers.sh > "${host}-results.txt"
+    ) &
+done
+
+wait
+echo "All systems profiled!"
+
+
+═══════════════════════════════════════════════════════════════
+AUTOMATION & SCHEDULING
+═══════════════════════════════════════════════════════════════
+
+Weekly Full Profile (Crontab):
+  0 2 * * 0 /path/to/system-profiler.sh
+
+Daily Quick Check (Crontab):
+  0 8 * * * /path/to/quick-summary.sh > /tmp/daily-check.txt
+
+On Boot Check (systemd):
+  [Unit]
+  Description=System Profile on Boot
+  
+  [Service]
+  Type=oneshot
+  ExecStart=/path/to/quick-summary.sh
+  
+  [Install]
+  WantedBy=multi-user.target
+
+
+═══════════════════════════════════════════════════════════════
+OUTPUT MANAGEMENT
+═══════════════════════════════════════════════════════════════
+
+All outputs go to predictable locations:
+
+profiler-menu.sh       → ~/profiler-output/
+run-all-profilers.sh   → ~/profiler-run-TIMESTAMP/
+cloud-ws-assess.sh     → ~/cloud-ws-assessment-TIMESTAMP/
+system-profiler.sh     → ~/system-profile/
+
+Compress old profiles:
+  $ gzip ~/system-profile/*.txt
+
+Clean old runs (keep last 10):
+  $ cd ~/system-profile
+  $ ls -t | tail -n +11 | xargs rm -f
+
+
+═══════════════════════════════════════════════════════════════
+QUICK REFERENCE COMMANDS
+═══════════════════════════════════════════════════════════════
+
+Most Interactive:
+  $ sudo ./profiler-menu.sh
+
+Most Automated:
+  $ sudo ./cloud-ws-assess.sh
+
+Most Complete:
+  $ sudo ./run-all-profilers.sh
+
+Fastest:
+  $ ./quick-summary.sh
+
+Best for GPU:
+  $ sudo ./iommu-visualizer.sh
+
+
+═══════════════════════════════════════════════════════════════
+PRO TIPS
+═══════════════════════════════════════════════════════════════
+
+1. Use interactive menu when learning the tools
+2. Use automated runners for regular profiling
+3. Always use sudo for complete information
+4. Save profiles before major changes
+5. Use cloud-ws-assess.sh for hardware validation
+6. Profile regularly to track changes over time
+7. Compare profiles to troubleshoot issues
+
+
+═══════════════════════════════════════════════════════════════
+NEED HELP?
+═══════════════════════════════════════════════════════════════
+
+Each script has built-in help:
+  ./script.sh --help
+
+Full documentation:
+  cat README.md
+  cat TOOLKIT-OVERVIEW.txt
+
+Quick start:
+  cat QUICKSTART.txt
+
+
+═══════════════════════════════════════════════════════════════
+
+                      HAPPY CHAINING! 🔗
+
+═══════════════════════════════════════════════════════════════

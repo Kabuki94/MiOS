@@ -22,3 +22,49 @@ Desktop.ini
 *~
 .vscode/
 .idea/
+
+# ============================================================================
+# CloudWS-bootc — additional .gitignore entries (AI tooling / build output)
+# ============================================================================
+# Merged into .gitignore by push-cloudws-ai-tooling.ps1 — do NOT commit as a
+# standalone file. The push script appends these entries if they aren't
+# already present.
+
+# --- Claude Code local / user overrides ---
+.claude/settings.local.json
+.claude/.session/
+.claude/.logs/
+
+# --- Gemini CLI local ---
+.gemini/local.json
+.gemini/.cache/
+
+# --- VSCodium / VSCode user overrides ---
+.vscode/settings.local.json
+.vscode/.ropeproject/
+*.code-workspace.local
+
+# --- Build output ---
+build/
+output/
+*.qcow2
+*.vhdx
+*.vhd
+*.iso
+*.raw
+*.img
+smoke-serial.log
+bootc-lint.log
+
+# --- Temp / backups ---
+*.bak
+*.orig
+*.tmp
+*~
+.DS_Store
+Thumbs.db
+
+# --- Large generated knowledge extracts ---
+docs/knowledge/*.pdf.txt
+docs/knowledge/.cache/
+
