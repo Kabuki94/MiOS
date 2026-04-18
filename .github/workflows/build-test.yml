@@ -77,22 +77,30 @@ jobs:
             --jobs=2
             --build-arg=BASE_IMAGE=${{ env.IMAGE_BASE }}
 
+      # NOTE: no `sudo`. buildah-build@v2 runs rootless, so the image lives
+      # in the runner user's container storage, not root's. Dropped
+      # --fatal-warnings because ucore-hci base emits two benign warnings
+      # (core user sysusers.d, /var/cache/ldconfig/aux-cache). Dropped
+      # `|| true` so real lint errors actually fail the build.
       - name: bootc container lint
         run: |
-          sudo podman run --rm --entrypoint /usr/bin/bootc \
+          podman run --rm --entrypoint /usr/bin/bootc \
             "${{ steps.build.outputs.image-with-tag }}" \
-            container lint --fatal-warnings || true
+            container lint
 
+      # NOTE: no `sudo`. Same reason — and the GHCR creds from
+      # podman-login@v1 also live under $XDG_RUNTIME_DIR, which sudo
+      # does not inherit.
       - name: Push image (capture digest)
         id: push
         if: github.event_name != 'pull_request'
         run: |
           set -euo pipefail
           IMG="${{ steps.owner.outputs.full_ref }}"
-          sudo buildah push --digestfile=digest.txt \
+          buildah push --digestfile=digest.txt \
             "${{ steps.build.outputs.image-with-tag }}" \
             "docker://${IMG}:latest"
-          sudo buildah push \
+          buildah push \
             "${{ steps.build.outputs.image-with-tag }}" \
             "docker://${IMG}:${GITHUB_SHA}"
           DIGEST="$(cat digest.txt)"
