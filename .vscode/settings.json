@@ -161,7 +161,7 @@
     { "file": ".github/copilot-instructions.md" }
   ],
 
-  "geminicodeassist.project": "cloudws-bootc",
+  "geminicodeassist.project": "cloudws-os",
   "geminicodeassist.inlineSuggestions.enableAuto": true,
   "geminicodeassist.enableTelemetry": false
 }
