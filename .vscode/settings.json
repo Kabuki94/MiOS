@@ -1,0 +1,167 @@
+{
+  "_comment": "VSCodium / VSCode workspace settings for CloudWS-bootc. Checked in so every dev inherits the same linter wiring, formatters, and — critically — terminal integration for Claude Code so it stops spawning orphan external shells. User-specific overrides go in the user-level settings.json, not here.",
+
+  "files.associations": {
+    "Containerfile": "dockerfile",
+    "*.toml": "toml",
+    "kargs.d/*.toml": "toml",
+    "kargs.d/*": "toml",
+    "*.ps1": "powershell",
+    "Justfile": "makefile",
+    "scripts/cloudws-*": "shellscript",
+    "system_files/usr/libexec/cloudws/*": "shellscript",
+    "system_files/usr/bin/gamescope-session-steam": "shellscript",
+    "system_files/usr/local/bin/cloudws-ceph": "shellscript",
+    "system_files/etc/greenboot/check/wanted.d/*": "shellscript"
+  },
+
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+
+  "files.exclude": {
+    "**/.git": true,
+    "**/node_modules": true,
+    "**/build": true,
+    "**/output": true,
+    "**/*.qcow2": true,
+    "**/*.vhdx": true,
+    "**/*.iso": true,
+    "**/*.raw": true
+  },
+
+  "search.exclude": {
+    "**/.git": true,
+    "**/build": true,
+    "**/output": true,
+    "**/*.qcow2": true,
+    "**/*.vhdx": true,
+    "**/*.iso": true,
+    "**/*.raw": true,
+    "docs/knowledge/blueprints/*.docx": true
+  },
+
+  "editor.formatOnSave": false,
+  "editor.insertSpaces": true,
+  "editor.tabSize": 4,
+  "editor.rulers": [80, 100],
+
+  "[shellscript]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "shellformat.flag": "-i 4 -ci -sr",
+  "shellcheck.enable": true,
+  "shellcheck.run": "onSave",
+  "shellcheck.useWorkspaceRootAsCwd": true,
+  "shellcheck.customArgs": ["-S", "warning"],
+  "shellcheck.exclude": [],
+
+  "[dockerfile]": {
+    "editor.tabSize": 4,
+    "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+  },
+  "hadolint.hadolintPath": "hadolint",
+  "hadolint.cliOptions": [],
+
+  "[yaml]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "yaml.validate": true,
+  "yaml.format.enable": true,
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yml",
+    "https://json.schemastore.org/renovate.json": "renovate.json"
+  },
+
+  "[toml]": {
+    "editor.tabSize": 4,
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
+  },
+  "evenBetterToml.formatter.alignEntries": false,
+  "evenBetterToml.formatter.trailingNewline": true,
+  "evenBetterToml.schema.enabled": true,
+
+  "[powershell]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.defaultFormatter": "ms-vscode.powershell"
+  },
+  "powershell.codeFormatting.preset": "OTBS",
+  "powershell.codeFormatting.autoCorrectAliases": true,
+  "powershell.codeFormatting.useCorrectCasing": true,
+  "powershell.scriptAnalysis.enable": true,
+  "powershell.scriptAnalysis.settingsPath": "",
+
+  "[markdown]": {
+    "editor.tabSize": 2,
+    "editor.wordWrap": "on",
+    "editor.quickSuggestions": {
+      "comments": "off",
+      "strings": "off",
+      "other": "off"
+    }
+  },
+
+  "[json]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  "git.autofetch": true,
+  "git.confirmSync": true,
+  "git.enableSmartCommit": false,
+
+  "_terminal_comment": "Force PowerShell as default so Claude Code doesn't escape to an external WSL window. Any of `wsl`, `git-bash`, or `cmd` as the default profile will cause the extension to punt to a separate floating window on Windows.",
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.profiles.windows": {
+    "PowerShell": {
+      "source": "PowerShell",
+      "icon": "terminal-powershell",
+      "args": ["-NoLogo"]
+    },
+    "pwsh": {
+      "source": "PowerShell",
+      "icon": "terminal-powershell",
+      "args": ["-NoLogo"]
+    },
+    "Command Prompt": {
+      "path": ["${env:windir}\\System32\\cmd.exe"],
+      "args": [],
+      "icon": "terminal-cmd"
+    },
+    "WSL": {
+      "path": "wsl.exe",
+      "icon": "terminal-linux"
+    }
+  },
+  "terminal.integrated.inheritEnv": true,
+  "terminal.integrated.enableMultiLinePasteWarning": "auto",
+
+  "_claude_comment": "Terminal integration settings for Anthropic's Claude Code extension. Multiple keys are set because the extension's schema has shifted across versions — unknown keys are ignored harmlessly, known keys take effect. The goal: keep Claude's shell invocations inside VSCodium's integrated terminal panel, never let it spawn an external PowerShell/WSL window.",
+  "claude-code.projectContextFile": "CLAUDE.md",
+  "claude-code.enableProjectAgents": true,
+  "claude-code.enableSlashCommands": true,
+  "claude-code.terminal.integration": "integrated",
+  "claude-code.terminal.useIntegrated": true,
+  "claude-code.useExternalTerminal": false,
+  "claude-code.shell.windows": "powershell",
+  "claude-code.preferredShell": "powershell",
+  "claude-code.terminal.shell": "powershell",
+
+  "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+  "github.copilot.chat.codeGeneration.instructions": [
+    { "file": ".github/copilot-instructions.md" }
+  ],
+
+  "geminicodeassist.project": "cloudws-bootc",
+  "geminicodeassist.inlineSuggestions.enableAuto": true,
+  "geminicodeassist.enableTelemetry": false
+}

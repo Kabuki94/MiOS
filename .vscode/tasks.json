@@ -1,0 +1,129 @@
+{
+  "version": "2.0.0",
+  "_comment": "Tasks for CloudWS-bootc. Accessible via Ctrl+Shift+B or Terminal > Run Task. Mirrors .github/workflows/pr-lint.yml and build-test.yml so a clean local run means CI should pass.",
+
+  "tasks": [
+    {
+      "label": "Lint: ALL (mirrors pr-lint.yml)",
+      "type": "shell",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "command": "bash",
+      "args": [
+        "-c",
+        "set -e; echo '=== shellcheck ==='; find . -name '*.sh' -not -path './.git/*' -print0 | xargs -0 shellcheck -S warning; echo '=== hadolint ==='; hadolint Containerfile; echo '=== yamllint ==='; yamllint .github/workflows/ renovate.json image-versions.yml; echo '=== TOML ==='; find . -name '*.toml' -not -path './.git/*' -print0 | xargs -0 -n1 taplo check; echo 'ALL PASS'"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+
+    {
+      "label": "Lint: shellcheck",
+      "type": "shell",
+      "command": "find . -name '*.sh' -not -path './.git/*' -print0 | xargs -0 shellcheck -S warning",
+      "group": "test",
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Lint: hadolint Containerfile",
+      "type": "shell",
+      "command": "hadolint Containerfile",
+      "group": "test",
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Lint: yamllint workflows",
+      "type": "shell",
+      "command": "yamllint .github/workflows/ renovate.json image-versions.yml",
+      "group": "test",
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Lint: PSScriptAnalyzer",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-Command",
+        "Invoke-ScriptAnalyzer -Path . -Recurse -Severity Error,Warning -Settings PSGallery"
+      ],
+      "group": "test",
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Build: Containerfile (context stage only — fast)",
+      "type": "shell",
+      "command": "podman",
+      "args": [
+        "build",
+        "--target", "ctx",
+        "-t", "localhost/cloudws-ctx:dev",
+        "."
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Build: Full image (local, no push)",
+      "type": "shell",
+      "command": "just",
+      "args": ["build"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Build: Rechunk",
+      "type": "shell",
+      "command": "just",
+      "args": ["rechunk"],
+      "group": "build",
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Build: All (build + rechunk + ISO)",
+      "type": "shell",
+      "command": "just",
+      "args": ["all"],
+      "group": "build",
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Smoke: Ephemeral QEMU boot test",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "./scripts/bcvk-wrapper.sh --image build/cloudws-smoke.qcow2 --timeout 300 --serial-log build/smoke-serial.log && ./scripts/smoke-check.sh build/smoke-serial.log"
+      ],
+      "group": "test",
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Git: Show unpushed commits",
+      "type": "shell",
+      "command": "git log --oneline @{u}..HEAD",
+      "group": "none",
+      "problemMatcher": []
+    }
+  ]
+}
