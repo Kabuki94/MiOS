@@ -60,7 +60,7 @@
 
   "[dockerfile]": {
     "editor.tabSize": 4,
-    "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+    "editor.defaultFormatter": "docker.docker"
   },
   "hadolint.hadolintPath": "hadolint",
   "hadolint.cliOptions": [],
