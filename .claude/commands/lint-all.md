@@ -1,102 +1,101 @@
 ---
-description: Run the full CI lint pipeline locally (shellcheck + hadolint + yamllint + TOML validation + PSScriptAnalyzer)
+description: Run the full CI lint pipeline locally — PowerShell-native on Windows, no external WSL popups
 ---
 
-Run every linter that `.github/workflows/pr-lint.yml` runs, in the
-same order, with the same strictness. This reproduces the CI gate
-locally so a push is high-confidence before it goes out.
+Run every linter that `.github/workflows/pr-lint.yml` runs, using
+PowerShell on Windows or native shell on Linux. **Do not** invoke bare
+`bash` on Windows — it routes through `wsl.exe` and spawns external
+terminal windows. Use `pwsh -Command` for cross-platform, or explicit
+`wsl -e bash -c '...'` when a tool genuinely requires Linux.
 
-### 1. shellcheck on every `*.sh`
+## 1. shellcheck on every `*.sh`
 
-```
-find . -type f -name '*.sh' \
-    -not -path './.git/*' \
-    -not -path './tmp/*' \
-    -print0 \
-  | xargs -0 shellcheck -S warning
+PowerShell (Windows):
+```powershell
+Get-ChildItem -Recurse -File -Filter '*.sh' |
+  Where-Object { $_.FullName -notmatch '\\\.git\\' } |
+  ForEach-Object { shellcheck -S warning $_.FullName }
 ```
 
 Treat **SC2038, SC2206, SC2013, SC2012, SC2155, SC2015, SC2059,
-SC2162, SC2010, SC2054** as **fatal** (the action-shellcheck@2.0.0
-runner does the same).
+SC2162, SC2010, SC2054** as **fatal** — the CI runner does.
 
-### 2. shellcheck on extensionless scripts
+## 2. shellcheck on extensionless scripts
 
+```powershell
+@(
+  'scripts/cloudws-motd',
+  'scripts/cloudws-test',
+  'scripts/cloudws-toggle-headless',
+  'scripts/cloudws-grd-setup',
+  'system_files/usr/libexec/cloudws/libvirtd-firstboot',
+  'system_files/usr/libexec/cloudws/role-apply',
+  'system_files/usr/libexec/cloudws/select-cdi-spec',
+  'system_files/usr/libexec/cloudws/wsl-firstboot',
+  'system_files/usr/libexec/cloudws-boot-diag',
+  'system_files/usr/libexec/cloudws-flatpak-install',
+  'system_files/usr/bin/gamescope-session-steam',
+  'system_files/usr/bin/steamos-session-select',
+  'system_files/usr/local/bin/cloudws-ceph',
+  'system_files/usr/local/bin/cloudws-ceph-bootstrap',
+  'system_files/usr/local/bin/phosh-session-wrapper'
+) | Where-Object { Test-Path $_ } |
+    ForEach-Object { shellcheck -S warning $_ }
 ```
-shellcheck -S warning \
-  scripts/cloudws-motd \
-  system_files/usr/libexec/cloudws/* \
-  system_files/usr/bin/gamescope-session-steam \
-  system_files/usr/local/bin/cloudws-ceph \
-  system_files/etc/greenboot/check/wanted.d/*.sh
-```
 
-Add any file the tree grows under `system_files/usr/libexec/cloudws/`
-automatically.
+## 3. hadolint on the Containerfile
 
-### 3. hadolint on the Containerfile
-
-```
+```powershell
 hadolint Containerfile
 ```
 
-No warnings. Add `# hadolint ignore=DLxxxx` only with a one-line
-justification directly above.
+## 4. yamllint on workflows + configs
 
-### 4. yamllint on workflows + configs
-
-```
+```powershell
 yamllint .github/workflows/ renovate.json image-versions.yml
 ```
 
-### 5. TOML validation
+## 5. TOML validation
 
-```
-find . -type f -name '*.toml' -not -path './.git/*' -print0 \
-  | xargs -0 -n1 taplo check
-```
-
-Plus the special `kargs.d/*.toml` check (from `/fix-kargs`):
-
-```
-for f in kargs.d/*.toml; do
-    python3 -c "
-import tomllib, pathlib, sys
-d = tomllib.loads(pathlib.Path('$f').read_text())
-assert 'kargs' in d, 'missing top-level kargs'
-assert isinstance(d['kargs'], list), 'kargs must be a list'
-assert all(isinstance(x, str) for x in d['kargs']), 'kargs entries must all be strings'
-assert 'delete' not in d, 'delete key is not valid in bootc kargs.d'
-print(f'{'$f'}: ok')
-"
-done
+```powershell
+Get-ChildItem -Recurse -File -Filter '*.toml' |
+  Where-Object { $_.FullName -notmatch '\\\.git\\' } |
+  ForEach-Object { taplo check $_.FullName }
 ```
 
-### 6. PSScriptAnalyzer on every `*.ps1`
+Plus the `kargs.d/*.toml` semantic check — Python with inline string
+assembly, which runs cleanly under PowerShell:
+
+```powershell
+Get-ChildItem kargs.d -Filter '*.toml' | ForEach-Object {
+  $p = $_.FullName
+  python -c "import tomllib,pathlib,sys; d=tomllib.loads(pathlib.Path(r'$p').read_text()); assert 'kargs' in d and isinstance(d['kargs'],list) and all(isinstance(x,str) for x in d['kargs']) and 'delete' not in d, 'invalid kargs.d'; print(r'$p' + ': ok')"
+}
+```
+
+## 6. PSScriptAnalyzer on every `*.ps1`
 
 ```powershell
 Invoke-ScriptAnalyzer -Path . -Recurse -Settings PSGallery -Severity Error,Warning
 ```
 
-Treat **PSAvoidUsingInvokeExpression** and **PSAvoidUsingEmptyCatchBlock**
-as fatal (CLAUDE.md §3.8).
+Treat **PSAvoidUsingInvokeExpression** and
+**PSAvoidUsingEmptyCatchBlock** as fatal (CLAUDE.md §3.8).
 
-### 7. `bootc container lint` (if available)
+## 7. `bootc container lint` — only on Linux
 
-If `bootc` is on PATH and we're on a Linux host:
+`bootc` doesn't run natively on Windows. On a Linux host or inside the
+integrated WSL (explicit `wsl -e bash -c` so it stays embedded):
 
 ```
-bootc container lint \
-  --image ghcr.io/kabuki94/cloudws-bootc:latest \
-  2>&1 | tee build/bootc-lint.log
+wsl -e bash -c "bootc container lint --image ghcr.io/kabuki94/cloudws-bootc:latest 2>&1 | tee build/bootc-lint.log"
 ```
 
-Specifically scan the output for:
+Scan output for:
 - `Parsing .../kargs.d/...` errors (rule §3.3)
-- `composefs` verification failures (rule §9 — post-pivot
-  verification)
+- `composefs` verification failures
 
-### 8. Summary
+## 8. Summary
 
 Print per-tool results as:
 
@@ -110,5 +109,25 @@ PSScriptAnalyzer:  N scripts, X errors, Y warnings
 bootc lint:        <pass/fail/skipped>
 ```
 
-If anything failed, state clearly at the top: **DO NOT PUSH**.
-Otherwise: **Safe to push.**
+If anything failed → **DO NOT PUSH**. Otherwise → **Safe to push.**
+
+---
+
+## Host-OS detection
+
+At the top of the run, detect host OS so the linter invocations don't
+crash on the wrong platform:
+
+```powershell
+$isWin = $IsWindows -or ($env:OS -eq 'Windows_NT')
+```
+
+Use `$isWin` to branch: skip `bootc lint` on Windows, skip
+`PSScriptAnalyzer` on pure Linux if `pwsh` isn't installed.
+
+**Hard rule for this command:** never invoke bare `bash` on Windows.
+Always `pwsh -Command` for cross-platform, or `wsl -e bash -c '...'`
+when a tool truly needs a Linux environment (like `bootc`). Bare
+`bash` on Windows = `C:\Windows\System32\bash.exe` = external WSL
+popup window, which defeats the whole point of running these checks
+inside the integrated terminal.

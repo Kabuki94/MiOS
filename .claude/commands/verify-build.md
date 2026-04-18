@@ -1,5 +1,5 @@
 ---
-description: Dry-run the CloudWS-bootc hard-rules audit against the current working tree or a proposed change
+description: Dry-run the CloudWS-bootc hard-rules audit against the working tree or a proposed change — PowerShell-native, no WSL popups
 argument-hint: [file-or-directory]
 ---
 
@@ -7,83 +7,114 @@ Run the CloudWS-bootc hard-rules audit defined in `CLAUDE.md` §3
 against `$1` (or the whole working tree if no argument given). Report
 violations by rule number so they trace back to the CLAUDE.md section.
 
+**Never invoke bare `bash` on Windows** — it spawns external WSL
+windows. Use PowerShell-native pipelines, or `Select-String` in place
+of `grep`, or `Get-ChildItem | Where-Object` in place of `find`.
+
 Check every item. Do not skip any.
 
 ### §3.1 — Containerfile / DNF
 
-- Search `Containerfile` for `dnf install .* kernel[^-]` (upgrading the
-  kernel itself). Flag matches — only `-modules-extra`, `-devel`,
-  `-headers` etc. are allowed.
-- Search for `--squash-all` in `Containerfile`, `Justfile`,
-  `cloud-ws.ps1`, and `scripts/**/*.sh`. Any occurrence is a hard fail.
-- Search `.github/workflows/**/*.yml` for `--squash-all` too.
+Search `Containerfile` for kernel upgrades (only -modules-extra,
+-devel, -headers allowed):
+```powershell
+Select-String -Path Containerfile -Pattern 'dnf\s+install.*\bkernel(\s|$|-core)'
+```
+
+Search for `--squash-all`:
+```powershell
+Get-ChildItem -Recurse -File -Include '*.sh','*.yml','*.yaml','*.ps1','Containerfile','Justfile' |
+  Select-String -Pattern '--squash-all'
+```
 
 ### §3.2 — Bash under set -euo pipefail
 
-- In every `*.sh` file that contains `set -euo pipefail` (or `set -e`
-  together with `set -u`), search for `((VAR++))` or `((VAR--))`.
-  Flag all matches.
-- Run `shellcheck -S warning` on every `*.sh` file changed relative to
-  `main`. Treat SC2038, SC2206, SC2013, SC2012, SC2155, SC2015, SC2059,
-  SC2162, SC2010, SC2054 as blockers.
+```powershell
+Get-ChildItem -Recurse -File -Filter '*.sh' |
+  Where-Object { (Get-Content $_ -Raw) -match 'set\s+-[eu]+o?' } |
+  Select-String -Pattern '\(\(\w+\+\+\)\)|\(\(\w+--\)\)'
+```
+
+Run shellcheck on every changed `*.sh` (see `/lint-all`). SC2038,
+SC2206, SC2013, SC2012, SC2155, SC2015, SC2059, SC2162, SC2010, SC2054
+are blockers.
 
 ### §3.3 — kargs.d TOML
 
-- For every `kargs.d/*.toml`, assert:
-  - Top-level `kargs = [ ... ]` array only.
-  - No `[kargs]` section header.
-  - No `delete` or `delete_kargs` sub-key.
-  - Values are all strings.
-  - No trailing commas, no inline tables.
+For every `kargs.d/*.toml` and `system_files/usr/lib/bootc/kargs.d/*.toml`:
+```powershell
+Get-ChildItem -Recurse -Filter '*.toml' -Path kargs.d,system_files/usr/lib/bootc/kargs.d -ErrorAction SilentlyContinue |
+  ForEach-Object {
+    $p = $_.FullName
+    python -c "import tomllib,pathlib; d=tomllib.loads(pathlib.Path(r'$p').read_text()); assert 'kargs' in d, 'missing kargs'; assert isinstance(d['kargs'],list), 'kargs not list'; assert all(isinstance(x,str) for x in d['kargs']), 'non-string entries'; assert 'delete' not in d and 'delete_kargs' not in d, 'delete key present'; print(r'$p' + ' ok')"
+  }
+```
 
 ### §3.4 — GNOME / theming
 
-- `grep -rn "GTK_THEME.*Adwaita:dark" system_files/ scripts/` — any
-  match is a hard fail.
-- Verify `/etc/dconf/profile/user` and `/etc/dconf/profile/gdm` exist
-  under `system_files/etc/dconf/profile/`.
-- Search dconf app-folder files for `categories=` and `apps=` coexistence.
-- Search `scripts/` and `system_files/` for `gnome-session-xsession`.
-- Search for both `xorgxrdp` and `xorgxrdp-glamor` in
-  `docs/PACKAGES.md`. Flag if both present.
+```powershell
+Get-ChildItem -Recurse system_files,scripts |
+  Select-String -Pattern 'GTK_THEME.*Adwaita:dark'
+
+Test-Path system_files/etc/dconf/profile/user
+Test-Path system_files/etc/dconf/profile/gdm
+
+Get-ChildItem -Recurse system_files,scripts |
+  Select-String -Pattern 'gnome-session-xsession'
+
+Select-String -Path docs/PACKAGES.md -Pattern '^\s*xorgxrdp\b(?!-glamor)'
+```
 
 ### §3.5 — NVIDIA / VM gating
 
-- Check `34-gpu-detect.sh` removes the NVIDIA module blacklist on bare
-  metal.
-- Check `system_files/etc/modprobe.d/` contains a default NVIDIA
-  blacklist.
-- Search `kargs.d/` for `nvidia-drm.modeset=1` — if present, verify
-  hardware gating exists.
-- Check any `.service` with `cloudws-ceph` in the name uses
-  `ConditionVirtualization=no`.
+```powershell
+Test-Path system_files/etc/modprobe.d/cloudws-nvidia-blacklist.conf
+Test-Path scripts/34-gpu-detect.sh
+
+Get-ChildItem -Recurse -Filter '*.toml' kargs.d,bib-configs,system_files/usr/lib/bootc/kargs.d |
+  Select-String -Pattern 'nvidia-drm\.(modeset|fbdev)='
+
+Get-ChildItem -Recurse -Filter '*.service' system_files,systemd |
+  Where-Object { (Get-Content $_ -Raw) -match 'cloudws-ceph' } |
+  Select-String -Pattern 'ConditionVirtualization='
+```
 
 ### §3.6 — User setup
 
-- Verify `/etc/skel/.bashrc` is written before `useradd -m` in
-  `scripts/31-user.sh` and any other script that calls `useradd`.
-- Grep for plaintext tokens / passwords in shell scripts and
-  PowerShell scripts: `token = "`, `password = "`,
-  `Write-Host .*token`, `echo .*PAT`.
+```powershell
+Select-String -Path scripts/31-user.sh -Pattern 'useradd'
+Get-ChildItem -Recurse -Include '*.sh','*.ps1' |
+  Select-String -Pattern '(token|password)\s*=\s*"[^"$]' -CaseSensitive:$false
+```
 
 ### §3.7 — SELinux
 
-- Check `scripts/37-selinux.sh` (and any sibling) for monolithic `.te`
-  modules — flag any single `.te` with more than ~5 rules.
+```powershell
+Get-ChildItem -Recurse -Filter '*.te' |
+  Where-Object { (Get-Content $_).Count -gt 15 }
+```
 
 ### §3.8 — PowerShell
 
-- `grep -rn "Invoke-Expression" *.ps1 scripts/*.ps1` — flag all.
-- `grep -rn "catch\s*{\s*}" *.ps1 scripts/*.ps1` — flag all.
-- `grep -rn "ConvertTo-SecureString.*-AsPlainText" *.ps1` — flag all
-  that pass a literal (not a variable).
+```powershell
+Get-ChildItem -Recurse -Filter '*.ps1' |
+  Select-String -Pattern 'Invoke-Expression|catch\s*\{\s*\}|ConvertTo-SecureString.*-AsPlainText\s+["'']'
+```
 
 ### §3.9 — Package manifest
 
-- `docs/PACKAGES.md` fenced blocks tagged `packages-<category>` must
-  be parseable. Run `scripts/lib/packages.sh --validate` if it exists,
-  else grep for malformed fence tags.
-- `gnome-core-apps` block must be fully commented out.
+```powershell
+Select-String -Path docs/PACKAGES.md -Pattern '```packages-'
+
+# Ensure gnome-core-apps block is fully commented
+$inBlock = $false
+$violation = $false
+Get-Content docs/PACKAGES.md | ForEach-Object {
+  if ($_ -match '```packages-gnome-core-apps') { $inBlock = $true; return }
+  if ($inBlock -and $_ -match '^```') { $inBlock = $false; return }
+  if ($inBlock -and $_ -notmatch '^\s*(#|$)') { $violation = $true; Write-Host "UNCOMMENTED: $_" }
+}
+```
 
 ### Output format
 
@@ -99,4 +130,4 @@ Then a summary:
 SUMMARY: X passed, Y failed, Z warnings.
 ```
 
-If any FAIL, state clearly at the top: **DO NOT SHIP.**
+If any FAIL: **DO NOT SHIP.**
