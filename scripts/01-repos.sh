@@ -125,6 +125,13 @@ if [ -f /etc/yum.repos.d/terra.repo ]; then
     if ! grep -q '^priority=' /etc/yum.repos.d/terra.repo; then
         sed -i '/^\[terra\]/a priority=85' /etc/yum.repos.d/terra.repo
     fi
+    # BIB (bootc-image-builder) runs in a CentOS Stream 10 container and cannot
+    # resolve file:// GPG key paths that live inside the CloudWS image.
+    # Rewrite to https:// and disable repo_gpgcheck so Anaconda ISO manifest
+    # generation succeeds without "Couldn't open file RPM-GPG-KEY-terra44".
+    sed -i 's|^gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-terra44|gpgkey=https://repos.fyralabs.com/terra44/key.asc|' \
+        /etc/yum.repos.d/terra.repo
+    sed -i 's/^repo_gpgcheck=1/repo_gpgcheck=0/' /etc/yum.repos.d/terra.repo
 fi
 
 # ── CrowdSec repo ──────────────────────────────────────────────────────────
