@@ -1,7 +1,0 @@
-[Unit]
-Description=CloudWS browser-native VDI stack
-Wants=cloudws-vdi-network.service cloudws-guacamole-db.service cloudws-guacd.service cloudws-guacamole.service cloudws-kasmvnc.service cloudws-vdi-nginx.service
-After=cloudws-vdi-network.service
-
-[Install]
-WantedBy=multi-user.target

@@ -1,7 +1,0 @@
-{
-  "auths": {
-    "us-central1-docker.pkg.dev": { "auth": "" },
-    "us-docker.pkg.dev":          { "auth": "" },
-    "europe-docker.pkg.dev":      { "auth": "" }
-  }
-}
