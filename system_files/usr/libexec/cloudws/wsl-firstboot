@@ -4,6 +4,19 @@ set -euo pipefail
 
 log() { printf '[cloudws-wsl] %s\n' "$*"; }
 
+# Ensure the core user home directory exists.
+# FCOS normally relies on Ignition to create /var/home/core, but WSL2 skips
+# Ignition. Without it, systemd-user-session fails with chdir ENOENT at login.
+if id core &>/dev/null; then
+    CORE_HOME="$(getent passwd core | cut -d: -f6)"
+    if [[ -n "${CORE_HOME}" && ! -d "${CORE_HOME}" ]]; then
+        install -d -m 0700 "${CORE_HOME}"
+        chown core:core "${CORE_HOME}"
+        cp -a /etc/skel/. "${CORE_HOME}/" 2>/dev/null || true
+        log "created missing home directory ${CORE_HOME}"
+    fi
+fi
+
 # Ensure sshd host keys
 ssh-keygen -A 2>/dev/null || true
 

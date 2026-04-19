@@ -60,4 +60,12 @@ else
     log "  stage 2: skipped (no ${SRC}/usr/local)"
 fi
 
+# Normalize permissions on systemd unit and config files.
+# Windows git clones leave files executable and world-writable; tar|tar above
+# preserves those bits. systemd 259+ logs warnings and may reject such files.
+# Executables in /usr/libexec are intentionally skipped.
+log "08-overlay: normalizing systemd file permissions"
+find /etc/systemd /usr/lib/systemd -type f -exec chmod 644 {} \; 2>/dev/null || true
+find /etc/systemd /usr/lib/systemd -type d -exec chmod 755 {} \; 2>/dev/null || true
+
 log "08-overlay: complete"

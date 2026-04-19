@@ -4,8 +4,11 @@ Documentation=https://github.com/Kabuki94/CloudWS-bootc/blob/main/docs/gpu-passt
 DefaultDependencies=yes
 After=systemd-udev-settle.service systemd-modules-load.service local-fs.target
 Wants=systemd-udev-settle.service
-Before=podman.socket docker.socket containerd.service
-# Runs in every environment; individual vendor units gate on device presence.
+# Before=podman.socket docker.socket removed: combining DefaultDependencies=yes
+# (which implies After=basic.target → After=sockets.target → After=podman.socket)
+# with Before=podman.socket creates an ordering cycle that systemd resolves by
+# skipping all three GPU services. The service still runs before containers are
+# used because WantedBy=multi-user.target fires after sockets.target anyway.
 
 [Service]
 Type=oneshot
