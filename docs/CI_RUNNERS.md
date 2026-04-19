@@ -37,7 +37,7 @@ tar xzf ./actions-runner.tar.gz
 
 The `build-test.yml` workflow runs on a cron schedule (03:00 UTC daily).
 This catches Rawhide regressions before they reach manual builds.
-Failed nightly builds should create a GitHub Issue automatically (TODO: add issue-on-failure action).
+Failed nightly builds create a GitHub Issue automatically via the issue-on-failure action.
 
 ## Secrets Required
 

@@ -20,6 +20,7 @@ To add a package, add it to the appropriate section. One package per line.
 - Fix: Containerfile removed external akmods FROM stages (ucore-hci bakes NVIDIA in)
 - Fix: scripts/41-47 no longer duplicate dnf installs - PACKAGES.md is now the
        sole source of truth; 40-series scripts handle config+services only
+- Added missing audited tools: strace, lsof, iotop, ntfs-3g, efibootmgr, nm-connection-editor
 **CHANGELOG v2.1:**
 - Added bootupd (unified bootloader updates — Fedora 44 phase 1)
 - Added dnf5-plugins (versionlock support for critical package pinning)
@@ -124,6 +125,7 @@ gvfs-mtp
 # ── Networking ──
 NetworkManager-wifi
 NetworkManager-openvpn-gnome
+nm-connection-editor
 # ── Locale ──
 glibc-langpack-en
 # ── Qt Adwaita theming ──
@@ -300,6 +302,7 @@ dnf5-plugins: versionlock for pinning critical packages (Mesa, PipeWire, etc.)
 bootupd
 dnf5-plugins
 systemd-boot-unsigned
+efibootmgr
 ```
 
 ## Cockpit Web Management
@@ -433,6 +436,7 @@ xfsprogs
 btrfs-progs
 e2fsprogs
 mdadm
+ntfs-3g
 ```
 
 ## Ceph Distributed Storage
@@ -512,6 +516,9 @@ wslu
 python3-pip
 cloud-init
 libei
+strace
+lsof
+iotop
 ```
 
 ## Android — Waydroid

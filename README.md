@@ -140,10 +140,10 @@ GUI apps require WSLg (Windows 11 22H2+). GDM, Waydroid, and firewalld are autom
 | Image Building | osbuild, image-builder, bootc-base-imagectl, qemu-img |
 | Gaming | Steam, Gamescope SteamOS session, Wine, Lutris, Bottles, MangoHud |
 | HA Clustering | Pacemaker, Corosync, PCS, keepalived, haproxy, etcd |
-| Security | CrowdSec (sovereign/offline), fapolicyd, USBGuard, firewalld |
+| Security | CrowdSec (sovereign/offline), USBGuard, firewalld |
 | GPU | Mesa (AMD/Intel), NVIDIA akmod or pre-signed modules, ROCm, driverctl |
 | Android | Waydroid with GAPPS |
-| Storage | CephFS / cephadm (planned), NFS, GlusterFS, iSCSI, Stratis, LVM |
+| Storage | CephFS / cephadm, NFS, GlusterFS, iSCSI, Stratis, LVM |
 
 ---
 
