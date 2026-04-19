@@ -187,7 +187,7 @@ cat > /etc/fastfetch/config.jsonc <<'EOFF'
             "type": "command",
             "key": "  🛡️  Firewall",
             "keyColor": "green",
-            "text": "systemctl is-active --quiet firewalld 2>/dev/null && echo '✓ active' || echo '✗ inactive'"
+            "text": "if systemctl is-active --quiet firewalld 2>/dev/null; then echo '✓ active'; else echo '✗ inactive'; fi"
         },
         {
             "type": "command",

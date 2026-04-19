@@ -33,8 +33,10 @@ echo "[12-virt] Building Cockpit plugins..."
 install_packages "cockpit-plugins-build"
 for plugin in cockpit-machines cockpit-podman; do
     if [ -d "/tmp/$plugin" ]; then
-        cd "/tmp/$plugin" && make install 2>/dev/null || true
-        cd /
+        if cd "/tmp/$plugin"; then
+            make install 2>/dev/null || true
+            cd /
+        fi
     fi
 done
 
