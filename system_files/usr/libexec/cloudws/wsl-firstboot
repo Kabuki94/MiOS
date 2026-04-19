@@ -4,18 +4,21 @@ set -euo pipefail
 
 log() { printf '[cloudws-wsl] %s\n' "$*"; }
 
-# Ensure the core user home directory exists.
+# Ensure the user home directories exist.
 # FCOS normally relies on Ignition to create /var/home/core, but WSL2 skips
 # Ignition. Without it, systemd-user-session fails with chdir ENOENT at login.
-if id core &>/dev/null; then
-    CORE_HOME="$(getent passwd core | cut -d: -f6)"
-    if [[ -n "${CORE_HOME}" && ! -d "${CORE_HOME}" ]]; then
-        install -d -m 0700 "${CORE_HOME}"
-        chown core:core "${CORE_HOME}"
-        cp -a /etc/skel/. "${CORE_HOME}/" 2>/dev/null || true
-        log "created missing home directory ${CORE_HOME}"
+# We also do this for the 'cloudws' user as /var might not persist across podman export.
+for u in core cloudws; do
+    if id "$u" &>/dev/null; then
+        U_HOME="$(getent passwd "$u" | cut -d: -f6)"
+        if [[ -n "${U_HOME}" && ! -d "${U_HOME}" ]]; then
+            install -d -m 0700 "${U_HOME}"
+            chown "$u":"$u" "${U_HOME}"
+            cp -a /etc/skel/. "${U_HOME}/" 2>/dev/null || true
+            log "created missing home directory ${U_HOME}"
+        fi
     fi
-fi
+done
 
 # Ensure sshd host keys
 ssh-keygen -A 2>/dev/null || true
@@ -37,16 +40,20 @@ fi
 # Inject Windows-side Podman key if present
 WIN_KEY="/mnt/c/ProgramData/containers/podman/id_rsa.pub"
 if [[ -r "$WIN_KEY" ]]; then
-    USER_HOME="$(getent passwd core | cut -d: -f6)"
-    mkdir -p "$USER_HOME/.ssh"
-    touch    "$USER_HOME/.ssh/authorized_keys"
-    if ! grep -qFx "$(cat "$WIN_KEY")" "$USER_HOME/.ssh/authorized_keys"; then
-        cat "$WIN_KEY" >> "$USER_HOME/.ssh/authorized_keys"
-        log "injected Podman-Desktop key into core user authorized_keys"
-    fi
-    chown -R core:core "$USER_HOME/.ssh"
-    chmod 700 "$USER_HOME/.ssh"
-    chmod 600 "$USER_HOME/.ssh/authorized_keys"
+    for u in core cloudws; do
+        if id "$u" &>/dev/null; then
+            U_HOME="$(getent passwd "$u" | cut -d: -f6)"
+            mkdir -p "$U_HOME/.ssh"
+            touch    "$U_HOME/.ssh/authorized_keys"
+            if ! grep -qFx "$(cat "$WIN_KEY")" "$U_HOME/.ssh/authorized_keys"; then
+                cat "$WIN_KEY" >> "$U_HOME/.ssh/authorized_keys"
+                log "injected Podman-Desktop key into $u user authorized_keys"
+            fi
+            chown -R "$u":"$u" "$U_HOME/.ssh"
+            chmod 700 "$U_HOME/.ssh"
+            chmod 600 "$U_HOME/.ssh/authorized_keys"
+        fi
+    done
 fi
 
 # Trigger role resolver now
