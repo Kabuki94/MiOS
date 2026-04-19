@@ -164,29 +164,18 @@ EOXWRAP
 fi
 
 # 6. GNOME Remote Desktop — first-boot setup script
-echo "[38-vm-gating] Installing gnome-remote-desktop first-boot setup..."
-cp /tmp/build/scripts/cloudws-grd-setup /usr/libexec/cloudws-grd-setup 2>/dev/null || true
+# cloudws-grd-setup is installed via system_files overlay (08-system-files-overlay.sh)
+# into /usr/libexec/cloudws-grd-setup. No copy needed here.
 chmod +x /usr/libexec/cloudws-grd-setup 2>/dev/null || true
-# NOTE: cloudws-grd-setup.service is enabled in Containerfile STEP D
 
-# ── WSL2 dbus-broker fix ──────────────────────────────────────────────────
-echo "[38-vm-gating] Installing dbus-broker WSL2 workaround..."
-mkdir -p /etc/systemd/system/dbus-broker.service.d
-cat > /etc/systemd/system/dbus-broker.service.d/wsl2-fix.conf <<'DBUSFIX'
-# Only applies inside WSL2 — ConditionPathExists gates this
-[Unit]
-ConditionPathExists=|/proc/sys/fs/binfmt_misc/WSLInterop
-ConditionPathExists=|/proc/version
+# ── WSL2 systemd-machined gating ─────────────────────────────────────────
+# dbus-broker.service.d/wsl2-fix.conf is provided by system_files overlay
+# (OOMScoreAdjust only; --audit removal is in 10-cloudws-no-audit.conf).
+# Do NOT overwrite it here — previous versions wrote a broken drop-in with
+# ConditionPathExists=|/proc/version which is always true and caused dbus
+# to be misconfigured on bare metal.
 
-[Service]
-# Clear and re-set ExecStart to drop --audit which fails in WSL2
-ExecStart=
-ExecStart=/usr/bin/dbus-broker-launch --scope system
-# Relax OOM and resource limits for WSL2
-OOMScoreAdjust=-500
-DBUSFIX
-
-# Also ensure systemd-machined doesn't block dbus in WSL2
+# Ensure systemd-machined doesn't block dbus in WSL2
 mkdir -p /etc/systemd/system/systemd-machined.service.d
 cat > /etc/systemd/system/systemd-machined.service.d/wsl2-optional.conf <<'MACHINEDFIX'
 [Unit]
@@ -194,5 +183,4 @@ cat > /etc/systemd/system/systemd-machined.service.d/wsl2-optional.conf <<'MACHI
 ConditionVirtualization=!wsl
 MACHINEDFIX
 
-echo "[38-vm-gating] dbus-broker WSL2 workaround installed"
 echo "[38-vm-gating] VM gating + Hyper-V Enhanced Session (gnome-remote-desktop) configured."

@@ -26,6 +26,11 @@ source "$(dirname "$0")/lib/common.sh"
 
 log "37-cosign-policy: installing Sigstore trust roots + policy.json"
 
+log "37-cosign-policy: downloading cosign static binary..."
+# Note: we pin to v2.4.1 (or latest 2.x) because v3 breaks rpm-ostree bundle format as of early 2026.
+curl -sL "https://github.com/sigstore/cosign/releases/download/v2.4.1/cosign-linux-amd64" -o /usr/local/bin/cosign
+chmod +x /usr/local/bin/cosign
+
 SYSFILES="/ctx/system_files"
 
 install -d -m 0755 /etc/pki/containers

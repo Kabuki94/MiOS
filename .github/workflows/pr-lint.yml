@@ -38,8 +38,8 @@ jobs:
         run: |
           FOOTGUNS="gnome-initial-setup gnome-tour PackageKit"
           for pkg in $FOOTGUNS; do
-            if grep -qE "^${pkg}$" PACKAGES.md; then
-              echo "FOOTGUN: $pkg found in PACKAGES.md"
+            if grep -qE "^${pkg}$" docs/PACKAGES.md; then
+              echo "FOOTGUN: $pkg found in docs/PACKAGES.md"
               exit 1
             fi
           done

@@ -8,5 +8,6 @@ log() { printf '[47-hardening] %s\n' "$*"; }
 
 systemctl enable usbguard.service 2>/dev/null || log "note: usbguard not installed"
 systemctl enable auditd.service   2>/dev/null || log "note: auditd not installed"
+systemctl enable fapolicyd.service 2>/dev/null || log "note: fapolicyd not installed"
 
 log "hardening services wired"

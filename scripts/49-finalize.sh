@@ -18,9 +18,10 @@ dnf5 clean all || true
 rm -rf /var/cache/libdnf5 /var/cache/dnf /var/log/dnf5.log* 2>/dev/null || true
 
 # Set image metadata
+CLOUDWS_VERSION=$(cat /ctx/VERSION 2>/dev/null || echo "unknown")
 mkdir -p /etc/cloudws
 cat > /etc/cloudws/version <<EOF
-CLOUDWS_VERSION=2.2.0
+CLOUDWS_VERSION=${CLOUDWS_VERSION}
 CLOUDWS_BASE=ucore-hci-stable-nvidia
 CLOUDWS_BUILT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 EOF

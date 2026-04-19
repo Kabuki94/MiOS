@@ -58,8 +58,7 @@ echo "[10-gnome] Setting Qt Adwaita environment variables..."
 mkdir -p /etc/environment.d
 cat > /etc/environment.d/60-cloudws-qt-adwaita.conf <<'EOF'
 QT_QPA_PLATFORMTHEME=adwaita
-QT_WAYLAND_DECORATION=adwaita
-QT_STYLE_OVERRIDE=adwaita
+QT_STYLE_OVERRIDE=adwaita-dark
 EOF
 
 # ═════════════════════════════════════════════════════════════════════════════

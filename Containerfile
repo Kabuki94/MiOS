@@ -89,7 +89,7 @@ LABEL org.opencontainers.image.title="CloudWS-bootc"
 LABEL org.opencontainers.image.description="Unified immutable cloud-native workstation OS (desktop/k3s/ha/hybrid)"
 LABEL org.opencontainers.image.source="https://github.com/Kabuki94/CloudWS-bootc"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
-LABEL org.opencontainers.image.version="2.3.5"
+LABEL org.opencontainers.image.version="2.3.7"
 LABEL containers.bootc="1"
 
 # Build context mounted read-only

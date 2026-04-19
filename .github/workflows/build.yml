@@ -203,7 +203,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: sbom-${{ matrix.variant.name }}
-          path: cloudws-*.sbom.*.json
+          path: cloudws-*-sbom.*.json
           retention-days: 90
 
       # ── Attach SBOM to image (cosign) ──────────────────────────────────

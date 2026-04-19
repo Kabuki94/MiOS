@@ -352,8 +352,8 @@ CRITICAL: nvidia-container-toolkit >= v1.17.7 required (CVE-2025-23266/23267).
 crowdsec
 crowdsec-firewall-bouncer-nftables
 firewalld
-# fapolicyd  # REMOVED: causes 2-5 min boot delay (SHA-256 hashes every binary)
-# fapolicyd-selinux  # REMOVED: dependency of fapolicyd
+fapolicyd
+fapolicyd-selinux
 usbguard
 setroubleshoot-server
 policycoreutils-python-utils
