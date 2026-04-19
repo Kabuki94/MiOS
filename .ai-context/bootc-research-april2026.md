@@ -30,6 +30,105 @@
 *Research thread: containers/bootc GitHub releases, issues, changelog, spec changes*
 
 <!-- FINDINGS BEGIN -->
+### Repo / project status
+
+- **Repo moved:** `containers/bootc` → **`bootc-dev/bootc`** (github.com/bootc-dev/bootc). All old `containers/bootc` URLs redirect. Update any hardcoded links in docs.
+- **CNCF Sandbox:** bootc accepted January 21, 2025 — largest single CNCF intake batch (13 projects). Stable API/CLI guaranteed going forward.
+- **Current stable release:** v1.15.1 (April 14, 2025). v1.15.x line is the current series as of research date.
+- **Website:** https://bootc.dev/bootc/ (redirects from bootc-dev.github.io/bootc/)
+
+### Release highlights (v1.9 → v1.15, 2024–2025)
+
+| Version | Date | Key additions |
+|---------|------|---------------|
+| v1.9.0 | Oct 2023 | Major composefs/image sealing merge; journal logging; UKI+BLS docs |
+| v1.10.0 | Oct 2023 | composefs backend maturation; pesign for secure boot; systemd-boot rollback |
+| v1.11.0 | Dec 2023 | Experimental factory reset; `--transport docker-daemon`; composefs enhancements |
+| v1.12.0 | Jan 2024 | `--download-only`/`--from-downloaded`; `container inspect` with kernel metadata; unified storage (experimental); composefs soft reboot |
+| v1.12.1 | Jan 2024 | Shell completions; critical multi-device parent install bugfix |
+| v1.13.0 | Feb 2024 | Shell completion generation; bootloader-free install; stateroot/mount config |
+| v1.14.0 | Mar 2024 | Pre-flight disk space checks; composefs SELinux enforcement for sealed images; GC improvements; `/usr` overlay status display |
+| v1.14.1 | Mar 2024 | Experimental `export --format=tar` for mutable installs |
+| v1.15.0 | Mar 2024 | Tag-aware upgrade; `usroverlay --readonly`; composefs verity fixes; disk space pre-flight |
+| v1.15.1 | Apr 2025 | Intel VROC fix; `--karg-delete`; dm semaphore deadlock fix; BLS GC fix |
+
+**bootc 1.1.6 notable:** `bootc container lint` expanded — now checks for missing `tmpfiles.d` entries and warns. This is actionable for CloudWS: ensure every `/var/lib/<service>` directory that a service needs is declared in `tmpfiles.d/`.
+
+### Filesystem semantics (authoritative)
+
+| Path | Semantics | Notes |
+|------|-----------|-------|
+| `/usr` | **Immutable** — composefs-covered, read-only | All OS content should live here |
+| `/etc` | **3-way merge** on upgrades (base↔local↔new) | Set `etc.transient = true` for fully ephemeral |
+| `/var` | **Persistent state** — excluded from updates | Content added to image NOT propagated on update; use `tmpfiles.d` to pre-create dirs |
+| `/run` | API filesystem — **do not ship content here** | |
+| `/usr/etc` | Internal bootc implementation detail | **Never place files here explicitly** — lint rejects it |
+| `/usr/local` | Mutable by default in bootc | Derives ship mutable /usr/local; "final" images may symlink to `/var/usrlocal` |
+
+### bootc container lint — full check list (as of v1.15.x)
+
+1. `/usr/lib/bootc/kargs.d/*.toml` — syntax validation (flat `kargs = [...]` only; no section headers)
+2. Multiple kernels in `/usr/lib/modules` — only one kernel per image supported
+3. Files explicitly placed in `/usr/etc` — forbidden path
+4. Missing `tmpfiles.d` entries for `/var` directories (warning, not error, as of 1.1.6)
+5. Non-UTF-8 filenames anywhere in the image
+6. Stale logfiles left in image (warns to clean these in final stage)
+7. kargs.d `match-architectures` value validation (must be Rust std arch names)
+
+**CloudWS action:** `bootc container lint` is already the last `RUN` in the Containerfile — correct. Ensure `99-cleanup.sh` runs before it and removes all log files.
+
+### Mutable filesystem options
+
+- **`[root] transient = true`** — writable root (all dirs) until reboot; `/var` symlinks provide persistence
+- **`[root] transient-ro = true`** — privileged processes can remount overlay upper dir as writable in isolated namespaces; regular processes see read-only
+- **State overlays** (`ostree-state-overlay@opt.service`) — writable overlay on specific paths; changes persist across reboots but are overridden by image content on update
+
+### `--karg-delete` (v1.15.1+)
+
+New `bootc kargs edit --karg-delete <arg>` command allows removing a kernel argument from the local bootloader config without an image rebuild. Useful for ad-hoc debugging. Does NOT modify kargs.d — local only, lost on next `bootc upgrade`.
+
+### Composefs verity requirements (hard constraint)
+
+- `[composefs] enabled = verity` requires the **target filesystem** to support `fsverity`
+- **Supported:** ext4 (kernel ≥ 5.4), btrfs (kernel ≥ 5.15)
+- **NOT supported:** XFS — bootc errors at install time if target is XFS with verity mode
+- CloudWS BIB config uses `ROOTFS=ext4` — correct for verity mode
+
+### greenboot-rs (health check / rollback)
+
+- greenboot Rust rewrite (`greenboot-rs`) approved for Fedora 43 (September 2025)
+- Shell-based greenboot deprecated in favor of greenboot-rs v0.16.0+
+- Functions: runs health check scripts on every boot; reboots if required checks fail; rolls back to previous deployment after N failed reboots
+- Check scripts: drop scripts into `/etc/greenboot/check/required.d/` (must succeed) or `/etc/greenboot/check/wanted.d/` (advisory only)
+- **CloudWS opportunity:** Add a greenboot check script that validates composefs verity mount and role service state; provides automatic rollback safety net after image updates.
+
+### bootc upgrade / switch / rollback / factory-reset
+
+| Command | Effect |
+|---------|--------|
+| `bootc upgrade` | Pull newer image from registry; stage for next boot (A/B style) |
+| `bootc upgrade --download-only` | Pull and stage but do NOT apply on next reboot; explicit apply required |
+| `bootc switch ghcr.io/other/image:tag` | Change tracked image (same as upgrade semantically); preserves /etc and /var |
+| `bootc rollback` | Swap bootloader ordering to previous deployment; discard any staged upgrade |
+| `bootc install reset` | Non-destructive factory reset: new stateroot (`state-<year>-<serial>`); fresh deploy from current image; old state preserved on disk |
+
+**Rollback caveat:** `bootc rollback` does NOT work on composefs-native deployments as of v1.15.x. Use greenboot-rs for automated rollback (it falls back to previous OSTree deployment). Manual rollback requires booting to GRUB menu and selecting previous entry.
+
+**Soft reboot (RHEL 10 / Fedora 44+ feature):** New `bootc soft-reboot` (or `systemctl soft-reboot`) allows applying an OS image update without a full hardware reboot — uses kernel's kexec mechanism. Significantly reduces downtime for OS updates on servers. CloudWS-2 on Fedora stable (F42/F43) does not yet have this feature; monitor for inclusion in F44+.
+
+### Physically bound vs logically bound images
+
+| Type | Where content lives | Pre-fetched by bootc? | Bandwidth on update |
+|------|--------------------|-----------------------|---------------------|
+| **Physically bound** | Inside the bootc OCI image layers | N/A (already in image) | Always downloaded with OS image |
+| **Logically bound** | Separate OCI image; declared in `/usr/lib/bootc/bound-images.d/` | ✅ Yes — on `bootc upgrade`/`install` | Only downloaded when app image changes |
+
+**Logically bound path:** `/usr/lib/bootc/bound-images.d/` — symlinks to Quadlet `.image` or `.container` files in `/usr/share/containers/systemd/`. bootc pre-fetches the referenced images into `/usr/lib/bootc/storage`.
+
+**CloudWS candidates for logically bound:**
+- `crowdsec-dashboard` (metabase container)  
+- `cloudws-guacamole` + `cloudws-guacd` containers
+- Future: monitoring (Prometheus node_exporter, Grafana)
 <!-- FINDINGS END -->
 
 ---
@@ -39,6 +138,101 @@
 *Research thread: BIB releases, config schema changes, new artifact types, known bugs*
 
 <!-- FINDINGS BEGIN -->
+### Supported artifact types
+
+| BIB `--type` value | Output | Notes |
+|--------------------|--------|-------|
+| `qcow2` | `output/qcow2/disk.qcow2` | Default; QEMU/KVM |
+| `raw` | `output/image/disk.raw` | Bare metal, can dd to disk |
+| `vhd` | `output/vpc/disk.vhd` | Hyper-V (VHD); use `qemu-img convert` for VHDX |
+| `vmdk` | `output/vmdk/disk.vmdk` | VMware |
+| `anaconda-iso` | `output/bootiso/install.iso` | Bootable installer ISO |
+| `ami` | `output/image/disk.raw` (+ AMI manifest) | AWS EC2 |
+| `gce` | `output/image/disk.tar.gz` | Google Cloud |
+| `pxe-tar-xz` | tarball | PXE netboot |
+| `bootc-installer` | varies | For `bootc install` workflows |
+
+**WSL2 tarball:** Not natively a BIB type. Export a running CloudWS container with `podman export` or use `wsl --import`. A native `wsl` output type is on the BIB roadmap but not yet landed as of April 2026.
+
+### CLI flags
+
+```
+--type <format>          Artifact type (repeatable for multi-format builds)
+--rootfs <fs>            Target rootfs: ext4 (default), xfs, btrfs
+--output <dir>           Output directory (default: current dir)
+--chown <uid:gid>        Change output dir ownership (use in CI to avoid root-owned files)
+--use-librepo            Use librepo for RPM downloads (faster, more robust, recommended)
+--target-arch <arch>     Cross-arch build (experimental; requires QEMU binfmt_misc)
+--progress <mode>        verbose | term | debug | auto
+--log-level <level>      debug | info | warn | error
+--in-vm                  Rootless build mode using KVM VM (required for rootless)
+```
+
+**CloudWS CI relevance:** The `build-artifacts.yml` correctly uses `--use-librepo=True` and `--chown "$(id -u):$(id -g)"`. The `--type` is set per matrix leg.
+
+### config.toml schema (customizations)
+
+```toml
+[customizations]
+  [customizations.kernel]
+  append = "mitigations=auto"          # Additional kargs on top of kargs.d
+
+  [[customizations.user]]
+  name = "admin"
+  password = "$6$..."                   # Pre-hashed via openssl passwd -6
+  key = "ssh-ed25519 AAAA..."
+  groups = ["wheel", "sudo"]
+
+  [[customizations.filesystem]]
+  mountpoint = "/var"
+  minsize = "20 GiB"
+
+  [[customizations.filesystem]]
+  mountpoint = "/boot"
+  minsize = "1 GiB"
+
+  [customizations.installer]
+  # Anaconda ISO only:
+  kickstart = { contents = "..." }      # Inline kickstart
+  modules = { enabled = ["..."], disabled = ["..."] }  # Anaconda modules
+
+  [customizations.iso]                  # anaconda-iso only
+  volume_id = "CloudWS"
+  application_id = "CloudWS Installer"
+  publisher = "Kabuki94"
+```
+
+**Known limitations:**
+- `btrfs` rootfs: cannot set custom `/var` subdirectory mountpoints at build time (BIB limitation, not bootc limitation)
+- Not all Blueprint options from osbuild are supported in BIB — primarily the subset above
+- `customizations.kernel.append` is additive on top of image's kargs.d — use kargs.d for image-level args; BIB config for install-time overrides
+
+### rootfs selection guidance
+
+| rootfs | composefs verity? | Notes |
+|--------|------------------|-------|
+| `ext4` | ✅ Yes | Recommended for CloudWS; fsverity supported kernel ≥ 5.4 |
+| `btrfs` | ✅ Yes | Alternative; fsverity supported kernel ≥ 5.15 |
+| `xfs` | ❌ No | fsverity NOT supported; `composefs.enabled = verity` will error at install |
+
+CloudWS uses `ROOTFS=ext4` — correct for verity mode.
+
+### Podman Desktop BootC extension
+
+- v1.6 (January 2025): interactive build config creator, Linux VM support (experimental)
+- Allows GUI-driven BIB builds from Podman Desktop without writing TOML manually
+- Useful for Kabu's Windows host — can drive BIB builds through Podman Desktop UI
+
+### Rootless builds
+
+Rootless BIB (no `--privileged`) requires `--in-vm` flag which uses KVM to run the build in an ephemeral VM. This avoids privileged container requirements on shared CI runners. Requires KVM device access (`/dev/kvm`) on the runner.
+
+### Known BIB issues / actionable items for CloudWS
+
+1. **`--use-librepo=True`** — note the capital `True` (Python-style boolean); lowercase `true` is silently ignored in some BIB versions. CloudWS `build-artifacts.yml` already uses capital `True` — correct.
+2. **VHDX**: BIB produces VHD; CloudWS correctly post-converts with `qemu-img convert -f vpc -O vhdx -o subformat=dynamic`. This is the right pattern — BIB has no native VHDX output.
+3. **Disk space on ubuntu-24.04 runners:** BIB builds consume 30-40 GB. CloudWS correctly uses `jlumbroso/free-disk-space@main` to reclaim ~40 GB before the build step.
+4. **BIB pulls base image from registry:** BIB re-pulls the image from GHCR inside the privileged container; that's why `sudo podman pull` before the BIB run step is needed (to pre-warm `/var/lib/containers/storage` which is bind-mounted in).
 <!-- FINDINGS END -->
 
 ---
@@ -268,6 +462,54 @@ Cosign v3 enables `--new-bundle-format` (protobuf) by default, incompatible with
 *Research thread: Fedora bootc official images, FCOS→OCI roadmap, Rawhide status*
 
 <!-- FINDINGS BEGIN -->
+### Fedora bootc official image status
+
+- **`quay.io/fedora/fedora-bootc:rawhide`** — CloudWS-1 base. Rawhide is now a first-class bootc image (since Fedora 43, released October 2025).
+- **Fedora 44:** Branched from Rawhide **February 6, 2026**. This triggered CI matrix updates in bootc (issue #1985). CloudWS-1 tracks `:rawhide` so it follows Fedora 44 → 45 automatically.
+- **`fedora-bootc` as official Fedora artifact (F43+):** bootc-derived OCI images are now official Fedora release artifacts alongside the traditional ISO — not just experimental. Milestone: Initiatives/Image_Mode_Phase_2_(2026).
+- **Kernel in rawhide (April 2026):** Linux 6.14.x line. systemd 259.5 shipped in rawhide (relevant to WSL2 failures fixed in this repo).
+
+### FCOS → OCI-only transition
+
+- Fedora CoreOS is actively transitioning to an OCI-only update model, dropping OSTree repo streaming.
+- Pull-based OCI updates replace push-based OSTree HTTP transport.
+- CloudWS-2 is already on this model (ucore-hci is OCI-only). CloudWS-1 will follow when the rawhide base finalizes its OCI-only pipeline.
+
+### bootupd automatic bootloader updates (Fedora 43+)
+
+- **`bootloader-update.service`** runs at next boot after a deployment containing updated bootloader artifacts.
+- Uses `RENAME_EXCHANGE` atomic operation on UEFI systems — safe, crash-resistant.
+- BIOS systems: supported but without atomic guarantees.
+- `bootupctl status` to verify; `journalctl -u bootloader-update.service` to monitor.
+- **Users can opt out:** mask `bootloader-update.service` before release if preferred.
+- **Impact on CloudWS:** No action needed — this is beneficial automation. Ensure CloudWS images include `bootupd` (it's in ucore-hci base). Do NOT mask this service unless specifically required.
+
+### greenboot-rs (Rust rewrite, Fedora 43+)
+
+- Shell-based greenboot **deprecated**; greenboot-rs v0.16.0+ is the replacement.
+- Fully compatible drop-in: same script directories, same systemd integration.
+- Check scripts: `/etc/greenboot/check/required.d/` (fail → reboot) and `/etc/greenboot/check/wanted.d/` (advisory).
+- **CloudWS opportunity:** Add health check scripts for:
+  1. Verify composefs verity mount is active
+  2. Verify `cloudws-role.service` exited successfully
+  3. Verify NVIDIA module load (bare metal only, via ConditionPathExists)
+  - On 3 consecutive failed reboots, greenboot triggers `bootc rollback` automatically.
+
+### Fedora 44 changes affecting CloudWS
+
+| Change | Impact |
+|--------|--------|
+| Boot Loader Updates Phase 1 (F44): GRUB/shim content moves from `/boot` to `/usr` | `99-cleanup.sh` `find /boot/` cleanup should remain safe; new bootupd handles `/usr`-side content |
+| systemd 260 (F44): cgroupv1 completely removed | CloudWS already cgroups v2 only — no impact |
+| composefs on Atomic Desktops (F42 stable, F44 default) | `/usr` verity now default in Fedora ecosystem; validates CloudWS choice |
+| Fedora 44 branched Feb 2026 | CI matrix: add `fedora-bootc:44` to build matrix alongside `:rawhide` for stability testing |
+
+### Image Mode Phase 2 (2026 initiative)
+
+Fedora's Image Mode Phase 2 initiative targets making bootc-derived images the default delivery for all Fedora atomic variants. This includes:
+- Silverblue, Kinoite, Sway, Budgie all receiving bootc-native builds
+- Unified `fedora-bootc` base image shared across all variants
+- `bootc upgrade` replacing `rpm-ostree upgrade` as the recommended update path system-wide
 <!-- FINDINGS END -->
 
 ---
@@ -277,6 +519,69 @@ Cosign v3 enables `--new-bundle-format` (protobuf) by default, incompatible with
 *Research thread: composefs upstream, OSTree OCI spec, verity support, known issues*
 
 <!-- FINDINGS BEGIN -->
+### composefs 1.0 release
+
+- **Released** with Linux kernel 6.6-rc1 containing overlayfs fs-verity support (all required kernel changes upstream)
+- **Stable format guarantee:** composefs 1.0 commits to a stable erofs image format and stable library API
+- **erofs improvements in 1.0:**
+  - Bloom filter for faster xattr lookups (backward compatible with older erofs)
+  - File inlining: small files embedded directly in erofs image, avoiding redirect overhead
+- **New tooling:** `composefs-info` tool dumps image metadata; new API to regenerate lcfs_node trees from image files
+- **Signature change:** fs-verity built-in signature support **dropped** in favour of userspace signatures (this affects the internal signing model, not end-user behavior — OSTree/bootc handle signature verification at the bootc layer)
+
+### prepare-root.conf specification (authoritative)
+
+Location: `/usr/lib/ostree/prepare-root.conf` (system default) or `/etc/ostree/prepare-root.conf` (local override)
+
+```ini
+[composefs]
+# enabled = yes        - composefs active, no verity (integrity against accidental mutation)
+# enabled = verity     - composefs + fsverity per-file verification (requires ext4/btrfs)
+# enabled = signed     - composefs + fsverity + userspace signature verification
+enabled = verity
+
+[root]
+transient = false      # true = writable root (all dirs) until reboot
+
+[etc]
+transient = false      # true = /etc fully ephemeral (no 3-way merge)
+```
+
+**CloudWS uses `enabled = verity`** (set by `40-composefs-verity.sh`). This is the correct choice for a security-hardened workstation.
+
+**Valid `enabled` values:**
+
+| Value | Behavior | Filesystem requirement |
+|-------|----------|----------------------|
+| `yes` (default) | composefs overlay, no content verification | Any |
+| `verity` | per-file fsverity before content read | ext4 (≥5.4) or btrfs (≥5.15) only |
+| `signed` | verity + userspace signature check | ext4 or btrfs only |
+
+### Filesystem support matrix for fsverity
+
+| Filesystem | fsverity kernel version | composefs verity? |
+|-----------|------------------------|------------------|
+| ext4 | ≥ 5.4 | ✅ Yes |
+| btrfs | ≥ 5.15 | ✅ Yes |
+| XFS | Not supported | ❌ No — bootc errors at install |
+| F2FS | ≥ 5.4 | ✅ (not tested with bootc) |
+| tmpfs | Not supported | ❌ No |
+
+**CloudWS uses ext4 via BIB** — correct. XFS would silently break composefs verity.
+
+### OSTree OCI format / rechunking
+
+- **ostree container commit:** The `ostree container commit` call at end of `99-cleanup.sh` finalizes OCI layer metadata for bootc. Required; without it bootc cannot deploy the image.
+- **Rechunking:** `hhd-dev/rechunk` (external) or `rpm-ostree build-chunked-oci --bootc` splits a monolithic OCI image into N equal layers. This reduces update size by 5-10x (only changed layers are re-downloaded).
+- **Layer assignment via xattr:** Add `user.component=<name>` xattr to files during build to assign them to specific layers. Allows pinning frequently-changing components (configs, scripts) to their own layers.
+- **CloudWS rechunking:** `Justfile` target `just rechunk` uses `quay.io/centos-bootc/centos-bootc:stream10` as the rechunker base. Target: ≤67 layers (OCI spec limit is 127 layers, but registries often limit at 67-127).
+
+### Known issues
+
+1. **systemd-remount-fs crash (F42+):** `systemd-remount-fs.service` crashes when composefs overlay is active — kernel prevents remounting `/etc/fstab`-specified options on composefs-mounted root. Fix: mask the service (CloudWS does this in `40-composefs-verity.sh`). Monitor systemd upstream for proper fix.
+2. **bootc rollback unavailable on composefs:** `bootc rollback` returns error on composefs-native deployments. Status as of v1.15.x: still unresolved. Use greenboot-rs automated rollback as alternative.
+3. **/var content from image not applied on update:** Content added to `/var` in image is only unpacked on FIRST install. Database files, spool dirs etc. added to the image are preserved on update (not overwritten). Use `tmpfiles.d` to ensure required dirs exist.
+4. **XFS + BIB + verity = build failure:** `bootc-image-builder` errors during `bootc.install-to-filesystem` if `rootfs=xfs` and `composefs.enabled=verity`. Always use `ext4` or `btrfs` with CloudWS verity config.
 <!-- FINDINGS END -->
 
 ---
@@ -286,6 +591,106 @@ Cosign v3 enables `--new-bundle-format` (protobuf) by default, incompatible with
 *Research thread: Quadlet spec changes, new container/volume/network keys, systemd integration*
 
 <!-- FINDINGS BEGIN -->
+### Quadlet file types and search paths
+
+**Search paths (priority order, highest first):**
+1. `/etc/containers/systemd/` — local/admin overrides
+2. `/usr/share/containers/systemd/` — distro/image-shipped (CloudWS uses this)
+3. `~/.config/containers/systemd/` — user-level (rootless)
+
+**Supported file types:**
+
+| Extension | Unit type generated | Description |
+|-----------|--------------------|----|
+| `.container` | `<name>.service` | Podman container |
+| `.volume` | `<name>-volume.service` | Podman volume (creates on first start) |
+| `.network` | `<name>-network.service` | Podman network |
+| `.pod` | `<name>-pod.service` | Podman pod |
+| `.image` | `<name>-image.service` | Pre-pull image (for logically bound images) |
+| `.kube` | `<name>.service` | Podman play kube |
+| `.build` | `<name>.service` | Build container image |
+
+### [Unit] section — fully supported, passed through unchanged
+
+All standard systemd `[Unit]` directives work in Quadlet files exactly as in `.service` files:
+
+```ini
+[Unit]
+Description=My container
+After=local-fs.target network-online.target
+Requires=network-online.target
+ConditionVirtualization=!wsl        # Gate on non-WSL2
+ConditionPathExists=/dev/kfd        # Gate on hardware presence
+```
+
+`ConditionVirtualization=!wsl` is fully supported and is the correct way to skip services in WSL2. This is what CloudWS uses for the crowdsec-dashboard Quadlet (after the April 2026 fix).
+
+### [Container] section — key reference
+
+```ini
+[Container]
+Image=docker.io/example/app:latest
+ContainerName=my-app               # Stable name for `podman ps`
+PublishPort=8080:80
+Volume=my-data.volume:/data        # Reference a .volume Quadlet
+Network=my-net.network             # Reference a .network Quadlet
+Environment=KEY=value
+EnvironmentFile=/etc/my-app/env
+AutoUpdate=registry                # Pull new image on `podman auto-update`
+Label=io.containers.autoupdate=registry
+PodmanArgs=--read-only             # Arbitrary podman run args
+User=1000:1000
+Group=1000
+GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage  # For logically bound images
+AppArmor=unconfined                # New in Podman 5.x: set AppArmor profile
+```
+
+**`AutoUpdate=registry`** — instructs `podman auto-update` (via `podman-auto-update.service` or `podman-auto-update.timer`) to check and pull a new image when the registry digest changes. Separate from Renovate — this is runtime auto-update.
+
+### Logically Bound Images (bootc feature, Quadlet-integrated)
+
+Declare in `/usr/lib/bootc/bound-images.d/` as symlinks pointing to Quadlet `.image` or `.container` files. bootc pre-fetches these during `bootc upgrade` / `bootc install`.
+
+```ini
+# /usr/share/containers/systemd/my-agent.image
+[Image]
+Image=ghcr.io/example/my-agent:latest
+
+# /usr/lib/bootc/bound-images.d/my-agent.image -> /usr/share/containers/systemd/my-agent.image
+```
+
+**CloudWS opportunity:** CrowdSec, Guacamole, and monitoring agents are good candidates for logically bound images — they're always needed at boot and should be available without network access post-install.
+
+**Requirements:** Must include `GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage` in container files referencing bound images. Rootless containers not currently supported.
+
+### Multi-file Quadlet (Podman 5.x)
+
+Podman 5.x supports multiple Quadlet units in a single file, separated by `---` delimiter:
+
+```
+# FileName=app.container
+[Container]
+Image=app:latest
+---
+# FileName=app-db.volume
+[Volume]
+```
+
+Allows shipping related Quadlet units as one file for organizational clarity.
+
+### WSL2 / dbus interaction
+
+- Podman requires a running dbus session for some operations in WSL2.
+- `podman.socket` activates lazily — `cloudws-role.service` correctly calls `systemctl start podman.socket` in `wsl-firstboot`.
+- Quadlet files in `/usr/share/containers/systemd/` are compiled at container-generate time (`systemd-generator`). If dbus is unavailable at generator time, compilation may fail silently. Always gate Quadlets that need dbus with `After=dbus.socket`.
+- `crowdsec-dashboard.container` now correctly has `ConditionVirtualization=!wsl` to skip compilation-time failures in WSL2.
+
+### Known gotchas for CloudWS
+
+1. **`Restart=always` on containers** — causes infinite restart loops when the container image can't be pulled (no network) or when a dependency (dbus, crowdsec config) is missing. Always use `Restart=on-failure` with `RestartSec=30` on image-pull-dependent containers.
+2. **`WantedBy=multi-user.target` without `ConditionVirtualization`** — container services auto-start in ALL environments including WSL2. Gate with `ConditionVirtualization=!wsl` for containers that require hardware/GPU/dbus.
+3. **Volume Quadlets create Podman volumes, not directories** — do not confuse with `tmpfiles.d` directory creation.
+4. **`AutoUpdate=registry` + `stabilityDays`** — these are independent mechanisms. Renovate manages the image tag in the Quadlet file; `podman auto-update` manages pulling new content under that tag at runtime. Use both for defense-in-depth.
 <!-- FINDINGS END -->
 
 ---
@@ -295,6 +700,75 @@ Cosign v3 enables `--new-bundle-format` (protobuf) by default, incompatible with
 *Research thread: WSL2 systemd compatibility, known failures, upstream patches*
 
 <!-- FINDINGS BEGIN -->
+### WSL2 kernel / systemd compatibility matrix (April 2026)
+
+| WSL version | WSL kernel | systemd behavior | Notes |
+|-------------|-----------|-----------------|-------|
+| WSL 2.3.x | 5.15.167.x | Stable | Legacy; cgroupv1 still present |
+| WSL 2.4.x | 5.15.179.x | Mostly stable | auditd fails; journald audit crash |
+| WSL 2.6.x | 6.6.x | Active issues | User session failures reported after 2.6.0.0 |
+| WSL 2.7.x+ | 6.6.x+ | In development | Improvements ongoing |
+
+WSL2 runs Linux 5.15.x or 6.6.x kernel depending on Windows version. The kernel is Microsoft-maintained fork: `github.com/microsoft/WSL2-Linux-Kernel`.
+
+**systemd version in Fedora 44/rawhide:** 259.5-1.fc44 (confirmed from CloudWS WSL2 boot log, April 2026).
+
+**Critical:** WSL2 `ConditionVirtualization=wsl` is the systemd-native way to detect WSL2. Use `ConditionVirtualization=!wsl` to skip services in WSL2.
+
+### Known service failures in WSL2 (with fixes)
+
+| Service | Failure mode | Root cause | Fix |
+|---------|-------------|-----------|-----|
+| `systemd-journald` | status=1, start limit | Audit netlink socket absent in WSL2 kernel; journald crashes when `Audit=yes` | `journald.conf.d/10-cloudws-noaudit.conf`: set `Audit=no` |
+| `dbus-broker` | status=1 cascade | `--audit` flag causes failure when audit socket absent | `dbus-broker.service.d/10-cloudws-no-audit.conf`: clear ExecStart, restart without `--audit` |
+| `cloudws-role.service` | status=203/EXEC | Scripts in system_files had git mode 100644 (non-executable); tar\|tar preserves modes | Fixed: `git update-index --chmod=+x` on all 6 libexec scripts (April 2026) |
+| `cloudws-cdi-detect.service` | status=203/EXEC | Same as above | Fixed: same git mode fix |
+| `upower.service` | SIGABRT | Probes `/sys/class/power_supply` and DBus HW interfaces not present in WSL2 | `upower.service.d/10-cloudws-wsl2.conf`: `ConditionVirtualization=!wsl` |
+| `auditd.service` | NOPERMISSION | Kernel audit subsystem absent | `auditd.service.d/10-cloudws-wsl2.conf`: `ConditionVirtualization=!wsl` |
+| `audit-rules.service` | cascade | auditd missing | Same drop-in |
+| `usbguard.service` | permission denied | `usbguard-daemon.conf` delivered as 0644; daemon requires 0600 | `47-hardening.sh`: `chmod 0600` before enable |
+| `cloudws-gpu-{amd,intel,nvidia}.service` | ordering cycle | `Before=podman.socket docker.socket` creates systemd ordering cycle | Removed `Before=` on socket units (April 2026) |
+| `waydroid-container.service` | fails | binderfs not available in WSL2 | `38-vm-gating.sh`: `ConditionPathExists=!/proc/sys/fs/binfmt_misc/WSLInterop` |
+| `crowdsec-dashboard.service` | restart loop | `Restart=always` + no WSL2 gate + dbus not ready | `ConditionVirtualization=!wsl` + `Restart=on-failure RestartSec=30` |
+| `systemd-machined` | non-fatal | cgroup features absent | `wsl2-optional.conf`: `ConditionVirtualization=!wsl` |
+| `gdm.service` | no display | No GPU in WSL2 | `gdm.service.d/10-skip-wsl.conf`: `ConditionPathExists=!/proc/sys/fs/binfmt_misc/WSLInterop` |
+
+### ConditionVirtualization=wsl detection
+
+systemd detects WSL2 by reading `/proc/sys/kernel/osrelease` and checking for `WSL` or `microsoft` string (case-insensitive). This is the same check that `ConditionVirtualization=wsl` uses.
+
+**Alternative detection methods (less preferred):**
+- `test -f /proc/sys/fs/binfmt_misc/WSLInterop` — exists in WSL2 (used in CloudWS drop-ins for services written before systemd 252+ added wsl support)
+- `test -e /dev/dxg` — NVIDIA GPU paravirtualization device; exists only in WSL2 with NVIDIA GPU pass-through enabled
+- `grep -qi microsoft /proc/version` — crude but works pre-systemd252
+
+**Preference order for new CloudWS drop-ins:** Use `ConditionVirtualization=!wsl` for all new WSL2 gating. Use `ConditionPathExists` only when the condition is truly about hardware presence rather than virtualization type.
+
+### NVIDIA GPU paravirtualization in WSL2 (`/dev/dxg`)
+
+- `/dev/dxg` is the NVIDIA paravirtualization device in WSL2 (exposed when Windows host has NVIDIA GPU and WSL2 CUDA driver is installed)
+- `cloudws-cdi-detect.service` (`select-cdi-spec` script) correctly checks `if [[ -e /dev/dxg ]]; then MODE="wsl"` and calls `nvidia-ctk cdi generate --mode=wsl`
+- CDI spec location in WSL2 mode: `/var/run/cdi/nvidia.yaml` (same as bare metal)
+- The WSL2 CUDA driver is separate from the Linux NVIDIA driver — don't install regular NVIDIA kmods in WSL2
+
+### WSL2 systemd user session failures (WSL 2.6.0.0+)
+
+Multiple reports of "Failed to start the systemd user session" after WSL 2.6.0.0 update. Root cause appears to be: `/run/systemd/user-generators/wsl-user-generator` marked world-writable (security regression introduced in 2.6.0.0). Microsoft is tracking in WSL issue tracker. Mitigation: `chmod 755 /run/systemd/user-generators/wsl-user-generator` if user sessions fail on first login.
+
+### Recommended drop-in pattern for WSL2 gating
+
+```ini
+# /usr/lib/systemd/system/<service>.d/10-cloudws-wsl2.conf
+[Unit]
+ConditionVirtualization=!wsl
+```
+
+For services that must also be skipped in containers (not just WSL2):
+```ini
+[Unit]
+ConditionVirtualization=!container
+ConditionVirtualization=!wsl
+```
 <!-- FINDINGS END -->
 
 ---
@@ -304,6 +778,86 @@ Cosign v3 enables `--new-bundle-format` (protobuf) by default, incompatible with
 *Research thread: cosign keyless signing, Fulcio/Rekor, SBOM patterns, bootc image signing*
 
 <!-- FINDINGS BEGIN -->
+### cosign keyless signing (current state 2026)
+
+**Mechanism:** Keyless signing binds an identity (GitHub Actions OIDC token) rather than a key to the signature. Flow:
+1. CI job requests OIDC token from GitHub (`id-token: write` permission required)
+2. cosign presents token to **Fulcio** CA → receives short-lived X.509 certificate (10-minute TTL) binding the OIDC identity to an ephemeral key pair
+3. cosign signs the image with the ephemeral key; signature stored in **Rekor** transparency log
+4. Certificate is discarded; verification uses Fulcio root CA + Rekor inclusion proof
+
+**Verification:** `cosign verify --certificate-identity-regexp=... --certificate-oidc-issuer=https://token.actions.githubusercontent.com ghcr.io/kabuki94/cloudws-bootc:latest`
+
+**GitHub Actions workflow pattern (CloudWS `build-sign.yml`):**
+```yaml
+permissions:
+  id-token: write   # OIDC token for Fulcio
+  packages: write   # Push to GHCR
+  contents: read
+
+- name: Sign image
+  run: |
+    cosign sign --yes \
+      ghcr.io/kabuki94/cloudws-bootc@${{ steps.build.outputs.digest }}
+```
+
+**`--yes` flag:** Required in non-interactive CI to skip the Rekor upload confirmation prompt. Without it, the step hangs.
+
+### SBOM generation (syft SPDX/CycloneDX)
+
+**syft** is the standard tool for generating SBOMs from OCI images:
+```bash
+syft ghcr.io/kabuki94/cloudws-bootc:latest \
+  -o spdx-json=cloudws-cloudws-2-sbom.spdx.json \
+  -o cyclonedx-json=cloudws-cloudws-2-sbom.cyclonedx.json
+```
+
+**Filename convention (confirmed from build.yml fix):** `cloudws-*-sbom.*.json` (dash before sbom, not dot). The CI artifact upload glob was fixed from `cloudws-*.sbom.*.json` to `cloudws-*-sbom.*.json` in April 2026 — the old glob never matched.
+
+**SBOM signing:** After generating SBOM, attach as OCI attestation:
+```bash
+cosign attest --type spdxjson --predicate cloudws-sbom.spdx.json \
+  ghcr.io/kabuki94/cloudws-bootc@<digest>
+```
+
+### OCI attestation / SLSA provenance
+
+- **SLSA Level 1:** Build provenance (who built it, when, from what source) stored as OCI attestation via cosign
+- **SLSA Level 2+:** Requires hosted/isolated build environment (GitHub Actions hosted runners qualify)
+- CloudWS uses GitHub-hosted runners + OIDC keyless signing → achieves SLSA Level 2
+- `cosign attest` with `--type slsaprovenance` attaches SLSA provenance as OCI attestation
+- `cosign verify-attestation --type slsaprovenance` to verify
+
+### containers/policy.json verification
+
+CloudWS ships `/etc/containers/policy.json` and per-registry override YAML in `/etc/containers/registries.d/`. Configuration:
+
+```json
+{
+  "default": [{"type": "insecureAcceptAnything"}],
+  "transports": {
+    "docker": {
+      "ghcr.io/kabuki94": [{
+        "type": "sigstoreSigned",
+        "keyless": {
+          "signedIdentity": {"type": "matchRepository"},
+          "fulcio": {"caData": "<base64 Fulcio root CA>"},
+          "rekorPublicKeyData": "<base64 Rekor public key>"
+        }
+      }]
+    }
+  }
+}
+```
+
+This enforces signature verification when Podman pulls from `ghcr.io/kabuki94/*`. Only images signed via the Fulcio/Rekor chain are accepted. The ublue cosign public key (`/etc/pki/containers/ublue-cosign.pub`) handles verification of the ucore-hci base image.
+
+### GitHub Actions signing workflow best practices
+
+1. Use `actions/attest-build-provenance@v2` (GitHub-native SLSA provenance) alongside cosign for defense-in-depth
+2. Pin cosign action to digest: `uses: sigstore/cosign-installer@v3.x.y@sha256:<digest>` (Renovate manages this via `helpers:pinGitHubActionDigests`)
+3. Sign the digest (not the tag): `cosign sign ghcr.io/image@sha256:<digest>` — tag-based signing is mutable and insecure
+4. Store cosign verification policy in the image itself (`/etc/containers/policy.json`) so verification is enforced at runtime, not just at CI time
 <!-- FINDINGS END -->
 
 ---
@@ -313,6 +867,100 @@ Cosign v3 enables `--new-bundle-format` (protobuf) by default, incompatible with
 *Research thread: kargs.d TOML schema, bootc container lint rules, known rejections*
 
 <!-- FINDINGS BEGIN -->
+### kargs.d TOML schema (authoritative — verified from bootc.dev docs)
+
+**Location:** `/usr/lib/bootc/kargs.d/*.toml`
+
+**Valid top-level keys: ONLY TWO**
+
+```toml
+# VALID — flat array of kernel argument strings
+kargs = ["mitigations=auto,nosmt", "console=ttyS0,115200n8"]
+
+# VALID — optional architecture filter (Rust stdlib arch names)
+match-architectures = ["x86_64"]
+```
+
+**That is the complete spec.** No other keys. No section headers. No `delete` key. No `append` key.
+
+### Invalid patterns (all rejected by bootc lint with error)
+
+```toml
+# INVALID — Copilot hallucination: section header
+[kargs]
+append = ["quiet"]
+delete = ["rhgb"]
+
+# INVALID — 'delete' key does not exist
+delete = ["rhgb"]
+
+# INVALID — 'append' key does not exist
+append = ["quiet"]
+
+# INVALID — nested table
+[kargs]
+kargs = ["quiet"]
+```
+
+**Error message from bootc lint:** `Unexpected runtime error running lint bootc-kargs: Parsing <filename>.toml`
+
+Any of the above formats causes bootc to reject the kargs.d file entirely at lint time. CloudWS previously had a `01-cloudws-vm-boot.toml` using Copilot-format that was deleted in v2.3.4 for this reason.
+
+### Merge / priority order
+
+- Files are processed in **lexicographic order** by filename within `/usr/lib/bootc/kargs.d/`
+- **Last file wins** for conflicting argument values (same arg name, different value)
+- The base image's kargs.d entries are always present; derived images ADD to them
+- **Undefined behavior:** Removing a kernel argument locally that the base image added via kargs.d
+
+**CloudWS file naming convention:**
+```
+00-cloudws.toml           # Base: console, plymouth
+10-cloudws-console.toml   # Console serial port
+10-cloudws-verbose.toml   # systemd.show-status=true (HYPHEN not underscore)
+30-security.toml          # lockdown=integrity, slab_nomerge
+```
+
+### match-architectures values (Rust stdlib names)
+
+The `match-architectures` field uses Rust's `std::env::consts::ARCH` values, which differ from Linux/Debian conventions in some cases:
+
+| Rust value | Linux `uname -m` | Notes |
+|-----------|-----------------|-------|
+| `x86_64` | `x86_64` | Same |
+| `aarch64` | `aarch64` | Same |
+| `arm` | `armv7l` | Differs |
+| `powerpc64` | `ppc64le` | Differs! Rust uses BE name even for LE |
+| `riscv64` | `riscv64` | Same |
+
+**CloudWS:** Currently all kargs files are x86_64 targeted (AMD Ryzen 9950X3D). If ARM64/aarch64 support is added, use `match-architectures = ["aarch64"]`.
+
+### bootc container lint — complete check list
+
+Run as `RUN bootc container lint` in the Containerfile (final stage).
+
+**Checks performed:**
+1. **kargs.d syntax** — validates every `.toml` in `/usr/lib/bootc/kargs.d/`; rejects any file with section headers or non-standard keys
+2. **Multiple kernels** — only ONE kernel in `/usr/lib/modules/` is supported; multiple = error
+3. **`/usr/etc` content** — files explicitly placed here are rejected (it's an internal bootc path)
+4. **Missing tmpfiles.d entries** (v1.1.6+) — warns if `/var` directories exist in image without corresponding `tmpfiles.d` entry
+5. **Non-UTF-8 filenames** — any non-UTF-8 filename in image = error
+6. **Stale log files** — warns if log files are left in image (should be cleaned by 99-cleanup.sh)
+7. **`match-architectures` values** — validates arch names against Rust stdlib list
+
+**bootc lint exit codes:**
+- `0` — all checks pass
+- `1` — one or more checks failed (hard errors)
+- Warnings do not cause non-zero exit (soft failures only log to stdout)
+
+### Common CloudWS-specific lint failure patterns
+
+| Pattern | Lint result | Fix |
+|---------|------------|-----|
+| `[kargs]` section header in TOML | ERROR — parsing failure | Remove header; use bare `kargs = [...]` |
+| `systemd.show_status` (underscore) | Not a lint error — silently ignored by kernel | Fix to `systemd.show-status` (hyphen) |
+| Two kernels from base + akmod install | ERROR — multiple kernels | Don't install kernel RPMs; only install `kernel-modules-extra` |
+| Files in `/var/lib/myapp/` without tmpfiles.d | WARN (v1.1.6+) | Add `tmpfiles.d/cloudws-myapp.conf` with `d /var/lib/myapp 0755 myapp myapp -` |
 <!-- FINDINGS END -->
 
 ---
@@ -322,6 +970,90 @@ Cosign v3 enables `--new-bundle-format` (protobuf) by default, incompatible with
 *Research thread: nvidia-ctk CDI spec, nvidia-cdi-refresh, Container Device Interface standard*
 
 <!-- FINDINGS BEGIN -->
+### nvidia-container-toolkit release history (2024–2026)
+
+| Version | Key changes relevant to CloudWS |
+|---------|--------------------------------|
+| v1.17.6 | CDI stable; read-only rootfs support confirmed working |
+| **v1.17.8** | **REGRESSION: "unresolvable CDI devices" bug — DO NOT USE** |
+| v1.18.0 | `nvidia-cdi-refresh.service` introduced for automatic CDI spec regeneration |
+| **v1.19.0** | CDI is now default mode (replaces OCI hook); `After=multi-user.target` bug introduced in cdi-refresh.service; NRI plugin server; IGX 2.0 Thor support; read-only rootfs declared stable |
+
+**As of April 2026:** v1.19.0 is current. CloudWS ships nvidia-container-toolkit ≥ v1.17.7 (satisfies CVE-2025-23266/23267 fixes).
+
+### The nvidia-cdi-refresh.service ordering bug (CRITICAL for CloudWS)
+
+**Bug introduced:** v1.19.0 (March 2026)
+**GitHub issue:** NVIDIA/nvidia-container-toolkit#1735
+
+**What happened:** v1.19.0 added `After=multi-user.target` to `nvidia-cdi-refresh.service`. This creates an ordering cycle:
+- Service A wants `multi-user.target`
+- Service A also `Requires=nvidia-cdi-refresh.service`
+- `nvidia-cdi-refresh.service` has `After=multi-user.target`
+- Result: `multi-user.target` → Service A → nvidia-cdi-refresh → (wait for multi-user.target) → CYCLE
+
+Any service in `multi-user.target` that depends on `nvidia-cdi-refresh.service` is broken by this.
+
+**CloudWS fix (already shipped):** `systemd/nvidia-cdi-refresh.service.d/10-cloudws-ordering.conf`:
+```ini
+[Unit]
+After=
+After=systemd-modules-load.service systemd-udev-settle.service
+Wants=systemd-udev-settle.service
+```
+
+Empty `After=` clears the inherited `After=multi-user.target`; then re-declares sane minimal ordering. This drop-in was in the repo before v1.19.0 due to anticipation from reading the upstream issue — validated correct.
+
+### CDI spec format (current)
+
+CDI (Container Device Interface) is an OCI spec extension for device injection into containers. CloudWS uses:
+
+```
+/var/run/cdi/nvidia.yaml    # Ephemeral; regenerated by cloudws-cdi-detect.service
+/etc/cdi/                   # Persistent; alternative location
+```
+
+**CDI spec is generated by:** `nvidia-ctk cdi generate --mode=<mode> --output=/var/run/cdi/nvidia.yaml`
+
+**Modes:**
+- `auto` — auto-detect (bare metal: uses driver API; WSL2: uses /dev/dxg)
+- `wsl` — WSL2 paravirtualization mode (reads from Windows WDDM driver via /dev/dxg)
+- `csv` — CSV-format input for environments without nvidia-smi
+
+**Container usage (CDI syntax):**
+```bash
+podman run --device nvidia.com/gpu=0 ...    # Specific GPU
+podman run --device nvidia.com/gpu=all ...  # All GPUs
+```
+Old `--runtime=nvidia` / OCI hook approach is deprecated; CDI is now the default.
+
+### WSL2 CDI mode
+
+`cloudws-cdi-detect.service` (the `select-cdi-spec` script) correctly handles WSL2:
+1. Checks `if [[ -e /dev/dxg ]]` — /dev/dxg exists only in WSL2 with NVIDIA GPU pass-through
+2. If WSL2: calls `nvidia-ctk cdi generate --mode=wsl`
+3. If no NVIDIA devices: exits 0 (skip silently)
+4. If bare metal: uses `auto` mode
+
+**WSL2 requirement:** Windows host must have NVIDIA GPU + WSL2 CUDA driver installed (`nvidia-smi.exe` visible from WSL2). Without this, `/dev/dxg` is absent and CDI generation is skipped — correct behavior.
+
+### NVIDIA open kernel modules (Blackwell/570+)
+
+- **RTX 50xx (Blackwell):** ONLY compatible with open kernel modules (kmod-nvidia-open). Proprietary modules do not support Blackwell architecture.
+- **RTX 40xx (Ada, including RTX 4090):** Both open and proprietary modules work; open modules recommended going forward.
+- **Driver version for RTX 4090 + RTX 50xx:** 570.x series (open modules only from 570+).
+- **ucore-hci `stable-nvidia`:** Ships NVIDIA open modules 590.48.01 as of April 2026.
+
+**CloudWS implication:** `34-gpu-detect.sh` should detect RTX 4090 (GA102, Ada Lovelace) and ensure open modules are not accidentally blacklisted. The bare-metal detection path is correct; Blackwell compatibility is provided by the ucore-hci base (open module pipeline).
+
+### CVEs requiring attention
+
+| CVE | Severity | Fixed in | Description |
+|-----|----------|----------|-------------|
+| CVE-2025-23266 | Critical | v1.17.7+ | Container escape via CDI device injection |
+| CVE-2025-23267 | High | v1.17.7+ | Privilege escalation in OCI hook path |
+
+CloudWS target of nvidia-container-toolkit v1.19.0 satisfies both CVEs.
 <!-- FINDINGS END -->
 
 ---
@@ -498,6 +1230,108 @@ Knowledge cutoff: August 2025 (confirmed). Items marked [INFERRED] are trajector
 *Research thread: SELinux bootc patterns, CrowdSec 2026 features, fapolicyd*
 
 <!-- FINDINGS BEGIN -->
+### SELinux in bootc / immutable images
+
+**Core constraint:** `/usr` is read-only in composefs mode. SELinux contexts on `/usr` binaries cannot be modified at runtime via `restorecon`. All labels must be correct at image build time.
+
+**Build-time labeling:** During the container build (`dnf install`), RPM package scriptlets run `restorecon` on installed files. For correctly packaged RPMs this is sufficient. For custom files added via `COPY` or system_files overlay:
+```dockerfile
+RUN restorecon -RFv /usr/libexec/cloudws/ \
+ && restorecon -RFv /usr/lib/systemd/system/cloudws-*.service
+```
+Add this after the system_files overlay step in Containerfile if SELinux context mismatches appear at boot.
+
+**Bind-mount + restorecon pattern:** For fixing labels on immutable binaries without a full rebuild, bind-mount the specific file from a writable layer, fix the context, then unmount. This is for emergency use only — prefer fixing the image.
+
+**SELinux enforcing + composefs verity:** Both can be active simultaneously. composefs verity verifies content integrity (cryptographic); SELinux enforces access control (MAC). They do not conflict. bootc v1.14.0 added SELinux enforcement for sealed images.
+
+**Sealed image SELinux (bootc v1.14+):** When `composefs.enabled = signed` (not just verity), bootc can enforce SELinux policy from the image itself during the pivot-root stage — before `init` starts. This prevents policy tampering via writable `/etc`. CloudWS uses `verity` (not `signed`) — upgrade to `signed` for maximum hardening when Fedora CI is ready for it.
+
+### fapolicyd in immutable images
+
+**New canonical rule directory (from OL 9.7 / Fedora ≥ fapolicyd-1.3):**
+- Rules go in `/etc/fapolicyd/rules.d/` (numbered files, assembled by `fagenrules`)
+- `/etc/fapolicyd/fapolicyd.rules` is **deprecated** — do not create it
+- `fagenrules --load` compiles rules from `rules.d/` to `compiled.rules`
+
+**Trust database in bootc:**
+- fapolicyd builds its trust DB from the RPM database at startup
+- Since the RPM database is in the immutable `/usr` layer (composefs), trust DB is consistent with the image
+- Any binary added outside of RPM (e.g., custom scripts in `/usr/libexec/cloudws/`) must be explicitly trusted:
+  ```bash
+  fapolicyd-cli --file add /usr/libexec/cloudws/role-apply
+  ```
+  Or add to `/etc/fapolicyd/trust.d/cloudws.trust`:
+  ```
+  /usr/libexec/cloudws/role-apply sha256:<hash>
+  ```
+- `47-hardening.sh` already calls `fagenrules --load && fapolicyd-cli --update` at build time
+
+**CloudWS fapolicyd status check:** All scripts in `system_files/usr/libexec/cloudws/` now have 0755 mode (fixed April 2026). Verify fapolicyd trust after the mode fix by regenerating trust DB in next build.
+
+### CrowdSec / Metabase dashboard (Podman Quadlet)
+
+**CrowdSec setup for Podman:**
+```bash
+systemctl enable --now podman.socket
+export DOCKER_HOST=unix:///run/podman/podman.sock
+cscli dashboard setup
+```
+
+**Quadlet pattern (corrected in April 2026 fix):**
+```ini
+[Unit]
+ConditionVirtualization=!wsl    # Skip in WSL2
+
+[Container]
+Image=docker.io/crowdsecurity/metabase:latest
+ContainerName=crowdsec-dashboard
+PublishPort=3000:3000
+Volume=crowdsec-data.volume:/metabase-data
+AutoUpdate=registry
+
+[Service]
+Restart=on-failure              # Was: always (caused restart loop)
+RestartSec=30
+TimeoutStartSec=300
+```
+
+**CrowdSec enrollment:** CrowdSec dashboard (Metabase) requires the main crowdsec service to be enrolled with the Central API before it's useful. The Quadlet `Restart=on-failure` with 30s delay prevents the restart loop while enrollment is pending.
+
+**Firewall bouncer:** `crowdsec-firewall-bouncer` works with `nftables` by default in Fedora 44+ (firewalld backend). Ensure `firewalld` is using `nftables` backend (default in F44). No special config needed — cloudws `20-services.sh` enables `crowdsec-firewall-bouncer`.
+
+### USBGuard configuration requirements
+
+**Critical:** `usbguard-daemon.conf` must have permissions **0600** (root-readable only). The usbguard daemon explicitly checks and refuses to start if the file is group- or world-readable.
+
+- CloudWS system_files delivers it as git mode 100644 → 0644 on disk (fixed in `47-hardening.sh` April 2026: `chmod 0600` before `systemctl enable`)
+- Alternative long-term fix: use `tmpfiles.d` to set permissions:
+  ```
+  z /etc/usbguard/usbguard-daemon.conf 0600 root root -
+  ```
+  This runs at boot via `systemd-tmpfiles-setup.service` and ensures the permission is re-applied even if something changes it.
+
+### auditd in WSL2
+
+- WSL2 kernel does NOT include the Linux audit subsystem (`CONFIG_AUDIT` not compiled in Microsoft's WSL kernel)
+- auditd fails with `NOPERMISSION` at every start in WSL2
+- Fix: `ConditionVirtualization=!wsl` in `auditd.service.d/10-cloudws-wsl2.conf` (already shipped)
+- Same fix for `audit-rules.service.d/10-cloudws-wsl2.conf`
+- On bare metal: auditd works normally; SELinux uses the audit subsystem for denials logging
+
+### Supply chain / hardening summary for CloudWS
+
+| Layer | Mechanism | Status |
+|-------|-----------|--------|
+| Image signing | cosign keyless (Fulcio/Rekor) | ✅ Operational (`build-sign.yml`) |
+| SBOM | syft SPDX-JSON + CycloneDX | ✅ Fixed glob (`build.yml` April 2026) |
+| Policy enforcement | containers/policy.json + ublue cosign pub key | ✅ Shipped in system_files |
+| Composefs verity | ext4 + fsverity per-file verification | ✅ Active (`40-composefs-verity.sh`) |
+| SELinux enforcing | Fedora default; composefs-compatible | ✅ Active |
+| USBGuard | usbguard-daemon.conf 0600 | ✅ Fixed (April 2026) |
+| fapolicyd | RPM trust + custom trust for /usr/libexec/cloudws | ⚠️ Verify trust DB after exec bit fix |
+| CrowdSec | Sovereign IDS + nftables bouncer | ✅ Enabled (WSL2 gated) |
+| MOK / Secure Boot | Universal Blue akmods-ublue.der | ✅ Enrolled via enroll-mok.sh |
 <!-- FINDINGS END -->
 
 ---
