@@ -121,7 +121,10 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     --mount=type=cache,dst=/var/cache/dnf,sharing=locked     \
     set -e; \
     chmod +x /ctx/scripts/build.sh /ctx/scripts/*.sh 2>/dev/null || true; \
-    /ctx/scripts/build.sh
+    /ctx/scripts/build.sh && \
+    /ctx/scripts/18-apply-boot-fixes.sh && \
+    /ctx/scripts/19-k3s-selinux.sh && \
+    /ctx/scripts/20-fapolicyd-trust.sh
 
 RUN bootc container lint
 

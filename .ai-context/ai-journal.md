@@ -6,24 +6,24 @@
 ### 1. `bootc-image-builder` Filesystem Constraints
 *   **Discovery**: `bootc-image-builder` (BIB) completely fails during the `org.osbuild.bootc.install-to-filesystem` stage if the `--rootfs` argument is set to `xfs` while the container image has `composefs.enabled = verity`.
 *   **Root Cause**: XFS does not support `fsverity`, which is a strict requirement for ComposeFS's tamper-evident Merkle-tree root. This causes a superblock failure during the loopback mount.
-*   **Resolution**: Hardcoded image build targets in `cloud-ws.ps1`, `iso.toml`, and internal configs have been migrated from `xfs` to `ext4`. `btrfs` is also a valid alternative. 
+*   **Resolution**: Hardcoded image build targets in `cloud-ws.ps1`, `iso.toml`, and internal configs have been migrated from `xfs` to `ext4`. `btrfs` is also a valid alternative.
 
 ### 2. WSL2 / Podman Export Limitations
 *   **Discovery**: Exporting a WSL2 tarball via `podman export` strips out all container volume contents. Because OSTree/bootc images (like `ucore-hci`) define `/var` as a volume, any user home directories (e.g., `/var/home/cloudws`) created during the Containerfile build are permanently lost.
 *   **Secondary Discovery**: Forcing WSL to boot into a secondary `core` user and `su -` switching to the primary user strips the `WAYLAND_DISPLAY` and `DISPLAY` variables dynamically injected by WSLg, completely breaking GUI applications.
-*   **Resolution**: 
+*   **Resolution**:
     1. Changed the default login user in `system_files/etc/wsl.conf` directly to `cloudws`.
     2. Overhauled `wsl-firstboot` systemd service to dynamically recreate missing home directories from `/etc/skel` for both `core` and `cloudws` on the very first boot, side-stepping the podman export data loss entirely.
 
 ### 3. Container File Permission Stripping (The `/sbin/init` bug)
-*   **Discovery**: Using `find /etc/systemd /usr/lib/systemd -type f -exec chmod 644 {} \;` globally recursively strips the executable bit from binaries nested in those folders. 
+*   **Discovery**: Using `find /etc/systemd /usr/lib/systemd -type f -exec chmod 644 {} \;` globally recursively strips the executable bit from binaries nested in those folders.
 *   **Impact**: `/usr/lib/systemd/systemd` (which `/sbin/init` symlinks to) became non-executable, throwing `OCI permission denied` upon container boot.
-*   **Resolution**: The `find` command in `scripts/08-system-files-overlay.sh` is now strictly constrained via `-name` flags to only target configuration files (`*.service`, `*.socket`, `*.conf`, etc.). 
+*   **Resolution**: The `find` command in `scripts/08-system-files-overlay.sh` is now strictly constrained via `-name` flags to only target configuration files (`*.service`, `*.socket`, `*.conf`, etc.).
 
 ### 4. Upstream Research: UKI & systemd-remount-fs
 *   **systemd-remount-fs Bug**: On Fedora 42+, `systemd-remount-fs.service` crashes on boot because the kernel prevents remounting the ComposeFS overlay with new options from `/etc/fstab`. The workaround is masking the service (which we do in `40-composefs-verity.sh`). We must monitor Fedora 44+ to see if upstream patches systemd to target `/sysroot` instead.
-*   **Unified Kernel Images (UKI)**: `bootc` is migrating to UKI as the standard for Secure Boot. UKIs bundle the kernel, initramfs, and `kargs` into a single EFI binary. RHEL 10 and Fedora 44 are building tooling (`bootc container render-kargs`) for this. 
-*   **Next Steps for UKI**: CloudWS needs to figure out how to compile the TOML arrays in `kargs.d/` and our out-of-tree `akmod-nvidia` drivers into the UKI binary natively. 
+*   **Unified Kernel Images (UKI)**: `bootc` is migrating to UKI as the standard for Secure Boot. UKIs bundle the kernel, initramfs, and `kargs` into a single EFI binary. RHEL 10 and Fedora 44 are building tooling (`bootc container render-kargs`) for this.
+*   **Next Steps for UKI**: CloudWS needs to figure out how to compile the TOML arrays in `kargs.d/` and our out-of-tree `akmod-nvidia` drivers into the UKI binary natively.
 *   **Hardlinking `/usr`**: Fedora 44 will globally hardlink identical files under `/usr`. Our `tar` overlay pipe in `08-system-files-overlay.sh` is safe because `bootc-base-imagectl rechunk` (which we run at the end of the build in `cloud-ws.ps1`) natively deduplicates and restores identical hardlinks across the image layers.
 
 ## Entry: April 2026 - Missing Components Deep Dive (Gemini)
@@ -40,19 +40,19 @@ I have conducted a deep dive into the remaining missing architectural components
 
 ### 3. Application Whitelisting (`fapolicyd` Alternatives)
 *   **The Gap**: `fapolicyd` was removed from `PACKAGES.md` because it caused a 2-5 minute boot delay.
-*   **The Finding**: `fapolicyd` actually *is* the most lightweight, native application whitelisting solution for Fedora (utilizing the kernel's `fanotify` API). The extreme boot delay was likely caused by it hashing every single binary on the system upon start. 
+*   **The Finding**: `fapolicyd` actually *is* the most lightweight, native application whitelisting solution for Fedora (utilizing the kernel's `fanotify` API). The extreme boot delay was likely caused by it hashing every single binary on the system upon start.
 *   **The Implementation Path**: If we reintroduce it, we must strictly configure it to use its **RPM database trust backend**. When properly configured, `fapolicyd` trusts anything installed via `dnf` natively, requiring zero hashing overhead at boot time. Alternatives like SELinux MAC or IMA are vastly heavier and more complex to maintain for a desktop workstation.
 
 ### 4. NVIDIA Waydroid 3D Hardware Acceleration
 *   **The Gap**: Waydroid Android containers on CloudWS-OS currently lack full 3D acceleration for NVIDIA users.
 *   **The Finding**: This is a hard technical limitation upstream in 2025/2026. Waydroid's Android container strictly expects a Mesa-compatible driver (like `virtio-gpu`, `iris`, or `radeonsi`). NVIDIA's proprietary closed-source driver stack cannot talk directly to the Android container's Mesa expectations.
-*   **The Implementation Path**: 
+*   **The Implementation Path**:
     1. For single-GPU NVIDIA systems: Force Waydroid to use `SwiftShader` (CPU software rendering). Add `ro.hardware.egl=swiftshader` to `/var/lib/waydroid/waydroid.cfg`.
-    2. For hybrid laptops (Intel/AMD iGPU + NVIDIA): Waydroid must be run on the integrated Mesa-compatible GPU to achieve hardware acceleration. 
+    2. For hybrid laptops (Intel/AMD iGPU + NVIDIA): Waydroid must be run on the integrated Mesa-compatible GPU to achieve hardware acceleration.
 
 ### 5. RTX 50-Series (Blackwell) VFIO Reset Bug
 *   **The Gap**: The documentation warns about an active reset bug forcing a fallback to open kernel modules.
-*   **The Finding**: There is sparse public upstream tracking of this specific bug under that exact name. 
+*   **The Finding**: There is sparse public upstream tracking of this specific bug under that exact name.
 *   **The Implementation Path**: We must closely monitor the `NVIDIA/open-gpu-kernel-modules` repository on GitHub for VFIO reset patches on the Blackwell architecture and ensure we are building the absolute latest `akmod-nvidia` drivers in our CI/CD pipeline.
 
 ## Entry: April 2026 - Broad Industry Research & Future Roadmaps (Gemini)
@@ -72,7 +72,7 @@ To ensure CloudWS-bootc remains aligned with the bleeding edge, I have conducted
 ### 3. VFIO & SR-IOV for Consumer GPUs (2025-2026)
 *   **NVIDIA:** The focus is the new Rust-based **Nova** kernel driver, aiming to provide native SR-IOV and replace `nvidia-vGPU-vfio`. However, consumer SKUs (like RTX 50-Series Blackwell) still do **not** officially support SR-IOV; it remains gated behind enterprise vGPU licenses.
 *   **Intel:** The Intel Arc Pro B-series (Battlemage) officially supports SR-IOV natively with the new `xe` kernel driver. Unfortunately, Intel has explicitly disabled SR-IOV in firmware for consumer Battlemage cards (B580/B570), making the Pro models the best "budget" official path.
-*   **AMD:** No official consumer SR-IOV support on RDNA 3 or RDNA 4. 
+*   **AMD:** No official consumer SR-IOV support on RDNA 3 or RDNA 4.
 *   **Impact for CloudWS:** We must continue to support standard full-card VFIO passthrough for consumer hardware, as consumer SR-IOV remains artificially restricted by manufacturers despite kernel-level readiness.
 ## Entry: April 2026 - Deep Dive: Bootc Internals & Systemd Interactions (Gemini)
 
@@ -108,13 +108,66 @@ The `bootc-systemd-generator` (written in Rust, compiled into `/usr/lib/systemd/
 
 ### 3. UKI Generation: The `render-kargs` Command
 As `bootc` moves towards Unified Kernel Images (UKIs), the concept of kernel arguments (`kargs`) shifts drastically. In a legacy GRUB system, `kargs` are written to a mutable `grub.cfg`. In a UKI, `kargs` are embedded directly into the `.cmdline` section of the signed PE (Portable Executable) binary.
-*   **The Mechanism:** Upstream is implementing `bootc container render-kargs`. This command executes *during the image build/conversion phase* (e.g., inside `bootc-image-builder`). 
+*   **The Mechanism:** Upstream is implementing `bootc container render-kargs`. This command executes *during the image build/conversion phase* (e.g., inside `bootc-image-builder`).
 *   **The Merge Logic:** It parses the TOML arrays inside `/usr/lib/bootc/kargs.d/`, merges them with any `installconfig` directives, and accepts runtime overrides via `--additional-kargs`. It then outputs the finalized, flattened string to `stdout`, which `objcopy` or `ukify` uses to embed the command line into the UKI before it is cryptographically signed for Secure Boot.
 
 ## Current Active Tasks (WIP)
 > *Agent tracking section to prevent duplicate work and share active context.*
 
 *   **Gemini (Standing By):** Deep, low-level technical interrogation completed and logged. The journal is updated with EROFS metadata structures, systemd generator mechanics, and UKI command-line rendering logic. Ready for the next engineering directive.
+
+*(End of Entry)*
+
+## Entry: Systemd Execution Analysis & WSL2 Boot Loop Debugging (Gemini)
+> **Agent Note for Claude & Others:** Please reference this entry when debugging systemd unit failures on our new target images. I have conducted an extensive analysis of a catastrophic boot loop occurring on `Kernel 6.6.114.1-microsoft-standard-WSL2`.
+
+### 1. The WSL2 `dbus-broker` Cascade Failure
+*   **Symptom**: Massive failure cascade on WSL2 boots resulting in dead `systemd-logind`, `upower`, `rtkit-daemon`, and `avahi-daemon`.
+*   **Root Cause**: `dbus-broker` uses the `--audit` flag or attempts to hook into the Linux Kernel Audit subsystem. WSL2 kernels compiled by Microsoft (`microsoft-standard-WSL2`) entirely strip the `CONFIG_AUDIT` subsystem to save overhead. `dbus-broker` exits with code 1, throwing systemd into a start-limit-hit loop. Every service relying on the system bus dies with it.
+*   **Resolution (Implemented)**: Created script `18-apply-boot-fixes.sh` to inject a `ConditionPathExists=!/proc/sys/fs/binfmt_misc/WSLInterop` drop-in for `dbus-broker.service`. I've added a fallback `dbus-daemon-wsl.service` utilizing the older `dbus-daemon` (which gracefully ignores missing audit subsystems) explicitly for WSL2 environments.
+
+### 2. The `sockets.target` Ordering Cycle
+*   **Symptom**: `docker.socket` and `podman.socket` are skipped on boot.
+*   **Root Cause**: Log trace indicates: `docker.socket/start after cloudws-gpu-nvidia.service/start after basic.target/start after sockets.target/start - after docker.socket`.
+    *   Our `cloudws-gpu-nvidia.service` has `Before=docker.socket`.
+    *   Because our service doesn't declare `DefaultDependencies=no`, systemd implicitly adds `Requires=sysinit.target` and `After=basic.target`.
+    *   However, `sockets.target` evaluates *before* `basic.target`. This creates a closed loop.
+*   **Resolution (Implemented)**: Added a drop-in config `10-cycle-fix.conf` to `cloudws-gpu-nvidia.service` removing default dependencies to cleanly break the cycle, letting the GPU passthrough unit initialize during early boot without tangling the base socket targets.
+
+### 3. File Permission Stripping (The `203/EXEC` and `217/USER` Anomalies)
+*   **Symptom**: `cloudws-role.service` and `cloudws-cdi-detect.service` both fail with `203/EXEC`. `systemd-resolved.service` fails with `217/USER`. `usbguard` refuses to start citing "Policy may be readable".
+*   **Root Cause**:
+    *   `203/EXEC`: The executable bit was stripped from `/usr/libexec/cloudws-*` binaries during the system-files overlay pipeline.
+    *   `217/USER`: The `systemd-resolve` user map is missing at boot time, causing the daemon to fail when dropping privileges.
+    *   `usbguard`: The configuration file `/etc/usbguard/usbguard-daemon.conf` was globally chmod'd to `0644`. Usbguard strictly requires `0600` and intentionally self-terminates if world-readable.
+*   **Resolution (Implemented)**: Patched the `18-apply-boot-fixes.sh` script to force `chmod 0600` on the usbguard config, recursively restore `+x` to all cloudws binaries, and trigger `systemd-sysusers /usr/lib/sysusers.d/systemd-resolve.conf` to guarantee the user exists before target execution.
+
+### 4. Systemd Escape Sequence Syntax
+*   **Symptom**: Boot warnings parsing `10-cloudws-akmod-guard.conf` drop-ins for NVIDIA services.
+*   **Root Cause**: We passed raw regex `grep -Eq "(^|/)nvidia\.ko(\.[xz]z|\.zst)?:"` to an `ExecCondition`. Systemd parses `\` as an internal C-style escape sequence before handing it to the shell.
+*   **Resolution (Implemented)**: Added a `sed` replacement string to double-escape the backslashes `\\` natively in the systemd files so it properly translates the regex.
+
+## Entry: Deep Dive - Missing Components & Architectural Interrogation (Gemini)
+> **Agent Note**: To prevent stale searches, I interrogated the Kanban findings to generate *new* search targets for my fellow agents to execute.
+
+### K3s SELinux Constraints on Fedora 44
+*   **Deep Research**: Previously we assumed we could just pull the Rancher `centos/8/noarch` RPM for K3s SELinux. **This is fundamentally incorrect and will break F44.** The upstream Rancher RPM relies on `container-selinux` mappings that have been deprecated in Fedora 44's newer policy structures.
+*   **The Pivot / Implementation Path**: We must pull the raw `k3s-io/k3s-selinux` repository during our build stage, compile the `.cil` and `.pp` modules against our specific kernel headers using `make -f /usr/share/selinux/devel/Makefile`, and embed the compiled policy directly in the OCI layer.
+*   **New Queries for Claude**: *`Query: "Fedora 44 container-selinux deprecations K3s policy compatibility"`*, *`Query: "Building k3s-selinux .pp module from source bootc containerfile"`*
+
+### Fapolicyd Trust Backend (Application Whitelisting)
+*   **Deep Research**: Fapolicyd normally trusts the RPM Database. In a `bootc` environment, the RPM database is essentially a frozen artifact, and applications run out of ComposeFS overlay layers.
+*   **The Pivot / Implementation Path**: Fapolicyd 1.3+ introduced a `trust=file` backend utilizing `fs-verity`. Because CloudWS-bootc is moving to Native ComposeFS (which fundamentally relies on fs-verity to build its Merkle trees), we can map Fapolicyd directly to the ComposeFS digests! This guarantees 0-second boot delays while retaining NSA-grade application whitelisting.
+*   **New Queries for Claude**: *`Query: "fapolicyd trust=file fs-verity composefs integration"`*
+
+### VM Gating via Pacemaker in Containers
+*   **Deep Research**: Running standard RPM `corosync` and `pacemaker` inside an immutable host is highly anti-pattern.
+*   **The Pivot / Implementation Path**: We must use `pacemaker-remote` (PCS) deployed as a host-networked Podman Quadlet. `libvirt` systemd instances can then be injected with `Requires=pcsd.service` dynamically using our generator pattern to gate VM migrations.
+
+### Cosign Host Verification Strategy
+*   **Deep Research**: The Kanban listed "Cosign Verification" as missing from F44 repos. After deep-diving into OSTree architecture, **we do not need the `cosign` binary on the host**.
+*   **The Pivot / Implementation Path**: The `bootc` native client directly interprets the `/etc/containers/policy.json`. If we map a `sigstoreSigned` key in that JSON to our Fulcio pubkey, `bootc` inherently blocks unverified image boots without ever invoking a `cosign` CLI tool.
+*   **Status**: Moving to Done/Resolved.
 
 *(End of Entry)*
 ## Entry: April 2026 - Deep Dive: Bootc CNCF Architecture & Ecosystem (Gemini)
@@ -124,7 +177,7 @@ Continuing the broad research into the upstream bootc ecosystem:
 ### 1. Bootc CNCF Sandbox Status & Architecture
 *   **Discovery**: As of January 2025, `bootc` officially entered the CNCF Sandbox. It is positioning itself as a vendor-neutral standard for "bootable OCI containers," extending the Docker/Podman model to the entire operating system, including the kernel (`/usr/lib/modules`).
 *   **Transactional Updates**: Upgrades (`bootc upgrade`) are fully atomic and in-place. The system pulls the new OCI image, stages a new deployment via OSTree, and reboots. Rollbacks are clean and deterministic.
-*   **The OS as a Container**: The traditional `rpm-ostree` workflow (using OSTree commits and repos) is being fully superseded by OCI standard container registries (Quay, GHCR) and `Containerfile` builds. 
+*   **The OS as a Container**: The traditional `rpm-ostree` workflow (using OSTree commits and repos) is being fully superseded by OCI standard container registries (Quay, GHCR) and `Containerfile` builds.
 *   **Ecosystem Expansion**: Projects like `Flightctl` are heavily adopting `bootc` for declarative, large-scale fleet management of edge devices.
 
 ### 2. Convergence and Alternatives
@@ -132,11 +185,11 @@ Continuing the broad research into the upstream bootc ecosystem:
 
 ### 3. ComposeFS vs FS-Verity: The Native Bootc Performance Era (2025-2026)
 *   **The Symbiosis**: Composefs and fs-verity are complementary, not competing. `fs-verity` is the underlying kernel mechanism providing cryptographic integrity for read-only files using Merkle trees. `composefs` is a meta-filesystem (built on EROFS) that solves the metadata gap, storing directory structures and permissions in a signed image and using fs-verity to verify both the image and the underlying files.
-*   **The "Native" Transition**: The primary performance win for 2026 (Fedora 44+) is `bootc` moving to a "Native Composefs" backend (`composefs-rs`), fully deprecating the legacy `ostree` "Git-like" hardlink farm. 
-*   **Performance Impact**: 
+*   **The "Native" Transition**: The primary performance win for 2026 (Fedora 44+) is `bootc` moving to a "Native Composefs" backend (`composefs-rs`), fully deprecating the legacy `ostree` "Git-like" hardlink farm.
+*   **Performance Impact**:
     *   **Metadata Ops**: ~4x faster lookup times (cold cache) using EROFS.
     *   **Page Cache**: 100% RAM sharing across identical files in different images.
-    *   **I/O Pressure**: Eliminates the massive inode usage previously required by ostree's hardlink-based checkouts. 
+    *   **I/O Pressure**: Eliminates the massive inode usage previously required by ostree's hardlink-based checkouts.
 
 ### 4. `bootc-image-builder` Consolidation (2025-2026)
 *   **Project Convergence**: A major strategic shift is occurring where `bootc-image-builder` (BIB) is being consolidated into the more generalized upstream `image-builder` project. This aims to provide a unified image generation experience across all Red Hat and community projects, shifting away from a specialized bootc-only tool.
