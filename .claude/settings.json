@@ -40,7 +40,9 @@
       "Bash(podman inspect:*)",
       "Bash(git -C \"d:/Documents/Github/CloudWS-bootc\" log --oneline -5)",
       "Bash(GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND=\"ssh -o BatchMode=yes\" git -C \"d:/Documents/Github/CloudWS-bootc\" status --short)",
-      "Bash(echo \"EXIT:$?\")"
+      "Bash(echo \"EXIT:$?\")",
+      "WebSearch(*)",
+      "WebFetch(*)"
     ],
     "deny": [
       "Bash(git push:*)",
