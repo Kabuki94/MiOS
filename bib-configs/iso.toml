@@ -28,7 +28,7 @@ network --bootproto=dhcp --device=link --activate --onboot=on
 zerombr
 clearpart --all --initlabel --disklabel=gpt
 reqpart --add-boot
-part / --grow --fstype xfs
+part / --grow --fstype ext4
 
 # Replace the crypted password and ssh key below before publishing ISO.
 user --name=cloudws --groups=wheel,render,video --iscrypted --password=$6$REPLACEME_WITH_SHA512_HASH$REPLACEME

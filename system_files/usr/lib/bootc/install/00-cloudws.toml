@@ -1,2 +1,2 @@
 [install]
-root-fs-type = "xfs"
+root-fs-type = "ext4"

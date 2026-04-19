@@ -13,7 +13,7 @@ text
 network --bootproto=dhcp --device=link --activate --hostname=CloudWS
 clearpart --all --initlabel --disklabel=gpt
 reqpart --add-boot
-part / --grow --fstype xfs
+part / --grow --fstype ext4
 
 # ostreecontainer directive pulls the OCI image and deploys it
 ostreecontainer --url ghcr.io/kabuki94/cloudws-bootc:latest --no-signature-verification

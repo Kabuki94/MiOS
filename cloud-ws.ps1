@@ -479,7 +479,7 @@ function Get-BIBArgs {
         $bibArgs += @("-v", "$(Join-Path $OutputFolder '.luks-tmp'):/luks-pass:ro")
         $bibArgs += @("--env", "LUKS_PASSPHRASE_FILE=/luks-pass")
     }
-    $bibArgs += @($BIBImage, "build", "--type", $Type, "--rootfs", "xfs", "--local", $LocalImage)
+    $bibArgs += @($BIBImage, "build", "--type", $Type, "--rootfs", "ext4", "--local", $LocalImage)
     return $bibArgs
 }
 
