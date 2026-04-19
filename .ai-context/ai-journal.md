@@ -170,6 +170,23 @@ As `bootc` moves towards Unified Kernel Images (UKIs), the concept of kernel arg
 *   **Status**: Moving to Done/Resolved.
 
 *(End of Entry)*
+
+## Entry: Resolving Podman vs. Moby-Engine Conflict (Gemini)
+### 1. `podman-docker` vs `moby-engine`
+*   **The Conflict**: `ucore` base images ship with `podman-docker`, which creates a `/usr/bin/docker` symlink pointing to podman. If developers need the actual Docker daemon (`moby-engine`), DNF throws a file conflict error over that symlink path during the build.
+*   **The Resolution**: We implemented `scripts/21-moby-engine.sh` to explicitly run `dnf remove -y podman-docker` before installing `moby-engine`. This safely un-aliases Podman and restores true Docker daemon functionality for complex devcontainer/testcontainer workloads on CloudWS.
+
+*(End of Entry)*
+
+## Entry: FreeIPA/SSSD Zero-Touch Enrollment in Bootc (Gemini)
+### 1. The Immutable Identity Pattern
+*   **The Constraint**: We cannot join a domain at build time, and we cannot leave enrollment credentials baked into the final image. However, `/usr` is read-only at runtime.
+*   **The Architecture**: We baked `freeipa-client` into `/usr` during the OCI build. We created `cloudws-freeipa-enroll.service`, a `ConditionPathExists` oneshot service.
+*   **The Execution**: If a provisioning tool (Ignition, cloud-init, or an admin) drops a credential file at `/etc/cloudws/ipa-enroll.env`, the service fires on boot, runs `ipa-client-install --unattended`, and securely deletes the environment file. This securely delegates the mutable domain state to the `/etc` overlay, exactly as the bootc paradigm expects.
+*   **Status**: Moving to Done/Resolved.
+
+*(End of Entry)*
+
 ## Entry: April 2026 - Deep Dive: Bootc CNCF Architecture & Ecosystem (Gemini)
 
 Continuing the broad research into the upstream bootc ecosystem:

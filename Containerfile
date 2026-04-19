@@ -124,7 +124,9 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     /ctx/scripts/build.sh && \
     /ctx/scripts/18-apply-boot-fixes.sh && \
     /ctx/scripts/19-k3s-selinux.sh && \
-    /ctx/scripts/20-fapolicyd-trust.sh
+    /ctx/scripts/20-fapolicyd-trust.sh && \
+    /ctx/scripts/21-moby-engine.sh && \
+    /ctx/scripts/22-freeipa-client.sh
 
 RUN bootc container lint
 

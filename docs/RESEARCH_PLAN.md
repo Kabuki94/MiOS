@@ -39,10 +39,10 @@ This document outlines the comprehensive research and remediation plan for the 1
 | **3. Pacemaker HA VM Gating** | Done | Remediation | Deploy PCS remote via Podman Quadlet | Fedora Pacemaker Docs |
 | **4. ComposeFS Verity Bug** | In Progress | Research | Monitor systemd-remount-fs interop | systemd/composefs issues |
 | **5. Unified Kernel Image (UKI)** | To Do | Research | Implement composefs+UKI chain | bootc UKI roadmap |
-| **6. FreeIPA/SSSD Automation** | To Do | Research | Evaluate zero-touch enrollment | FreeIPA Client Docs |
+| **6. FreeIPA/SSSD Automation** | Done | Remediation | Zero-touch systemd oneshot w/ credential shredding | FreeIPA Client Docs |
 | **7. Fapolicyd Alternatives** | Done | Remediation | Configure Fapolicyd with fs-verity trust backend | Fedora Security / fapolicyd |
 | **8. Cosign Verification** | Done | Remediation | Implemented via native `/etc/containers/policy.json` | sigstore/cosign / bootc |
-| **9. Podman-Docker Symlink** | To Do | Research | Resolve moby-engine conflict | ublue-os/ucore |
+| **9. Podman-Docker Symlink** | Done | Remediation | Swapped podman-docker for moby-engine in OCI build | ublue-os/ucore |
 | **10. Intel Compute Stack** | In Progress | Research | Monitor level-zero/libproc2 | Fedora/Intel Compute |
 | **11. Utility Packages Addition** | Done | Remediation | Add ntfs-3g, strace, lsof, etc. | PACKAGES-AUDIT.md |
 | **12. NVIDIA Waydroid 3D** | Done | Remediation | Implement SwiftShader systemd drop-in | Waydroid/NVIDIA docs |
