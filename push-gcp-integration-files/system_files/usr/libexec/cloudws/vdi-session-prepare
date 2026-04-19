@@ -1,0 +1,44 @@
+#!/usr/bin/bash
+# vdi-session-prepare: detect whether the current session is running inside
+# a VDI container / remote X11 server and emit the appropriate
+# XDG_SESSION_TYPE + toolkit-backend env file.
+set -euo pipefail
+
+uid=$(id -u)
+runtime_dir="/run/user/${uid}"
+out="${runtime_dir}/vdi-session.env"
+install -d -m 0700 "$runtime_dir"
+
+VDI_MODE=0
+if [[ -n "${KASM_USER:-}${KASMVNC_ENABLED:-}${GUAC_VNC:-}" ]]; then
+  VDI_MODE=1
+elif { [[ -r /run/.containerenv ]] || [[ -r /.dockerenv ]]; } \
+     && ! loginctl show-seat seat0 >/dev/null 2>&1; then
+  VDI_MODE=1
+elif [[ -n "${DISPLAY:-}" && -z "${WAYLAND_DISPLAY:-}" ]]; then
+  VDI_MODE=1
+fi
+
+if (( VDI_MODE == 1 )); then
+  cat >"$out" <<'EOF'
+XDG_SESSION_TYPE=x11
+GDK_BACKEND=x11
+QT_QPA_PLATFORM=xcb
+CLUTTER_BACKEND=x11
+SDL_VIDEODRIVER=x11
+MOZ_ENABLE_WAYLAND=0
+ELECTRON_OZONE_PLATFORM_HINT=x11
+EOF
+else
+  cat >"$out" <<'EOF'
+XDG_SESSION_TYPE=wayland
+GDK_BACKEND=wayland,x11
+QT_QPA_PLATFORM=wayland;xcb
+CLUTTER_BACKEND=wayland
+SDL_VIDEODRIVER=wayland
+MOZ_ENABLE_WAYLAND=1
+ELECTRON_OZONE_PLATFORM_HINT=wayland
+EOF
+fi
+chmod 0600 "$out"
+printf 'vdi-session-prepare: wrote %s (VDI_MODE=%d)\n' "$out" "$VDI_MODE"

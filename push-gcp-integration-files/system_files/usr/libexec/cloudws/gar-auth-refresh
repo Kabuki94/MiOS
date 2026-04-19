@@ -1,0 +1,45 @@
+#!/usr/bin/bash
+# gar-auth-refresh: write /etc/ostree/auth.json with a short-lived OAuth2
+# access token obtained from the GCE metadata server. Safe to run on a
+# 30-min timer; token lifetime ~3600s.
+set -euo pipefail
+
+MDS="http://metadata.google.internal/computeMetadata/v1"
+MDS_H='Metadata-Flavor: Google'
+OUT=/etc/ostree/auth.json
+
+# shellcheck source=/dev/null
+[[ -r /etc/sysconfig/cloudws-gcp.conf ]] && source /etc/sysconfig/cloudws-gcp.conf
+: "${GAR_LOCATION:=us-central1}"
+
+log() { printf '[gar-auth-refresh] %s\n' "$*"; }
+
+if ! command -v jq >/dev/null 2>&1; then
+  log "jq not installed; cannot parse metadata response"
+  exit 1
+fi
+
+token=$(curl -fsS -H "$MDS_H" --max-time 5 \
+  "$MDS/instance/service-accounts/default/token" | jq -r .access_token)
+
+if [[ -z "${token}" || "${token}" == "null" ]]; then
+  log "no access token returned from MDS"
+  exit 1
+fi
+
+auth=$(printf 'oauth2accesstoken:%s' "$token" | base64 -w0)
+
+install -d -m 0700 /etc/ostree
+umask 077
+tmp=$(mktemp /etc/ostree/auth.json.XXXXXX)
+cat >"$tmp" <<EOF
+{
+  "auths": {
+    "${GAR_LOCATION}-docker.pkg.dev": { "auth": "${auth}" },
+    "us-docker.pkg.dev":              { "auth": "${auth}" }
+  }
+}
+EOF
+mv "$tmp" "$OUT"
+chmod 0600 "$OUT"
+log "refreshed $OUT"

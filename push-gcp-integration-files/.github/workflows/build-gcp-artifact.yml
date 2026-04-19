@@ -1,0 +1,66 @@
+name: build-gcp-artifact
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag: { description: "Tag to build", required: true, default: "latest" }
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    env:
+      IMAGE_REF: ghcr.io/kabuki94/cloudws-bootc:${{ github.event.inputs.image_tag || github.ref_name }}
+      PROJECT:  ${{ vars.GCP_PROJECT }}
+      BUCKET:   ${{ vars.GCP_STAGING_BUCKET }}
+      REGION:   ${{ vars.GCP_REGION }}
+      WIF:      ${{ vars.WIF_PROVIDER }}
+      SA:       ${{ vars.WIF_SERVICE_ACCOUNT }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Auth to GCP via WIF
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          token_format: access_token
+          workload_identity_provider: ${{ env.WIF }}
+          service_account: ${{ env.SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build disk.raw.tar.gz via bootc-image-builder
+        run: |
+          set -euo pipefail
+          mkdir -p output
+          sudo podman run --rm --privileged --pull=newer \
+            --security-opt label=type:unconfined_t \
+            -v "${PWD}/bib-configs/gcp.toml:/config.toml:ro" \
+            -v "${PWD}/output:/output" \
+            -v /var/lib/containers/storage:/var/lib/containers/storage \
+            quay.io/centos-bootc/bootc-image-builder:latest \
+            --type gce --rootfs xfs --config /config.toml \
+            "${IMAGE_REF}"
+          ls -la output/gce/
+
+      - name: Upload to GCS
+        run: |
+          set -euo pipefail
+          TAG="${{ github.event.inputs.image_tag || github.ref_name }}"
+          gcloud storage cp output/gce/image.tar.gz \
+            "gs://${BUCKET}/cloudws-${TAG}/disk.raw.tar.gz"
+
+      - name: Register as GCE custom image
+        run: |
+          set -euo pipefail
+          TAG="${{ github.event.inputs.image_tag || github.ref_name }}"
+          NAME="cloudws-bootc-$(echo "$TAG" | tr . -)"
+          gcloud compute images create "$NAME" \
+            --source-uri="gs://${BUCKET}/cloudws-${TAG}/disk.raw.tar.gz" \
+            --family=cloudws-bootc \
+            --guest-os-features=UEFI_COMPATIBLE,GVNIC,VIRTIO_SCSI_MULTIQUEUE \
+            --project="${PROJECT}"

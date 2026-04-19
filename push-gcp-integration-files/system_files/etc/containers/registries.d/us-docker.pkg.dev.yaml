@@ -1,0 +1,13 @@
+docker:
+  us-docker.pkg.dev:
+    use-sigstore-attachments: true
+  us-central1-docker.pkg.dev:
+    use-sigstore-attachments: true
+  us-east1-docker.pkg.dev:
+    use-sigstore-attachments: true
+  europe-docker.pkg.dev:
+    use-sigstore-attachments: true
+  europe-west1-docker.pkg.dev:
+    use-sigstore-attachments: true
+  asia-docker.pkg.dev:
+    use-sigstore-attachments: true

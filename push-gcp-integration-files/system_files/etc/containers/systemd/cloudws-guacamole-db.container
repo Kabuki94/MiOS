@@ -1,0 +1,22 @@
+[Unit]
+Description=PostgreSQL backing store for Guacamole
+Wants=network-online.target
+After=network-online.target
+
+[Container]
+ContainerName=cloudws-guacamole-db
+Image=docker.io/library/postgres:16-alpine
+AutoUpdate=registry
+Environment=POSTGRES_DB=guacamole_db
+Environment=POSTGRES_USER=guacamole_user
+Secret=cloudws_guac_db_password,type=env,target=POSTGRES_PASSWORD
+Volume=cloudws-guacamole-db.volume:/var/lib/postgresql/data:Z
+Network=cloudws-vdi.network
+NetworkAlias=guacamole-db
+
+[Service]
+Restart=always
+TimeoutStartSec=300
+
+[Install]
+WantedBy=cloudws-vdi.target

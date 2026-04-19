@@ -1,0 +1,19 @@
+<!-- Flat-file user-mapping template. For production, use the JDBC PostgreSQL
+     extension; this template is shipped only for offline/dev use. Replace the
+     password hash before any non-local deployment. -->
+<user-mapping>
+  <authorize username="cloudws" password="CHANGEME_SHA256" encoding="sha256">
+    <connection name="KasmVNC (local)">
+      <protocol>vnc</protocol>
+      <param name="hostname">kasmvnc</param>
+      <param name="port">6901</param>
+      <param name="password">changeme</param>
+    </connection>
+    <connection name="SSH (local)">
+      <protocol>ssh</protocol>
+      <param name="hostname">localhost</param>
+      <param name="port">22</param>
+      <param name="username">cloudws</param>
+    </connection>
+  </authorize>
+</user-mapping>

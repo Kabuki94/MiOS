@@ -1,0 +1,26 @@
+# bootc-image-builder config for Google Compute Engine targets.
+# Invoke:
+#   sudo podman run --rm --privileged --pull=newer \
+#     --security-opt label=type:unconfined_t \
+#     -v ./bib-configs/gcp.toml:/config.toml:ro \
+#     -v ./output:/output \
+#     -v /var/lib/containers/storage:/var/lib/containers/storage \
+#     quay.io/centos-bootc/bootc-image-builder:latest \
+#     --type gce --rootfs xfs --config /config.toml \
+#     ghcr.io/kabuki94/cloudws-bootc:latest
+# Produces output/gce/image.tar.gz (contains disk.raw).
+
+[[customizations.user]]
+name = "cloudws"
+groups = ["wheel"]
+
+[customizations.kernel]
+append = "console=ttyS0,38400n8d console=tty0 no_timer_check net.ifnames=0 biosdevname=0 scsi_mod.use_blk_mq=Y"
+
+[[customizations.filesystem]]
+mountpoint = "/"
+minsize = "15 GiB"
+
+[[customizations.filesystem]]
+mountpoint = "/var"
+minsize = "30 GiB"

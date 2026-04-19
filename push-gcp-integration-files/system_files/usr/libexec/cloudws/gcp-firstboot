@@ -1,0 +1,45 @@
+#!/usr/bin/bash
+# gcp-firstboot: DNS guard, hostname sync, seed /etc/ostree/auth.json.
+set -euo pipefail
+
+STATE_DIR=/var/lib/cloudws
+DONE_FLAG="$STATE_DIR/gcp-firstboot.done"
+MDS="http://metadata.google.internal/computeMetadata/v1"
+MDS_H='Metadata-Flavor: Google'
+
+log() { printf '[gcp-firstboot] %s\n' "$*"; }
+
+install -d -m 0755 "$STATE_DIR"
+
+# -------- DNS guard: poll MDS for up to 60s before proceeding --------
+attempts=0
+max=30
+while (( attempts < max )); do
+  if curl -fsS -H "$MDS_H" --max-time 2 "$MDS/instance/id" >/dev/null 2>&1; then
+    log "metadata server reachable"
+    break
+  fi
+  attempts=$((attempts + 1))
+  sleep 2
+done
+if (( attempts >= max )); then
+  log "metadata server unreachable after ${max} attempts; aborting firstboot"
+  exit 1
+fi
+
+# -------- hostname from MDS --------
+hn=$(curl -fsS -H "$MDS_H" "$MDS/instance/hostname" || true)
+if [[ -n "$hn" ]]; then
+  log "setting hostname to $hn"
+  hostnamectl set-hostname "$hn"
+fi
+
+# -------- seed /etc/ostree/auth.json from the instance service account --------
+if /usr/libexec/cloudws/gar-auth-refresh; then
+  log "GAR auth seeded"
+else
+  log "GAR auth seed failed (non-fatal)"
+fi
+
+touch "$DONE_FLAG"
+log "firstboot complete"
