@@ -1,0 +1,15 @@
+[Unit]
+Description=CloudWS GCP first-boot provisioning
+ConditionVirtualization=vm
+ConditionPathExists=!/var/lib/cloudws/gcp-firstboot.done
+Wants=network-online.target
+After=network-online.target cloud-init.service google-guest-agent-manager.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/sysconfig/cloudws-gcp.conf
+ExecStart=/usr/libexec/cloudws/gcp-firstboot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

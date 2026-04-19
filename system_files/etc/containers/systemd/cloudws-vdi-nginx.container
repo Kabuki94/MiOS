@@ -1,0 +1,20 @@
+[Unit]
+Description=CloudWS VDI nginx reverse proxy
+Wants=network-online.target cloudws-guacamole.service cloudws-kasmvnc.service
+After=network-online.target cloudws-guacamole.service cloudws-kasmvnc.service
+
+[Container]
+ContainerName=cloudws-vdi-nginx
+Image=docker.io/library/nginx:1.27-alpine
+AutoUpdate=registry
+PublishPort=443:8443
+Volume=/usr/share/cloudws/vdi/nginx-vdi.conf:/etc/nginx/conf.d/default.conf:ro,Z
+Volume=/etc/letsencrypt:/etc/letsencrypt:ro
+Network=cloudws-vdi.network
+NetworkAlias=nginx
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=cloudws-vdi.target

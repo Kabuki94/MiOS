@@ -1,0 +1,10 @@
+[Unit]
+Description=Refresh /etc/ostree/auth.json with short-lived GAR access token
+ConditionVirtualization=vm
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/sysconfig/cloudws-gcp.conf
+ExecStart=/usr/libexec/cloudws/gar-auth-refresh

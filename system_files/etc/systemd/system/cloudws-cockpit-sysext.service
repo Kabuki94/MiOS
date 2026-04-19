@@ -1,0 +1,12 @@
+[Unit]
+Description=Merge CloudWS Cockpit systemd-sysext (if present)
+ConditionDirectoryNotEmpty=/var/lib/extensions
+Before=cockpit.socket
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemd-sysext merge
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

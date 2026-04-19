@@ -1,0 +1,18 @@
+# Variant tuned for Cloud Workstations base-image consumption.
+# Cloud Workstations runs the image as a container, not a VM, so most
+# kernel/filesystem customizations are inert; kept for parity.
+
+[[customizations.user]]
+name = "user"
+groups = ["wheel"]
+
+[customizations.kernel]
+append = "console=ttyS0,38400n8d console=tty0 no_timer_check net.ifnames=0 biosdevname=0"
+
+[[customizations.filesystem]]
+mountpoint = "/"
+minsize = "20 GiB"
+
+[[customizations.filesystem]]
+mountpoint = "/var"
+minsize = "40 GiB"
