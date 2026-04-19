@@ -9,21 +9,21 @@ _ip() { ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="s
 IP=$(_ip); [[ -z "$IP" ]] && IP="127.0.0.1"
 HN=$(hostname -s 2>/dev/null || echo "CloudWS")
 _l() { printf '\e]8;;%s\e\\%s\e]8;;\e\\' "$1" "$2"; }
-C='\033[0;36m';W='\033[1;37m';G='\033[0;32m';D='\033[0;90m';N='\033[0m'
+C=$'\033[0;36m';W=$'\033[1;37m';G=$'\033[0;32m';D=$'\033[0;90m';N=$'\033[0m'
 _s() {
     if systemctl is-active --quiet "$1" 2>/dev/null; then
-        printf "${G}●${N}"
+        printf '%s' "${G}●${N}"
     else
-        printf "${D}○${N}"
+        printf '%s' "${D}○${N}"
     fi
 }
 
 echo ""
-printf "${C}════════════════════════════════════════════════════════════${N}\n"
-printf "${W}  CloudWS v2.0${N}  ${D}${HN} — ${IP}${N}\n"
-printf "${C}════════════════════════════════════════════════════════════${N}\n"
+printf '%s\n' "${C}════════════════════════════════════════════════════════════${N}"
+printf '%s\n' "${W}  CloudWS v2.0${N}  ${D}${HN} — ${IP}${N}"
+printf '%s\n' "${C}════════════════════════════════════════════════════════════${N}"
 echo ""
-printf "${W}  Management${N}\n"
+printf '%s\n' "${W}  Management${N}"
 printf "  $(_s cockpit.socket)  Cockpit           $(_l "https://${IP}:9090" "https://${IP}:9090")\n"
 printf "  $(_s sshd)  SSH               $(_l "ssh://${IP}" "${IP}:22")\n"
 
@@ -43,7 +43,7 @@ if systemctl is-active --quiet cloudws-guacamole.service 2>/dev/null || \
 fi
 
 echo ""
-printf "${W}  Infrastructure${N}\n"
+printf '%s\n' "${W}  Infrastructure${N}"
 printf "  $(_s firewalld)  Firewall          ${D}firewall-cmd --list-all${N}\n"
 printf "  $(_s podman.socket)  Podman            ${D}$(podman ps -q 2>/dev/null | wc -l) containers${N}\n"
 printf "  $(_s libvirtd.socket)  Libvirt           ${D}virt-manager / virsh${N}\n"
@@ -64,5 +64,5 @@ if [ "$VIRT" = "microsoft" ]; then
 fi
 
 echo ""
-printf "  ${D}cloudws --help | export CLOUDWS_NO_MOTD=1 to hide${N}\n"
+printf '%s\n' "  ${D}cloudws --help | export CLOUDWS_NO_MOTD=1 to hide${N}"
 echo ""

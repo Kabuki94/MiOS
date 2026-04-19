@@ -1,15 +1,11 @@
 #!/usr/bin/env bash
 set -eoux pipefail
 
-echo "==> Resolving Podman-Docker symlink conflict..."
+echo "==> Installing moby-engine (Docker) alongside Podman..."
 
-# ucore-hci ships with podman-docker by default, which conflicts with moby-engine
-# over the /usr/bin/docker symlink. We must explicitly remove the symlink package
-# before we can install the real Docker daemon.
-dnf remove -y podman-docker
-
-# Install the true Docker engine and compose plugin
-dnf install -y moby-engine docker-compose
+# moby-engine conflicts with podman-docker over /usr/bin/docker. Use --allowerasing
+# to let dnf resolve the conflict without an explicit remove (§3.9: no dnf remove).
+dnf install -y --allowerasing moby-engine docker-compose
 
 # Enable the Docker socket to ensure it's available on boot
 systemctl enable docker.socket

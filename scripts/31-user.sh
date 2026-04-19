@@ -34,16 +34,16 @@ fi
 # ??? USER CREATION ???
 # Password is pre-hashed (SHA-512) by the orchestrator ? plaintext NEVER in build log.
 echo "[31-user] Creating user cloudws..."
-useradd -m -d /var/home/cloudws -s /bin/bash cloudws 2>/dev/null || true
-echo 'cloudws:$6$cC2X0Oo7yEpal6he$mAGl3mpYCtTokIOamC/tGzsdHqaSQY1a1r/MCWMpw4BJ.JRi2oSHIJDkc26J/ieE3bcyCu.CayJnebD0D4clw1' | chpasswd -e
-echo 'root:$6$cC2X0Oo7yEpal6he$mAGl3mpYCtTokIOamC/tGzsdHqaSQY1a1r/MCWMpw4BJ.JRi2oSHIJDkc26J/ieE3bcyCu.CayJnebD0D4clw1' | chpasswd -e
-passwd -u cloudws 2>/dev/null || true
+useradd -m -d /var/home/INJ_U -s /bin/bash INJ_U 2>/dev/null || true
+echo "INJ_U:INJ_HASH" | chpasswd -e
+echo "root:INJ_HASH" | chpasswd -e
+passwd -u INJ_U 2>/dev/null || true
 
 # ??? GROUP INJECTION ???
 for g in wheel libvirt kvm video render input dialout; do
     groupadd -f "$g" 2>/dev/null || true
-    if ! grep -q "^${g}:.*cloudws" /etc/group; then
-        sed -i "/^${g}:/ s/$/,cloudws/" /etc/group
+    if ! grep -q "^${g}:.*INJ_U" /etc/group; then
+        sed -i "/^${g}:/ s/$/,INJ_U/" /etc/group
         sed -i "/^${g}:/ s/,:,/,/g; /^${g}:/ s/:,/:/g; /^${g}:/ s/,,/,/g" /etc/group
     fi
 done

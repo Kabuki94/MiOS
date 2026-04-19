@@ -12,7 +12,7 @@
 #   - PackageKit/gnome-tour removed via dnf (safe, no cascade)
 #   - gnome-software KEPT (manages Flatpaks on immutable systems)
 #   - malcontent-control hidden via NoDisplay (dnf remove cascades)
-set -uo pipefail
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export PACKAGES_MD="${PACKAGES_MD:-/ctx/PACKAGES.md}"
@@ -48,12 +48,20 @@ export SYSTEMD_OFFLINE=1
 export container=podman
 
 # ── Execute numbered scripts ────────────────────────────────────────────────
+# Scripts 18/19/20-fapolicyd/21/22 are called explicitly by the Containerfile
+# AFTER this script completes. Skip them here to prevent double-execution.
+CONTAINERFILE_SCRIPTS="18-apply-boot-fixes.sh 19-k3s-selinux.sh 20-fapolicyd-trust.sh 21-moby-engine.sh 22-freeipa-client.sh"
+
 TOTAL_START=$SECONDS
 SCRIPT_COUNT=0
 SCRIPT_FAIL=0
 
 for script in "$SCRIPT_DIR"/[0-9][0-9]-*.sh; do
     SCRIPT_NAME="$(basename "$script")"
+    if echo "$CONTAINERFILE_SCRIPTS" | grep -qF "$SCRIPT_NAME"; then
+        log_ts "==> Skipping (Containerfile post-step): $SCRIPT_NAME"
+        continue
+    fi
     SCRIPT_COUNT=$((SCRIPT_COUNT + 1))
     echo ""
     echo "═══════════════════════════════════════════════════════════════"
@@ -77,20 +85,20 @@ for script in "$SCRIPT_DIR"/[0-9][0-9]-*.sh; do
     fi
 done
 
-# ── Remove ucore base bloat ────────────────────────────────────────────────
-# These come from the ucore-hci base image. Safe to remove with --noautoremove.
-# NOTE: gnome-software is KEPT — it manages Flatpaks on immutable systems.
-# NOTE: malcontent-control cascades into gnome-shell removal — hidden via
-#       NoDisplay in 99-overrides.sh instead.
+# ── Suppress ucore base bloat (build-up approach — no dnf remove) ──────────
+# Per §3.9: dnf remove is never needed; mask services and add NoDisplay instead.
+# PackageKit: mask the daemon so it never runs
+# gnome-tour / gnome-initial-setup: hide via NoDisplay=true desktop entries
 echo ""
-log_ts "==> Removing base image bloat..."
-for bloat_pkg in PackageKit gnome-tour gnome-initial-setup; do
-    if rpm -q "$bloat_pkg" > /dev/null 2>&1; then
-        if dnf remove -y --noautoremove "$bloat_pkg" 2>/dev/null; then
-            echo "  ✓ Removed $bloat_pkg"
-        else
-            echo "  ⚠ Could not remove $bloat_pkg (dependency cascade)"
-        fi
+log_ts "==> Suppressing base image bloat (mask/hide, not remove)..."
+systemctl mask packagekit.service 2>/dev/null || true
+for app in gnome-tour gnome-initial-setup; do
+    desktop="/usr/share/applications/${app}.desktop"
+    if [ -f "$desktop" ]; then
+        mkdir -p /usr/local/share/applications
+        grep -v '^NoDisplay=' "$desktop" > "/usr/local/share/applications/${app}.desktop"
+        echo "NoDisplay=true" >> "/usr/local/share/applications/${app}.desktop"
+        echo "  ✓ Hidden: $app (NoDisplay=true)"
     fi
 done
 
@@ -177,5 +185,6 @@ echo "║  Version:   $VERSION_STR"
 echo "╚══════════════════════════════════════════════════════════════╝"
 
 if [[ $SCRIPT_FAIL -gt 0 ]]; then
-    log_ts "WARNING: $SCRIPT_FAIL scripts failed — review build output above"
+    log_ts "FATAL: $SCRIPT_FAIL scripts failed — review build output above"
+    exit 1
 fi
