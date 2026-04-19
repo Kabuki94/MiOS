@@ -63,9 +63,10 @@ fi
 # Normalize permissions on systemd unit and config files.
 # Windows git clones leave files executable and world-writable; tar|tar above
 # preserves those bits. systemd 259+ logs warnings and may reject such files.
-# Executables in /usr/libexec are intentionally skipped.
+# We restrict this strictly to unit file extensions to avoid breaking executables
+# like /usr/lib/systemd/systemd itself.
 log "08-overlay: normalizing systemd file permissions"
-find /etc/systemd /usr/lib/systemd -type f -exec chmod 644 {} \; 2>/dev/null || true
+find /etc/systemd /usr/lib/systemd -type f \( -name "*.service" -o -name "*.socket" -o -name "*.timer" -o -name "*.mount" -o -name "*.conf" -o -name "*.target" -o -name "*.path" -o -name "*.slice" -o -name "*.preset" -o -name "*.automount" -o -name "*.swap" \) -exec chmod 644 {} \; 2>/dev/null || true
 find /etc/systemd /usr/lib/systemd -type d -exec chmod 755 {} \; 2>/dev/null || true
 
 log "08-overlay: complete"
