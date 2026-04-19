@@ -1,0 +1,30 @@
+# CloudWS FreeIPA enrollment configuration template.
+# Copy to /etc/cloudws/ipa.conf and fill in your values.
+# cloudws-ipa-enroll.service runs on first boot when this file is present
+# and /var/lib/cloudws/ipa-enrolled does not yet exist.
+#
+# Format: KEY=value (no spaces around =, no quotes)
+
+# Required: IPA realm (uppercase)
+# REALM=EXAMPLE.COM
+
+# Required: IPA domain (lowercase)
+# DOMAIN=example.com
+
+# Optional: IPA server hostname. If unset, ipa-client-install uses DNS SRV discovery.
+# SERVER=ipa.example.com
+
+# Authentication: provide EITHER OTP OR PRINCIPAL+PASSWORD (OTP preferred — single-use).
+# To generate an OTP: ipa host-add --random $(hostname) on the IPA server.
+# OTP=<one-time-password-from-ipa-host-add>
+# PRINCIPAL=admin
+# PASSWORD=<admin-password>
+
+# Optional: create home directory on first login (default: yes)
+# MKHOMEDIR=yes
+
+# Optional: skip NTP configuration (recommended when host uses its own NTP, default: no)
+# NTP=no
+
+# Optional: additional arguments passed verbatim to ipa-client-install
+# EXTRA_ARGS=--force-join

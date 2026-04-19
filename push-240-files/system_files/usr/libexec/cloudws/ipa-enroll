@@ -1,0 +1,111 @@
+#!/usr/bin/bash
+# ipa-enroll — CloudWS FreeIPA first-boot enrollment helper.
+# Invoked by cloudws-ipa-enroll.service on first boot when /etc/cloudws/ipa.conf is present.
+#
+# /etc/cloudws/ipa.conf KEY=VALUE format (see /etc/cloudws/ipa.conf.example).
+# Completion marker: /var/lib/cloudws/ipa-enrolled (in /var — rollback-stable).
+set -euo pipefail
+
+CONF=/etc/cloudws/ipa.conf
+MARKER=/var/lib/cloudws/ipa-enrolled
+SSSD_DROPIN=/etc/sssd/conf.d/20-cloudws-domain.conf
+
+log() { printf '[ipa-enroll] %s\n' "$*" | tee -a /var/log/cloudws/ipa-enroll.log; }
+
+install -d -m 0750 /var/log/cloudws
+
+if [[ ! -f "$CONF" ]]; then
+    log "ERROR: $CONF not found"
+    exit 1
+fi
+
+if [[ -f "$MARKER" ]]; then
+    log "Already enrolled (marker $MARKER exists) — exiting"
+    exit 0
+fi
+
+# ── Parse config ──────────────────────────────────────────────────────────────
+declare -A CFG
+while IFS='=' read -r key val; do
+    [[ "$key" =~ ^# ]] && continue
+    [[ -z "$key" ]] && continue
+    CFG["${key// /}"]="${val}"
+done < "$CONF"
+
+REALM="${CFG[REALM]:-}"
+DOMAIN="${CFG[DOMAIN]:-}"
+SERVER="${CFG[SERVER]:-}"
+OTP="${CFG[OTP]:-}"
+PRINCIPAL="${CFG[PRINCIPAL]:-}"
+PASSWORD="${CFG[PASSWORD]:-}"
+MKHOMEDIR="${CFG[MKHOMEDIR]:-yes}"
+NTP="${CFG[NTP]:-no}"
+EXTRA_ARGS="${CFG[EXTRA_ARGS]:-}"
+
+if [[ -z "$REALM" || -z "$DOMAIN" ]]; then
+    log "ERROR: REALM and DOMAIN are required in $CONF"
+    exit 1
+fi
+
+# ── Build ipa-client-install args ────────────────────────────────────────────
+IPA_ARGS=(
+    --unattended
+    --realm="$REALM"
+    --domain="$DOMAIN"
+)
+
+[[ -n "$SERVER" ]]   && IPA_ARGS+=(--server="$SERVER")
+[[ "$NTP" == "no" ]] && IPA_ARGS+=(--no-ntp)
+[[ "$MKHOMEDIR" == "yes" ]] && IPA_ARGS+=(--mkhomedir)
+
+if [[ -n "$OTP" ]]; then
+    log "Enrolling with OTP"
+    IPA_ARGS+=(--password="$OTP")
+elif [[ -n "$PRINCIPAL" && -n "$PASSWORD" ]]; then
+    log "Enrolling with principal $PRINCIPAL"
+    IPA_ARGS+=(--principal="$PRINCIPAL" --password="$PASSWORD")
+else
+    log "ERROR: Either OTP or PRINCIPAL+PASSWORD required in $CONF"
+    exit 1
+fi
+
+# shellcheck disable=SC2086
+[[ -n "$EXTRA_ARGS" ]] && IPA_ARGS+=($EXTRA_ARGS)
+
+log "Running ipa-client-install..."
+if ! ipa-client-install "${IPA_ARGS[@]}"; then
+    log "ERROR: ipa-client-install failed"
+    exit 1
+fi
+
+# ── Post-enrollment domain drop-in (bz 2417703 workaround) ───────────────────
+log "Writing SSSD domain drop-in with selinux_provider=none workaround"
+cat >"$SSSD_DROPIN" <<EOF
+# Written by cloudws-ipa-enroll at $(date -u +%Y-%m-%dT%H:%M:%SZ)
+# bz 2417703: sssd_be crashes under bootc+IPA without this workaround.
+[domain/${DOMAIN}]
+selinux_provider = none
+EOF
+chmod 0600 "$SSSD_DROPIN"
+chown root:root "$SSSD_DROPIN"
+
+# ── Update CA trust ──────────────────────────────────────────────────────────
+update-ca-trust extract 2>/dev/null || log "WARN: update-ca-trust failed (non-fatal)"
+
+# ── Enable post-enrollment services ──────────────────────────────────────────
+for svc in sssd oddjobd certmonger; do
+    systemctl enable --now "$svc" 2>/dev/null || log "WARN: could not start $svc"
+done
+
+# ── Write completion marker ───────────────────────────────────────────────────
+install -d -m 0755 /var/lib/cloudws
+touch "$MARKER"
+
+log "=== FreeIPA enrollment complete ==="
+log "Marker written: $MARKER"
+log ""
+log "NOTE: If you bootc rollback, /etc/krb5.keytab will revert but this marker"
+log "      in /var will persist. To re-enroll after rollback:"
+log "        sudo ipa-client-install --uninstall -U"
+log "        sudo rm ${MARKER}"
+log "      Then reboot."

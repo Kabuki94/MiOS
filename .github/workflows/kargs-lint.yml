@@ -1,0 +1,41 @@
+name: kargs-lint
+
+on:
+  pull_request:
+    paths:
+      - "kargs.d/**"
+      - "system_files/usr/lib/bootc/kargs.d/**"
+      - "scripts/validate-kargs.py"
+  push:
+    branches: [main]
+    paths:
+      - "kargs.d/**"
+      - "system_files/usr/lib/bootc/kargs.d/**"
+      - "scripts/validate-kargs.py"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kargs-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate kargs.d schema
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Validate kargs.d files
+        run: |
+          python3 scripts/validate-kargs.py --github \
+            kargs.d/ \
+            system_files/usr/lib/bootc/kargs.d/

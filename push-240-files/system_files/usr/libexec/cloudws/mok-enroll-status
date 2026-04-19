@@ -1,0 +1,52 @@
+#!/usr/bin/bash
+# mok-enroll-status — machine-readable MOK enrollment state probe.
+# Emits one line to stdout: enrolled | pending | not-enrolled | no-secureboot | conflict | error
+set -euo pipefail
+
+pick_key() {
+    [[ -f /etc/pki/cloudws/mok.der ]] && { echo /etc/pki/cloudws/mok.der; return; }
+    [[ -f /etc/pki/akmods/certs/akmods-ublue.der ]] && { echo /etc/pki/akmods/certs/akmods-ublue.der; return; }
+    echo ""
+}
+
+if ! command -v mokutil >/dev/null 2>&1; then
+    echo "no-secureboot"
+    exit 0
+fi
+
+sb_state=$(mokutil --sb-state 2>/dev/null || true)
+if echo "$sb_state" | grep -qi "SecureBoot disabled"; then
+    echo "no-secureboot"
+    exit 0
+fi
+
+key_path=$(pick_key)
+if [[ -z "$key_path" ]]; then
+    echo "not-enrolled"
+    exit 0
+fi
+
+fingerprint=$(openssl x509 -inform DER -in "$key_path" -fingerprint -sha256 -noout 2>/dev/null | sed 's/.*=//') || {
+    echo "error"
+    exit 1
+}
+target_fp=$(echo "$fingerprint" | tr -d ':' | tr '[:upper:]' '[:lower:]')
+
+enrolled_fps=$(mokutil --list-enrolled 2>/dev/null | grep -i "SHA256 Fingerprint" | sed 's/.*: //' | tr -d ':' | tr '[:upper:]' '[:lower:]' || true)
+pending_fps=$(mokutil --list-new 2>/dev/null | grep -i "SHA256 Fingerprint" | sed 's/.*: //' | tr -d ':' | tr '[:upper:]' '[:lower:]' || true)
+
+if echo "$enrolled_fps" | grep -qF "$target_fp"; then
+    echo "enrolled"
+elif echo "$pending_fps" | grep -qF "$target_fp"; then
+    echo "pending"
+else
+    key_cn=$(openssl x509 -inform DER -in "$key_path" -subject -noout 2>/dev/null | sed 's/.*CN\s*=\s*//' | cut -d'/' -f1 || true)
+    if [[ -n "$key_cn" ]]; then
+        enrolled_subjects=$(mokutil --list-enrolled 2>/dev/null || true)
+        if echo "$enrolled_subjects" | grep -qF "$key_cn"; then
+            echo "conflict"
+            exit 0
+        fi
+    fi
+    echo "not-enrolled"
+fi
