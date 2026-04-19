@@ -10,4 +10,13 @@ systemctl enable usbguard.service 2>/dev/null || log "note: usbguard not install
 systemctl enable auditd.service   2>/dev/null || log "note: auditd not installed"
 systemctl enable fapolicyd.service 2>/dev/null || log "note: fapolicyd not installed"
 
+# Pre-generate fapolicyd trust database for bootc systems
+if command -v fagenrules &>/dev/null; then
+    log "Pre-generating fapolicyd trust database..."
+    # Ensure correct permissions for the fapolicyd directory
+    chown -R fapolicyd:fapolicyd /etc/fapolicyd 2>/dev/null || true
+    fagenrules --load 2>/dev/null || true
+    fapolicyd-cli --update 2>/dev/null || true
+fi
+
 log "hardening services wired"
