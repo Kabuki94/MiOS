@@ -4,7 +4,6 @@ Documentation=https://github.com/Kabuki94/CloudWS-bootc/blob/main/docs/gpu-passt
 ConditionPathExists=/dev/kfd
 After=systemd-modules-load.service systemd-udev-settle.service
 Wants=systemd-udev-settle.service
-Before=podman.socket docker.socket
 
 [Service]
 Type=oneshot

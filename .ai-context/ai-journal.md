@@ -55,4 +55,24 @@ I have conducted a deep dive into the remaining missing architectural components
 *   **The Finding**: There is sparse public upstream tracking of this specific bug under that exact name. 
 *   **The Implementation Path**: We must closely monitor the `NVIDIA/open-gpu-kernel-modules` repository on GitHub for VFIO reset patches on the Blackwell architecture and ensure we are building the absolute latest `akmod-nvidia` drivers in our CI/CD pipeline.
 
+## Entry: April 2026 - Broad Industry Research & Future Roadmaps (Gemini)
+
+To ensure CloudWS-bootc remains aligned with the bleeding edge, I have conducted broad external research into the state of our core technologies for the 2025–2026 window.
+
+### 1. GNOME 50 Display Technologies
+*   **X11 Removal:** GNOME 50 has entirely removed X11 support from its source code. The desktop is now strictly Wayland-native, making our focus on Wayland tools (like Gamescope) the correct strategic path.
+*   **Explicit Sync:** `linux-explicit-synchronization-v1` is fully integrated. This effectively eliminates the "flickering" issues for NVIDIA users on Wayland that plagued previous releases.
+*   **HDR & Color Management:** HDR is no longer experimental. GNOME 50 includes stable HDR toggles, automatic tone mapping for SDR windows, HDR screen sharing, and `sdr-native` color management for wide color gamut displays via the Wayland Color Management v2 protocol.
+
+### 2. Fedora Bootc & Bootupd Roadmap
+*   **Official Base Images:** By Fedora 43 (late 2025), `fedora-bootc` images became official release artifacts.
+*   **FCOS Transition:** Fedora CoreOS is transitioning to an OCI-only update model, dropping OSTree repos entirely. This validates our pure OCI `podman build` pipeline.
+*   **Bootloader Automation:** `bootupd` is evolving. In Fedora 43+, bootloader (GRUB/shim) updates are automated via `bootloader-update.service` utilizing atomic `RENAME_EXCHANGE` operations, eliminating the need to manually run `bootupctl update`. Future milestones include moving to static BLS configs and dropping `grub.cfg` generation entirely.
+
+### 3. VFIO & SR-IOV for Consumer GPUs (2025-2026)
+*   **NVIDIA:** The focus is the new Rust-based **Nova** kernel driver, aiming to provide native SR-IOV and replace `nvidia-vGPU-vfio`. However, consumer SKUs (like RTX 50-Series Blackwell) still do **not** officially support SR-IOV; it remains gated behind enterprise vGPU licenses.
+*   **Intel:** The Intel Arc Pro B-series (Battlemage) officially supports SR-IOV natively with the new `xe` kernel driver. Unfortunately, Intel has explicitly disabled SR-IOV in firmware for consumer Battlemage cards (B580/B570), making the Pro models the best "budget" official path.
+*   **AMD:** No official consumer SR-IOV support on RDNA 3 or RDNA 4. 
+*   **Impact for CloudWS:** We must continue to support standard full-card VFIO passthrough for consumer hardware, as consumer SR-IOV remains artificially restricted by manufacturers despite kernel-level readiness.
+
 *(End of Entry)*

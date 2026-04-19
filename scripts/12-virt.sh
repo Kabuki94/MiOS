@@ -210,8 +210,13 @@ fi
 # Placed in /usr/share/containers/systemd/ (immutable, baked into image).
 mkdir -p /usr/share/containers/systemd
 cat > /usr/share/containers/systemd/crowdsec-dashboard.container <<'EOQUAD'
-# CloudWS v0.1.1 — Example Podman quadlet for CrowdSec dashboard
-# To enable: symlink from /etc/containers/systemd/ or systemctl enable
+# CloudWS — CrowdSec Metabase dashboard (Podman Quadlet)
+# Only runs on bare-metal/VM; WSL2 lacks the dbus/socket environment needed
+# for reliable container startup. Restart=on-failure prevents infinite loops
+# when crowdsec itself is not yet enrolled.
+[Unit]
+ConditionVirtualization=!wsl
+
 [Container]
 Image=docker.io/crowdsecurity/metabase:latest
 ContainerName=crowdsec-dashboard
@@ -220,7 +225,8 @@ Volume=crowdsec-data.volume:/metabase-data
 AutoUpdate=registry
 
 [Service]
-Restart=always
+Restart=on-failure
+RestartSec=30
 TimeoutStartSec=300
 
 [Install]

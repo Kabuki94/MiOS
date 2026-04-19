@@ -4,7 +4,6 @@ Documentation=https://github.com/Kabuki94/CloudWS-bootc/blob/main/docs/gpu-passt
 ConditionPathExists=/dev/dri/renderD128
 After=systemd-modules-load.service systemd-udev-settle.service
 Wants=systemd-udev-settle.service
-Before=podman.socket docker.socket
 # NOTE: runs even alongside NVIDIA (hybrid/iGPU+dGPU systems are common, e.g.
 # AMD 9950X3D iGPU + RTX 4090 dGPU — renderD128 is typically the AMD/Intel
 # iGPU and renderD129 is the NVIDIA dGPU). Intel-specific container

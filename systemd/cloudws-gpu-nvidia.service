@@ -5,7 +5,7 @@ ConditionPathExists=/dev/nvidia0
 ConditionVirtualization=!wsl
 After=systemd-modules-load.service systemd-udev-settle.service akmods.service
 Wants=systemd-udev-settle.service
-Before=nvidia-cdi-refresh.service podman.socket docker.socket
+Before=nvidia-cdi-refresh.service
 # This unit intentionally does NOT call nvidia-ctk directly when the upstream
 # nvidia-cdi-refresh.service is available (nvidia-container-toolkit >= 1.18.0).
 # It only ensures modules are loaded and /var/run/cdi exists before the
