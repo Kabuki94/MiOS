@@ -220,6 +220,7 @@ ConditionVirtualization=!wsl
 [Container]
 Image=docker.io/crowdsecurity/metabase:latest
 ContainerName=crowdsec-dashboard
+GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage
 PublishPort=3000:3000
 Volume=crowdsec-data.volume:/metabase-data
 AutoUpdate=registry
@@ -232,6 +233,10 @@ TimeoutStartSec=300
 [Install]
 WantedBy=multi-user.target
 EOQUAD
+
+# Logically bind the image so bootc pre-fetches it during OS upgrades
+mkdir -p /usr/lib/bootc/bound-images.d
+ln -sf /usr/share/containers/systemd/crowdsec-dashboard.container /usr/lib/bootc/bound-images.d/crowdsec-dashboard.container
 
 # ── CrowdSec data volume (required by crowdsec-dashboard.container quadlet) ──
 cat > /usr/share/containers/systemd/crowdsec-data.volume <<'EOVOL'

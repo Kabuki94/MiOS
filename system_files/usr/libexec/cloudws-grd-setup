@@ -1,0 +1,66 @@
+#!/bin/bash
+# CloudWS GNOME Remote Desktop first-boot setup.
+# Referenced by cloudws-grd-setup.service; bakes a self-signed TLS cert for
+# headless RDP, opens the firewall port, and flips GRD on via grdctl --system.
+# Credentials are NOT set here — the operator supplies them via
+#   grdctl --system rdp set-credentials <user> <pass>
+# after first boot, or by dropping /etc/cloudws/grd/credentials (user:pass)
+# before enabling the service.
+set -euo pipefail
+
+SENTINEL="/var/lib/cloudws/.grd-init-done"
+STATE_DIR="/etc/cloudws/grd"
+CERT="${STATE_DIR}/tls.crt"
+KEY="${STATE_DIR}/tls.key"
+LOG="/var/log/cloudws-grd-setup.log"
+
+log() { printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" | tee -a "$LOG"; }
+
+mkdir -p "$(dirname "$SENTINEL")" "$STATE_DIR"
+
+if [ -f "$SENTINEL" ]; then
+    log "GRD already initialized; nothing to do."
+    exit 0
+fi
+
+if ! command -v grdctl >/dev/null 2>&1; then
+    log "grdctl not found — gnome-remote-desktop is not installed; skipping."
+    exit 0
+fi
+
+if [ ! -s "$CERT" ] || [ ! -s "$KEY" ]; then
+    log "Generating self-signed TLS material for GRD..."
+    openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes \
+        -keyout "$KEY" -out "$CERT" \
+        -subj "/CN=$(hostname -f 2>/dev/null || hostname)" >>"$LOG" 2>&1
+    chmod 0600 "$KEY"
+    chmod 0644 "$CERT"
+fi
+
+log "Binding TLS cert/key to GRD system daemon..."
+grdctl --system rdp set-tls-cert "$CERT" >>"$LOG" 2>&1 || log "warn: set-tls-cert failed"
+grdctl --system rdp set-tls-key  "$KEY"  >>"$LOG" 2>&1 || log "warn: set-tls-key failed"
+
+# Optional pre-seeded credentials at /etc/cloudws/grd/credentials (user:pass).
+CRED_FILE="${STATE_DIR}/credentials"
+if [ -s "$CRED_FILE" ]; then
+    USER_NAME="$(cut -d: -f1 "$CRED_FILE")"
+    USER_PASS="$(cut -d: -f2- "$CRED_FILE")"
+    if [ -n "$USER_NAME" ] && [ -n "$USER_PASS" ]; then
+        log "Applying pre-seeded RDP credentials for user '${USER_NAME}'..."
+        grdctl --system rdp set-credentials "$USER_NAME" "$USER_PASS" >>"$LOG" 2>&1 \
+            || log "warn: set-credentials failed"
+    fi
+    # Scrub the cleartext credentials file once applied.
+    shred -u "$CRED_FILE" 2>/dev/null || rm -f "$CRED_FILE"
+fi
+
+grdctl --system rdp enable >>"$LOG" 2>&1 || log "warn: rdp enable failed"
+
+if command -v firewall-cmd >/dev/null 2>&1 && firewall-cmd --state >/dev/null 2>&1; then
+    firewall-cmd --permanent --add-port=3389/tcp >>"$LOG" 2>&1 || true
+    firewall-cmd --reload >>"$LOG" 2>&1 || true
+fi
+
+touch "$SENTINEL"
+log "GRD first-boot setup complete."

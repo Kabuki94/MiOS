@@ -58,7 +58,7 @@ scripts, `docs/PACKAGES.md` manifest, and `system_files/` overlays.
 
 GNOME (Wayland) · KVM/QEMU/VFIO · Podman · K3s · Ceph · Pacemaker/Corosync
 HA · CrowdSec (Sovereign) · Gamescope Steam Session · Waydroid · Looking
-Glass · xRDP · FreeIPA/SSSD · Cockpit.
+Glass · GNOME Remote Desktop · FreeIPA/SSSD · Cockpit.
 
 ---
 
@@ -208,8 +208,6 @@ build failures. Each one corresponds to at least one previous outage.
   dconf app folder. Remove `categories`.
 - `gnome-session-xsession` does **not** exist in current Fedora — do
   not add it.
-- `xorgxrdp` and `xorgxrdp-glamor` conflict; keep only
-  `xorgxrdp-glamor`.
 
 ### 3.5 NVIDIA / VM gating
 

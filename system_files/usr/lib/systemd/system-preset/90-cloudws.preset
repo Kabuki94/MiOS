@@ -12,6 +12,7 @@ enable nvidia-persistenced.service
 enable cloudws-role.service
 enable cloudws-cdi-detect.service
 enable cloudws-libvirtd-setup.service
+enable cloudws-grd-setup.service
 enable cloudws-firstboot.target
 enable greenboot-healthcheck.service
 enable greenboot-grub2-set-counter.service

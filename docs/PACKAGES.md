@@ -332,11 +332,9 @@ pcp-system-tools
 
 ## Windows Interop & Remote Desktop
 
-Tools for Hyper-V Enhanced Session, SMB, and xRDP over vsock.
+Tools for Hyper-V Enhanced Session, SMB, and native RDP.
 
 ```packages-wintools
-xrdp
-xorgxrdp-glamor
 hyperv-tools
 samba
 samba-client

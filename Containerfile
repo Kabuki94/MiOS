@@ -60,7 +60,7 @@
 # v2.3.3 fixed overlay failure at STEP 9/13 (/usr/local symlink) - kept.
 # ============================================================================
 
-ARG BASE_IMAGE=ghcr.io/ublue-os/ucore-hci:stable-nvidia
+ARG BASE_IMAGE=ghcr.io/ublue-os/ucore-hci:stable-nvidia@sha256:REPLACE_WITH_CURRENT_DIGEST
 
 # ----------------------------------------------------------------------------
 # ctx stage: build context (scripts, system_files, manifests, overlay dirs)
@@ -134,7 +134,8 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     /ctx/scripts/22-freeipa-client.sh && \
     /ctx/scripts/23-uki-render.sh && \
     /ctx/scripts/24-cockpit-config.sh && \
-    /ctx/scripts/25-firewall-ports.sh
+    /ctx/scripts/25-firewall-ports.sh && \
+    /ctx/scripts/26-gnome-remote-desktop.sh
 
 RUN bootc container lint
 

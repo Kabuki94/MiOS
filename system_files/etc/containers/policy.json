@@ -15,7 +15,7 @@
                     "fulcio": {
                         "caPath": "/etc/pki/containers/fulcio_v1.crt.pem",
                         "oidcIssuer": "https://token.actions.githubusercontent.com",
-                        "subjectEmail": "https://github.com/Kabuki94/CloudWS-bootc/.github/workflows/build-sign.yml@refs/heads/main"
+                        "subjectEmail": "https://github.com/Kabuki94/CloudWS-bootc/.github/workflows/build.yml@refs/heads/main"
                     },
                     "rekorPublicKeyPath": "/etc/pki/containers/rekor.pub",
                     "signedIdentity": { "type": "matchRepository" }
