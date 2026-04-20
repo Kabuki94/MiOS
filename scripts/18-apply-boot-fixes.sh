@@ -4,7 +4,7 @@
 # Resolves ordering cycles, executable stripping, and hardware-dependent
 # failure cascades detected during F44 boots on varied hardware/hypervisors.
 # ─────────────────────────────────────────────────────────────────────────────
-set -eoux pipefail
+set -euo pipefail
 
 echo "==> Applying CloudWS-bootc system service fixes..."
 

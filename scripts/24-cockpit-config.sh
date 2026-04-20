@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eoux pipefail
+set -euo pipefail
 
 echo "==> Configuring Cockpit for Container & WSL2 Reachability..."
 

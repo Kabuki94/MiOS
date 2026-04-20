@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eoux pipefail
+set -euo pipefail
 
 echo "==> Compiling and Installing K3s SELinux Policy for Fedora 44..."
 
