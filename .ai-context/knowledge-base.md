@@ -54,3 +54,11 @@ Standardized system-wide WSL2 detection to use systemd-native primitives.
 - **Scripts**: Updated `scripts/20-services.sh`, `scripts/35-init-service.sh`, `scripts/cloudws-test`, and `scripts/cloudws-toggle-headless` to use `systemd-detect-virt` and `ConditionVirtualization` checks.
 - **Fixes**: Added `fapolicyd` to the WSL skip list in `20-services.sh` due to binfmt_misc conflicts in WSL2. Fixed redundant service enablement and clobbering between `34-gpu-detect.sh` and `35-gpu-passthrough.sh`.
 - **Documentation**: Updated `CONTRIBUTING.md` to mandate the new standard for all future PRs.
+
+### April 20, 2026 - Architectural & Versioning Synchronization
+Synchronized the repository baseline to v2.3.5 and unified the Role Engine architecture.
+
+- **Versioning**: Promoted project from v0.1.8 to v2.3.5 across all metadata files (`VERSION`, `Containerfile`, `README.md`, `install.sh`, `cloud-ws.ps1`). Reconciled the engineering stream with public-facing labels.
+- **Role Engine**: Consolidated `role-apply` into a single, comprehensive script in `system_files/usr/libexec/cloudws/`. Implemented asynchronous `systemctl start/stop --no-block` to prevent early-boot deadlocks while retaining Phase 1 (System Init) and Phase 2 (Blackwell Detection) features.
+- **Changelog**: Aggregated all fragmented `CHANGELOG-v*.md` files from `docs/changelogs/` into the main `CHANGELOG.md`, providing a complete chronological ledger. Moved fragments to `docs/knowledge/changelogs-legacy/`.
+- **Standards Compliance**: Audited and fixed remaining direct `dnf` calls to use the mandated `${DNF_SETOPT[@]}` array. Confirmed 100% compliance with `VAR=$((VAR + 1))` arithmetic safety rules.

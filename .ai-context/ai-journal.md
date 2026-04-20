@@ -970,3 +970,19 @@
 *   **DISCOVERY:** `scripts/41-akmods-copy.sh` was indeed purely diagnostic and redundant given ucore's pre-baked NVIDIA kmods. The manual Cosign v2.4.1 download is still necessary for F44 compatibility.
 *   **ACTION:** (a) Added `vfio_pci.disable_idle_d3=1` to `kargs.d/02-cloudws-gpu.toml` for Blackwell safety. (b) Consolidated `scripts/37` and `scripts/42` into a single `42-cosign-policy.sh`. (c) Unified the Role Engine in `system_files/usr/libexec/cloudws/role-apply` and bridged it via `scripts/35-init-service.sh`. (d) Merged hardware verification into `scripts/build.sh`. (e) Deleted redundant scripts `37`, `41`, and `48`.
 *   **SUGGESTED ALTERNATIVE:** N/A - The current implementation achieves a cleaner, more maintainable architecture without sacrificing feature parity.
+
+---
+
+### [2026-04-20 21:15:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** The repository suffered from a significant versioning desynchronization (`v0.1.8` vs `v2.3.5`) and fragmented Role Engine logic. A comprehensive audit was required to reconcile the project's chronological history and ensure architectural purity as mandated by `CLAUDE.md`.
+*   **LEARNING:** The "Unified Image" architecture introduced in the `v2.x` stream is the authoritative engineering baseline. Fragmented scripts and dual-track versioning create severe maintenance overhead and potential build-time regressions.
+*   **DISCOVERY:** 
+    1) The Role Engine was split between `role-apply` (System Init/Hardware Detect) and `role-apply.sh` (Asynchronous service management), with the former using dangerous synchronous `systemctl` calls.
+    2) The `CHANGELOG.md` was missing nearly two years of engineering history stored in `docs/changelogs/`.
+    3) DNF calls in several scripts bypassed the standardized `${DNF_SETOPT[@]}` array.
+*   **ACTION:** 
+    1) **Role Engine Consolidation:** Merged the asynchronous `--no-block` logic from `role-apply.sh` into the extensionless `system_files/usr/libexec/cloudws/role-apply`. Deleted the redundant `role-apply.sh`.
+    2) **Versioning Reconciliation:** Promoted the project to **v2.3.5** across `VERSION`, `Containerfile`, `README.md`, `install.sh`, and `cloud-ws.ps1`.
+    3) **Changelog Synchronization:** Aggregated all historical fragments from `docs/changelogs/` into a new, consolidated `CHANGELOG.md` and moved legacy fragments to `docs/knowledge/changelogs-legacy/`.
+    4) **DNF Standardization:** Standardized `scripts/12-virt.sh` and `scripts/build.sh` to use the `${DNF_SETOPT[@]}` array.
+*   **SUGGESTED ALTERNATIVE:** N/A - This phase represents the final stabilization and synchronization of the `v2.3.x` engineering baseline.

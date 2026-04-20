@@ -101,7 +101,7 @@ New `bootc kargs edit --karg-delete <arg>` command allows removing a kernel argu
 - Shell-based greenboot deprecated in favor of greenboot-rs v0.16.0+
 - Functions: runs health check scripts on every boot; reboots if required checks fail; rolls back to previous deployment after N failed reboots
 - Check scripts: drop scripts into `/etc/greenboot/check/required.d/` (must succeed) or `/etc/greenboot/check/wanted.d/` (advisory only)
-- **CloudWS opportunity:** Add a greenboot check script that validates composefs verity mount and role service state; provides automatic rollback safety net after image updates.
+- **CloudWS-role consolidation (April 2026):** Successfully merged the asynchronous logic into the extensionless `role-apply` engine. The system now handles initialization, hardware detection (Blackwell), and role application in a single non-blocking pass. Redundant `role-apply.sh` removed. Project baseline promoted to v2.3.5.
 
 ### bootc upgrade / switch / rollback / factory-reset
 
