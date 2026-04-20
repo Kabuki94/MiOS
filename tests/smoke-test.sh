@@ -268,7 +268,6 @@ section "Kernel Arguments (kargs.d)"
 KARG_FILES=(
     "12-intel-xe.toml"
     "13-rtx50-vfio-workaround.toml"
-    "15-rootflags.toml"
     "16-nested-virt.toml"
 )
 

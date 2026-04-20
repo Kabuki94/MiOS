@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eoux pipefail
+set -euo pipefail
 
 echo "==> Installing FreeIPA & SSSD for zero-touch enrollment..."
 

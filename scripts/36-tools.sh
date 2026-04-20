@@ -2,6 +2,7 @@
 # CloudWS v2.0 — 36-tools: CLI tools and consolidated cloudws command
 # Installs all cloudws-* tools to /usr/bin/ and the master 'cloudws' CLI.
 set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "[36-tools] Installing CloudWS CLI tools..."
 
@@ -258,13 +259,12 @@ done
 
 # ═══ Install external scripts from build context ═══
 echo "[36-tools] Installing cloudws-toggle-headless and cloudws-test..."
-if [ -f /tmp/build/scripts/cloudws-toggle-headless ]; then
-    cp /tmp/build/scripts/cloudws-toggle-headless /usr/bin/cloudws-toggle-headless
-    chmod +x /usr/bin/cloudws-toggle-headless
-fi
-if [ -f /tmp/build/scripts/cloudws-test ]; then
-    cp /tmp/build/scripts/cloudws-test /usr/bin/cloudws-test
-    chmod +x /usr/bin/cloudws-test
-fi
+for ext_tool in cloudws-toggle-headless cloudws-test; do
+    if [ -f "${SCRIPT_DIR}/${ext_tool}" ]; then
+        install -Dm0755 "${SCRIPT_DIR}/${ext_tool}" "/usr/bin/${ext_tool}"
+    else
+        echo "[36-tools] WARN: ${ext_tool} not found at ${SCRIPT_DIR}/${ext_tool}"
+    fi
+done
 
 echo "[36-tools] CLI tools installed. Run 'cloudws --help' for commands."
