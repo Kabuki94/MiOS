@@ -41,6 +41,31 @@
     "docs/knowledge/blueprints/*.docx": true
   },
 
+  "cSpell.words": [
+    "anchore",
+    "bootc",
+    "buildah",
+    "buildx",
+    "cloudws",
+    "containerfile",
+    "cyclonedx",
+    "digestfile",
+    "fulcio",
+    "hostedtoolcache",
+    "imagectl",
+    "jlumbroso",
+    "oras",
+    "ostree",
+    "rechunk",
+    "rechunked",
+    "rechunking",
+    "rekor",
+    "sigstore",
+    "skopeo",
+    "slsa",
+    "syft"
+  ],
+
   "editor.formatOnSave": false,
   "editor.insertSpaces": true,
   "editor.tabSize": 4,

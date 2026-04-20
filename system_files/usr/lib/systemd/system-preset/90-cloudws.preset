@@ -1,54 +1,24 @@
-# CloudWS-bootc systemd preset
-# "enable" = on boot; "disable" = off. Role-specific services are NOT here;
-# cloudws-role.service enables/disables them at runtime based on role.conf.
+# CloudWS Systemd Presets
+# This file declaratively sets the default enablement state for services.
 
-# --- Always-on core ---
+# --- WSL2 Fallback & Initialization ---
+enable cloudws-wsl-firstboot.service
+enable dbus-daemon-wsl.service
+
+# --- CloudWS Custom Services ---
+enable cloudws-cdi-detect.service
+enable cloudws-libvirtd-setup.service
+enable cloudws-crowdsec-init.service
+
+# --- Core Infrastructure & Sockets ---
 enable sshd.service
 enable podman.socket
-enable uupd.timer
-enable nvidia-cdi-refresh.path
-enable nvidia-cdi-refresh.service
-enable nvidia-persistenced.service
-enable cloudws-role.service
-enable cloudws-cdi-detect.service
-enable cloudws-firstboot.target
-enable greenboot-healthcheck.service
-enable greenboot-grub2-set-counter.service
-enable greenboot-grub2-set-success.service
-enable greenboot-rpm-ostree-grub2-check-fallback.service
-enable greenboot-status.service
-enable redboot-auto-reboot.service
 enable cockpit.socket
-enable usbguard.service
-enable auditd.service
-enable chronyd.service
-enable crowdsec.service
-enable crowdsec-firewall-bouncer.service
-enable nftables.service
-enable cloud-init.service
-enable cloud-final.service
-enable qemu-guest-agent.service
+enable libvirtd.socket
 
-# --- Disabled in favor of uupd ---
+# --- Updates & Health (uupd replaces standard bootc updates) ---
+enable uupd.timer
+enable greenboot-healthcheck.service
 disable bootc-fetch-apply-updates.timer
 disable rpm-ostreed-automatic.timer
-
-# --- Broken with composefs on F42+ ---
 disable systemd-remount-fs.service
-
-# --- Role-gated: default-off; cloudws-role.service turns on as appropriate ---
-disable libvirtd.service
-disable libvirtd.socket
-disable libvirtd-ro.socket
-disable libvirtd-admin.socket
-disable virtnetworkd.service
-disable virtnodedevd.service
-disable virtqemud.service
-disable virtstoraged.service
-disable gdm.service
-disable k3s.service
-disable k3s-agent.service
-disable corosync.service
-disable pacemaker.service
-disable ceph-mon@.service
-disable ceph-osd@.service

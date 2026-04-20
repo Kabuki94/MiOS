@@ -317,7 +317,6 @@ cockpit-ws
 cockpit-bridge
 cockpit-storaged
 cockpit-networkmanager
-cockpit-packagekit
 cockpit-podman
 cockpit-machines
 cockpit-ostree

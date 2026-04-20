@@ -196,7 +196,12 @@ jobs:
         if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         env:
           DIGEST: ${{ steps.rechunk.outputs.digest }}
+          COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
         run: |
+          if [ -n "${COSIGN_PRIVATE_KEY}" ]; then
+            echo "Signing secret provided, skipping keyless signing in favor of key-based signing."
+            exit 0
+          fi
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
           if [ -n "$DIGEST" ]; then
             echo "Signing ${IMAGE}@${DIGEST}"
@@ -207,11 +212,15 @@ jobs:
 
       # ── Sign with private key (if SIGNING_SECRET exists) ───────────────
       - name: Sign image (key-based)
-        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) && secrets.SIGNING_SECRET != ''
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         env:
           DIGEST: ${{ steps.rechunk.outputs.digest }}
           COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
         run: |
+          if [ -z "${COSIGN_PRIVATE_KEY}" ]; then
+            echo "No signing secret provided, skipping key-based signing."
+            exit 0
+          fi
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
           if [ -n "$DIGEST" ]; then
             cosign sign --yes --new-bundle-format=false --key env://COSIGN_PRIVATE_KEY "${IMAGE}@${DIGEST}"
