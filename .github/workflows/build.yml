@@ -16,6 +16,8 @@ name: Build CloudWS-bootc
 on:
   push:
     branches: [main]
+    tags:
+      - 'v*.*.*'
     paths-ignore:
       - "**.md"
       - "LICENSE"
@@ -77,10 +79,14 @@ jobs:
 
       # ── Free disk space (GitHub runners have ~14 GB free) ────────────────
       - name: Maximize build space
-        run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
-          sudo docker image prune --all --force
-          df -h /
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
 
       # ── Set up build tools ──────────────────────────────────────────────
       - name: Install cosign
@@ -123,11 +129,12 @@ jobs:
         with:
           context: .
           file: ${{ matrix.variant.containerfile }}
-          push: ${{ github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || inputs.force_push) }}
+          push: ${{ github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || inputs.force_push) }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          network: host
 
       # ── Smoke test ──────────────────────────────────────────────────
       - name: Run smoke tests
@@ -140,9 +147,17 @@ jobs:
           chmod +x tests/smoke-test.sh
           ./tests/smoke-test.sh "$IMAGE"
 
+      - name: Upload full stack report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-stack-report-${{ matrix.variant.name }}
+          path: cloudws-full-stack-report.log
+          retention-days: 14
+
       # ── Rechunk (optimize OCI layers for delta updates) ────────────────
       - name: Rechunk image
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         run: |
           # Pull the just-pushed image and rechunk it
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.variant.tag }}"
@@ -164,7 +179,7 @@ jobs:
 
       # ── Sign image (cosign keyless via Fulcio/Rekor OIDC) ─────────────
       - name: Sign image (keyless)
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         env:
           DIGEST: ${{ steps.build.outputs.digest }}
           COSIGN_EXPERIMENTAL: "true"
@@ -179,7 +194,7 @@ jobs:
 
       # ── Sign with private key (if SIGNING_SECRET exists) ───────────────
       - name: Sign image (key-based)
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && secrets.SIGNING_SECRET != ''
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) && secrets.SIGNING_SECRET != ''
         env:
           DIGEST: ${{ steps.build.outputs.digest }}
           COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
@@ -191,7 +206,7 @@ jobs:
 
       # ── Generate SBOM ──────────────────────────────────────────────────
       - name: Generate SBOM
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         run: |
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.variant.tag }}"
           syft packages "$IMAGE" \
@@ -199,7 +214,7 @@ jobs:
             -o cyclonedx-json=cloudws-${{ matrix.variant.name }}-sbom.cdx.json
 
       - name: Upload SBOM artifacts
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         uses: actions/upload-artifact@v4
         with:
           name: sbom-${{ matrix.variant.name }}
@@ -208,7 +223,7 @@ jobs:
 
       # ── Attach SBOM to image (cosign) ──────────────────────────────────
       - name: Attach SBOM to image
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         env:
           DIGEST: ${{ steps.build.outputs.digest }}
         run: |
@@ -221,7 +236,7 @@ jobs:
 
       # ── Make package public via GitHub API ─────────────────────────────
       - name: Set package visibility to public
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

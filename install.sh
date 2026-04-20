@@ -7,7 +7,7 @@ REPO="https://github.com/Kabuki94/CloudWS-bootc.git"
 DIR="${CLOUDWS_DIR:-$HOME/CloudWS-bootc}"
 
 # Read version from repo VERSION file, fallback to hardcoded
-VER="v0.1.3"
+VER="v0.1.1"
 _remote_ver=$(curl -fsSL "https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/VERSION" 2>/dev/null || true)
 [[ -n "$_remote_ver" ]] && VER="v${_remote_ver}"
 
@@ -41,6 +41,7 @@ case "$choice" in
         echo "Deploy options:"
         echo "  Bare metal:  sudo podman run --rm -it --privileged --pid=host localhost/cloudws:latest bootc install to-disk /dev/sdX"
         echo "  Switch live: sudo bootc switch --transport containers-storage localhost/cloudws:latest"
+        echo "  Run locally: podman run -d --name cloudws-local -p 9090:9090 --systemd=true --privileged localhost/cloudws:latest"
     elif command -v docker &>/dev/null; then
         docker build --no-cache -t localhost/cloudws:latest .
         echo "✓ Image built: localhost/cloudws:latest"

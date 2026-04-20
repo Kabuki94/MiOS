@@ -284,11 +284,6 @@ Write-OK "Builder ready: ${BuilderMachine}-root ($cpu CPUs, $([math]::Round($ram
 $ErrorActionPreference = "Stop"
 
 
-# ── Self-Build defaults (initialized early — referenced throughout) ──
-$SelfBuild = $false
-$BibImage = "quay.io/centos-bootc/bootc-image-builder:latest"
-# ══════════════════════════════════════════════════════════════════════════════
-#  PHASE 1.5: PULL CLOUDWS HELPER IMAGE (self-building cycle)
 # ══════════════════════════════════════════════════════════════════════════════
 Write-Phase "1.5" "Self-Building — Pull CloudWS Helper Image"
 $ErrorActionPreference = "Continue"
@@ -340,11 +335,6 @@ if ($HelperImage) {
 $ErrorActionPreference = "Stop"
 
 
-# ── Self-Build defaults (initialized early — referenced throughout) ──
-$SelfBuild = $false
-$BibImage = "quay.io/centos-bootc/bootc-image-builder:latest"
-# ══════════════════════════════════════════════════════════════════════════════
-#  PHASE 2: BUILD (or PULL)
 # ══════════════════════════════════════════════════════════════════════════════
 if ($DoPull) {
     Write-Phase "2" "Pulling Image from Registry"
@@ -413,9 +403,6 @@ if ($DoPull) {
         $RechunkImage /usr/libexec/bootc-base-imagectl rechunk $LocalImage $LocalImage
     $ErrorActionPreference = "Stop"
 
-# ── Self-Build defaults (initialized early — referenced throughout) ──
-$SelfBuild = $false
-$BibImage = "quay.io/centos-bootc/bootc-image-builder:latest"
     Write-OK "Rechunk complete"
 
     # Update helper image reference — this freshly built image IS the builder now
@@ -507,13 +494,14 @@ if ($LASTEXITCODE -eq 0) {
         if ($vhdFile.FullName -ne $vhdSrc) {
             Move-Item $vhdFile.FullName $vhdSrc -Force
         }
-        Write-Step "Converting disk.vhd → VHDX..."
+        Write-Step "Converting disk.vhd → VHDX (parallel coroutines)..."
+        # -m 16 -W enables 16 parallel coroutines and out-of-order writes for massive speedup
         if ($HelperImage) {
             & podman run --rm -v "${OutputFolder}:/data:z" $HelperImage `
-                qemu-img convert -f vpc -O vhdx /data/disk.vhd /data/cloudws-hyperv.vhdx
+                qemu-img convert -m 16 -W -f vpc -O vhdx /data/disk.vhd /data/cloudws-hyperv.vhdx
         } else {
             & podman run --rm -v "${OutputFolder}:/data:z" $FallbackConvert sh -c `
-                "apk add --quiet qemu-img && qemu-img convert -f vpc -O vhdx /data/disk.vhd /data/cloudws-hyperv.vhdx"
+                "apk add --quiet qemu-img && qemu-img convert -m 16 -W -f vpc -O vhdx /data/disk.vhd /data/cloudws-hyperv.vhdx"
         }
         Remove-Item $vhdSrc -Force -ErrorAction SilentlyContinue
         Clear-BIBTemp
@@ -666,11 +654,6 @@ if (Test-Path $TargetWsl) {
 $ErrorActionPreference = "Stop"
 
 
-# ── Self-Build defaults (initialized early — referenced throughout) ──
-$SelfBuild = $false
-$BibImage = "quay.io/centos-bootc/bootc-image-builder:latest"
-# ══════════════════════════════════════════════════════════════════════════════
-#  PHASE 4: REGISTRY PUSH (only if workflow includes push)
 # ══════════════════════════════════════════════════════════════════════════════
 if ($DoPush -and $RegistryToken) {
     Write-Phase "4" "Registry Push → $GhcrImage"
@@ -700,9 +683,6 @@ if ($DoPush -and $RegistryToken) {
     } else { Write-Warn "Push failed" }
     $ErrorActionPreference = "Stop"
 
-# ── Self-Build defaults (initialized early — referenced throughout) ──
-$SelfBuild = $false
-$BibImage = "quay.io/centos-bootc/bootc-image-builder:latest"
 } elseif ($DoPush) {
     Write-Warn "Skipping push — no registry token provided"
 }

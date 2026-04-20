@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.9
 # ============================================================================
-# CloudWS-bootc - Unified Image (v2.3.5)
+# CloudWS-bootc - Unified Image (v0.1.1)
 # ============================================================================
 # One image. Every role. Every surface. Every GPU vendor.
 #
@@ -89,8 +89,13 @@ LABEL org.opencontainers.image.title="CloudWS-bootc"
 LABEL org.opencontainers.image.description="Unified immutable cloud-native workstation OS (desktop/k3s/ha/hybrid)"
 LABEL org.opencontainers.image.source="https://github.com/Kabuki94/CloudWS-bootc"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
-LABEL org.opencontainers.image.version="2.3.7"
+LABEL org.opencontainers.image.version="0.1.1"
 LABEL containers.bootc="1"
+
+# Expose ports for Podman Desktop UI and local port forwarding
+# 22: SSH | 3389: RDP | 6443: K3s API | 8080: Guacamole
+# 8443: Ceph Dashboard | 9090: Cockpit Web UI
+EXPOSE 22 3389 6443 8080 8443 9090
 
 # Build context mounted read-only
 COPY --from=ctx /ctx /ctx
@@ -104,7 +109,7 @@ COPY --from=ctx /ctx /ctx
 # correctly (previous inline cp -a failed with 'File exists').
 RUN bash /ctx/scripts/08-system-files-overlay.sh
 
-# DNF defaults: no weak deps, no docs, protect running kernel
+# DNF defaults: no weak deps, no docs, protect running kernel, speed optimizations
 RUN mkdir -p /etc/dnf \
  && printf '%s\n' \
       '[main]' \
@@ -113,6 +118,8 @@ RUN mkdir -p /etc/dnf \
       'defaultyes=True' \
       'clean_requirements_on_remove=True' \
       'protect_running_kernel=True' \
+      'max_parallel_downloads=20' \
+      'fastestmirror=True' \
     > /etc/dnf/dnf.conf
 
 # Run the full numbered pipeline (orchestrated by scripts/build.sh).
@@ -126,7 +133,10 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     /ctx/scripts/19-k3s-selinux.sh && \
     /ctx/scripts/20-fapolicyd-trust.sh && \
     /ctx/scripts/21-moby-engine.sh && \
-    /ctx/scripts/22-freeipa-client.sh
+    /ctx/scripts/22-freeipa-client.sh && \
+    /ctx/scripts/23-uki-render.sh && \
+    /ctx/scripts/24-cockpit-config.sh && \
+    /ctx/scripts/25-firewall-ports.sh
 
 RUN bootc container lint
 

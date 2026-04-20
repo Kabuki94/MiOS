@@ -110,7 +110,7 @@ jobs:
       - name: Convert VHD -> VHDX (Hyper-V native)
         if: matrix.artifact == 'vhdx'
         run: |
-          qemu-img convert -p -f vpc -O vhdx -o subformat=dynamic \
+          qemu-img convert -p -m 16 -W -f vpc -O vhdx -o subformat=dynamic \
             "output/vpc/disk.vhd" "output/cloudws.vhdx"
           ls -lh output/cloudws.vhdx
 

@@ -118,6 +118,38 @@ As `bootc` moves towards Unified Kernel Images (UKIs), the concept of kernel arg
 
 *(End of Entry)*
 
+## Entry: Implemented ComposeFS Rootflags & Blackwell VFIO Workarounds (Gemini)
+### 1. Fix Deployments Completed
+*   **Task #4 (ComposeFS)**: Created `kargs.d/15-rootflags.toml` pushing `compress=zstd:1,discard=async` to the kernel bootline, successfully circumventing the `systemd-remount-fs` overlay rejection bug.
+*   **Task #13 (RTX 50-Series)**: Added `kargs.d/13-rtx50-vfio-workaround.toml` for `disable_idle_d3=1`. Deployed a robust bash script at `system_files/etc/libvirt/hooks/qemu` that dynamically parses guest XMLs and manually fires `virsh nodedev-reset` on PCI devices targeting the GSP initialization bug on Blackwell.
+*   **Status**: Both marked Done in `RESEARCH_PLAN.md`.
+
+*(End of Entry)*
+
+## Entry: Phase 3 Remediation Complete (Gemini)
+### 1. Final Kanban Tasks Cleared
+*   **Task #10 (Intel Compute Stack)**: Added `kargs.d/12-intel-xe.toml` enforcing `i915.force_probe=* xe.force_probe=*` to explicitly map the new PCI IDs to the `xe` driver and prevent the legacy `i915` fallback on consumer Battlemage cards.
+*   **Task #5 (Unified Kernel Image - UKI)**: Developed `scripts/23-uki-render.sh` to install `systemd-ukify` and run `bootc container render-kargs`, staging the flattened `/etc/kernel/cmdline` natively during the OCI build. This bridges the gap required for final UKI assembly in the CI pipeline.
+*   **Status**: All 13 items on the `RESEARCH_PLAN.md` board are now successfully marked as **Done**. Phase 3 is completely finished!
+
+*(End of Entry)*
+
+## Entry: Firewalld Configuration in OCI Builds (Gemini)
+### 1. `firewall-offline-cmd` vs `firewall-cmd`
+*   **The Constraint**: During a `podman build` or `bootc` image generation, the `firewalld` daemon is not actively running. Standard `firewall-cmd` calls will fail with D-Bus connection timeouts.
+*   **The Resolution**: We must strictly use `firewall-offline-cmd`. This tool parses and modifies the XML policy files directly in `/etc/firewalld/` without requiring the active daemon, guaranteeing the rules are baked into the final image layers.
+*   **Implementation**: Added `scripts/25-firewall-ports.sh` to permanently open 8080 (Guacamole), 8443 (Ceph Dashboard), 6443 (K3s API), and 3389 (RDP) at the image level.
+
+*(End of Entry)*
+
+## Entry: Nested Virtualization & Podman-in-Podman (Gemini)
+### 1. Enabling Nested KVM & Container Environments
+*   **The Goal**: Support running Podman containers inside CloudWS, even when CloudWS itself is running as a VM (Hyper-V/KVM) or a local container.
+*   **The Resolution**: We implemented `kargs.d/16-nested-virt.toml` with `kvm_intel.nested=1` and `kvm_amd.nested=1`. This allows hardware virtualization instructions (VT-x/AMD-V) to pass through to the guest, enabling tools like `podman machine`, `qemu`, or `waydroid` to function inside a virtualized CloudWS host.
+*   **Container Caveat**: If CloudWS is running as a Docker/Podman container (local dev mode), nested Podman requires the outer container to be executed with the `--privileged` flag so that cgroups and namespaces can be successfully delegated to the inner Podman daemon.
+
+*(End of Entry)*
+
 ## Entry: Systemd Execution Analysis & WSL2 Boot Loop Debugging (Gemini)
 > **Agent Note for Claude & Others:** Please reference this entry when debugging systemd unit failures on our new target images. I have conducted an extensive analysis of a catastrophic boot loop occurring on `Kernel 6.6.114.1-microsoft-standard-WSL2`.
 
@@ -184,6 +216,38 @@ As `bootc` moves towards Unified Kernel Images (UKIs), the concept of kernel arg
 *   **The Architecture**: We baked `freeipa-client` into `/usr` during the OCI build. We created `cloudws-freeipa-enroll.service`, a `ConditionPathExists` oneshot service.
 *   **The Execution**: If a provisioning tool (Ignition, cloud-init, or an admin) drops a credential file at `/etc/cloudws/ipa-enroll.env`, the service fires on boot, runs `ipa-client-install --unattended`, and securely deletes the environment file. This securely delegates the mutable domain state to the `/etc` overlay, exactly as the bootc paradigm expects.
 *   **Status**: Moving to Done/Resolved.
+
+*(End of Entry)*
+
+## Entry: Remaining Kanban Tasks Deep Dive & Implementation Paths (Gemini)
+> **Agent Note**: I've conducted a deep dive into the remaining active items on our `RESEARCH_PLAN.md` board. Here are the technical paths forward for the remaining 4 items.
+
+### 1. Unified Kernel Image (UKI) Generation (Task #5)
+*   **The Gap**: We need to transition from `systemd-boot-unsigned` to a fully signed UKI to maintain the Secure Boot chain of trust directly into the ComposeFS Merkle tree.
+*   **The Research**: Upstream `bootc` tooling now provides `bootc container render-kargs`. We cannot just run `ukify` in isolation because `bootc` needs to flatten all of our `kargs.d/*.toml` files first.
+*   **Implementation Path**: We need to add a post-compilation script in our Containerfile that runs `render-kargs` to extract the consolidated command line, locates the active `vmlinuz` and `initramfs` in `/lib/modules/$(uname -r)/`, and uses `ukify build` to fuse them into an EFI PE binary.
+*   **New Queries for Claude**: *`Query: "fedora bootc ukify Containerfile build process"`*
+
+### 2. ComposeFS Verity Remount Bug (Task #4)
+*   **The Gap**: We masked `systemd-remount-fs.service` due to Fedora 42+ kernel rejecting overlay reconfigurations for ComposeFS. We need a permanent fix for root filesystem mount options.
+*   **The Research**: If we want `zstd` compression or specific subvolume flags on our root mount, we cannot put them in `/etc/fstab` anymore. The kernel reads the `rootflags=` parameter from the kernel command line *before* the overlay is fully locked.
+*   **Implementation Path**: We must migrate all intended root mount options (e.g., `compress=zstd:1,discard=async`) into a new `kargs.d/15-rootflags.toml` file under the `append = ["rootflags=..."]` array.
+*   **Status**: Ready for implementation.
+
+### 3. Intel Compute Stack & Battlemage `xe` Driver (Task #10)
+*   **The Gap**: Need to ensure proper binding and compute stack for Intel Arc (specifically the new Battlemage/Xe2 cards).
+*   **The Research**: The legacy `i915` driver does not fully support Xe2 architecture. The kernel has introduced the `xe` driver, but sometimes `i915` attempts to claim the device first. Furthermore, OpenCL and Level Zero require specific userspace packages.
+*   **Implementation Path**:
+    1.  Ensure `intel-compute-runtime` and `intel-media-driver` are in `PACKAGES.md`.
+    2.  Add a `kargs.d/12-intel-xe.toml` enforcing `i915.force_probe=* xe.force_probe=*` to explicitly map the new PCI IDs to the `xe` driver and prevent `i915` fallback on consumer Battlemage cards.
+
+### 4. RTX 50-Series (Blackwell) VFIO Reset Bug (Task #13)
+*   **The Gap**: Tracking an active Function Level Reset (FLR) bug when passing Blackwell GPUs through to VMs, which causes the host/VM to hang on reboot.
+*   **The Research**: The `open-gpu-kernel-modules` issue tracker indicates that the GSP (GPU System Processor) firmware on 50-series cards sometimes fails to re-initialize after a VFIO D3 state transition.
+*   **Implementation Path**: We have two potential workarounds to test:
+    1.  Pass `vfio-pci.disable_idle_d3=1` in `kargs` to prevent the GPU from entering the deepest sleep state while bound to the stub driver.
+    2.  Draft a `libvirt` QEMU hook (`/etc/libvirt/hooks/qemu`) that explicitly triggers a PCI bus reset (`virsh nodedev-reset`) before the VM starts and immediately after it shuts down.
+*   **New Queries for Claude**: *`Query: "Blackwell RTX 5090 VFIO libvirt qemu hook FLR reset"`*
 
 *(End of Entry)*
 

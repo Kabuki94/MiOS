@@ -1,0 +1,3 @@
+# Enable Nested Virtualization for KVM (VMs inside VMs / Podman machine inside VMs)
+# Applies to both Intel and AMD architectures dynamically
+kargs = ["kvm_intel.nested=1", "kvm_amd.nested=1"]

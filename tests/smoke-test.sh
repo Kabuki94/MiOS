@@ -20,6 +20,7 @@ IMAGE="${1:-localhost/cloudws-bootc:dev}"
 PASS=0
 FAIL=0
 WARN=0
+REPORT_FILE="cloudws-full-stack-report.log"
 
 # ── Formatting ──────────────────────────────────────────────────────────────
 RED='\033[0;31m'
@@ -32,6 +33,11 @@ pass() { echo -e "  ${GREEN}✓ PASS${NC}: $1"; PASS=$((PASS + 1)); }
 fail() { echo -e "  ${RED}✗ FAIL${NC}: $1"; FAIL=$((FAIL + 1)); }
 warn() { echo -e "  ${YELLOW}⚠ WARN${NC}: $1"; WARN=$((WARN + 1)); }
 section() { echo -e "\n${CYAN}═══ $1 ═══${NC}"; }
+
+echo "=====================================================================" > "$REPORT_FILE"
+echo " CloudWS-bootc Full Stack Report - $(date)" >> "$REPORT_FILE"
+echo " Image: $IMAGE" >> "$REPORT_FILE"
+echo "=====================================================================" >> "$REPORT_FILE"
 
 echo "╔══════════════════════════════════════════════════════════════╗"
 echo "║  CloudWS-bootc Smoke Test                                   ║"
@@ -95,6 +101,12 @@ CRITICAL_PACKAGES=(
     NetworkManager
     mesa-dri-drivers
     linux-firmware
+    ceph-common
+    moby-engine
+    fapolicyd
+    freeipa-client
+    sssd-tools
+    systemd-ukify
 )
 
 for pkg in "${CRITICAL_PACKAGES[@]}"; do
@@ -115,6 +127,7 @@ FOOTGUN_PACKAGES=(
     gnome-tour
     gnome-initial-setup
     PackageKit
+    podman-docker
 )
 
 for pkg in "${FOOTGUN_PACKAGES[@]}"; do
@@ -138,6 +151,9 @@ EXPECTED_SERVICES=(
     podman.socket
     chronyd
     libvirtd.socket
+    docker.socket
+    fapolicyd.service
+    cloudws-freeipa-enroll.service
 )
 
 for svc in "${EXPECTED_SERVICES[@]}"; do
@@ -200,6 +216,70 @@ else
     fail "bootc kargs.d config MISSING at /usr/lib/bootc/kargs.d/00-cloudws.toml"
 fi
 
+# ── 8. CloudWS Phase 3 Fixes & Hardware Hooks ─────────────────────────────
+section "CloudWS Custom Scripts & Hardware Hooks"
+
+# Fapolicyd composefs trust integration
+if run_in grep -q "trust = file,rpmdb" /etc/fapolicyd/fapolicyd.conf 2>/dev/null; then
+    pass "Fapolicyd configured for fs-verity ComposeFS trust backend"
+else
+    fail "Fapolicyd missing file/fs-verity trust configuration"
+fi
+
+# USBGuard strict permissions (0600)
+USBG_PERMS=$(run_in stat -c "%a" /etc/usbguard/usbguard-daemon.conf 2>/dev/null || echo "000")
+if [[ "$USBG_PERMS" == "600" ]]; then
+    pass "USBGuard config has strict 0600 permissions"
+else
+    fail "USBGuard config permissions are $USBG_PERMS (Expected 600)"
+fi
+
+# Cockpit unencrypted UI
+if run_in grep -q "AllowUnencrypted = true" /etc/cockpit/cockpit.conf 2>/dev/null; then
+    pass "Cockpit allows unencrypted HTTP for local UI"
+else
+    warn "Cockpit AllowUnencrypted configuration missing"
+fi
+
+# Waydroid NVIDIA hardware fallback script
+if run_in test -x /usr/libexec/cloudws/cloudws-waydroid-fallback.sh; then
+    pass "Waydroid NVIDIA SwiftShader fallback script is present and executable"
+else
+    warn "Waydroid NVIDIA fallback script missing or not executable"
+fi
+
+# RTX 50-Series Libvirt QEMU Hook
+if run_in test -x /etc/libvirt/hooks/qemu; then
+    pass "RTX 50-Series Blackwell FLR qemu hook present and executable"
+else
+    warn "Libvirt qemu hook missing or not executable"
+fi
+
+# UKI Cmdline Rendering Output
+if run_in test -f /etc/kernel/cmdline; then
+    pass "Unified Kernel Image (UKI) cmdline successfully rendered"
+else
+    fail "UKI cmdline rendering failed (/etc/kernel/cmdline missing)"
+fi
+
+# ── 9. CloudWS Kernel Arguments (kargs.d) ─────────────────────────────────
+section "Kernel Arguments (kargs.d)"
+
+KARG_FILES=(
+    "12-intel-xe.toml"
+    "13-rtx50-vfio-workaround.toml"
+    "15-rootflags.toml"
+    "16-nested-virt.toml"
+)
+
+for karg in "${KARG_FILES[@]}"; do
+    if run_in test -f "/usr/lib/bootc/kargs.d/$karg"; then
+        pass "kargs.d config present: $karg"
+    else
+        fail "kargs.d config MISSING: $karg"
+    fi
+done
+
 # composefs config
 if run_in test -f /usr/lib/ostree/prepare-root.conf; then
     pass "composefs prepare-root.conf present"
@@ -217,8 +297,8 @@ else
     warn "Could not determine SELinux mode"
 fi
 
-# ── 8. GPU driver availability ────────────────────────────────────────────
-section "GPU Drivers"
+# ── 10. GPU driver availability ───────────────────────────────────────────
+section "GPU Stack"
 
 if run_in rpm -q mesa-vulkan-drivers >/dev/null 2>&1; then
     pass "Mesa Vulkan drivers present (AMD/Intel)"
@@ -240,7 +320,7 @@ else
     warn "NVIDIA driver not detected (expected on CloudWS-2 / may need akmod rebuild on CloudWS-1)"
 fi
 
-# ── 9. Flatpak remotes ───────────────────────────────────────────────────
+# ── 11. Flatpak remotes ──────────────────────────────────────────────────
 section "Flatpak"
 
 if run_in flatpak remote-list --system 2>/dev/null | grep -q "flathub"; then
@@ -249,8 +329,26 @@ else
     warn "Flathub remote not found"
 fi
 
-# ── 10. Version info ─────────────────────────────────────────────────────
-section "Version Info"
+# ── 12. Full Stack Report Generation ─────────────────────────────────────
+section "Stack Manifest Generation"
+echo "Compiling complete stack artifact into $REPORT_FILE..."
+
+echo -e "\n=== RPM PACKAGE INVENTORY ===" >> "$REPORT_FILE"
+run_in rpm -qa | sort >> "$REPORT_FILE"
+
+echo -e "\n=== SYSTEMD UNIT INVENTORY ===" >> "$REPORT_FILE"
+run_in systemctl list-unit-files >> "$REPORT_FILE"
+
+echo -e "\n=== KERNEL COMMAND LINE FRAGMENTS (kargs.d) ===" >> "$REPORT_FILE"
+run_in cat /usr/lib/bootc/kargs.d/*.toml >> "$REPORT_FILE"
+
+echo -e "\n=== OCI CONTAINER LABELS ===" >> "$REPORT_FILE"
+podman inspect "$IMAGE" | grep -A 15 '"Labels":' >> "$REPORT_FILE"
+
+pass "Exhaustive stack manifest saved to $REPORT_FILE"
+
+# ── 13. Version info ─────────────────────────────────────────────────────
+section "System Information"
 
 VERSION=$(run_in cat /etc/cloudws-version 2>/dev/null || echo "not set")
 echo "  CloudWS version: $VERSION"

@@ -30,11 +30,14 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Free runner disk
-        run: |
-          sudo rm -rf /opt/hostedtoolcache /usr/share/dotnet \
-                      /usr/local/lib/android /opt/ghc
-          sudo docker system prune -af || true
-          df -h
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
 
       - name: Checkout
         uses: actions/checkout@v5
@@ -75,7 +78,8 @@ jobs:
           layers: true
           oci: true
           extra-args: |
-            --jobs=2
+            --jobs=4
+            --network=host
             --build-arg=BASE_IMAGE=${{ env.IMAGE_BASE }}
 
       # NOTE: no `sudo`. buildah-build@v2 runs rootless, so the image lives

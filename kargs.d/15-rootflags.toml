@@ -1,0 +1,3 @@
+# Migrate root mount options from /etc/fstab to kargs to bypass the
+# systemd-remount-fs composefs lock bug on Fedora 42+
+kargs = ["rootflags=compress=zstd:1,discard=async"]

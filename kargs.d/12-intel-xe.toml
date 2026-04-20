@@ -1,0 +1,3 @@
+# Intel Battlemage (Xe2) Compute Stack driver bindings
+# Prevents legacy i915 driver from capturing consumer Battlemage cards
+kargs = ["i915.force_probe=*", "xe.force_probe=*"]
