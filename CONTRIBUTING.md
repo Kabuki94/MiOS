@@ -6,6 +6,8 @@ Thank you for your interest in contributing to CloudWS-bootc. This document expl
 
 CloudWS-bootc is an immutable, cloud-native workstation OS built on Fedora Rawhide bootc. Every decision follows these principles:
 
+- **Architectural Purity (Single Source of Truth):** ALL system configuration files, units, rules, and kargs MUST reside in the `system_files/` overlay. Top-level configuration directories are forbidden to prevent build-time path desynchronization.
+- **Declarative State (No Mkdir in Var):** In the bootc model, `/var` is a persistent volume. Any new directory or configuration required in `/var` MUST be declared in a `tmpfiles.d` file within the overlay. Manual `mkdir -p /var/...` calls in provisioning scripts are strictly forbidden.
 - **Pure build-up for GNOME** — only the explicitly needed ~25 GNOME packages are installed. No `dnf remove` bloat blocks. All user-facing apps are Flatpaks; RPMs are restricted to kernel modules, drivers, virtualization stack, container runtime, system tools, and GNOME infrastructure.
 - **PACKAGES.md is the single source of truth** — all package lists live in fenced code blocks parsed by `scripts/lib/packages.sh`. Scripts use `install_packages`/`get_packages` helpers. Never add packages outside this system.
 - **Nothing gets removed without explicit permission** — if a file or package exists in the repo, do not remove it in your PR without discussing it first.

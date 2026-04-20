@@ -5,9 +5,10 @@ This is the **CENTRAL ENTRY POINT** for all AI Agents, LLMs, Copilots, and APIs 
 ## 🚨 MANDATORY AGENT PROTOCOL
 Before every single turn, you **MUST**:
 1.  **Read this file (`.ai-context/AI-README.md`)** to understand your core directives.
-2.  **Read `.ai-context/AI-PROTOCOLS.md`** for project-specific execution laws.
-3.  **Read the latest entries in `.ai-context/ai-journal.md`** to gain context on recent work.
-4.  **Read `CLAUDE.md`** (the project's source of truth) for build rules and architecture.
+2.  **Read `.ai-context/AI-ENVIRONMENT.md`** for the current engineering baseline and AI variables.
+3.  **Read `.ai-context/AI-PROTOCOLS.md`** for project-specific execution laws.
+4.  **Read the latest entries in `.ai-context/ai-journal.md`** to gain context on recent work.
+5.  **Read `CLAUDE.md`** (the project's source of truth) for build rules and architecture.
 
 ---
 
@@ -18,6 +19,9 @@ Before every single turn, you **MUST**:
 - **Format:** Timestamped (UTC), labeled with your identity (e.g., `[AI: Gemini CLI]`), and written as a file append.
 - **Content:** Include `THOUGHT`, `LEARNING`, `DISCOVERY`, `ACTION`, and `SUGGESTED ALTERNATIVE`.
 - **Failure:** Ephemeral chat-only output without journal persistence is a violation of project law.
+
+### 2. THE COORDINATION LAW
+This is a **Multi-Agent Workspace**. You MUST respect the global state defined in `.ai-context/AI-ENVIRONMENT.md` and `.env`. Ensure your local configuration (e.g., `.claude/settings.json`, `.vscode/settings.json`) is synchronized with the global baseline.
 
 ### 2. THE ATOMICITY LAW
 - Always deliver **COMPLETE REPLACEMENT FILES**. No patches, no diffs, no partial edits.

@@ -66,6 +66,8 @@ journalctl -p crit
 | What | Command / Path |
 |------|---------------|
 | System journal | `journalctl` |
+| Management Dashboard | `/usr/libexec/cloudws/motd` |
+| Active Role State | `/var/lib/cloudws/role.active` |
 | Build log (during image build) | `/tmp/cloudws-build.log` |
 | SELinux denials | `ausearch -m AVC -ts recent` |
 | Firewall drops | `journalctl -u firewalld` and `nft list ruleset` |
@@ -77,7 +79,7 @@ journalctl -p crit
 | Cockpit | `journalctl -u cockpit` |
 | NetworkManager | `journalctl -u NetworkManager` |
 | Secure Boot | `mokutil --sb-state` |
-| bootc status | `sudo bootc status` |
+| bootc status | `sudo bootc status --json` |
 
 ## Common Diagnostic Commands
 
@@ -86,11 +88,18 @@ journalctl -p crit
 ```bash
 # OS version and deployment status
 sudo bootc status
-cat /etc/cloudws-version
+cat /etc/cloudws/version
+
+# Current Role and Target
+cat /var/lib/cloudws/role.active
+systemctl list-units --type=target | grep cloudws
+
+# Run the management dashboard manually
+/usr/libexec/cloudws/motd
 
 # Kernel and architecture
 uname -a
-
+```
 # systemd boot analysis
 systemd-analyze
 systemd-analyze blame

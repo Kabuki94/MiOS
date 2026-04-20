@@ -21,6 +21,10 @@ This is an **immutable, container-native workstation** built on `bootc` and `Com
 - You cannot use `dnf install` on the deployed host.
 - Persistence is strictly limited to `/etc` and `/var`.
 - System services are declarative (`system_files/`) and rely heavily on Podman Quadlets.
+- **Update Efficiency:** ALL images MUST be rechunked via `bootc-base-imagectl` in the CI pipeline to ensure minimal Day-2 update sizes.
+
+## 3. THE COORDINATION LAW
+All agents MUST respect the global engineering baseline defined in `.ai-context/AI-ENVIRONMENT.md` and the `.env` file. You MUST ensure your local settings (e.g., `.claude/settings.json`, `.vscode/settings.json`) are in sync with the global baseline before committing changes.
 
 ## 3. FOLDER MANIFEST
 This `.ai-context/` directory contains the persistent memory of the AI collective:

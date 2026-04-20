@@ -4,7 +4,13 @@ CloudWS-bootc uses `bootc` for atomic, image-based system updates. Every upgrade
 
 ## How Updates Work
 
-CloudWS is an immutable OS delivered as an OCI container image. The system root (`/usr`) is read-only and managed entirely by bootc. Your data in `/var` (which includes `/var/home`, symlinked from `/home`) and your modifications in `/etc` are preserved across updates. The update process is:
+CloudWS is an immutable OS delivered as an OCI container image. The system root (`/usr`) is read-only and managed entirely by bootc. Your data in `/var` (which includes `/var/home`, symlinked from `/home`) and your modifications in `/etc` are preserved across updates.
+
+**OCI Rechunking:** Starting with **v0.1.8**, CloudWS images are rechunked during the CI build. This splits the monolithic OS layer into small, content-addressed chunks, resulting in **5-10x smaller updates** when only a few packages change.
+
+**Note on /var Persistence:** Any directory or state in `/var` required for a new version MUST be declared in the `tmpfiles.d` overlay. CloudWS ensures all mandatory state is created declaratively at boot.
+
+The update process is:
 
 1. `bootc` pulls the new image from `ghcr.io/kabuki94/cloudws-bootc:latest`
 2. The new image is staged as a second deployment

@@ -92,3 +92,28 @@ Promoted image to v2.3.5 engineering baseline and integrated critical stability 
 - **Fix:** Added fatal logging to `install_packages_strict` in `packages.sh`.
 - **Reason:** NFS status monitoring (`statd`) requires a persistent directory in `/var`. Creating it via script clutters the provisioning logic.
 - **Fix:** Moved NFS state directory management to `tmpfiles.d/cloudws-nfs.conf`.
+
+### April 21, 2026 - v0.1.8 Versioning Standardization & Full Functionality Pass
+Unified the repository on the v0.1.8 baseline and implemented missing architectural components.
+
+#### 1. Versioning Precedence (Lower Takes Precedence)
+- **Decision:** Standardized all repository metadata and script headers to the **v0.1.8** stream, reconciling the previous engineering-only v2.x labels.
+- **Action:** Re-mapped the `CHANGELOG.md` history to align engineering milestones with the v0.1.x chronological ledger.
+
+#### 2. Formal Target Architecture
+- **Reason:** Legacy role initialization via scripts was brittle and hard to isolate. 
+- **Fix:** Created formal systemd targets (`cloudws-desktop.target`, etc.) and updated the Role Engine to use `systemctl isolate`. This provides clean state transitions and robust dependency management.
+
+#### 3. Management Dashboard (MOTD)
+- **Action:** Completely redesigned the MOTD (at `/usr/libexec/cloudws/motd`) to provide live Role, MOK (Secure Boot), and bootc Update status indicators. This acts as the primary bridge for "Headless GUI" management.
+
+#### 4. Flatpak Pre-installation Standard (2026)
+- **Reason:** Custom scripts for Flatpak installation added unnecessary build time and service overhead.
+- **Fix:** Adopted the `/usr/share/flatpak/pre-installed.d/` declarative pattern for mandatory essentials (Epiphany, Flatseal).
+
+#### 5. Native AI Environment (Coordination)
+- **Reason:** Multi-agent development (Claude, Gemini, Cursor) required a "natively understood" state to prevent architectural regressions.
+- **Fix:** Established `.ai-context/AI-ENVIRONMENT.md` and `.env` as the global source of truth. Configured VSCode, Claude, and Gemini to natively inject and respect these variables.
+
+#### 6. Logging & Print-out Purity
+- **Action:** system-wide audit and fix of malformed UTF-8 characters (`???`) and box-drawing elements. Standardized build logging with high-visibility STEP markers in `build.sh`.

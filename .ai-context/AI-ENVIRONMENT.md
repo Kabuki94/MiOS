@@ -10,7 +10,7 @@
 
 | VARIABLE | CURRENT VALUE | DESCRIPTION |
 | :--- | :--- | :--- |
-| `AI_ARCH_BASELINE` | **v2.3.5** | Current synchronized engineering baseline. |
+| `AI_ARCH_BASELINE` | **v0.1.8** | Current synchronized engineering baseline. |
 | `AI_DNF_POLICY` | `"${DNF_SETOPT[@]}"` | Mandatory array usage for all package installs. |
 | `AI_WSL_GATING` | `ConditionVirtualization=!wsl` | Standard for all service gating in WSL2. |
 | `AI_OVERLAY_PATH` | `system_files/` | The ONLY directory for persistent system config. |
@@ -23,19 +23,20 @@
 
 - **Workspace Path:** `/home/corey_dl_taylor/CloudWS-bootc`
 - **User Home:** `/home/corey_dl_taylor`
-- **`gcloud` State:** ⚠️ **WARNING:** Using temporary config in `/tmp/tmp.HwF1Lwhwnm`. Credentials will NOT persist across deep tree operations or session resets.
+- **`gcloud` State:** ⚠️ **WARNING:** Using temporary config in `/tmp/tmp.HwF1Lwhwnm`. Credentials will NOT persist across session resets.
 - **Bootc Linter:** `v1.1.6+` — Fatal on `/var` content missing from `tmpfiles.d`.
 - **NVIDIA Strategy:** Default to **Open Kernel Modules** (`nvidia-open`). Blackwell safety enabled.
 
 ---
 
-## 🛰️ COORDINATION LOGS (v2.x Stream)
+## 🛰️ COORDINATION LOGS (v0.1.x Stream)
 
 ```version-log
-[v2.3.5] - 2026-04-21: Consolidated Role Engine; Unified overlay; Fixed CI rechunking; Patched NVIDIA 595+ and WSL 2.7.
-[v2.3.4] - 2026-04-18: Renamed gpu-detect to gpu-status; Blackwell VFIO d3-idle fix.
-[v2.2.7] - 2026-04-10: install.ps1 ASCII-only IRM fix.
-[v2.2.0] - 2026-03-25: Unified Image; uupd adoption; Role-at-boot introduced.
+[v0.1.8] - 2026-04-21: Unified Image v0.1.8; Role Engine; Optimized CI; Upstream Patches.
+[v0.1.7] - 2026-04-18: NVIDIA 595+ & WSL 2.7.0 stability workarounds.
+[v0.1.6] - 2026-04-16: NVIDIA Open Modules standardization; CDI generation.
+[v0.1.5] - 2026-04-14: GNOME 50 transition; DNF5 build shift.
+[v0.1.4] - 2026-03-25: Unified Image architecture; Role-at-boot.
 ```
 
 ---

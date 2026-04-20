@@ -10,6 +10,8 @@ CloudWS-bootc is an immutable OS — the system root (`/usr`) is replaced entire
 | `/etc/` | System configuration overrides | Survives upgrades (3-way merge), lost on reinstall |
 | `/var/lib/libvirt/` | VM disk images, snapshots, configs | Survives upgrades, lost on reinstall |
 | `/var/lib/containers/` | Podman images, volumes, quadlet data | Survives upgrades, lost on reinstall |
+| `/var/lib/crowdsec/` | CrowdSec sqlite database and data | Survives upgrades, lost on reinstall |
+| `/var/lib/gnome-remote-desktop/` | RDP TLS certificates and keys | Survives upgrades, lost on reinstall |
 | `/var/opt/` | Application data (symlinked from /opt) | Survives upgrades, lost on reinstall |
 | `/etc/containers/systemd/` | Custom quadlet unit files | Survives upgrades, lost on reinstall |
 | `/etc/usbguard/rules.conf` | USBGuard device allowlist | Survives upgrades, lost on reinstall |
