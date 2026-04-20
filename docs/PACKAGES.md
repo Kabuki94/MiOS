@@ -254,6 +254,7 @@ libguestfs-tools
 virt-viewer
 qemu-device-display-virtio-gpu
 virt-firmware
+python3-cryptography
 ```
 
 ## Container Runtime

@@ -20,8 +20,7 @@ install_packages "ceph"
 echo "[13-ceph-k3s] Installing K3s prerequisites..."
 install_packages "k3s"
 
-echo "[13-ceph-k3s] Installing k3s-selinux policy from Rancher..."
-dnf install -y https://rpm.rancher.io/k3s/stable/common/centos/8/noarch/k3s-selinux-1.5-1.el8.noarch.rpm 2>/dev/null || true
+# Note: k3s-selinux policy is compiled from source in 19-k3s-selinux.sh
 
 # ─── K3s Binary ──────────────────────────────────────────────────────────────
 echo "[13-ceph-k3s] Downloading K3s binary..."

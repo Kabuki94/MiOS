@@ -44,9 +44,9 @@ fi
 
 echo -e "\n${BLUE}[1/6] Checking/installing virt-firmware...${NC}"
 if ! command -v virt-fw-vars &>/dev/null; then
-    echo -e "${YELLOW}Installing virt-firmware...${NC}"
-    dnf install -y virt-firmware python3-cryptography
-    echo -e "${GREEN}✓ Installed${NC}"
+    echo -e "${RED}✗ virt-firmware is missing!${NC}"
+    echo -e "${YELLOW}This tool is required. Please ensure 'virt-firmware' and 'python3-cryptography' are listed in docs/PACKAGES.md and rebuild the image.${NC}"
+    exit 1
 else
     echo -e "${GREEN}✓ Already installed${NC}"
 fi
