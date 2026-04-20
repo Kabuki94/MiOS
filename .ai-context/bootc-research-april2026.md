@@ -5,6 +5,7 @@
 > as discovered. Cross-reference between sections freely.
 >
 > Last sweep started: 2026-04-19
+> Last iterative pass: 2026-04-20 (scheduled-research-daily)
 
 ---
 
@@ -37,20 +38,20 @@
 - **Current stable release:** v1.15.1 (April 14, 2025). v1.15.x line is the current series as of research date.
 - **Website:** https://bootc.dev/bootc/ (redirects from bootc-dev.github.io/bootc/)
 
-### Release highlights (v1.9 → v1.15, 2024–2025)
+### Release highlights (v1.9 → v1.15) (updated 2026-04-20: corrected dates to 2026 per github.com/bootc-dev/bootc/releases)
 
 | Version | Date | Key additions |
 |---------|------|---------------|
-| v1.9.0 | Oct 2023 | Major composefs/image sealing merge; journal logging; UKI+BLS docs |
-| v1.10.0 | Oct 2023 | composefs backend maturation; pesign for secure boot; systemd-boot rollback |
-| v1.11.0 | Dec 2023 | Experimental factory reset; `--transport docker-daemon`; composefs enhancements |
-| v1.12.0 | Jan 2024 | `--download-only`/`--from-downloaded`; `container inspect` with kernel metadata; unified storage (experimental); composefs soft reboot |
-| v1.12.1 | Jan 2024 | Shell completions; critical multi-device parent install bugfix |
-| v1.13.0 | Feb 2024 | Shell completion generation; bootloader-free install; stateroot/mount config |
-| v1.14.0 | Mar 2024 | Pre-flight disk space checks; composefs SELinux enforcement for sealed images; GC improvements; `/usr` overlay status display |
-| v1.14.1 | Mar 2024 | Experimental `export --format=tar` for mutable installs |
-| v1.15.0 | Mar 2024 | Tag-aware upgrade; `usroverlay --readonly`; composefs verity fixes; disk space pre-flight |
-| v1.15.1 | Apr 2025 | Intel VROC fix; `--karg-delete`; dm semaphore deadlock fix; BLS GC fix |
+| v1.9.0 | Oct 2025 | Major composefs/image sealing merge; journal logging; UKI+BLS docs |
+| v1.10.0 | Nov 2025 | composefs backend maturation; pesign for secure boot; systemd-boot rollback |
+| v1.11.0 | Dec 2025 | Experimental factory reset; `--transport docker-daemon`; composefs enhancements |
+| v1.12.0 | Jan 2026 | `--download-only`/`--from-downloaded`; `container inspect` with kernel metadata; unified storage (experimental); composefs soft reboot |
+| v1.12.1 | Jan 16, 2026 | Shell completions; critical multi-device parent install bugfix |
+| v1.13.0 | Feb 23, 2026 | Shell completion generation; bootloader-free install; stateroot/mount config |
+| v1.14.0 | Mar 11, 2026 | Pre-flight disk space checks; composefs SELinux enforcement for sealed images; GC improvements; `/usr` overlay status display |
+| v1.14.1 | Mar 12, 2026 | Experimental `export --format=tar` for mutable installs |
+| v1.15.0 | Mar 31, 2026 | Tag-aware upgrade; human-readable cached update info in status; sealed UKI improvements; composefs verity fixes; disk space pre-flight |
+| **v1.15.1** | **Apr 14, 2026** | **Current stable.** Intel VROC fix; `--karg-delete`; dm semaphore deadlock fix; BLS GC fix |
 
 **bootc 1.1.6 notable:** `bootc container lint` expanded — now checks for missing `tmpfiles.d` entries and warns. This is actionable for CloudWS: ensure every `/var/lib/<service>` directory that a service needs is declared in `tmpfiles.d/`.
 
@@ -129,6 +130,33 @@ New `bootc kargs edit --karg-delete <arg>` command allows removing a kernel argu
 - `crowdsec-dashboard` (metabase container)  
 - `cloudws-guacamole` + `cloudws-guacd` containers
 - Future: monitoring (Prometheus node_exporter, Grafana)
+
+### 2026-04-20 update — composefs-native backend still not rollback-capable
+
+Per bootc issue #1190 (composefs-native backend umbrella), the composefs-native backend is **still under active development** and has not achieved feature parity with the ostree backend. Work in progress (as of Feb–Apr 2026):
+
+- Garbage collection fixes (@Johan-Liebert1, @cgwalters)
+- Making updates/switches idempotent
+- `/etc` merge implementation
+- initramfs integration for composefs-native-finalize
+- Cross-distro CI (Fedora, openSUSE, RHEL 10)
+
+Explicitly missing as of 2026-04:
+- `bootc rollback` on composefs-native — still returns "This feature is not supported on composefs backend"
+- `bootc upgrade --download-only` on composefs-native — not implemented (Red Hat Developers confirmed Feb 2026)
+- `/etc` three-way merge on composefs-native — partial
+
+**CloudWS implication:** Stay on OSTree backend (not composefs-native) for CloudWS-2 production. The `[composefs] enabled = verity` setting in `prepare-root.conf` is composefs-over-ostree, which IS rollback-capable via greenboot-rs falling back to previous ostree deployment. Do not confuse this with the experimental composefs-native *backend* — those are distinct.
+
+### 2026-04-20 update — Konflux takes over bootc artifact builds in Fedora 44
+
+Fedora 44 ChangeSet confirms: **Konflux becomes the build pipeline for bootc-based artifacts**, replacing the legacy pipeline. Fedora CoreOS builds also migrate to Konflux. This is upstream infrastructure, not a CloudWS action item, but:
+
+- `quay.io/fedora/fedora-bootc:rawhide` content will be Konflux-built starting with F44 (release target April 28, 2026)
+- Digest pins in `image-versions.yml` may see more frequent churn during the transition window (April–June 2026)
+- Renovate `minimumReleaseAge: "3 days"` for digest updates remains appropriate
+
+No action required from CloudWS.
 <!-- FINDINGS END -->
 
 ---
@@ -233,6 +261,12 @@ Rootless BIB (no `--privileged`) requires `--in-vm` flag which uses KVM to run t
 2. **VHDX**: BIB produces VHD; CloudWS correctly post-converts with `qemu-img convert -f vpc -O vhdx -o subformat=dynamic`. This is the right pattern — BIB has no native VHDX output.
 3. **Disk space on ubuntu-24.04 runners:** BIB builds consume 30-40 GB. CloudWS correctly uses `jlumbroso/free-disk-space@main` to reclaim ~40 GB before the build step.
 4. **BIB pulls base image from registry:** BIB re-pulls the image from GHCR inside the privileged container; that's why `sudo podman pull` before the BIB run step is needed (to pre-warm `/var/lib/containers/storage` which is bind-mounted in).
+
+### 2026-04-20 update — BIB status
+
+- **No WSL2 native artifact type yet.** osbuild/bootc-image-builder#172 (feature request: `wsl2`/`tar.gz` output for Windows users) remains open. CloudWS's WSL delivery continues to rely on `podman export` + `wsl --import` — documented pattern is still correct.
+- **FIPS-enabled RHEL bootc image builds** now documented (March 2026 Red Hat reference). Not applicable to CloudWS (Fedora base), but confirms the BIB config schema is stable.
+- **BIB via Konflux for Fedora:** Fedora 44 shifts FCOS + fedora-bootc builds to Konflux. BIB itself is unchanged — the publishing pipeline is what moved. CloudWS's usage (`quay.io/centos-bootc/bootc-image-builder:latest`) is unaffected.
 <!-- FINDINGS END -->
 
 ---
@@ -252,16 +286,21 @@ ucore uses a layered image architecture with distinct variant tiers:
 - `ghcr.io/ublue-os/ucore:<tag>` — Adds Cockpit, podman, ZFS, netavark, aardvark-dns, Tailscale, etc.
 - `ghcr.io/ublue-os/ucore-hci:<tag>` — Adds KVM/QEMU/libvirt, Ceph, SR-IOV tooling — the primary base for CloudWS-2
 
-**Tag naming convention:**
+**Tag naming convention:** (updated 2026-04-20: added LTS stream + lts-nvidia-lts tags)
 
 | Tag suffix | Meaning |
 |---|---|
 | `stable` | Pinned to current Fedora stable (Fedora 42 as of April 2026) |
-| `stable-nvidia` | Stable + pre-signed NVIDIA open kernel modules |
+| `stable-nvidia` | Stable + pre-signed NVIDIA **open** kernel modules (595.x series as of Apr 2026) |
+| `stable-nvidia-lts` | **NEW** — Stable + NVIDIA **580 LTS** open kmods (for users who need the longer-support branch) |
 | `stable-zfs` | Stable + ZFS kmod (OpenZFS, GPL-signed) |
 | `stable-nvidia-zfs` | Stable + both NVIDIA + ZFS |
+| `lts` | **NEW LTS stream** — Pinned to CentOS Stream 10 / long-support base |
+| `lts-nvidia` | LTS base + NVIDIA open (latest) |
+| `lts-nvidia-lts` | LTS base + NVIDIA 580 LTS |
 | `testing` | Based on Fedora Rawhide / pre-release |
 | `testing-nvidia` | Rawhide + NVIDIA open kmods |
+| `testing-nvidia-lts` | **NEW** — Rawhide + NVIDIA 580 LTS |
 
 **CloudWS-2 uses `stable-nvidia`**, meaning it tracks Fedora stable (not Rawhide) with pre-signed NVIDIA open kernel modules. This is important: **CloudWS-2's kernel is from Fedora stable, not Rawhide**. The CloudWS-1 Rawhide variant is separate.
 
@@ -292,12 +331,14 @@ ucore-hci `stable-nvidia` ships **pre-built, pre-signed NVIDIA open kernel modul
 
 This means CloudWS-2 users do NOT need to install akmods at runtime — the modules are pre-compiled and pre-signed in the base image.
 
-**NVIDIA driver version (April 2026):**
+**NVIDIA driver version (April 2026):** (updated 2026-04-20: 595.58.03 is the new stable; 590.48.01 superseded)
 
-- **Default driver on `stable-nvidia`:** NVIDIA 590.48.01 (open kernel modules, Open GPU Kernel Modules project)
-- **LTS fallback:** 580.95.05 available as an alternate akmods artifact
+- **Default driver on `stable-nvidia`:** NVIDIA **595.58.03** (released March 24, 2026 — the new big recommended stable driver for Linux; includes fix for kernel module build issue with Linux 6.19, which matters for F44)
+- **LTS branch on `-lts` tags:** NVIDIA **580.x** (Universal Blue now has an explicit LTS stream; akmods-nvidia-lts OCI artifact feeds `-lts` variants)
+- Previous `stable-nvidia` default was 590.48.01 (Dec 2025 – Mar 2026); ucore-hci rolled to 595 within ~1 week of NVIDIA release
 - RTX 4090 (Ada Lovelace, GA102): fully supported by both open and proprietary modules
 - RTX 50xx (Blackwell): **requires open kernel modules** — proprietary modules are incompatible with Blackwell architecture entirely
+- **kernel-module suspend behavior (595+):** `NVreg_UseKernelSuspendNotifiers=1` opt-in now has `nvidia.ko` handle video-memory preservation internally when open kmods are in use — removes a long-standing suspend/resume quirk. CloudWS should NOT set this knob unless specific resume issues appear.
 
 **Known NVIDIA open module caveats for CloudWS:**
 
@@ -414,8 +455,18 @@ Waydroid does not work with NVIDIA proprietary drivers on ucore-hci. NVIDIA open
 **8. systemd-remount-fs crash on Fedora 42+/GNOME composefs:**
 `systemd-remount-fs.service` crashes at boot on Fedora 42+ when composefs overlay is active because the kernel prevents remounting with new `/etc/fstab` options. Workaround: mask the service (`40-composefs-verity.sh`). Monitor Fedora 44+ for upstream systemd patch targeting `/sysroot` instead.
 
-**9. xRDP is dead on GNOME 50:**
-GNOME 50 (released mid-March 2026, ships in Fedora 44) removed X11 session entirely. xRDP and xorgxrdp have no Wayland backend and no upstream roadmap for one. **CloudWS must migrate to `gnome-remote-desktop` before the F43/GNOME 50 rebase.** Remove `xrdp`, `xorgxrdp`, `xorgxrdp-glamor`. Ship `gnome-remote-desktop` + `grdctl` provisioning. This also eliminates the xorgxrdp/xorgxrdp-glamor package conflict (CLAUDE.md §3.4).
+**9. xRDP is dead on GNOME 50:** (updated 2026-04-20 with confirmed release details)
+**GNOME 50 "Tokyo" was released March 18, 2026** and ships as the default in **Fedora 44 (April 28, 2026 target)** and Ubuntu 26.04 LTS. The **X11 session is completely removed** — Wayland-only from GNOME 50 onward. xRDP and xorgxrdp have no Wayland backend and no upstream roadmap for one. **CloudWS must have migrated to `gnome-remote-desktop` before the F43→F44 rebase.** Remove `xrdp`, `xorgxrdp`, `xorgxrdp-glamor`. Ship `gnome-remote-desktop` + `grdctl` provisioning. This also eliminates the xorgxrdp/xorgxrdp-glamor package conflict (CLAUDE.md §3.4).
+
+**GNOME 50 remote-desktop wins (relevant for CloudWS-2 RDP workflow):**
+- **Vulkan + VA-API hardware acceleration** for RDP video stream — significantly smoother, lower latency, lower power vs. GNOME 48/49's software path. Requires mutter hw-accel build (default in F44).
+- **HiDPI auto-scaling** for remote clients — resolution matches client display automatically.
+- **Camera redirection** + **Kerberos authentication** for RDP sessions (enterprise SSO — pairs well with CloudWS's FreeIPA integration).
+- **Explicit sync** landed — meaningfully improves NVIDIA Wayland stability under RDP.
+- **VRR + fractional scaling default ON** at the Mutter level.
+- **HDR screen sharing** available in GNOME 50.
+
+**CloudWS action check:** verify `grdctl` is shipped (it's been in `gnome-remote-desktop` since GNOME 42, so this should already be satisfied). Ensure mutter/gnome-remote-desktop packages are present in the GNOME package set in `docs/PACKAGES.md` (not a scope-of-today item — flag in NEXT-RESEARCH if not already pulled in).
 
 **10. cosign v3 bundle format breaks bootc/rpm-ostree:**
 Cosign v3 enables `--new-bundle-format` (protobuf) by default, incompatible with the `containers/image` library used by rpm-ostree and bootc for signature verification. Always sign with `cosign sign --new-bundle-format=false --yes $DIGEST` or stay on cosign v2.6.x until rpm-ostree#5509 is resolved.
@@ -495,14 +546,22 @@ Cosign v3 enables `--new-bundle-format` (protobuf) by default, incompatible with
   3. Verify NVIDIA module load (bare metal only, via ConditionPathExists)
   - On 3 consecutive failed reboots, greenboot triggers `bootc rollback` automatically.
 
-### Fedora 44 changes affecting CloudWS
+### Fedora 44 changes affecting CloudWS (updated 2026-04-20)
 
 | Change | Impact |
 |--------|--------|
 | Boot Loader Updates Phase 1 (F44): GRUB/shim content moves from `/boot` to `/usr` | `99-cleanup.sh` `find /boot/` cleanup should remain safe; new bootupd handles `/usr`-side content |
-| systemd 260 (F44): cgroupv1 completely removed | CloudWS already cgroups v2 only — no impact |
+| systemd 260 (F44, **shipped upstream March 17, 2026**) | Removes final SysV init compat; CloudWS already cgroups v2 only — no impact |
 | composefs on Atomic Desktops (F42 stable, F44 default) | `/usr` verity now default in Fedora ecosystem; validates CloudWS choice |
 | Fedora 44 branched Feb 2026 | CI matrix: add `fedora-bootc:44` to build matrix alongside `:rawhide` for stability testing |
+| **Fedora 44 release target: April 28, 2026** (pushed from April 21 over blocker bugs) | Brief window — validate CloudWS-1 on rawhide (which is now effectively F45) through the branch event |
+| **GNOME 50 "Tokyo" (Mar 18, 2026) is the F44 default** | X11 session completely removed — see Section 3 note #9 |
+| **Konflux becomes the build pipeline for bootc-based Fedora artifacts** | Upstream churn in `quay.io/fedora/fedora-bootc:rawhide` digests expected through F44 transition. Renovate `minimumReleaseAge: "3 days"` remains appropriate. |
+| **FUSE 2 binaries/libs removed from all Atomic Desktops** | If CloudWS ships a FUSE-2-only package (`fuse` vs. `fuse3`), switch to fuse3. Non-issue if already using fuse3 (Fedora default since F35). |
+| **PackageKit switches to DNF5 backend (libdnf5)** | Build-time: CloudWS uses raw `dnf5` already — no impact. Runtime PackageKit consumers (GNOME Software, Cockpit) inherit the new backend automatically. |
+| **LLVM 22, CMake 4.0 default generator `ninja`, Golang 1.26, Ruby 4.0** | Matters for `12-virt.sh` Looking Glass build: CMake 4.0 raises minimum required CMake version in some projects. Looking Glass B7+ already requires CMake ≥ 3.18, so no impact, but if a build regression appears on F44, suspect the CMake 4 default-generator change first. |
+| **MariaDB default 10.11 → 11.8** | CloudWS doesn't ship MariaDB by default — no impact. Flag if any user stack is pinned to 10.x. |
+| **Fedora CoreOS builds also moving to Konflux** | Parallel transition; not a CloudWS dep. |
 
 ### Image Mode Phase 2 (2026 initiative)
 
@@ -678,6 +737,30 @@ Image=app:latest
 
 Allows shipping related Quadlet units as one file for organizational clarity.
 
+### 2026-04-20 update — Podman 5.6 Quadlet management CLI and new keys
+
+Podman **5.6** (shipped late 2025, present in Fedora 43+) introduces a first-class Quadlet management CLI:
+
+| Command | Purpose |
+|---------|---------|
+| `podman quadlet install <file>` | Install a Quadlet into `/etc/containers/systemd/` (rootful) or `~/.config/containers/systemd/` (rootless) |
+| `podman quadlet list` | List installed Quadlets with their generated unit names |
+| `podman quadlet print <name>` | Print the source Quadlet file content |
+| `podman quadlet rm <name>` | Remove an installed Quadlet + reload systemd |
+
+(Remote Podman client support deferred to a future release.)
+
+**New Quadlet keys in 5.6:**
+- `.container` — `Environment=KEY` (no value) pulls the variable from the host at start time
+- `.pod` — new keys `Label=` (applies labels to the created pod) and `ExitPolicy=`
+- `.image` — new `Policy=` key (values: `always`, `newer`, `missing`) controls pull behavior on unit start
+
+**Quadlet warns on known-bad keys:** When generated units include `User=`, `Group=`, or `DynamicUser=` in `[Service]`, Quadlet now emits a warning — those options are known-incompatible with Podman's security model.
+
+**Behavior change:** Quadlet no longer uses container/pod ID files for `podman stop`; it passes the container/pod name directly. Benign improvement.
+
+**CloudWS implication:** `/usr/share/containers/systemd/` (distro-shipped path) is unchanged. The new `podman quadlet install|rm` targets `/etc/containers/systemd/` for admin-installed units — safe to ignore for image-baked Quadlets. Consider adopting `Policy=newer` on `.image` Quadlets for logically-bound images to reduce unnecessary pulls. `Cockpit ≥ 349` can now render/manage Quadlets graphically (new Red Hat Developer article, April 2026).
+
 ### WSL2 / dbus interaction
 
 - Podman requires a running dbus session for some operations in WSL2.
@@ -700,14 +783,14 @@ Allows shipping related Quadlet units as one file for organizational clarity.
 *Research thread: WSL2 systemd compatibility, known failures, upstream patches*
 
 <!-- FINDINGS BEGIN -->
-### WSL2 kernel / systemd compatibility matrix (April 2026)
+### WSL2 kernel / systemd compatibility matrix (April 2026) (updated 2026-04-20: WSL 2.7.0 shipped)
 
 | WSL version | WSL kernel | systemd behavior | Notes |
 |-------------|-----------|-----------------|-------|
 | WSL 2.3.x | 5.15.167.x | Stable | Legacy; cgroupv1 still present |
 | WSL 2.4.x | 5.15.179.x | Mostly stable | auditd fails; journald audit crash |
 | WSL 2.6.x | 6.6.x | Active issues | User session failures reported after 2.6.0.0 |
-| WSL 2.7.x+ | 6.6.x+ | In development | Improvements ongoing |
+| **WSL 2.7.0** | **6.6 LTS point release** | **Released (stable)** | Re-adds `WSL2_VM_ID` env var to system distro; security/bug fixes; translation updates. Many fixes per Phoronix coverage. |
 
 WSL2 runs Linux 5.15.x or 6.6.x kernel depending on Windows version. The kernel is Microsoft-maintained fork: `github.com/microsoft/WSL2-Linux-Kernel`.
 
@@ -858,6 +941,19 @@ This enforces signature verification when Podman pulls from `ghcr.io/kabuki94/*`
 2. Pin cosign action to digest: `uses: sigstore/cosign-installer@v3.x.y@sha256:<digest>` (Renovate manages this via `helpers:pinGitHubActionDigests`)
 3. Sign the digest (not the tag): `cosign sign ghcr.io/image@sha256:<digest>` — tag-based signing is mutable and insecure
 4. Store cosign verification policy in the image itself (`/etc/containers/policy.json`) so verification is enforced at runtime, not just at CI time
+
+### 2026-04-20 update — cosign v3.0.6 and v2.6.3 dual release
+
+On **April 6, 2026**, sigstore released both **cosign v3.0.6** (v3 line) and **cosign v2.6.3** (v2 line) on the same day. Both releases address **GHSA-w6c6-c85g-mmv6** — a **DSSE predicate validation issue**. Any CloudWS CI pipeline that uses cosign to verify DSSE attestations (e.g., SLSA provenance, SBOM predicates) must be on **v2.6.3 or v3.0.6+**.
+
+Additional v3.0.x fixes:
+- v3.0.3 — added protobuf-bundle compatibility for more subcommands (still requires `--new-bundle-format=false` for rpm-ostree/bootc consumers)
+- v3.0.4 — fixed GHSA-whqx-f9j3-ch6m (bundle verify path for old bundle / trusted root)
+- v3.0.6 — GHSA-w6c6-c85g-mmv6 DSSE predicate validation fix; OpenBao-managed keys; certificate annotation handling
+
+**CloudWS guidance unchanged:** stay on **v2.6.x** (current: **v2.6.3**) for signing and signature-verification, because `containers/image` / rpm-ostree / bootc **still do not accept the cosign v3 protobuf bundle format by default** (rpm-ostree issue #5509 is the tracking bug, still open as of April 2026). If the build workflow is pinned to cosign v3, it MUST pass `cosign sign --new-bundle-format=false --yes $DIGEST`. Renovate's `helpers:pinGitHubActionDigests` should be bumping `sigstore/cosign-installer` to a commit that installs v2.6.3 on the `build-sign.yml` workflow.
+
+**Action item (NEXT-RESEARCH candidate):** verify the pinned `cosign-installer` version in `.github/workflows/build-sign.yml` currently resolves to cosign v2.6.3 (or a v3.0.x with explicit `--new-bundle-format=false`). If not, flag for Kabu.
 <!-- FINDINGS END -->
 
 ---
@@ -979,12 +1075,13 @@ Run as `RUN bootc container lint` in the Containerfile (final stage).
 | v1.18.0 | `nvidia-cdi-refresh.service` introduced for automatic CDI spec regeneration |
 | **v1.19.0** | CDI is now default mode (replaces OCI hook); `After=multi-user.target` bug introduced in cdi-refresh.service; NRI plugin server; IGX 2.0 Thor support; read-only rootfs declared stable |
 
-**As of April 2026:** v1.19.0 is current. CloudWS ships nvidia-container-toolkit ≥ v1.17.7 (satisfies CVE-2025-23266/23267 fixes).
+**As of April 2026:** v1.19.0 (March 12, 2025) is still the latest released version — no post-v1.19.0 line has shipped. CloudWS ships nvidia-container-toolkit ≥ v1.17.7 (satisfies CVE-2025-23266/23267 fixes). (updated 2026-04-20: corrected date; no new CVEs or regressions discovered for v1.19.0 in the April-2026 pass.)
 
 ### The nvidia-cdi-refresh.service ordering bug (CRITICAL for CloudWS)
 
-**Bug introduced:** v1.19.0 (March 2026)
+**Bug introduced:** v1.19.0 (March 12, 2025 — date corrected 2026-04-20 against github.com/NVIDIA/nvidia-container-toolkit/releases; the doc previously said "March 2026")
 **GitHub issue:** NVIDIA/nvidia-container-toolkit#1735
+**Current upstream state as of 2026-04-20:** v1.19.0 is still the latest tagged release. No v1.19.1 or v1.20.x has shipped. The `After=multi-user.target` ordering issue remains in-tree; CloudWS's drop-in workaround in `systemd/nvidia-cdi-refresh.service.d/10-cloudws-ordering.conf` is still required.
 
 **What happened:** v1.19.0 added `After=multi-user.target` to `nvidia-cdi-refresh.service`. This creates an ordering cycle:
 - Service A wants `multi-user.target`
@@ -1299,6 +1396,8 @@ TimeoutStartSec=300
 **CrowdSec enrollment:** CrowdSec dashboard (Metabase) requires the main crowdsec service to be enrolled with the Central API before it's useful. The Quadlet `Restart=on-failure` with 30s delay prevents the restart loop while enrollment is pending.
 
 **Firewall bouncer:** `crowdsec-firewall-bouncer` works with `nftables` by default in Fedora 44+ (firewalld backend). Ensure `firewalld` is using `nftables` backend (default in F44). No special config needed — cloudws `20-services.sh` enables `crowdsec-firewall-bouncer`.
+
+**CrowdSec engine version (as of 2026-04-20):** **v1.7.7** (released March 23, 2026). The 1.7.x series switched regex engine to **RE2** — noticeably faster matching, with slightly slower regex *compile* and a small baseline memory uptick (acceptable tradeoff for a workstation/server IDS). Adds a new `kind` attribute on alerts for source identification and a **polling API** that lets the CrowdSec Console send remote decision-management orders to engines. CloudWS is not pinning a specific crowdsec version — it inherits whatever Fedora/COPR ships, which is fine; flag if an explicit version pin becomes necessary.
 
 ### USBGuard configuration requirements
 
