@@ -48,53 +48,24 @@ EOREPO
 # ── Distro-sync to Fedora 44 (TWO-PHASE) ───────────────────────────────────
 echo "[01-repos] Distro-sync to Fedora 44 (this takes a while)..."
 
-SYNC_OK=0
+echo "[01-repos] Phase 1: Pre-upgrading DNF, RPM, and core systemd/filesystem..."
+# Isolate the problematic filesystem scriptlet and core package upgrades.
+# By doing this first, a filesystem %posttrans failure won't abort the entire
+# 1100+ package distro-sync transaction, preventing a fractured RPM database.
+dnf upgrade -y --allowerasing --best \
+    dnf rpm fedora-release fedora-repos filesystem systemd glibc dbus-broker \
+    --setopt=install_weak_deps=False 2>&1 || {
+    echo "[01-repos] NOTE: Pre-upgrade had warnings (likely filesystem lua scriptlet), continuing..."
+}
 
-# Phase 1: Try normal distro-sync
-echo "[01-repos] Phase 1: Clean distro-sync attempt..."
-if dnf distro-sync -y --best --allowerasing \
+echo "[01-repos] Phase 2: Full distro-sync to Fedora 44..."
+dnf distro-sync -y --best --allowerasing \
     --exclude='shim-*' \
     --exclude='kernel*' \
-    --setopt=install_weak_deps=False 2>&1 | tail -30; then
-    SYNC_OK=1
-    echo "[01-repos] ✓ Distro-sync completed cleanly"
-fi
+    --setopt=install_weak_deps=False
 
-if [ "$SYNC_OK" -eq 0 ]; then
-    echo "[01-repos] Phase 1 failed (expected — filesystem scriptlet issue)"
-    echo "[01-repos] Phase 2: distro-sync with --skip-broken..."
-
-    dnf distro-sync -y --best --allowerasing --skip-broken \
-        --exclude='shim-*' \
-        --exclude='kernel*' \
-        --setopt=install_weak_deps=False 2>&1 | tail -30 || {
-        echo "[01-repos] WARNING: Phase 2 also had issues — continuing with force approach"
-    }
-
-    # Phase 3: Force-install critical core packages individually
-    echo "[01-repos] Phase 3: Force-installing critical core packages..."
-    for pkg in systemd dbus-broker glib2 polkit glibc glibc-common \
-               libselinux libsemanage selinux-policy selinux-policy-targeted \
-               p11-kit p11-kit-trust ca-certificates openssl-libs nss nss-softokn \
-               nss-util libsepol audit-libs; do
-        dnf install -y --allowerasing --best "$pkg" 2>&1 | tail -3 || true
-    done
-
-    # Verify critical packages upgraded
-    echo "[01-repos] Verifying core package versions..."
-    SYSTEMD_VER=$(rpm -q systemd 2>/dev/null || echo "MISSING")
-    GLIBC_VER=$(rpm -q glibc 2>/dev/null || echo "MISSING")
-    DBUS_VER=$(rpm -q dbus-broker 2>/dev/null || echo "MISSING")
-    echo "[01-repos]   systemd:     $SYSTEMD_VER"
-    echo "[01-repos]   glibc:       $GLIBC_VER"
-    echo "[01-repos]   dbus-broker: $DBUS_VER"
-
-    if rpm -q systemd | grep -q 'fc43'; then
-        echo "[01-repos] CRITICAL WARNING: systemd is still at FC43 version!"
-        echo "[01-repos] Attempting aggressive upgrade..."
-        dnf upgrade -y --allowerasing systemd 'systemd-*' 2>&1 | tail -10 || true
-    fi
-fi
+echo "[01-repos] Verifying core package versions..."
+rpm -q systemd glibc dbus-broker filesystem || true
 
 # ── Pre-install F44 ca-certificates ────────────────────────────────────────
 echo "[01-repos] Ensuring F44 ca-certificates is installed..."
