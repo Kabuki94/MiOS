@@ -176,7 +176,7 @@ EOF
 
 echo ""
 log_ts "Cleaning up..."
-dnf clean all
+dnf "${DNF_SETOPT[@]}" clean all
 rm -rf /var/cache/dnf /var/cache/libdnf5 /tmp/geist-font /tmp/*.tar* /tmp/*.rpm 2>/dev/null || true
 rm -rf /usr/share/doc/* /usr/share/man/* /usr/share/info/* 2>/dev/null || true
 rm -rf /usr/share/gnome/help/* /usr/share/help/* 2>/dev/null || true

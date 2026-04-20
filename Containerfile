@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.9
 # ============================================================================
-# CloudWS-bootc - Unified Image (v0.1.1)
+# CloudWS-bootc - Unified Image (v2.3.5)
 # ============================================================================
 # One image. Every role. Every surface. Every GPU vendor.
 #
@@ -93,7 +93,7 @@ LABEL org.opencontainers.image.title="CloudWS-bootc"
 LABEL org.opencontainers.image.description="Unified immutable cloud-native workstation OS (desktop/k3s/ha/hybrid)"
 LABEL org.opencontainers.image.source="https://github.com/Kabuki94/CloudWS-bootc"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
-LABEL org.opencontainers.image.version="0.1.8"
+LABEL org.opencontainers.image.version="2.3.5"
 LABEL containers.bootc="1"
 
 # Build context mounted read-only

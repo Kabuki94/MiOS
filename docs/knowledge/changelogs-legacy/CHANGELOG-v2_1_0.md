@@ -1,151 +1,121 @@
-# Cloud-WS v2.1.0 Changelog
+# CloudWS v2.1.0 CHANGELOG
 
-## Summary
-This update corrects critical issues with CPU isolation presets for AMD X3D processors and adds a comprehensive VM Template Management system for creating Windows 11 Secure Boot-enabled VMs with optimal CPU pinning.
-
----
-
-## Changes
-
-### 1. CPU Isolation Preset Corrections
-
-#### Gaming Optimized (X3D) - Option 1
-**Before (Incorrect):**
-- Host: Last 4 threads of CCD1 (CPUs 28-31)
-- VM: All of CCD0 (CPUs 0-15)
-
-**After (Corrected):**
-- Host: Core 0 from CCD0 (CPUs 0,16) + ALL of CCD1 (CPUs 8-15, 24-31) = 18 threads
-- VM: CCD0 cores 1-7 (CPUs 1-7, 17-23) = 14 V-Cache threads
-- Emulator Pin: 0,16
-
-**Rationale:** Gaming VMs benefit most from V-Cache, but reserving one V-Cache core for host ensures responsive desktop. CCD1 provides high-frequency cores for host services.
+**Release Date:** April 12, 2026
+**Codename:** Ecosystem Intelligence Update
+**Sources:** bootc v1.15, Universal Blue (Bazzite April 2026), SecureBlue, Fedora 44 Beta,
+RHEL Image Mode, TunaOS, Bluefin, bootc-image-builder, image-builder-cli
 
 ---
 
-#### Multi-VM Balanced (X3D) - Option 2 (NEW DEFAULT)
-**Before:** Simple linear split (0-7 host, 8-31 VM)
+## Breaking Changes
 
-**After (NEW):**
-- Host: First 2 cores from each CCD (CPUs 0,1,16,17 + 8,9,24,25) = 8 threads
-- Gaming Pool: CCD0 cores 2-7 (CPUs 2-7, 18-23) = 12 V-Cache threads
-- Service Pool: CCD1 cores 10-15 (CPUs 10-15, 26-31) = 12 High-Freq threads
-- Emulator Pin: 0,1,16,17
+- **Kernel lockdown**: `lockdown=confidentiality` added to boot args — prevents unsigned module loading, kexec, and raw I/O. Disable if you need runtime kernel debugging.
+- **io_uring disabled**: `kernel.io_uring_disabled=2` blocks io_uring syscalls. Remove from sysctl if your workload requires io_uring.
+- **kexec disabled**: `kernel.kexec_load_disabled=1` prevents runtime kernel replacement. This is a security hardening measure.
 
-**Rationale:** Supports multiple VM use cases - gaming VM gets V-Cache benefit while containers/services use high-frequency CCD1 cores. Now the recommended default selection.
+## Security Hardening (SecureBlue Audit)
 
----
+### Kernel Boot Parameters (kargs.d/00-cloudws.toml)
+- **Added**: `init_on_free=1` — zero memory on deallocation (complement to init_on_alloc)
+- **Added**: `lockdown=confidentiality` — kernel lockdown mode
+- **Added**: `spectre_v2=on` — Spectre v2 mitigation enforcement
+- **Added**: `spec_store_bypass_disable=on` — Spectre v4 (SSB) mitigation
+- **Added**: `l1tf=full,force` — L1 Terminal Fault mitigation
+- **Added**: `gather_data_sampling=force` — GDS/Downfall mitigation
+- Total: **15 kernel hardening parameters** (was 9 in v2.0)
 
-#### Host Priority - Option 3
-**Before (INVERTED!):**
-- Host: CPUs 0-15 (V-Cache CCD0!)
-- VM: CPUs 16-31
+### Sysctl Hardening (99-cloudws-hardening.conf)
+- **Added**: `kernel.kexec_load_disabled=1` — prevent runtime kernel replacement
+- **Added**: `kernel.io_uring_disabled=2` — disable io_uring (attack surface reduction)
+- **Added**: `net.ipv4.conf.all.secure_redirects=0` — block ICMP secure redirects
+- **Added**: `net.ipv4.conf.default.secure_redirects=0` — block ICMP secure redirects
+- Note: `kernel.modules_disabled` intentionally NOT set (breaks NVIDIA/VFIO runtime loading)
 
-**After (Corrected):**
-- Host: All of CCD0 (CPUs 0-7, 16-23) = 16 V-Cache threads
-- VM: All of CCD1 (CPUs 8-15, 24-31) = 16 High-Freq threads
-- Emulator Pin: 0,1,16,17
+## NVIDIA / GPU
 
-**Rationale:** For host-priority workloads, the host should indeed get V-Cache for desktop performance. This is now correctly labeled and implemented as a 50/50 CCD split.
+- **CDI is now DEFAULT mode**: nvidia-container-toolkit v1.19+ uses Container Device Interface by default. GPU access is now `podman run --device nvidia.com/gpu=0`
+- **CDI auto-refresh service**: `nvidia-cdi-refresh.service` regenerates CDI specs on driver reload and GPU hotplug
+- **CVE check**: Build validation now warns if nvidia-container-toolkit < v1.17.7 (CVE-2025-23266 Critical, CVE-2025-23267 High)
+- **RTX 50xx note**: Blackwell GPUs REQUIRE open kernel modules — proprietary modules are incompatible
 
----
+## SELinux (3 New Policies)
 
-### 2. Default Preset Changed
+- **`cloudws_cdi`**: NVIDIA CDI device access for container_t (enables `--device nvidia.com/gpu=0`)
+- **`cloudws_quadlet`**: Podman quadlet container runtime directory watching
+- **`cloudws_sysext`**: systemd-sysext overlay mount access into /usr
+- **`/etc/cdi` fcontext**: Added container_file_t label for CDI spec directory
+- Total: **16 custom SELinux policy modules** (was 13 in v2.0)
 
-- Default selection changed from Option 1 to **Option 2 (Multi-VM Balanced)**
-- Pressing Enter now selects the recommended Balanced preset
-- Invalid input also defaults to Balanced instead of erroring
+## Composefs & Boot
 
----
+- **prepare-root.conf**: Added `[root]` section documentation for `transient-ro` (bootc v1.15+)
+- **composefs**: Updated config to `enabled = yes` with documentation for `signed` mode
+- **Logically-bound images**: Created `/usr/lib/bootc/bound-images.d/` directory for bootc v1.13+ workload binding
 
-### 3. New VM Template Manager (Menu Option 6)
+## Containerfile Improvements
 
-Added comprehensive VM template management system with:
+- **OCI labels**: Added `org.opencontainers.image.*` and `io.artifacthub.*` labels for registry discoverability and cosign signing readiness
+- **LABEL before CMD**: Fixed placement per OCI spec compliance
+- **Post-build validation**: Now checks systemd unit enablement (not just package presence)
+- **Footgun check**: Integrated directly into validation step (was separate)
+- **restorecon scope**: Now covers `/usr/lib/bootc` and `/usr/lib/ostree` paths
+- **bootupd**: Added to critical package validation list
 
-#### Create New VM from Secure Boot Template
-- Pre-configured Windows 11 Secure Boot + TPM 2.0
-- Q35 chipset with 8 PCIe root ports for GPU passthrough
-- Hyper-V enlightenments for optimal Windows performance
-- Three pinning presets:
-  - Gaming Optimized (14 vCPUs on V-Cache)
-  - Balanced Gaming Pool (12 vCPUs on V-Cache) [Default]
-  - Service/Workstation (12 vCPUs on CCD1)
-- Custom vCPU and pinning option
-- Automatic MAC address generation
-- Hook configuration file creation
+## New Packages
 
-#### Apply CPU Pinning to Existing VM
-- Select from defined VMs
-- Apply any of the three presets
-- Manual pinning option
-- Automatic emulator pin configuration
-- Hook config generation
+| Package | Section | Purpose |
+|---------|---------|---------|
+| `bootupd` | boot | Unified bootloader updates (Fedora 44 phase 1) |
+| `dnf5-plugins` | repos | versionlock support for critical package pinning |
+| `systemd-boot-unsigned` | boot | UKI preparation for future composefs+UKI chain |
+| `tpm2-tools` | security | TPM2 support for measured boot / attestation |
+| `clevis` | security | Automated LUKS unlock via TPM2/Tang |
+| `clevis-luks` | security | LUKS integration for Clevis |
 
-#### Apply Secure Boot + Pinning to Existing VM
-- Upgrade existing VMs with:
-  - OVMF Secure Boot firmware
-  - TPM 2.0 emulation
-  - SMM enabled
-  - CPU pinning
-- Automatic backup of original XML
-- Uses virt-xml when available
+## Build System
 
-#### View CPU Pinning Presets
-- Visual documentation of X3D topology
-- Preset specifications with exact CPU mappings
-- Recommended use cases
+- **Rechunking**: Build summary now reminds to run `bootc-base-imagectl rechunk --max-layers 67` before push
+- **Image size**: Build summary now estimates image size
+- **Renovate Bot**: `renovate.json` config for automated base image digest updates
+- **Image versions**: `image-versions.yml` for SHA256 digest pinning (Renovate target)
 
----
+## Service Management (20-services.sh)
 
-### 4. Menu Structure Updates
+- **Added**: `bootupd.service` — unified bootloader updates
+- **Added**: `nvidia-cdi-refresh.service` — CDI spec auto-refresh
+- **Added**: `podman-restart.service` — restart policy for quadlet containers
+- **WSL2 gating**: Added `nvidia-cdi-refresh` and `bootupd` to WSL skip list
+- Version header bump to v2.1
 
-**Main Menu:**
-- Added Option 6: VM Template Manager
-- Shifted Tools section to 7-9
-- Updated menu loop and CLI handlers
+## Files Changed (14 files)
 
-**CLI Commands Added:**
-- `vm-template` or `template` - Direct access to VM Template Manager
-
----
-
-### 5. Supporting Functions Added
-
-- `cpu_preset_x3d_balanced()` - New default preset for X3D
-- `manage_vm_templates()` - Main template manager function
-- `vm_template_show_menu()` - Template manager menu
-- `vm_template_show_presets()` - Preset documentation
-- `vm_template_create_new()` - Create VM from template
-- `vm_generate_secureboot_xml()` - Generate complete VM XML
-- `vm_template_apply_pinning()` - Apply pinning to existing VM
-- `vm_template_apply_full_config()` - Full upgrade existing VM
-- `vm_template_apply_pinning_to_vm()` - Internal pinning helper
-- `vm_create_hook_config()` - Generate per-VM hook config
-
----
-
-## Preset Reference Table
-
-| Preset | Option | Host CPUs | VM CPUs | V-Cache for VMs | Best For |
-|--------|--------|-----------|---------|-----------------|----------|
-| Gaming Optimized | 1 | 0,16 + 8-15,24-31 (18) | 1-7,17-23 (14) | 87.5% (7/8 cores) | Single gaming VM |
-| **Multi-VM Balanced** | **2** | **0,1,8,9,16,17,24,25 (8)** | **24 total** | **75% (6/8 cores)** | **Gaming + Services** |
-| Host Priority | 3 | 0-7,16-23 (16) | 8-15,24-31 (16) | 0% (on host) | Heavy host + VMs |
+| File | Status | Description |
+|------|--------|-------------|
+| VERSION | Modified | 2.0.0 → 2.1.0 |
+| Containerfile | Modified | OCI labels, bound-images, validation, restorecon scope |
+| PACKAGES.md | Modified | 6 new packages, new boot section, NVIDIA CDI notes |
+| scripts/build.sh | Modified | bootupd validation, CVE check, rechunk reminder, image size |
+| scripts/11-hardware.sh | Modified | CDI default, auto-refresh service, RTX 50 notes |
+| scripts/20-services.sh | Modified | bootupd, CDI refresh, podman-restart, version bump |
+| scripts/37-selinux.sh | Modified | 3 new policies (cdi, quadlet, sysext), CDI fcontext |
+| system_files/usr/lib/bootc/kargs.d/00-cloudws.toml | Modified | 6 new SecureBlue kernel params |
+| system_files/usr/lib/sysctl.d/99-cloudws-hardening.conf | Modified | 4 new sysctl params |
+| system_files/usr/lib/ostree/prepare-root.conf | Modified | [root] section, composefs docs |
+| image-versions.yml | **Added** | Base image digest pinning for Renovate |
+| renovate.json | **Added** | Renovate Bot configuration |
+| CHANGELOG-v2_1_0.md | **Added** | This file |
 
 ---
 
-## File Changes
+## Research Sources
 
-- `cloudws-full.sh`: 4,497 â†’ 5,300 lines (+803 lines)
-- New functions: 10
-- Updated functions: 5
+This release incorporates findings from a comprehensive analysis of the bootc ecosystem:
 
----
-
-## Testing Recommendations
-
-1. Run `sudo ./cloudws-full.sh status` to verify CPU detection
-2. Select CPU Isolation Option 2 to test new default behavior
-3. Use VM Template Manager to create a test VM
-4. Verify CPU pinning with `virsh vcpupin <vm-name>`
-5. Check hook config at `/etc/libvirt/hooks/qemu.d/<vm>.conf`
+- **bootc v1.11–v1.15**: composefs-native backend, kargs.d, tag-aware upgrades, soft reboot
+- **Universal Blue**: Modular OCI composition, uupd unified updater, Renovate digest pinning
+- **Bazzite April 2026**: Rechunking engine, SBOM changelogs, OpenSSF Scorecard, signed ISOs
+- **SecureBlue**: 29-parameter kernel hardening audit, USBGuard policies, hardened_malloc
+- **Fedora 44 Beta**: bootupd phase 1, NTSYNC, KMSCON, Podman 6, systemd 259.5
+- **RHEL Image Mode**: Download-only upgrades, OpenSCAP integration, system-reinstall-bootc
+- **bootc-image-builder**: ISO gpgkey=file:// fix, GitHub Actions quirks, BIB→image-builder-cli merger
+- **NVIDIA**: CDI default mode (v1.19), CVE-2025-23266/23267 fixes, open modules for Blackwell

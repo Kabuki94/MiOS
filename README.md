@@ -2,7 +2,7 @@
 
 **Self-replicating, immutable, cloud-native workstation OS built on bootc.**
 
-> Version **v0.1.8** · [ghcr.io/kabuki94/cloudws-bootc:latest](https://ghcr.io/kabuki94/cloudws-bootc)
+> Version **v2.3.5** · [ghcr.io/kabuki94/cloudws-bootc:latest](https://ghcr.io/kabuki94/cloudws-bootc)
 
 GNOME 50 • Gamescope Steam Session • KVM/QEMU/VFIO • Podman/K3s • Pacemaker HA • CrowdSec (Sovereign)
 
@@ -208,7 +208,7 @@ Per-release changelogs prior to the consolidated root `CHANGELOG.md` live in [`d
 
 See [CHANGELOG.md](CHANGELOG.md) for the full release history.
 
-### v0.1.8 (current)
+### v2.3.5 (current)
 
 - **GNOME Remote Desktop for Hyper-V Enhanced Session** — xRDP deprecated (Mutter 50 dropped X11); RDP now delivered via `grdctl --system rdp` + vsock. First-boot TLS cert generation via `/usr/libexec/cloudws-grd-setup`.
 - **FreeIPA enrollment consolidation** — single path through `22-freeipa-client.sh` + `cloudws-freeipa-enroll.service`. Removed the parallel `50-freeipa-client.sh` / `cloudws-ipa-enroll.service` stack that referenced a non-existent service.

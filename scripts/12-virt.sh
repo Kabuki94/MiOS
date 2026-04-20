@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v0.1.1 — 12-virt: Virtualization, containers, orchestration, gaming
+# CloudWS v2.3.5 — 12-virt: Virtualization, containers, orchestration, gaming
 #
 # CHANGELOG v1.3:
 #   - Looking Glass B7: Added -DENABLE_LIBDECOR=ON for GNOME Wayland
@@ -226,7 +226,7 @@ BUILD_DEPS=$(get_packages "looking-glass-build" 2>/dev/null || echo "")
 if [ -n "$BUILD_DEPS" ]; then
     # Only remove packages that are truly build-only (cmake, *-devel)
     for pkg in cmake gcc gcc-c++ libglvnd-devel fontconfig-devel; do
-        dnf "${DNF_SETOPT[@]}" remove -y "$pkg" --noautoremove 2>/dev/null || true
+        dnf "${DNF_SETOPT[@]}" remove -y "$pkg" 2>/dev/null || true
     done
 fi
 
