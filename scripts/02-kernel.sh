@@ -24,14 +24,14 @@ install_packages_strict "kernel"
 
 # Capture KVER for akmod builds later.
 # The base image kernel is the only one installed; grab it.
-KVER=$(find /usr/lib/modules/ -mindepth 1 -maxdepth 1 -printf "%f\n" | sort -V | tail -1)
+KVER=$(find /usr/lib/modules/ -mindepth 1 -maxdepth 1 -printf "%f\n" | sort -V | tail -1) # Explicitly use /usr
 export KVER
 echo "[02-kernel] Kernel version: $KVER"
 echo "$KVER" > /tmp/cloudws-kver
 
 # Verify kernel modules directory exists (akmod build will fail without it)
-if [[ ! -d "/usr/lib/modules/$KVER" ]]; then
-    echo "[02-kernel] FATAL: /usr/lib/modules/$KVER does not exist"
+if [[ ! -d "/usr/lib/modules/$KVER" ]]; then # Explicitly check /usr
+    echo "[02-kernel] FATAL: /usr/lib/modules/$KVER does not exist" # Explicitly refer to /usr
     exit 1
 fi
 

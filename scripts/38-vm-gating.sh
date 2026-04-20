@@ -111,7 +111,7 @@ else
 fi
 
 # Open firewall for RDP
-if command -v firewall-cmd &>/dev/null && firewall-cmd --state &>/dev/null 2>&1; then
+if command -v firewall-cmd >/dev/null 2>&1 && firewall-cmd --state >/dev/null 2>&1; then
     # Apply to runtime and permanent independently to avoid --reload flushing nftables
     firewall-cmd --add-port=3389/tcp 2>/dev/null || true
     firewall-cmd --permanent --add-port=3389/tcp 2>/dev/null || true
