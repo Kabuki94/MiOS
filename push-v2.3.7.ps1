@@ -46,7 +46,7 @@ function Copy-ToRepo($src, $relDest) {
     Write-Host "  copied: $relDest" -ForegroundColor Green
 }
 
-$LOCAL = "d:/Documents/Github/CloudWS-bootc"
+$LOCAL = $PSScriptRoot
 
 # ── [2/5] Copy all edited files ──────────────────────────────────────────────
 Write-Host ""
@@ -102,7 +102,7 @@ if ($content -notmatch 'gnome-session-xsession') {
 } else {
     # Remove the line (with optional trailing newline)
     $content = $content -replace '(?m)^gnome-session-xsession\r?\n', ''
-    Set-Content -Path $pkgMd -Value $content -NoNewline
+    Set-Content -Path $pkgMd -Value $content -NoNewline -Encoding UTF8
     Write-Host "  removed gnome-session-xsession" -ForegroundColor Green
 }
 
@@ -114,7 +114,7 @@ if ((Get-Content $pkgMd -Raw) -match 'gnome-session-xsession') {
 # ── [4/5] Bump VERSION ───────────────────────────────────────────────────────
 Write-Host ""
 Write-Host "[4/5] Bumping VERSION to $VERSION ..." -ForegroundColor Yellow
-Set-Content -Path (Join-Path $REPO "VERSION") -Value $VERSION
+Set-Content -Path (Join-Path $REPO "VERSION") -Value $VERSION -Encoding UTF8
 Write-Host "  VERSION = $VERSION" -ForegroundColor Green
 
 # ── [5/5] Commit + push ──────────────────────────────────────────────────────
@@ -157,7 +157,9 @@ v2.3.7: fix all 6 failing hard-rule sections (audit fixes)
       in preflight.ps1 synopsis comment and user-facing help text.
 "@
 
-    git commit -m $msg
+    $msgFile = Join-Path $WORK_DIR "commit-msg.txt"
+    Set-Content -Path $msgFile -Value $msg -Encoding UTF8
+    git commit -F $msgFile
     if ($LASTEXITCODE -ne 0) { throw "git commit failed" }
 
     git push origin $BRANCH

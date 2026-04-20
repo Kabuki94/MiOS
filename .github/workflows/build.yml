@@ -70,6 +70,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Lowercase IMAGE_NAME
+        run: |
+          # Docker strictly requires lowercase repository names
+          echo "IMAGE_NAME=$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
+
       - name: Read VERSION
         id: version
         run: |
@@ -129,6 +134,7 @@ jobs:
         with:
           context: .
           file: ${{ matrix.variant.containerfile }}
+          load: ${{ github.event_name == 'pull_request' }}
           push: ${{ github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || inputs.force_push) }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -157,11 +163,15 @@ jobs:
 
       # ── Rechunk (optimize OCI layers for delta updates) ────────────────
       - name: Rechunk image
+        id: rechunk
         if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         run: |
           # Pull the just-pushed image and rechunk it
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.variant.tag }}"
           echo "Rechunking $IMAGE..."
+
+          # Default to the original digest in case rechunking is skipped
+          FINAL_DIGEST="${{ steps.build.outputs.digest }}"
 
           # bootc-base-imagectl rechunk splits monolithic layers into
           # content-addressed chunks grouped by RPM ownership.
@@ -172,22 +182,25 @@ jobs:
               --max-layers 67 \
               "$IMAGE" \
               "rechunked-${{ matrix.variant.tag }}"
-            podman push "localhost/rechunked-${{ matrix.variant.tag }}" "$IMAGE"
+            podman push --digestfile=rechunk-digest.txt "localhost/rechunked-${{ matrix.variant.tag }}" "$IMAGE"
+            FINAL_DIGEST=$(cat rechunk-digest.txt)
+            echo "Rechunk successful. New digest: $FINAL_DIGEST"
           else
             echo "::warning::bootc-base-imagectl not available — skipping rechunk"
           fi
+
+          echo "digest=$FINAL_DIGEST" >> "$GITHUB_OUTPUT"
 
       # ── Sign image (cosign keyless via Fulcio/Rekor OIDC) ─────────────
       - name: Sign image (keyless)
         if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         env:
-          DIGEST: ${{ steps.build.outputs.digest }}
-          COSIGN_EXPERIMENTAL: "true"
+          DIGEST: ${{ steps.rechunk.outputs.digest }}
         run: |
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
           if [ -n "$DIGEST" ]; then
             echo "Signing ${IMAGE}@${DIGEST}"
-            cosign sign --yes "${IMAGE}@${DIGEST}"
+            cosign sign --yes --new-bundle-format=false "${IMAGE}@${DIGEST}"
           else
             echo "::warning::No digest available — skipping signing"
           fi
@@ -196,12 +209,12 @@ jobs:
       - name: Sign image (key-based)
         if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) && secrets.SIGNING_SECRET != ''
         env:
-          DIGEST: ${{ steps.build.outputs.digest }}
+          DIGEST: ${{ steps.rechunk.outputs.digest }}
           COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
         run: |
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
           if [ -n "$DIGEST" ]; then
-            cosign sign --yes --key env://COSIGN_PRIVATE_KEY "${IMAGE}@${DIGEST}"
+            cosign sign --yes --new-bundle-format=false --key env://COSIGN_PRIVATE_KEY "${IMAGE}@${DIGEST}"
           fi
 
       # ── Generate SBOM ──────────────────────────────────────────────────
@@ -225,7 +238,7 @@ jobs:
       - name: Attach SBOM to image
         if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         env:
-          DIGEST: ${{ steps.build.outputs.digest }}
+          DIGEST: ${{ steps.rechunk.outputs.digest }}
         run: |
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
           if [ -n "$DIGEST" ] && [ -f "cloudws-${{ matrix.variant.name }}-sbom.spdx.json" ]; then
