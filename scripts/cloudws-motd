@@ -24,43 +24,43 @@ printf '%s\n' "${W}  CloudWS v2.0${N}  ${D}${HN} — ${IP}${N}"
 printf '%s\n' "${C}════════════════════════════════════════════════════════════${N}"
 echo ""
 printf '%s\n' "${W}  Management${N}"
-printf "  $(_s cockpit.socket)  Cockpit           $(_l "https://${IP}:9090" "https://${IP}:9090")\n"
-printf "  $(_s sshd)  SSH               $(_l "ssh://${IP}" "${IP}:22")\n"
+printf '%s\n' "  $(_s cockpit.socket)  Cockpit           $(_l "https://${IP}:9090" "https://${IP}:9090")"
+printf '%s\n' "  $(_s sshd)  SSH               $(_l "ssh://${IP}" "${IP}:22")"
 
 # RDP — check both GRD and xRDP
 if systemctl is-active --quiet gnome-remote-desktop 2>/dev/null; then
-    printf "  ${G}●${N}  Remote Desktop    $(_l "rdp://${IP}:3389" "${IP}:3389") ${D}(GRD)${N}\n"
+    printf '%s\n' "  ${G}●${N}  Remote Desktop    $(_l "rdp://${IP}:3389" "${IP}:3389") ${D}(GRD)${N}"
 elif systemctl is-active --quiet xrdp 2>/dev/null; then
-    printf "  ${G}●${N}  Remote Desktop    $(_l "rdp://${IP}:3389" "${IP}:3389") ${D}(xRDP)${N}\n"
+    printf '%s\n' "  ${G}●${N}  Remote Desktop    $(_l "rdp://${IP}:3389" "${IP}:3389") ${D}(xRDP)${N}"
 else
-    printf "  ${D}○${N}  Remote Desktop    ${D}inactive${N}\n"
+    printf '%s\n' "  ${D}○${N}  Remote Desktop    ${D}inactive${N}"
 fi
 
 # Guacamole
 if systemctl is-active --quiet cloudws-guacamole.service 2>/dev/null || \
    podman ps --format '{{.Names}}' 2>/dev/null | grep -q cloudws-guacamole; then
-    printf "  ${G}●${N}  Browser Desktop   $(_l "http://${IP}:8080/guacamole/" "http://${IP}:8080/guacamole/")\n"
+    printf '%s\n' "  ${G}●${N}  Browser Desktop   $(_l "http://${IP}:8080/guacamole/" "http://${IP}:8080/guacamole/")"
 fi
 
 echo ""
 printf '%s\n' "${W}  Infrastructure${N}"
-printf "  $(_s firewalld)  Firewall          ${D}firewall-cmd --list-all${N}\n"
-printf "  $(_s podman.socket)  Podman            ${D}$(podman ps -q 2>/dev/null | wc -l) containers${N}\n"
-printf "  $(_s libvirtd.socket)  Libvirt           ${D}virt-manager / virsh${N}\n"
+printf '%s\n' "  $(_s firewalld)  Firewall          ${D}firewall-cmd --list-all${N}"
+printf '%s\n' "  $(_s podman.socket)  Podman            ${D}$(podman ps -q 2>/dev/null | wc -l) containers${N}"
+printf '%s\n' "  $(_s libvirtd.socket)  Libvirt           ${D}virt-manager / virsh${N}"
 
 # Optional services — only show if enabled
 systemctl is-active --quiet k3s.service 2>/dev/null && \
-    printf "  ${G}●${N}  K3s API           $(_l "https://${IP}:6443" "https://${IP}:6443")\n"
+    printf '%s\n' "  ${G}●${N}  K3s API           $(_l "https://${IP}:6443" "https://${IP}:6443")"
 systemctl is-active --quiet ceph-mgr@*.service 2>/dev/null && \
-    printf "  ${G}●${N}  Ceph Dashboard    $(_l "https://${IP}:8443" "https://${IP}:8443")\n"
+    printf '%s\n' "  ${G}●${N}  Ceph Dashboard    $(_l "https://${IP}:8443" "https://${IP}:8443")"
 systemctl is-active --quiet avahi-daemon 2>/dev/null && \
-    printf "  ${G}●${N}  mDNS             ${D}${HN}.local${N}\n"
+    printf '%s\n' "  ${G}●${N}  mDNS             ${D}${HN}.local${N}"
 
 # Hyper-V enhanced session
 VIRT=$(systemd-detect-virt 2>/dev/null || echo "none")
 if [ "$VIRT" = "microsoft" ]; then
     systemctl is-active --quiet xrdp 2>/dev/null && \
-        printf "  ${G}●${N}  Hyper-V Enhanced  ${D}vsock:3389${N}\n"
+        printf '%s\n' "  ${G}●${N}  Hyper-V Enhanced  ${D}vsock:3389${N}"
 fi
 
 echo ""
