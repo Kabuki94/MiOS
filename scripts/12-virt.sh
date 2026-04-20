@@ -115,8 +115,23 @@ curl -sL "$VIRTIO_URL" -o /usr/share/cloudws/virtio/virtio-win.iso 2>/dev/null |
 # Symlink the immutable ISO into /var/lib/libvirt/images via tmpfiles.d so it survives upgrades
 mkdir -p /usr/lib/tmpfiles.d
 cat > /usr/lib/tmpfiles.d/cloudws-virtio.conf <<'EOF'
-L+ /var/lib/libvirt/images/virtio-win.iso - - - - /usr/share/cloudws/virtio/virtio-win.iso
+L+ /var/lib/libvirt/images/virtio-win.iso 0644 - - - /usr/share/cloudws/virtio/virtio-win.iso
 EOF
+
+# ── libvirtd service shutdown timeout ───────────────────────────────────────
+# libvirtd has a default 45-second TimeoutStopSec which
+
+# ── libvirtd service shutdown timeout ───────────────────────────────────────
+# libvirtd has a default 45-second TimeoutStopSec which is often insufficient
+# for graceful VM shutdown, especially with large memory VMs or active storage.
+# Increase to 120 seconds to allow for more robust shutdown behavior.
+echo "[12-virt] Configuring libvirtd.service TimeoutStopSec to 120s..."
+mkdir -p /usr/lib/systemd/system/libvirtd.service.d
+cat > /usr/lib/systemd/system/libvirtd.service.d/10-cloudws.conf <<'EOF'
+[Service]
+TimeoutStopSec=120
+EOF
+chmod 0644 /usr/lib/systemd/system/libvirtd.service.d/10-cloudws.conf
 
 # ── Looking Glass B7 (compile from source) ──────────────────────────────────
 echo "[12-virt] Building Looking Glass B7..."
@@ -161,8 +176,8 @@ if [ -d LookingGlass ]; then
         echo "[12-virt] Building KVMFR module for kernel $KVER..."
         make KVER="$KVER" 2>/dev/null || true
         if [ -f kvmfr.ko ]; then
-            install -D -m 644 kvmfr.ko "/usr/lib/modules/$KVER/extra/kvmfr.ko"
-            depmod -a -b /usr "$KVER" 2>/dev/null || true
+            install -D -m 644 kvmfr.ko "/usr/lib/modules/$KVER/extra/kvmfr.ko" || true # Ensure correct path
+            depmod -a -b /usr "$KVER" 2>/dev/null || true # Explicitly target /usr for depmod
             echo "[12-virt] KVMFR module installed for $KVER"
         else
             echo "[12-virt] WARNING: KVMFR module build failed — Looking Glass IVSHMEM-only"
