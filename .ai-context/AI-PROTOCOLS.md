@@ -1,4 +1,8 @@
-# 🚨 AI DIRECTIVES & SYSTEM LAW 🚨
+# 📜 AI Execution Protocols & System Law (AI-PROTOCOLS.md)
+
+> **REDIRECTION:** All agents must first read **[`.ai-context/AI-README.md`](./AI-README.md)** for the unified entry point and core laws.
+
+---
 
 **TARGET AUDIENCE:** ALL AI Agents, LLMs, Copilots, and APIs (Gemini, Claude, GPT, Copilot, etc.) interacting with the `CloudWS-bootc` repository.
 
@@ -20,6 +24,8 @@ This is an **immutable, container-native workstation** built on `bootc` and `Com
 
 ## 3. FOLDER MANIFEST
 This `.ai-context/` directory contains the persistent memory of the AI collective:
+- `AI-README.md`: Central entry point and index.
+- `AI-PROTOCOLS.md`: (This file) Core execution laws.
 - `ai-journal.md`: The mandatory, chronological ledger of all AI thoughts and actions.
 - `bootable-oci-architecture.md`: The core technical invariants of the OS.
 - `bootc-research-april2026.md`: Forward-looking research and implementation notes.

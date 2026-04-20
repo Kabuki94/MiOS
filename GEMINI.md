@@ -6,6 +6,17 @@
 
 ---
 
+## 🤖 AI AGENT DIRECTIVES
+
+**ALL AGENTS (Claude, Gemini, etc.) MUST READ THE FOLLOWING BEFORE EACH TURN:**
+
+1.  **[`.ai-context/AI-README.md`](./.ai-context/AI-README.md)** — Unified entry point and core AI laws.
+2.  **[`.ai-context/ai-journal.md`](./.ai-context/ai-journal.md)** — Mandatory chronological ledger of all AI actions.
+
+**Violation of the Journaling Law is a critical failure.**
+
+---
+
 ## Primary source of truth
 
 **All substantive project rules live in [`CLAUDE.md`](./CLAUDE.md).**
