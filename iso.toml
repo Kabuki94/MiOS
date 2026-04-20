@@ -18,8 +18,8 @@ part / --grow --fstype ext4
 # ostreecontainer directive pulls the OCI image and deploys it
 ostreecontainer --url ghcr.io/kabuki94/cloudws-bootc:latest --no-signature-verification
 
-# Create default user (matches INJ_U from build — overridden at first login)
-user --name=cloudws --groups=wheel --plaintext --password=cloudws
+# Create default user (matches INJ_U from build — securely injected at target generation)
+user --name=INJ_U --groups=wheel --iscrypted --password=INJ_HASH
 
 %post --erroronfail --log=/root/anaconda-post.log
 # Ensure update origin points to GHCR (not localhost from BIB build)

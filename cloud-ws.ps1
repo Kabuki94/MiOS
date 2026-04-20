@@ -1,4 +1,4 @@
-﻿<#
+﻿﻿<#
 .SYNOPSIS
     CloudWS v0.1.3 — Cloud Workstation OS Builder (Windows)
 
@@ -456,7 +456,13 @@ function Get-BIBArgs {
         "-v", "${OutputFolder}:/output:z"
     )
     if ($Type -eq "anaconda-iso" -and $hasIsoToml) {
-        Copy-Item $isoToml (Join-Path $OutputFolder "iso.toml") -Force
+        $isoContent = Get-Content $isoToml -Raw
+        $isoContent = $isoContent.Replace('INJ_U', $U)
+        if (-not $script:passHash) { $script:passHash = Get-SHA512Hash -SecretText $P }
+        if ($script:passHash) {
+            $isoContent = $isoContent.Replace('INJ_HASH', $script:passHash)
+        }
+        $isoContent | Set-Content (Join-Path $OutputFolder "iso.toml") -NoNewline -Encoding UTF8
         $bibArgs += @("-v", "$(Join-Path $OutputFolder 'iso.toml'):/config.toml:ro")
     } elseif ($bibConfDest) {
         $bibArgs += @("-v", "${bibConfDest}:${bibMountPath}:ro")
