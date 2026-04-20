@@ -18,19 +18,18 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-permissions:
-  contents: read
-  packages: write
-  id-token: write   # required for Fulcio keyless OIDC exchange
-  issues: write     # required for issue-on-failure
-
 jobs:
   build:
     name: build-sign-push
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      id-token: write   # required for Fulcio keyless OIDC exchange
+      issues: write     # required for issue-on-failure
     steps:
       - name: Free runner disk
-        uses: jlumbroso/free-disk-space@main
+        uses: jlumbroso/free-disk-space@v1.3.1
         with:
           tool-cache: true
           android: true
