@@ -24,6 +24,9 @@ set -euo pipefail
 
 log() { printf '[52-kvmfr] %s\n' "$*"; }
 
+# shellcheck source=lib/common.sh
+source "$(dirname "$0")/lib/common.sh"
+
 # --- Detect the kernel version shipped in the base image -------------------
 KVER="$(find /usr/lib/modules/ -mindepth 1 -maxdepth 1 -printf "%f\n" 2>/dev/null | sort -V | tail -1)"
 if [[ -z "$KVER" ]]; then
@@ -37,20 +40,20 @@ log "building against kernel: $KVER"
 if [[ ! -d "/usr/src/kernels/$KVER" ]]; then
     log "installing kernel-devel-$KVER"
     set +e
-    dnf5 -y install "kernel-devel-$KVER" >/dev/null 2>&1
+    dnf "${DNF_SETOPT[@]}" -y install "kernel-devel-$KVER" >/dev/null 2>&1
     RC=$?
     set -e
     if [[ $RC -ne 0 ]]; then
         set +e
         AVAIL="$(rpm -qa 'kernel-devel*' 2>/dev/null | tr '\n' ' ')"
         set -e
-        log "SKIP: no exact kernel-devel for $KVER (dnf5 rc=$RC; installed: ${AVAIL:-none})"
+        log "SKIP: no exact kernel-devel for $KVER (dnf rc=$RC; installed: ${AVAIL:-none})"
         log "      The ucore-hci base kernel $KVER is typically newer/older than"
         log "      F44's repo-published kernel-devel. Project principle is 'never"
         log "      upgrade base kernel in-container', so kvmfr is skipped here."
         log "      Looking Glass still works in IVSHMEM-only mode. To enable kvmfr"
         log "      on the booted image once the kernel matches, run:"
-        log "         sudo dnf5 install kernel-devel-\$(uname -r) akmod-kvmfr"
+        log "         sudo dnf install kernel-devel-\$(uname -r) akmod-kvmfr"
         log "         sudo akmods --force --kernels \$(uname -r)"
         exit 0
     fi
@@ -59,7 +62,7 @@ fi
 # --- Install akmod-kvmfr (from hikariknight/looking-glass-kvmfr COPR) ------
 log "installing akmod-kvmfr"
 set +e
-dnf5 -y install akmod-kvmfr >/dev/null 2>&1
+dnf "${DNF_SETOPT[@]}" -y install akmod-kvmfr >/dev/null 2>&1
 RC=$?
 set -e
 if [[ $RC -ne 0 ]]; then

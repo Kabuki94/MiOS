@@ -39,6 +39,12 @@ echo "INJ_U:INJ_HASH" | chpasswd -e
 echo "root:INJ_HASH" | chpasswd -e
 passwd -u INJ_U 2>/dev/null || true
 
+    # Add sysusers.d entry for cloudws user (fixes bootc lint sysusers warning)
+    mkdir -p /usr/lib/sysusers.d
+    cat > /usr/lib/sysusers.d/cloudws.conf <<EOF
+u cloudws - "CloudWS User" /var/home/INJ_U /bin/bash
+EOF
+
 # ??? GROUP INJECTION ???
 # Pre-create hardware groups with standard Fedora GIDs if missing.
 # This prevents dynamic GID drift that breaks udev device assignments.
@@ -70,7 +76,7 @@ localedef -i en_US -f UTF-8 en_US.UTF-8 2>/dev/null || true
 
 # ??? CLOUD-INIT ???
 mkdir -p /etc/cloud/cloud.cfg.d
-cat > /etc/cloud/cloud.cfg.d/99-cloudws.cfg <<'EOCI'
+cat > /etc/cloud/cloud.cfg.d/10-cloudws.cfg <<'EOCI'
 preserve_hostname: false
 ssh_pwauth: true
 system_info:

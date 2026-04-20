@@ -15,6 +15,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/lib/common.sh"
 export PACKAGES_MD="${PACKAGES_MD:-/ctx/PACKAGES.md}"
 BUILD_LOG="/tmp/cloudws-build.log"
 
@@ -42,8 +43,6 @@ if [[ ! -f "$PACKAGES_MD" ]]; then
 fi
 
 # ── DNF config ──────────────────────────────────────────────────────────────
-# FIX v2.0: was True in v1.3 — both docs say False is "non-negotiable"
-export DNF_SETOPT="--setopt=install_weak_deps=False"
 export SYSTEMD_OFFLINE=1
 export container=podman
 

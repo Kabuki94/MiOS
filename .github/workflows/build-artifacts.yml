@@ -1,6 +1,10 @@
 name: build-artifacts
 
 # Matrix build of QCOW2 / VHDX / ISO via bootc-image-builder.
+# NOTE: UKI (Unified Kernel Image) generation is explicitly bypassed here.
+# bootc-image-builder (BIB) natively enforces GRUB2+shim for its disk/ISO
+# payloads. The UKI components prepared in the image are for future direct
+# systemd-boot/cayo deployments, not BIB artifacts.
 # EXPENSIVE (20-40 min per leg on ubuntu-24.04) - triggers:
 #   - manual dispatch
 #   - weekly cron (Sundays 05:00 UTC)

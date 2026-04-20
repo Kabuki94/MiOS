@@ -93,7 +93,7 @@ LABEL org.opencontainers.image.title="CloudWS-bootc"
 LABEL org.opencontainers.image.description="Unified immutable cloud-native workstation OS (desktop/k3s/ha/hybrid)"
 LABEL org.opencontainers.image.source="https://github.com/Kabuki94/CloudWS-bootc"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
-LABEL org.opencontainers.image.version="0.1.1"
+LABEL org.opencontainers.image.version="0.1.8"
 LABEL containers.bootc="1"
 
 # Build context mounted read-only
@@ -141,7 +141,10 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     /ctx/scripts/25-firewall-ports.sh && \
     /ctx/scripts/26-gnome-remote-desktop.sh
 
-RUN bootc container lint
+# Ensure dracut-live + squashfs-tools for the ISO artifact build leg
+RUN dnf install -y dracut-live squashfs-tools \
+ && dnf clean all
 
+RUN bootc container lint
 RUN rm -rf /ctx \
- && ostree container commit || true
+ && ostree container commit

@@ -15,6 +15,7 @@ fi
 if command -v semanage &>/dev/null; then
     echo "[37-selinux] Applying SELinux booleans and fcontexts..."
     semanage import <<'EOSEM' 2>/dev/null || true
+boolean -m --on container_manage_cgroup
 boolean -m --on container_use_cephfs
 boolean -m --on daemons_dump_core
 boolean -m --on domain_can_mmap_files

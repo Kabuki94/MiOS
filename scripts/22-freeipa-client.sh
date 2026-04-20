@@ -13,8 +13,11 @@ set -euo pipefail
 
 echo "==> Installing FreeIPA & SSSD for zero-touch enrollment..."
 
+# shellcheck source=lib/common.sh
+source "$(dirname "$0")/lib/common.sh"
+
 # Install client + SSSD tooling. Exclude kernel* (hard-rule §3.1).
-dnf install -y --exclude='kernel*' freeipa-client sssd sssd-tools
+dnf "${DNF_SETOPT[@]}" install -y --exclude='kernel*' freeipa-client sssd sssd-tools
 
 # ── SSSD file capability regression check (bz 2320133) ─────────────────────
 echo "==> Verifying SSSD file capabilities..."

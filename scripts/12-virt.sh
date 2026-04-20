@@ -13,6 +13,7 @@
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
+source "${SCRIPT_DIR}/lib/common.sh"
 
 KVER=$(cat /tmp/cloudws-kver 2>/dev/null || find /usr/lib/modules/ -mindepth 1 -maxdepth 1 -printf "%f\n" | sort -V | tail -1)
 
@@ -74,7 +75,7 @@ install_packages "wintools"
 echo "[12-virt] Installing gaming packages..."
 GAMING_PKGS=$(get_packages "gaming")
 if [[ -n "$GAMING_PKGS" ]]; then
-    dnf -y install --skip-unavailable --exclude=udev-joystick-blacklist-rm $GAMING_PKGS
+    dnf "${DNF_SETOPT[@]}" -y install --skip-unavailable --exclude=udev-joystick-blacklist-rm $GAMING_PKGS
 fi
 
 # ── Guest Agents ────────────────────────────────────────────────────────────
@@ -123,7 +124,7 @@ echo "[12-virt] Building Looking Glass B7..."
 # base kernel doesn't match the fc44 repos. KVMFR is built manually below.
 LG_BUILD_PKGS=$(get_packages "looking-glass-build")
 if [[ -n "$LG_BUILD_PKGS" ]]; then
-    dnf -y install --skip-unavailable --exclude=dkms $LG_BUILD_PKGS
+    dnf "${DNF_SETOPT[@]}" -y install --skip-unavailable --exclude=dkms $LG_BUILD_PKGS
 fi
 
 LG_VERSION="B7"
@@ -210,7 +211,7 @@ BUILD_DEPS=$(get_packages "looking-glass-build" 2>/dev/null || echo "")
 if [ -n "$BUILD_DEPS" ]; then
     # Only remove packages that are truly build-only (cmake, *-devel)
     for pkg in cmake gcc gcc-c++ libglvnd-devel fontconfig-devel; do
-        dnf remove -y "$pkg" --noautoremove 2>/dev/null || true
+        dnf "${DNF_SETOPT[@]}" remove -y "$pkg" --noautoremove 2>/dev/null || true
     done
 fi
 

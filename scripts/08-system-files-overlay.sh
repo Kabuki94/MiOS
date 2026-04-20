@@ -87,4 +87,9 @@ if [[ -d "${QDIR}" ]]; then
     shopt -u nullglob
 fi
 
+log "08-overlay: relabeling overlaid files with correct SELinux contexts"
+# Restore SELinux contexts for all files copied from system_files
+restorecon -RFv /etc/ 2>/dev/null || true
+restorecon -RFv /usr/ 2>/dev/null || true
+
 log "08-overlay: complete"

@@ -8,12 +8,17 @@
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
+source "${SCRIPT_DIR}/lib/common.sh"
 
 # ── Global DNF config ───────────────────────────────────────────────────────
 echo "[01-repos] Setting install_weak_deps=False globally..."
-sed -i '/^install_weakdeps=/d' /etc/dnf/dnf.conf 2>/dev/null || true
-sed -i '/^install_weak_deps=/d' /etc/dnf/dnf.conf 2>/dev/null || true
-echo "install_weak_deps=False" >> /etc/dnf/dnf.conf
+# Ensure this is set, as Containerfile might have removed it or base image might not have it.
+if ! grep -q '^install_weak_deps=False' /etc/dnf/dnf.conf; then
+    # Remove any existing settings to avoid duplicates
+    sed -i '/^install_weak_deps=/d' /etc/dnf/dnf.conf 2>/dev/null || true
+    echo "install_weak_deps=False" >> /etc/dnf/dnf.conf
+fi
+
 
 # ── Protect Base Repos from Third-Party Ties ───────────────────────────────
 echo "[01-repos] Elevating base repos to priority 98 to protect against rpmsphere/third-party ties..."
@@ -60,27 +65,25 @@ echo "[01-repos] Phase 1: Pre-upgrading DNF, RPM, and core systemd/filesystem...
 # Isolate the problematic filesystem scriptlet and core package upgrades.
 # By doing this first, a filesystem %posttrans failure won't abort the entire
 # 1100+ package distro-sync transaction, preventing a fractured RPM database.
-dnf upgrade -y --allowerasing --best \
-    dnf rpm fedora-release fedora-repos filesystem systemd glibc dbus-broker \
-    --setopt=install_weak_deps=False 2>&1 || {
+dnf "${DNF_SETOPT[@]}" upgrade -y --allowerasing --best \
+    dnf rpm fedora-release fedora-repos filesystem systemd glibc dbus-broker 2>&1 || {
     echo "[01-repos] NOTE: Pre-upgrade had warnings (likely filesystem lua scriptlet), continuing..."
 }
 
 echo "[01-repos] Phase 2: Full distro-sync to Fedora 44..."
-dnf distro-sync -y --best --allowerasing \
-    --setopt=excludepkgs="shim-*,kernel*" \
-    --setopt=install_weak_deps=False
+dnf "${DNF_SETOPT[@]}" distro-sync -y --best --allowerasing \
+    --setopt=excludepkgs="shim-*,kernel*"
 
 echo "[01-repos] Verifying core package versions..."
 rpm -q systemd glibc dbus-broker filesystem || true
 
 # ── Pre-install F44 ca-certificates ────────────────────────────────────────
 echo "[01-repos] Ensuring F44 ca-certificates is installed..."
-dnf install -y ca-certificates p11-kit-trust 2>&1 | tail -5 || true
+dnf "${DNF_SETOPT[@]}" install -y ca-certificates p11-kit-trust 2>&1 | tail -5 || true
 
 # ── RPMFusion ───────────────────────────────────────────────────────────────
 echo "[01-repos] Installing RPMFusion Free + Nonfree for Fedora 44..."
-dnf install -y \
+dnf "${DNF_SETOPT[@]}" install -y \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-44.noarch.rpm" \
     "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-44.noarch.rpm" \
     2>&1 | tail -15 || true
@@ -95,7 +98,7 @@ done
 
 # ── Terra repo ──────────────────────────────────────────────────────────────
 echo "[01-repos] Installing Terra repo..."
-dnf install -y --repofrompath 'terra,https://repos.fyralabs.com/terra44' \
+dnf "${DNF_SETOPT[@]}" install -y --repofrompath 'terra,https://repos.fyralabs.com/terra44' \
     --setopt='terra.gpgcheck=1' --setopt='terra.gpgkey=https://repos.fyralabs.com/terra44/key.asc' \
     terra-release 2>&1 | tail -10 || true
 

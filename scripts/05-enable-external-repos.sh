@@ -35,7 +35,8 @@ fi
 # --- 2. Visual Studio Code (Microsoft) --------------------------------------
 if [[ ! -f "${REPO_DIR}/vscode.repo" ]]; then
     log "enabling VS Code repo (Microsoft)"
-    rpm --import https://packages.microsoft.com/keys/microsoft.asc
+    curl -fsSL https://packages.microsoft.com/keys/microsoft.asc -o /tmp/vscode.asc
+    rpm --import /tmp/vscode.asc && rm -f /tmp/vscode.asc
     cat > "${REPO_DIR}/vscode.repo" <<'EOF'
 [code]
 name=Visual Studio Code
@@ -53,7 +54,8 @@ fi
 # --- 3. 1Password -----------------------------------------------------------
 if [[ ! -f "${REPO_DIR}/1password.repo" ]]; then
     log "enabling 1Password repo"
-    rpm --import https://downloads.1password.com/linux/keys/1password.asc
+    curl -fsSL https://downloads.1password.com/linux/keys/1password.asc -o /tmp/1password.asc
+    rpm --import /tmp/1password.asc && rm -f /tmp/1password.asc
     cat > "${REPO_DIR}/1password.repo" <<'EOF'
 [1password]
 name=1Password Stable Channel
@@ -89,7 +91,8 @@ fi
 # --- 6. Google Chrome -------------------------------------------------------
 if [[ ! -f "${REPO_DIR}/google-chrome.repo" ]]; then
     log "enabling Google Chrome repo"
-    rpm --import https://dl.google.com/linux/linux_signing_key.pub
+    curl -fsSL https://dl.google.com/linux/linux_signing_key.pub -o /tmp/chrome.pub
+    rpm --import /tmp/chrome.pub && rm -f /tmp/chrome.pub
     cat > "${REPO_DIR}/google-chrome.repo" <<'EOF'
 [google-chrome]
 name=google-chrome

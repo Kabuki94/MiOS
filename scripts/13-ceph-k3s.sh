@@ -46,9 +46,11 @@ if curl -sfL "$K3S_URL" -o /tmp/k3s-dl/k3s 2>/dev/null && \
         echo "[13-ceph-k3s] ✓ K3s SHA256 checksum verified"
         mv k3s /usr/local/bin/k3s
         chmod 755 /usr/local/bin/k3s
-        ln -sf /usr/local/bin/k3s /usr/local/bin/kubectl 2>/dev/null || true
-        ln -sf /usr/local/bin/k3s /usr/local/bin/crictl 2>/dev/null || true
-        ln -sf /usr/local/bin/k3s /usr/local/bin/ctr 2>/dev/null || true
+
+        # Only symlink if official RPM binaries don't exist, preventing PATH shadowing
+        [ ! -f /usr/bin/kubectl ] && ln -sf /usr/local/bin/k3s /usr/local/bin/kubectl 2>/dev/null || true
+        [ ! -f /usr/bin/crictl ] && ln -sf /usr/local/bin/k3s /usr/local/bin/crictl 2>/dev/null || true
+        [ ! -f /usr/bin/ctr ] && ln -sf /usr/local/bin/k3s /usr/local/bin/ctr 2>/dev/null || true
 
         mv k3s-install.sh /usr/local/bin/k3s-install.sh
         chmod 755 /usr/local/bin/k3s-install.sh
