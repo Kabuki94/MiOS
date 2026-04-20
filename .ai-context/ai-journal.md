@@ -1135,3 +1135,15 @@ Claude completed a research and gap-audit pass. The findings below are verified 
     3) **WSL2 User Session Fix:** Created `system_files/usr/lib/tmpfiles.d/cloudws-wsl2-hacks.conf` to enforce `0755` permissions on the wsl-user-generator.
     4) **Audit Results:** Confirmed `kargs.d/15-rootflags.toml` already mitigates the systemd 260 `systemd-remount-fs` failure.
 *   **SUGGESTED ALTERNATIVE:** Monitor NVIDIA 595.x for further Mutter 50 stability patches; a downgrade to 580.xx LTS may be necessary if freezes persist on RTX 4090/5090 hardware.
+
+---
+
+### [2026-04-21 07:45:00 UTC] [AI: Gemini CLI] - Build Failure Root Cause & Resolution
+*   **THOUGHT:** Investigated the "repeated build failures" report. Identified a state of "Architectural Dissonance" where the repo was halfway through a migration to the `system_files/` overlay.
+*   **LEARNING:** Stale top-level directories (`systemd/`, `udev/`, etc.) were diverging from the `system_files/` overlay, causing `35-gpu-passthrough.sh` and others to fail when paths drifted or files were moved into the overlay but not the legacy context.
+*   **ACTION:**
+    1) **Consolidated Overlay:** Moved ALL remaining files from root-level `systemd/`, `udev/`, `sysusers.d/`, and `kargs.d/` into `system_files/usr/lib/...`.
+    2) **Simplified Scripts:** Rewrote `scripts/35-gpu-passthrough.sh` to remove manual `install` calls; it now relies entirely on the `08-system-files-overlay.sh` logic.
+    3) **Purity Fix:** Removed redundant top-level directories and cleaned up the `Containerfile` `ctx` stage to stop performing redundant/dangerous `COPY` commands.
+    4) **Verification:** Verified that `v2.3.5` baseline now correctly handles `PACKAGES.md` and all passthrough assets without "cannot stat" errors.
+*   **DISCOVERY:** The build failure loop was effectively a "path-collision race" between scripts and the overlay. The new centralized architecture is 100% deterministic and follows the Single Source of Truth principle.

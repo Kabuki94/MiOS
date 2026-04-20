@@ -22,6 +22,13 @@
 #      keeps working without modification. No other moved doc is consumed
 #      by the build pipeline — only PACKAGES.md had to be re-pathed.
 #
+#   2) ARCHITECTURAL PURITY FIX: Removed redundant top-level directories
+#      (systemd/, udev/, tmpfiles.d/, sysusers.d/, kargs.d/). All files
+#      are now delivered via the system_files overlay. The ctx stage
+#      no longer performs redundant COPY commands, and 35-gpu-passthrough.sh
+#      no longer performs manual 'install' calls. This eliminates the
+#      "cannot stat" failures caused by path desynchronization.
+#
 # v2.3.4 fixed v2.3.3's three runtime failures:
 #
 #   1) bootc container lint REJECTED 01-cloudws-vm-boot.toml with
@@ -77,12 +84,6 @@ COPY system_files/      /ctx/system_files/
 COPY docs/PACKAGES.md   /ctx/PACKAGES.md
 COPY VERSION            /ctx/VERSION
 COPY bib-configs/       /ctx/bib-configs/
-# v2.3.4: passthrough plumbing staging dirs consumed by 35-gpu-passthrough.sh
-COPY systemd/           /ctx/systemd/
-COPY udev/              /ctx/udev/
-COPY tmpfiles.d/        /ctx/tmpfiles.d/
-COPY sysusers.d/        /ctx/sysusers.d/
-COPY kargs.d/           /ctx/kargs.d/
 
 # ----------------------------------------------------------------------------
 # main stage
