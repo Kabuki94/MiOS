@@ -71,7 +71,7 @@ Pre-built images from the registry use these defaults. Custom builds prompt for 
 ### Windows (PowerShell as Administrator)
 
 ```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/install.ps1 | iex
+$tmp = New-TemporaryFile; irm https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/install.ps1 | Set-Content $tmp.FullName; & $tmp.FullName; Remove-Item $tmp.FullName
 ```
 
 ### Linux

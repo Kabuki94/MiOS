@@ -1,6 +1,6 @@
 #!/bin/bash
 # rtx4090-vfio-configurator.sh
-# Automated RTX 4090 VFIO isolation for CachyOS with systemd-boot
+# Automated RTX 4090 VFIO isolation for CloudWS (Fedora bootc)
 # Part of Cloud-WS virtualization host setup
 
 set -euo pipefail
@@ -26,8 +26,6 @@ fi
 
 # Configuration variables
 VFIO_CONF="/etc/modprobe.d/vfio.conf"
-MKINITCPIO_CONF="/etc/mkinitcpio.conf"
-BOOT_ENTRIES_DIR="/boot/loader/entries"
 BACKUP_SUFFIX=".backup-$(date +%Y%m%d-%H%M%S)"
 
 # Step 1: Detect RTX 4090
@@ -132,105 +130,24 @@ EOF
 
 log_success "Created $VFIO_CONF"
 
-# Step 5: Update mkinitcpio configuration
-log_info "Updating mkinitcpio configuration..."
-
-if [[ -f "$MKINITCPIO_CONF" ]]; then
-    cp "$MKINITCPIO_CONF" "${MKINITCPIO_CONF}${BACKUP_SUFFIX}"
-    log_info "Backed up existing config to ${MKINITCPIO_CONF}${BACKUP_SUFFIX}"
-fi
-
-# Check if VFIO modules are already present
-if ! grep -q "vfio_pci" "$MKINITCPIO_CONF"; then
-    log_info "Adding VFIO modules to mkinitcpio.conf..."
-    
-    # Add VFIO modules to MODULES array
-    sed -i '/^MODULES=/ s/)/ vfio_pci vfio vfio_iommu_type1)/' "$MKINITCPIO_CONF"
-    
-    log_success "Added VFIO modules to mkinitcpio.conf"
-else
-    log_info "VFIO modules already present in mkinitcpio.conf"
-fi
-
-# Verify hook order (modconf before kms)
-HOOKS_LINE=$(grep "^HOOKS=" "$MKINITCPIO_CONF")
-if [[ "$HOOKS_LINE" =~ kms.*modconf ]]; then
-    log_warning "Hook order issue detected: 'modconf' should come before 'kms'"
-    log_warning "Please manually verify hook order in $MKINITCPIO_CONF"
-fi
-
-# Step 6: Generate kernel parameter string
+# Step 5: Update bootc kernel arguments
+log_info "Applying kernel parameters via bootc..."
 KERNEL_PARAMS="$IOMMU_PARAM iommu=pt vfio-pci.ids=$VFIO_IDS"
+log_info "Applying: $KERNEL_PARAMS"
 
-log_info "Generated kernel parameters:"
-echo -e "${GREEN}$KERNEL_PARAMS${NC}"
-echo ""
+# bootc kargs edit stages the arguments for the next boot natively
+bootc kargs edit --append-if-missing="$IOMMU_PARAM" \
+                 --append-if-missing="iommu=pt" \
+                 --append-if-missing="vfio-pci.ids=$VFIO_IDS"
 
-# Step 7: Detect systemd-boot entries
-log_info "Detecting systemd-boot entries..."
+log_success "bootc kargs updated. Changes will take effect on next reboot."
 
-BOOT_ENTRIES=$(find "$BOOT_ENTRIES_DIR" -name "*.conf" 2>/dev/null | grep -v "backup" | sort)
-
-if [[ -z "$BOOT_ENTRIES" ]]; then
-    log_error "No systemd-boot entries found in $BOOT_ENTRIES_DIR"
-    exit 1
-fi
-
-log_info "Found boot entries:"
-echo "$BOOT_ENTRIES" | nl -w2 -s'. '
-
-# Step 8: Prompt for boot entry selection
-echo ""
-read -p "Which entry do you want to configure? (number or 'all'): " ENTRY_SELECTION
-
-if [[ "$ENTRY_SELECTION" == "all" ]]; then
-    SELECTED_ENTRIES="$BOOT_ENTRIES"
-else
-    SELECTED_ENTRIES=$(echo "$BOOT_ENTRIES" | sed -n "${ENTRY_SELECTION}p")
-    if [[ -z "$SELECTED_ENTRIES" ]]; then
-        log_error "Invalid selection"
-        exit 1
-    fi
-fi
-
-# Step 9: Update boot entries
-for ENTRY in $SELECTED_ENTRIES; do
-    log_info "Processing: $ENTRY"
-    
-    # Backup
-    cp "$ENTRY" "${ENTRY}${BACKUP_SUFFIX}"
-    log_info "Backed up to ${ENTRY}${BACKUP_SUFFIX}"
-    
-    # Check if parameters already exist
-    if grep -q "vfio-pci.ids=" "$ENTRY"; then
-        log_warning "VFIO parameters already present. Skipping modification."
-        log_warning "To update, manually edit: $ENTRY"
-        continue
-    fi
-    
-    # Add parameters to options line
-    sed -i "/^options / s/$/ $KERNEL_PARAMS/" "$ENTRY"
-    log_success "Updated: $ENTRY"
-done
-
-# Step 10: Regenerate initramfs
-log_info "Regenerating initramfs..."
-mkinitcpio -P
-
-log_success "Initramfs regenerated"
-
-# Step 11: Update systemd-boot
-log_info "Updating systemd-boot..."
-bootctl update
-
-log_success "systemd-boot updated"
-
-# Step 12: Create IOMMU group viewer script
+# Step 6: Create IOMMU group viewer script
 IOMMU_SCRIPT="/usr/local/bin/iommu-groups"
 
 if [[ ! -f "$IOMMU_SCRIPT" ]]; then
     log_info "Creating IOMMU group viewer script..."
-    
+
     cat > "$IOMMU_SCRIPT" << 'EOF'
 #!/bin/bash
 shopt -s nullglob
@@ -241,12 +158,12 @@ for g in $(find /sys/kernel/iommu_groups/* -maxdepth 0 -type d | sort -V); do
     done;
 done;
 EOF
-    
+
     chmod +x "$IOMMU_SCRIPT"
     log_success "Created $IOMMU_SCRIPT"
 fi
 
-# Step 13: Summary and next steps
+# Step 7: Summary and next steps
 echo ""
 log_success "RTX 4090 VFIO configuration complete!"
 echo ""
@@ -255,28 +172,22 @@ echo -e "${GREEN}Configuration Summary:${NC}"
 echo -e "${BLUE}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
 echo ""
 echo "GPU Device IDs:        $VFIO_IDS"
-echo "Kernel Parameters:     $KERNEL_PARAMS"
 echo "IOMMU Group:           $IOMMU_GROUP ($IOMMU_GROUP_DEVICES devices)"
 echo ""
 echo -e "${BLUE}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
 echo -e "${YELLOW}Next Steps:${NC}"
 echo -e "${BLUE}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
 echo ""
-echo "1. Review modified boot entries:"
-for ENTRY in $SELECTED_ENTRIES; do
-    echo "   - $ENTRY"
-done
+echo "1. Reboot the system"
 echo ""
-echo "2. Reboot the system"
-echo ""
-echo "3. After reboot, verify VFIO binding:"
+echo "2. After reboot, verify VFIO binding:"
 echo "   $ lspci -nnk -d $GPU_ID"
 echo "   $ ls -la /dev/vfio/"
 echo ""
-echo "4. View IOMMU groups:"
+echo "3. View IOMMU groups:"
 echo "   $ iommu-groups"
 echo ""
-echo "5. Check kernel messages:"
+echo "4. Check kernel messages:"
 echo "   $ dmesg | grep -i vfio"
 echo "   $ dmesg | grep $GPU_ID"
 echo ""
@@ -285,12 +196,9 @@ echo -e "${YELLOW}Rollback Instructions:${NC}"
 echo -e "${BLUE}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
 echo ""
 echo "If you need to revert changes:"
-for ENTRY in $SELECTED_ENTRIES; do
-    echo "  sudo cp ${ENTRY}${BACKUP_SUFFIX} $ENTRY"
-done
-echo "  sudo cp ${MKINITCPIO_CONF}${BACKUP_SUFFIX} $MKINITCPIO_CONF"
-echo "  sudo rm $VFIO_CONF"
-echo "  sudo mkinitcpio -P && sudo reboot"
+echo "  sudo bootc kargs edit --delete vfio-pci.ids=$VFIO_IDS --delete iommu=pt"
+echo "  sudo rm -f $VFIO_CONF"
+echo "  sudo reboot"
 echo ""
 echo -e "${BLUE}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
 echo ""
