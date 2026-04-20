@@ -41,8 +41,11 @@ for svc in "${SERVICES[@]}"; do
 # for the currently running kernel. ExecCondition is additive (AND
 # semantics per systemd.service(5)), so this composes safely with any
 # future upstream guard. Ref: NVIDIA/nvidia-container-toolkit#1395
+# NOTE: \\\\ in this heredoc → \\ in file → systemd strips one backslash
+# → grep sees \. (literal-dot escape). Plain \\. triggered SC "unknown
+# escape sequence" warnings in systemd 259+ and could mis-match.
 [Service]
-ExecCondition=/bin/bash -c 'grep -Eq "(^|/)nvidia\.ko(\.[xz]z|\.zst)?:" /lib/modules/$(uname -r)/modules.dep'
+ExecCondition=/bin/bash -c 'grep -Eq "(^|/)nvidia\\.ko(\\.[xz]z|\\.zst)?:" /lib/modules/$(uname -r)/modules.dep'
 EOF
     chmod 0644 "${path}"
     count=$((count + 1))

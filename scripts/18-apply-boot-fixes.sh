@@ -20,6 +20,10 @@ fi
 find /usr/libexec -name 'cloudws-*' -type f -exec chmod +x {} \; || true
 find /usr/bin -name 'cloudws-*' -type f -exec chmod +x {} \; || true
 
+if [ -f /etc/libvirt/hooks/qemu ]; then
+    chmod +x /etc/libvirt/hooks/qemu
+fi
+
 # 3. Fix systemd-resolved 217/USER
 # Log trace: systemd-resolved.service exited 217/USER
 # User mapping required at boot time; ensuring it's compiled statically.
@@ -70,10 +74,5 @@ Alias=dbus.service
 EOF
 systemctl enable dbus-daemon-wsl.service
 
-# 6. Fix systemd escape sequences warning
-# Log trace: Ignoring unknown escape sequences: "grep -Eq "(^|/)nvidia\.ko...
-for conf in /usr/lib/systemd/system/nvidia-persistenced.service.d/10-cloudws-akmod-guard.conf /usr/lib/systemd/system/nvidia-cdi-refresh.service.d/10-cloudws-akmod-guard.conf; do
-    if [ -f "$conf" ]; then
-        sed -i 's/\\./\\\\./g' "$conf"
-    fi
-done
+# 6. Escape-sequence fix no longer needed here — 36-akmod-guards.sh now writes
+# \\\\ in the heredoc so all 7 service drop-ins have correct \\. from the start.

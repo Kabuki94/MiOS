@@ -28,7 +28,8 @@ jobs:
       - name: Validate TOML syntax (kargs.d)
         run: |
           pip install toml
-          for f in system_files/usr/lib/bootc/kargs.d/*.toml; do
+          for f in system_files/usr/lib/bootc/kargs.d/*.toml kargs.d/*.toml; do
+            [ -f "$f" ] || continue
             echo "Checking $f"
             python3 -c "import toml; toml.load('$f')" || exit 1
           done
