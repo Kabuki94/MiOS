@@ -59,7 +59,7 @@ systemctl is-active --quiet avahi-daemon 2>/dev/null && \
 # Hyper-V enhanced session
 VIRT=$(systemd-detect-virt 2>/dev/null || echo "none")
 if [ "$VIRT" = "microsoft" ]; then
-    systemctl is-active --quiet xrdp 2>/dev/null && \
+    (systemctl is-active --quiet gnome-remote-desktop 2>/dev/null || systemctl is-active --quiet xrdp 2>/dev/null) && \
         printf '%s\n' "  ${G}●${N}  Hyper-V Enhanced  ${D}vsock:3389${N}"
 fi
 

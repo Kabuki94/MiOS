@@ -4,6 +4,7 @@ Documentation=man:dbus-daemon(1)
 ConditionVirtualization=wsl
 Requires=dbus.socket
 After=dbus.socket
+DefaultDependencies=no
 
 [Service]
 ExecStart=/usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
@@ -12,3 +13,4 @@ OOMScoreAdjust=-900
 
 [Install]
 WantedBy=multi-user.target
+Alias=dbus.service

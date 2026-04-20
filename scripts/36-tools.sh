@@ -6,6 +6,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "[36-tools] Installing CloudWS CLI tools..."
 
+# ═══ Tmpfiles config for secure backup storage ═══
+mkdir -p /usr/lib/tmpfiles.d
+cat > /usr/lib/tmpfiles.d/cloudws-backup.conf <<'EOF'
+d /var/lib/cloudws/backups 0700 root root -
+EOF
+
 # ═══ MASTER CLI: cloudws [command] [--options] ═══
 cat > /usr/bin/cloudws <<'EOTOOL'
 #!/bin/bash
@@ -168,7 +174,7 @@ echo "bootc:     $(bootc status 2>/dev/null | head -3 || echo 'N/A')"
 echo ""
 echo "Services:"
 for svc in gdm cockpit.socket sshd libvirtd.socket podman.socket \
-           firewalld tuned k3s gnome-remote-desktop xrdp avahi-daemon; do
+           firewalld tuned k3s gnome-remote-desktop avahi-daemon; do
     if systemctl is-active --quiet "$svc" 2>/dev/null; then
         printf "  ✓ %-30s active\n" "$svc"
     elif systemctl is-enabled --quiet "$svc" 2>/dev/null; then

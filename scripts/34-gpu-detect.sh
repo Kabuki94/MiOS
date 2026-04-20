@@ -10,8 +10,8 @@ cat > /usr/lib/systemd/system/cloudws-gpu-detect.service <<'EOGPUSVC'
 [Unit]
 Description=CloudWS GPU Environment Detection
 DefaultDependencies=no
-Before=gdm.service display-manager.service systemd-modules-load.service
-After=local-fs.target systemd-udevd.service
+Before=gdm.service display-manager.service systemd-modules-load.service systemd-udevd.service
+After=systemd-journald.socket
 ConditionPathExists=!/run/cloudws-gpu-detected
 [Service]
 Type=oneshot

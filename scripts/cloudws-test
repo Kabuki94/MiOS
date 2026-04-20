@@ -26,14 +26,14 @@ header(){ echo -e "\n${CYAN}━━━ $1 ━━━${NC}"; }
 # ═══════════════════════════════════════════════════════════════════════════════
 test_identity() {
     header "OS Identity"
-    
+
     # Version file
     if [ -f /tmp/build/VERSION ] || [ -f /usr/share/cloudws/VERSION ]; then
         pass "VERSION file present"
     else
         warn "VERSION file not found (OK on deployed systems)"
     fi
-    
+
     # bootc image
     if command -v bootc &>/dev/null; then
         pass "bootc binary available"
@@ -53,7 +53,7 @@ test_identity() {
     else
         fail "bootc binary missing"
     fi
-    
+
     # SELinux
     if command -v getenforce &>/dev/null; then
         local mode
@@ -68,7 +68,7 @@ test_identity() {
     else
         skip "SELinux" "getenforce not available"
     fi
-    
+
     # Virtualization detection
     pass "Virtualization: $VIRT (WSL2: $IS_WSL)"
 }
@@ -78,7 +78,7 @@ test_identity() {
 # ═══════════════════════════════════════════════════════════════════════════════
 test_services() {
     header "Critical Services"
-    
+
     # Services that should run everywhere
     UNIVERSAL_SERVICES=(
         cockpit.socket
@@ -89,7 +89,7 @@ test_services() {
         systemd-resolved.service
         podman.socket
     )
-    
+
     for svc in "${UNIVERSAL_SERVICES[@]}"; do
         if systemctl is-enabled "$svc" &>/dev/null; then
             if systemctl is-active "$svc" &>/dev/null || systemctl is-active "${svc%.service}.socket" &>/dev/null; then
@@ -101,7 +101,7 @@ test_services() {
             fail "$svc not enabled"
         fi
     done
-    
+
     # GDM — should be active on bare metal and Hyper-V, skipped in WSL2
     if $IS_WSL; then
         if ! systemctl is-active gdm.service &>/dev/null; then
@@ -118,7 +118,22 @@ test_services() {
             warn "GDM not running — check: systemctl status gdm"
         fi
     fi
-    
+
+    # GNOME Remote Desktop (RDP)
+    if $IS_WSL; then
+        skip "GNOME Remote Desktop" "WSL2"
+    else
+        if systemctl is-enabled gnome-remote-desktop.service &>/dev/null; then
+            if systemctl is-active gnome-remote-desktop.service &>/dev/null; then
+                pass "gnome-remote-desktop.service enabled+active"
+            else
+                warn "gnome-remote-desktop.service enabled but not active"
+            fi
+        else
+            fail "gnome-remote-desktop.service not enabled"
+        fi
+    fi
+
     # WSL2-specific: these should NOT be running
     if $IS_WSL; then
         WSL_SHOULD_SKIP=(auditd firewalld usbguard bootloader-update waydroid-container)
@@ -130,7 +145,7 @@ test_services() {
             fi
         done
     fi
-    
+
     # Bare-metal-only services — should skip in VMs
     if [ "$VIRT" != "none" ]; then
         BM_ONLY=(pacemaker corosync nfs-server smb)
@@ -149,12 +164,12 @@ test_services() {
 # ═══════════════════════════════════════════════════════════════════════════════
 test_selinux() {
     header "SELinux Custom Policies"
-    
+
     if ! command -v semodule &>/dev/null; then
         skip "SELinux policy check" "semodule not available"
         return
     fi
-    
+
     EXPECTED_MODULES=(cloudws_bootupd cloudws_accountsd cloudws_resolved cloudws_fapolicyd cloudws_chcon cloudws_accountsd_homed)
     for mod in "${EXPECTED_MODULES[@]}"; do
         if semodule -l 2>/dev/null | grep -q "^${mod}"; then
@@ -163,7 +178,7 @@ test_selinux() {
             warn "SELinux module: $mod missing (may be OK if type doesn't exist in current policy)"
         fi
     done
-    
+
     # Check for recent AVC denials
     if $IS_ROOT && command -v ausearch &>/dev/null; then
         local denials
@@ -181,13 +196,13 @@ test_selinux() {
 # ═══════════════════════════════════════════════════════════════════════════════
 test_gpu() {
     header "GPU & Renderer"
-    
+
     if [ -f /run/cloudws-gpu-detected ]; then
         pass "GPU detection ran at boot"
     else
         warn "GPU detection marker missing — cloudws-gpu-detect.service may not have run"
     fi
-    
+
     if [ "$VIRT" != "none" ]; then
         # In VMs, NVIDIA should be blocked
         if [ -f /etc/modprobe.d/99-cloudws-virt-gpu.conf ]; then
@@ -195,7 +210,7 @@ test_gpu() {
         else
             warn "NVIDIA block config missing in VM"
         fi
-        
+
         local renderer
         renderer=$(cat /etc/environment.d/60-cloudws-renderer.conf 2>/dev/null | grep GSK_RENDERER | cut -d= -f2 || echo "")
         if [ "$renderer" = "cairo" ]; then
@@ -225,14 +240,14 @@ test_gpu() {
 # ═══════════════════════════════════════════════════════════════════════════════
 test_network() {
     header "Networking"
-    
+
     # DNS resolution
     if getent hosts fedoraproject.org &>/dev/null; then
         pass "DNS resolution working"
     else
         fail "DNS resolution failed — check systemd-resolved"
     fi
-    
+
     # Firewall (skip in WSL2)
     if $IS_WSL; then
         skip "Firewall check" "WSL2"
@@ -243,10 +258,16 @@ test_network() {
         else
             warn "Cockpit not in firewall allowed services"
         fi
+
+        if firewall-cmd --list-ports 2>/dev/null | grep -q "3389/tcp"; then
+            pass "RDP (3389/tcp) allowed in firewall"
+        else
+            warn "RDP (3389/tcp) not in firewall allowed ports"
+        fi
     else
         warn "Firewalld not active"
     fi
-    
+
     # Cockpit reachability
     if curl -sk --max-time 3 https://localhost:9090/ &>/dev/null; then
         pass "Cockpit web UI reachable on :9090"
@@ -260,15 +281,15 @@ test_network() {
 # ═══════════════════════════════════════════════════════════════════════════════
 test_packages() {
     header "Key Packages"
-    
+
     CRITICAL_BINS=(
         podman bootc ostree rpm-ostree
         virsh virt-install qemu-system-x86_64
-        cockpit-bridge
+        cockpit-bridge grdctl
         fastfetch btop tmux
         steam gamescope
     )
-    
+
     for bin in "${CRITICAL_BINS[@]}"; do
         if command -v "$bin" &>/dev/null; then
             pass "$bin available"
@@ -276,7 +297,7 @@ test_packages() {
             warn "$bin not found in PATH"
         fi
     done
-    
+
     # Flatpaks
     if command -v flatpak &>/dev/null; then
         local count
@@ -294,13 +315,13 @@ test_packages() {
 # ═══════════════════════════════════════════════════════════════════════════════
 test_containers() {
     header "Containers & Kubernetes"
-    
+
     if podman info &>/dev/null; then
         pass "Podman daemon responding"
     else
         warn "Podman not responding — check: podman info"
     fi
-    
+
     if command -v kubectl &>/dev/null || command -v k3s &>/dev/null; then
         pass "K3s/kubectl binary available"
         if $IS_ROOT && systemctl is-active k3s.service &>/dev/null; then
@@ -321,11 +342,11 @@ test_containers() {
 # ═══════════════════════════════════════════════════════════════════════════════
 test_user() {
     header "User Environment"
-    
+
     # cloudws user exists
     if id cloudws &>/dev/null; then
         pass "User 'cloudws' exists"
-        
+
         # Group membership
         local groups
         groups=$(id -nG cloudws 2>/dev/null)
@@ -339,14 +360,14 @@ test_user() {
     else
         fail "User 'cloudws' does not exist"
     fi
-    
+
     # Home directory
     if [ -d /var/home/cloudws ]; then
         pass "Home directory exists at /var/home/cloudws"
     else
         warn "Home directory /var/home/cloudws missing"
     fi
-    
+
     # dconf database
     if [ -f /etc/dconf/db/local ] || [ -d /etc/dconf/db/local.d ]; then
         pass "dconf database present"
@@ -366,7 +387,7 @@ report() {
     printf  '%s║%s  Environment: %-44s%s║%s\n' "${CYAN}" "${NC}" "$VIRT (WSL2: $IS_WSL)" "${CYAN}" "${NC}"
     printf  '%s║%s  %sPassed: %-5s%s %sFailed: %-5s%s %sWarn: %-5s%s %sSkip: %-5s%s  %s║%s\n' "${CYAN}" "${NC}" "${GREEN}" "$PASS" "${NC}" "${RED}" "$FAIL" "${NC}" "${YELLOW}" "$WARN" "${NC}" "${DIM}" "$SKIP" "${NC}" "${CYAN}" "${NC}"
     echo -e "${CYAN}╚══════════════════════════════════════════════════════════════╝${NC}"
-    
+
     if [ "$FAIL" -gt 0 ]; then
         echo -e "\n${RED}$FAIL test(s) failed. Review output above.${NC}"
         exit 1

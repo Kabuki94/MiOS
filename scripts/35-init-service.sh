@@ -9,7 +9,8 @@ echo "[35-init-service] Installing CloudWS init service..."
 cat > /usr/lib/systemd/system/cloudws-init.service <<'EOSVC'
 [Unit]
 Description=CloudWS System Init
-After=network.target
+Wants=network-online.target
+After=network-online.target
 [Service]
 Type=oneshot
 ExecStart=/usr/libexec/cloudws-init

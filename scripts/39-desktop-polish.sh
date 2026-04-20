@@ -68,6 +68,12 @@ Categories=System;
 Keywords=ceph;storage;
 EODESKTOP
 
+# Ensure strict, deterministic permissions for all generated desktop entries
+chmod 0644 /usr/share/applications/cockpit.desktop \
+           /usr/share/applications/cockpit-browser.desktop \
+           /usr/share/applications/nvidia-settings.desktop \
+           /usr/share/applications/ceph-dashboard.desktop
+
 # ═══ MOTD DASHBOARD ═══
 # Source lives alongside this script (scripts/cloudws-motd in the repo,
 # /ctx/scripts/cloudws-motd at build time). SCRIPT_DIR resolves both.

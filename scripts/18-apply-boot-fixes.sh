@@ -42,37 +42,16 @@ Requires=sysinit.target
 After=sysinit.target
 EOF
 
-# 5. WSL2 Compatibility Gating & Cascading Failure Prevention
-# dbus-broker, upower, and coreos services crash heavily due to WSL2 lacking hardware/audit access.
-for service in dbus-broker upower coreos-populate-lvmdevices coreos-printk-quiet bootloader-update; do
-    mkdir -p /etc/systemd/system/${service}.service.d/
-    cat << 'EOF' > /etc/systemd/system/${service}.service.d/wsl-gate.conf
-[Unit]
-# Prevent execution inside WSL2 due to missing kernel subsystems (audit, EFI, LVM, etc.)
-ConditionPathExists=!/proc/sys/fs/binfmt_misc/WSLInterop
-EOF
-done
+# 5. WSL2 Compatibility Gating
+# All WSL2 service skips (gdm, firewalld, waydroid-container, nvidia-powerd,
+# crowdsec*, dev-binderfs.mount, ceph-bootstrap, audit*, bootloader-update,
+# coreos-printk-quiet, coreos-populate-lvmdevices, usbguard) are owned by
+# 20-services.sh's WSL_SKIP_SERVICES loop. Drop-ins for dbus-broker / upower
+# ship via the system_files overlay. Nothing more to gate here.
 
-# Setup WSL2 fallback for dbus
-# Avoids the --audit flags and utilizes dbus-daemon explicitly for WSL kernels
-cat << 'EOF' > /etc/systemd/system/dbus-daemon-wsl.service
-[Unit]
-Description=D-Bus System Message Bus (WSL2 Fallback)
-ConditionPathExists=/proc/sys/fs/binfmt_misc/WSLInterop
-Requires=dbus.socket
-After=dbus.socket
-DefaultDependencies=no
-
-[Service]
-ExecStart=/usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
-ExecReload=/usr/bin/dbus-send --print-reply --system --type=method_call --dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig
-OOMScoreAdjust=-900
-
-[Install]
-WantedBy=multi-user.target
-Alias=dbus.service
-EOF
-systemctl enable dbus-daemon-wsl.service || true
+# dbus-daemon-wsl.service is shipped via system_files overlay — enable it here
+# (preset already lists it, but this guards against a preset-all miss).
+systemctl enable dbus-daemon-wsl.service 2>/dev/null || true
 
 # 6. Escape-sequence fix no longer needed here — 36-akmod-guards.sh now writes
 # \\\\ in the heredoc so all 7 service drop-ins have correct \\. from the start.

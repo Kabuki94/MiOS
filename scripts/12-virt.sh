@@ -106,10 +106,16 @@ fi
 # ── VirtIO-Win ISO (latest stable) ─────────────────────────────────────────
 echo "[12-virt] Downloading VirtIO-Win ISO..."
 VIRTIO_URL="https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso"
-mkdir -p /var/lib/libvirt/images
-curl -sL "$VIRTIO_URL" -o /var/lib/libvirt/images/virtio-win.iso 2>/dev/null || {
+mkdir -p /usr/share/cloudws/virtio
+curl -sL "$VIRTIO_URL" -o /usr/share/cloudws/virtio/virtio-win.iso 2>/dev/null || {
     echo "[12-virt] WARNING: VirtIO-Win ISO download failed — download manually later"
 }
+
+# Symlink the immutable ISO into /var/lib/libvirt/images via tmpfiles.d so it survives upgrades
+mkdir -p /usr/lib/tmpfiles.d
+cat > /usr/lib/tmpfiles.d/cloudws-virtio.conf <<'EOF'
+L+ /var/lib/libvirt/images/virtio-win.iso - - - - /usr/share/cloudws/virtio/virtio-win.iso
+EOF
 
 # ── Looking Glass B7 (compile from source) ──────────────────────────────────
 echo "[12-virt] Building Looking Glass B7..."

@@ -128,6 +128,7 @@ WSL_SKIP_SERVICES=(
     audit-rules
     bootloader-update
     coreos-printk-quiet
+    coreos-populate-lvmdevices
     usbguard
 )
 

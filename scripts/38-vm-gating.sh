@@ -18,34 +18,10 @@ set -euo pipefail
 
 echo "[38-vm-gating] Configuring VM-specific service gating..."
 
-# ═══ GDM: only skip in WSL2 (Hyper-V VMs SHOULD run GDM) ═══
-mkdir -p /usr/lib/systemd/system/gdm.service.d
-cat > /usr/lib/systemd/system/gdm.service.d/10-skip-wsl.conf <<'DROPIN'
-[Unit]
-ConditionPathExists=!/proc/sys/fs/binfmt_misc/WSLInterop
-DROPIN
-
-# ═══ nvidia-powerd: skip in ALL VMs ═══
-if [ -f /usr/lib/systemd/system/nvidia-powerd.service ]; then
-    mkdir -p /usr/lib/systemd/system/nvidia-powerd.service.d
-    cat > /usr/lib/systemd/system/nvidia-powerd.service.d/10-bare-metal-only.conf <<'DROPIN'
-[Unit]
-ConditionVirtualization=no
-DROPIN
-fi
-
-# ═══ Waydroid + binder: skip in WSL2 ═══
-for svc in waydroid-container dev-binderfs.mount; do
-    if [ -f "/usr/lib/systemd/system/${svc}" ] || [ -f "/usr/lib/systemd/system/${svc}.service" ]; then
-        unit="${svc}"
-        [[ "$unit" != *.* ]] && unit="${unit}.service"
-        mkdir -p "/usr/lib/systemd/system/${unit}.d"
-        cat > "/usr/lib/systemd/system/${unit}.d/10-skip-wsl.conf" <<'DROPIN'
-[Unit]
-ConditionPathExists=!/proc/sys/fs/binfmt_misc/WSLInterop
-DROPIN
-    fi
-done
+# ═══ GDM / nvidia-powerd / Waydroid + binder gating ═══
+# Drop-ins for gdm, nvidia-powerd, waydroid-container, dev-binderfs.mount are
+# created by 20-services.sh (WSL_SKIP_SERVICES + bare-metal nvidia-powerd block).
+# Do NOT duplicate them here — last writer wins and we want 20's canonical drop-ins.
 
 # ═══ Polkit container workaround ═══
 mkdir -p /usr/lib/systemd/system/polkit.service.d
@@ -109,7 +85,7 @@ ExecStart=/usr/libexec/cloudws-hyperv-enhanced
 RemainAfterExit=yes
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=graphical.target
 EOSVC
 
 cat > /usr/libexec/cloudws-hyperv-enhanced <<'EOHV'
