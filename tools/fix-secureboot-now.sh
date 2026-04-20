@@ -81,18 +81,18 @@ read -p "Choose option (1-4): " choice
 case $choice in
     1)
         echo -e "\n${BLUE}Trying alternative download sources...${NC}\n"
-        
+
         WORK_DIR="/tmp/ovmf-alt-$$"
         mkdir -p "$WORK_DIR"
         cd "$WORK_DIR"
-        
+
         # Try multiple sources
         SOURCES=(
             "https://src.fedoraproject.org/repo/pkgs/edk2/edk2-ovmf-20231115-5.fc39.noarch.rpm/sha512/1a2b3c4d/edk2-ovmf-20231115-5.fc39.noarch.rpm"
             "https://rpmfind.net/linux/fedora/linux/releases/39/Everything/x86_64/os/Packages/e/edk2-ovmf-20231115-5.fc39.noarch.rpm"
             "https://download-ib01.fedoraproject.org/pub/fedora/linux/releases/39/Everything/x86_64/os/Packages/e/edk2-ovmf-20231115-5.fc39.noarch.rpm"
         )
-        
+
         SUCCESS=false
         for url in "${SOURCES[@]}"; do
             echo -e "${CYAN}Trying: $url${NC}"
@@ -102,11 +102,11 @@ case $choice in
                 break
             fi
         done
-        
+
         if [ "$SUCCESS" = false ]; then
             echo -e "${RED}All download sources failed${NC}"
             echo -e "${YELLOW}Trying direct file download...${NC}"
-            
+
             # Try getting just the VARS file directly from GitHub mirrors
             VARS_URL="https://github.com/pftf/RPi4/raw/master/firmware/OVMF_VARS.fd"
             if wget -q "$VARS_URL" -O OVMF_VARS.fd; then
@@ -124,7 +124,7 @@ case $choice in
             elif command -v rpm2cpio &>/dev/null; then
                 rpm2cpio ovmf.rpm | cpio -idmv 2>&1 | grep OVMF
             fi
-            
+
             # Find and install VARS
             VARS=$(find . -name "*VARS*.fd" | head -1)
             if [ -n "$VARS" ]; then
@@ -133,65 +133,66 @@ case $choice in
                 echo -e "${GREEN}✓ Installed: /usr/share/edk2/x64/OVMF_VARS.secboot.4m.fd${NC}"
             fi
         fi
-        
+
         cd /
         rm -rf "$WORK_DIR"
-        
+
         # Now update VM to use it
         echo -e "\n${BLUE}Updating VM configuration...${NC}"
         virsh shutdown Xbox 2>/dev/null
         sleep 3
         rm -f /var/lib/libvirt/qemu/nvram/Xbox_VARS.fd
-        
+
         # Update XML to use secboot VARS
         sed -i 's|template="/usr/share/edk2/x64/OVMF_VARS.4m.fd"|template="/usr/share/edk2/x64/OVMF_VARS.secboot.4m.fd"|g' /tmp/xbox-check.xml
         virsh define /tmp/xbox-check.xml
         virsh start Xbox
-        
+
         echo -e "${GREEN}✓ VM restarted with enrolled VARS${NC}"
         ;;
-        
+
     2)
-        echo -e "\n${BLUE}Installing virt-firmware...${NC}"
+        echo -e "\n${BLUE}Checking for virt-firmware...${NC}"
         if ! command -v virt-fw-vars &>/dev/null; then
-            pacman -S --noconfirm virt-firmware python-cryptography
+            echo -e "${RED}✗ virt-firmware is missing! Must be installed via PACKAGES.md.${NC}"
+            exit 1
         fi
-        
+
         echo -e "\n${BLUE}Enrolling Microsoft keys...${NC}"
         virsh shutdown Xbox 2>/dev/null
         sleep 3
-        
+
         # Enroll keys into existing NVRAM
         virt-fw-vars --input /var/lib/libvirt/qemu/nvram/Xbox_VARS.fd \
                      --output /var/lib/libvirt/qemu/nvram/Xbox_VARS.fd \
                      --enroll-redhat \
                      --secure-boot
-        
+
         virsh start Xbox
         echo -e "${GREEN}✓ Keys enrolled${NC}"
         ;;
-        
+
     3)
         echo -e "\n${BLUE}Downloading from Ubuntu Cloud Images...${NC}"
-        
+
         WORK_DIR="/tmp/ubuntu-ovmf-$$"
         mkdir -p "$WORK_DIR"
         cd "$WORK_DIR"
-        
+
         # Ubuntu has enrolled OVMF in their cloud images package
         wget http://archive.ubuntu.com/ubuntu/pool/main/e/edk2/ovmf_2023.05-2ubuntu0.1_all.deb
-        
+
         ar x ovmf_*.deb
         tar -xf data.tar.xz
-        
+
         VARS=$(find . -name "*VARS.ms.fd" -o -name "*VARS*.fd" | head -1)
         if [ -n "$VARS" ]; then
             cp "$VARS" /usr/share/edk2/x64/OVMF_VARS.secboot.4m.fd
             chmod 644 /usr/share/edk2/x64/OVMF_VARS.secboot.4m.fd
-            
+
             cd /
             rm -rf "$WORK_DIR"
-            
+
             # Update VM
             virsh shutdown Xbox 2>/dev/null
             sleep 3
@@ -199,11 +200,11 @@ case $choice in
             sed -i 's|template="/usr/share/edk2/x64/OVMF_VARS.4m.fd"|template="/usr/share/edk2/x64/OVMF_VARS.secboot.4m.fd"|g' /tmp/xbox-check.xml
             virsh define /tmp/xbox-check.xml
             virsh start Xbox
-            
+
             echo -e "${GREEN}✓ Installed Ubuntu OVMF VARS${NC}"
         fi
         ;;
-        
+
     4)
         echo -e "\n${YELLOW}Manual enrollment requires EDK2 build tools${NC}"
         echo -e "This is complex. Use option 1, 2, or 3 instead."

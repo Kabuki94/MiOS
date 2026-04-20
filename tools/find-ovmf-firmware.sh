@@ -22,7 +22,7 @@ OVMF_FILES=$(find /usr/share -name "OVMF*.fd" 2>/dev/null | sort)
 
 if [ -z "$OVMF_FILES" ]; then
     echo -e "${RED}✗ No OVMF files found!${NC}\n"
-    echo -e "${YELLOW}Try installing: ${NC}${CYAN}sudo pacman -S edk2-ovmf${NC}\n"
+    echo -e "${YELLOW}Ensure it is in PACKAGES.md: ${NC}${CYAN}edk2-ovmf${NC}\n"
     exit 1
 fi
 
@@ -55,7 +55,7 @@ find_vars_for_code() {
     local code_path=$1
     local dir=$(dirname "$code_path")
     local filename=$(basename "$code_path")
-    
+
     # Try different patterns
     local vars_candidates=(
         "${filename/CODE/VARS}"
@@ -63,7 +63,7 @@ find_vars_for_code() {
         "${filename/.secboot.4m.fd/.secboot.4m.fd}"
         "${filename/.4m.fd/.4m.fd}"
     )
-    
+
     for candidate in "${vars_candidates[@]}"; do
         local vars_path="$dir/$candidate"
         if [ -f "$vars_path" ] && [[ "$vars_path" != "$code_path" ]]; then
@@ -71,7 +71,7 @@ find_vars_for_code() {
             return 0
         fi
     done
-    
+
     # Try without exact pattern match
     for vars_file in "$dir"/OVMF_VARS*.fd; do
         if [ -f "$vars_file" ]; then
@@ -80,22 +80,22 @@ find_vars_for_code() {
             return 0
         fi
     done
-    
+
     return 1
 }
 
 # Check each CODE file
 echo "$OVMF_FILES" | grep "CODE" | while read -r code_file; do
     vars_file=$(find_vars_for_code "$code_file")
-    
+
     if [ -n "$vars_file" ]; then
         PAIR_COUNT=$((PAIR_COUNT + 1))
-        
+
         # Determine type
         TYPE="Standard"
         SECURE=""
         RECOMMENDED=""
-        
+
         if [[ "$code_file" =~ "secboot" ]]; then
             TYPE="Secure Boot"
             SECURE="${GREEN}✓ Secure Boot Supported${NC}"
@@ -105,13 +105,13 @@ echo "$OVMF_FILES" | grep "CODE" | while read -r code_file; do
                 RECOMMENDED="${GREEN}★ GOOD FOR WINDOWS 11${NC}"
             fi
         fi
-        
+
         if [[ "$code_file" =~ "4m" ]]; then
             SIZE="4MB"
         else
             SIZE="2MB"
         fi
-        
+
         echo -e "${BOLD}Pair #$((PAIR_COUNT + 1)):${NC} ${SIZE} ${TYPE}"
         [ -n "$RECOMMENDED" ] && echo -e "  $RECOMMENDED"
         [ -n "$SECURE" ] && echo -e "  $SECURE"
@@ -186,7 +186,7 @@ if [ -n "$BEST_CODE" ] && [ -n "$BEST_VARS" ]; then
     echo -e "  Type: $RECOMMENDATION"
     echo -e "  ${CYAN}CODE:${NC} $BEST_CODE"
     echo -e "  ${CYAN}VARS:${NC} $BEST_VARS"
-    
+
     # Check if they actually exist and are readable
     if [ ! -f "$BEST_CODE" ]; then
         echo -e "  ${RED}✗ CODE file doesn't exist or isn't readable${NC}"
@@ -194,23 +194,23 @@ if [ -n "$BEST_CODE" ] && [ -n "$BEST_VARS" ]; then
         CODE_SIZE=$(stat -f%z "$BEST_CODE" 2>/dev/null || stat -c%s "$BEST_CODE" 2>/dev/null)
         echo -e "  ${GREEN}✓ CODE file exists ($(numfmt --to=iec-i --suffix=B $CODE_SIZE))${NC}"
     fi
-    
+
     if [ ! -f "$BEST_VARS" ]; then
         echo -e "  ${RED}✗ VARS file doesn't exist or isn't readable${NC}"
     else
         VARS_SIZE=$(stat -f%z "$BEST_VARS" 2>/dev/null || stat -c%s "$BEST_VARS" 2>/dev/null)
         echo -e "  ${GREEN}✓ VARS file exists ($(numfmt --to=iec-i --suffix=B $VARS_SIZE))${NC}"
     fi
-    
+
     echo
     echo -e "${BOLD}XML Configuration Snippet:${NC}"
     echo -e "${CYAN}────────────────────────────────────────────────────${NC}"
-    
+
     SECURE_ATTR="no"
     if [[ "$BEST_CODE" =~ "secboot" ]]; then
         SECURE_ATTR="yes"
     fi
-    
+
     cat << XMLSNIPPET
   <os>
     <type arch="x86_64" machine="pc-q35-10.1">hvm</type>
@@ -220,7 +220,7 @@ if [ -n "$BEST_CODE" ] && [ -n "$BEST_VARS" ]; then
   </os>
 XMLSNIPPET
     echo -e "${CYAN}────────────────────────────────────────────────────${NC}"
-    
+
     # Save to file
     cat > /tmp/ovmf-paths.txt << EOF
 # OVMF Firmware Paths for Xbox VM
@@ -235,10 +235,10 @@ TYPE=$RECOMMENDATION
 # <loader readonly="yes" secure="$SECURE_ATTR" type="pflash">$BEST_CODE</loader>
 # <nvram template="$BEST_VARS">/var/lib/libvirt/qemu/nvram/Xbox_VARS.fd</nvram>
 EOF
-    
+
     echo
     echo -e "${GREEN}✓ Paths saved to: ${NC}${CYAN}/tmp/ovmf-paths.txt${NC}"
-    
+
 else
     echo -e "${RED}✗ Could not find a usable CODE/VARS pair!${NC}"
     echo -e "${YELLOW}This might indicate:${NC}"
@@ -246,7 +246,7 @@ else
     echo -e "  2. Files are in an unexpected location"
     echo -e "  3. Package is corrupted"
     echo
-    echo -e "${YELLOW}Try: ${NC}${CYAN}sudo pacman -S edk2-ovmf${NC}"
+    echo -e "${YELLOW}Ensure it is in PACKAGES.md: ${NC}${CYAN}edk2-ovmf${NC}"
 fi
 
 echo -e "\n${BOLD}${GREEN}════════════════════════════════════════════════════${NC}\n"

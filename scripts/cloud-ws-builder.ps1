@@ -77,9 +77,9 @@ $gpus = Get-CimInstance Win32_VideoController |
     $_.Name -notmatch 'Microsoft Basic|Hyper-V|Remote Display|Parsec|DisplayLink'
   }
 
-$hasNvidia = [bool]($gpus | Where-Object { $_.PNPDeviceID -match 'VEN_10DE' })
-$hasAmd    = [bool]($gpus | Where-Object { $_.PNPDeviceID -match 'VEN_1002' })
-$hasIntel  = [bool]($gpus | Where-Object { $_.PNPDeviceID -match 'VEN_8086' })
+$hasNvidia = [bool]($gpus | Where-Object { $_.PNPDeviceID -match 'VEN_10DE' } | Select-Object -First 1)
+$hasAmd    = [bool]($gpus | Where-Object { $_.PNPDeviceID -match 'VEN_1002' } | Select-Object -First 1)
+$hasIntel  = [bool]($gpus | Where-Object { $_.PNPDeviceID -match 'VEN_8086' } | Select-Object -First 1)
 
 foreach ($g in $gpus) { Log "  GPU: $($g.Name)" }
 Log ("Detected: NVIDIA={0}  AMD={1}  Intel={2}" -f $hasNvidia, $hasAmd, $hasIntel)
