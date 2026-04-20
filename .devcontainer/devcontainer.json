@@ -1,0 +1,16 @@
+{
+  "name": "Gemini CLI Workspace",
+  "image": "mcr.microsoft.com/devcontainers/base:bullseye",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,Z",
+  "workspaceFolder": "/workspace",
+  "runArgs": ["--userns=keep-id"],
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "dev.containers.dockerPath": "podman",
+        "dev.containers.dockerComposePath": "podman-compose"
+      }
+    }
+  },
+  "postCreateCommand": "bash.devcontainer/install.sh"
+}
