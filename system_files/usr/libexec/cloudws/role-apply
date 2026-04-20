@@ -6,7 +6,7 @@
 # 1. System-wide init (hostname, users, groups, home dirs)
 # 2. Virtualization & Hardware detection (RTX 50 Blackwell safety)
 # 3. Role resolution (cmdline > role.conf > environment default)
-# 4. Target & Service selection
+# 4. Target & Service selection (Asynchronous --no-block)
 # ============================================================================
 set -euo pipefail
 
@@ -17,7 +17,7 @@ mkdir -p "$STATE_DIR"
 log() { printf '[cloudws-role] %s\n' "$*"; }
 
 # ----------------------------------------------------------------------------
-# PHASE 1: System-wide Initialization (Consolidated from 35-init-service)
+# PHASE 1: System-wide Initialization
 # ----------------------------------------------------------------------------
 
 # Unique hostname (stable across reboots, unique across VM clones)
@@ -89,8 +89,6 @@ if [[ -z "$ROLE" ]]; then
         ROLE="headless"
         log "WSL detected - defaulting to headless role"
     elif [[ "$IS_BLACKWELL" == "true" ]]; then
-        # Safety: default to headless if Blackwell is detected to avoid
-        # GDM-induced reset cycles until firmware is stabilized.
         ROLE="headless"
         log "Blackwell safety - defaulting to headless role"
     elif ! compgen -G "/dev/dri/renderD*" >/dev/null && [[ ! -e /sys/class/drm/card0 ]]; then
@@ -106,16 +104,18 @@ FEATURES="${FEATURES:-}"
 log "resolved role=$ROLE profile=$PROFILE features=$FEATURES"
 
 # ----------------------------------------------------------------------------
-# PHASE 4: Service Set Management
+# PHASE 4: Service Set Management (Asynchronous)
 # ----------------------------------------------------------------------------
 enable_units() {
     for u in "$@"; do
-        systemctl enable --now "$u" 2>/dev/null || systemctl enable "$u" 2>/dev/null || true
+        systemctl enable "$u" 2>/dev/null || true
+        systemctl start --no-block "$u" 2>/dev/null || true
     done
 }
 disable_units() {
     for u in "$@"; do
-        systemctl disable --now "$u" 2>/dev/null || true
+        systemctl disable "$u" 2>/dev/null || true
+        systemctl stop --no-block "$u" 2>/dev/null || true
     done
 }
 
@@ -151,9 +151,9 @@ esac
 IFS=',' read -r -a FEAT_ARR <<< "$FEATURES"
 for f in "${FEAT_ARR[@]}"; do
     case "$f" in
-        ceph-mon)    systemctl enable 'ceph-mon@'"$(hostname -s)"'.service' 2>/dev/null || true ;;
-        gamescope)   systemctl enable gamescope-session.target 2>/dev/null || true ;;
-        waydroid)    systemctl enable waydroid-container.service 2>/dev/null || true ;;
+        ceph-mon)    enable_units "ceph-mon@$(hostname -s).service" ;;
+        gamescope)   enable_units gamescope-session.target ;;
+        waydroid)    enable_units waydroid-container.service ;;
     esac
 done
 
