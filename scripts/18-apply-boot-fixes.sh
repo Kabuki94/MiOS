@@ -72,7 +72,7 @@ OOMScoreAdjust=-900
 WantedBy=multi-user.target
 Alias=dbus.service
 EOF
-systemctl enable dbus-daemon-wsl.service
+systemctl enable dbus-daemon-wsl.service || true
 
 # 6. Escape-sequence fix no longer needed here — 36-akmod-guards.sh now writes
 # \\\\ in the heredoc so all 7 service drop-ins have correct \\. from the start.

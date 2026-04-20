@@ -38,7 +38,7 @@ install_packages() {
     if [[ -n "$packages" ]]; then
         echo "[packages.sh] Installing '$category' packages..."
         # Use subshell so set -e in parent doesn't kill entire script on failure
-        (dnf -y install --skip-unavailable $packages) || {
+        (dnf -y install --skip-unavailable --exclude=PackageKit $packages) || {
             echo "[packages.sh] WARNING: Some '$category' packages failed to install" >&2
             echo "[packages.sh] Packages requested: $packages" >&2
         }
@@ -53,7 +53,7 @@ install_packages_strict() {
     local packages
     packages=$(get_packages_strict "$category" "$packages_file") || return 1
     echo "[packages.sh] Installing '$category' packages (strict section)..."
-    dnf -y install --skip-unavailable $packages
+    dnf -y install --skip-unavailable --exclude=PackageKit $packages
 }
 
 install_packages_optional() {
@@ -83,7 +83,7 @@ install_packages_optional() {
     packages=$(get_packages "$category" "$packages_file")
     if [[ -n "$packages" ]]; then
         echo "[packages.sh] Installing optional '$category' packages..."
-        (dnf -y install --skip-unavailable $packages) || {
+        (dnf -y install --skip-unavailable --exclude=PackageKit $packages) || {
             echo "[packages.sh] WARNING: Some optional '$category' packages failed" >&2
         }
     fi
