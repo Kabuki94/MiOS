@@ -44,5 +44,14 @@ cat > /usr/lib/tmpfiles.d/cloudws-ipa.conf <<'EOF'
 d /var/lib/ipa-client/sysrestore 0700 root root -
 EOF
 
+# ── Non-blocking timeout drop-in ───────────────────────────────────────────
+# Ensure a missing/unreachable FreeIPA server doesn't hang the boot process
+# for 5+ minutes waiting on DNS or TCP timeouts.
+mkdir -p /usr/lib/systemd/system/cloudws-freeipa-enroll.service.d
+cat > /usr/lib/systemd/system/cloudws-freeipa-enroll.service.d/10-boot-timeout.conf <<'EOF'
+[Service]
+TimeoutStartSec=120
+EOF
+
 # Arm the zero-touch enrollment oneshot (gated by ConditionPathExists).
 systemctl enable cloudws-freeipa-enroll.service

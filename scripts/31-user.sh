@@ -40,11 +40,23 @@ echo "root:INJ_HASH" | chpasswd -e
 passwd -u INJ_U 2>/dev/null || true
 
 # ??? GROUP INJECTION ???
-for g in wheel libvirt kvm video render input dialout; do
-    groupadd -f "$g" 2>/dev/null || true
-    if ! grep -q "^${g}:.*INJ_U" /etc/group; then
-        sed -i "/^${g}:/ s/$/,INJ_U/" /etc/group
-        sed -i "/^${g}:/ s/,:,/,/g; /^${g}:/ s/:,/:/g; /^${g}:/ s/,,/,/g" /etc/group
+# Pre-create hardware groups with standard Fedora GIDs if missing.
+# This prevents dynamic GID drift that breaks udev device assignments.
+for group_spec in "kvm:36" "video:39" "render:105" "libvirt:" "input:" "dialout:" "docker:"; do
+    name="${group_spec%%:*}"
+    gid="${group_spec##*:}"
+    if ! getent group "$name" >/dev/null 2>&1; then
+        if [ -n "$gid" ]; then
+            groupadd -r -g "$gid" "$name" 2>/dev/null || groupadd -r "$name" || true
+        else
+            groupadd -r "$name" 2>/dev/null || true
+        fi
+    fi
+done
+
+for g in wheel libvirt kvm video render input dialout docker; do
+    if getent group "$g" >/dev/null 2>&1; then
+        usermod -aG "$g" INJ_U 2>/dev/null || true
     fi
 done
 

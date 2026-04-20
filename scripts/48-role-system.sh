@@ -15,6 +15,9 @@ systemctl enable cloudws-firstboot.target || true
 
 # Default target is chosen by cloudws-role.service on each boot.
 # If role.conf is missing, it picks `desktop` (safe default).
-# Do NOT set-default here - let the role service do it at runtime.
+# We MUST set the baked default target here. Relying on a runtime service
+# to modify /etc/systemd/system/default.target mid-boot creates OSTree
+# 3-way merge conflicts and fails to affect the active first-boot transaction.
+systemctl set-default graphical.target
 
 log "role system wired (cloudws-role.service enabled)"

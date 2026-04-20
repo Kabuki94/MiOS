@@ -93,7 +93,7 @@ BIBATA_VER=""
 BIBATA_FALLBACK="2.0.7"
 
 # Try GitHub API for latest release tag (strips leading 'v')
-BIBATA_VER=$(curl -sL "https://api.github.com/repos/ful1e5/Bibata_Cursor/releases/latest" \
+BIBATA_VER=$(curl -sL -H "Accept: application/vnd.github+json" "https://api.github.com/repos/ful1e5/Bibata_Cursor/releases/latest" \
     | grep -m1 '"tag_name"' | sed 's/.*"v\?\([^"]*\)".*/\1/' 2>/dev/null || true)
 
 # Fallback if API fails (rate limit, network issue)

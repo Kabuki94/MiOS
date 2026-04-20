@@ -73,7 +73,7 @@ Minimum requirements: x86_64 CPU with virtualization extensions (VT-x/AMD-V). IO
 | Platform | Format | Status | Notes |
 |----------|--------|--------|-------|
 | Bare metal | Anaconda ISO, RAW disk | Fully supported | Primary target |
-| Hyper-V Gen2 | VHDX | Fully supported | Enhanced Session via xRDP vsock |
+| Hyper-V Gen2 | VHDX | Fully supported | Enhanced Session via gnome-remote-desktop over vsock:3389 (GNOME 50 / Mutter 50 is Wayland-only — xorgxrdp no longer works; xrdp stays installed as a fallback for non-GNOME sessions) |
 | WSL2 | Tarball import | Supported | GPU via WSLg/D3D12, no VFIO |
 | QEMU/KVM | RAW disk, OCI | Fully supported | Nested virt for testing |
 | VMware | OCI pull | Basic support | Open VM Tools included |

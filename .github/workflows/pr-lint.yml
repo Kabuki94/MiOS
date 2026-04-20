@@ -31,9 +31,27 @@ jobs:
           for f in system_files/usr/lib/bootc/kargs.d/*.toml kargs.d/*.toml; do
             [ -f "$f" ] || continue
             echo "Checking $f"
-            python3 -c "import toml; toml.load('$f')" || exit 1
+            python3 -c '
+          import toml, sys, textwrap
+          code = """
+          import toml, sys
+          try:
+              d = toml.load(sys.argv[1])
+              for k, v in d.items():
+                  if isinstance(v, dict):
+                      print(f"ERROR: [{k}] section headers are invalid in bootc. Use flat kargs=[...] arrays.")
+                      sys.exit(1)
+                  if k not in ["kargs", "match-architectures"]:
+                      print(f"ERROR: Invalid key \"{k}\". Only flat \"kargs\" and \"match-architectures\" are allowed.")
+                      sys.exit(1)
+          except Exception as e:
+              print(f"ERROR: Invalid TOML syntax - {e}")
+              sys.exit(1)
+          """
+          exec(textwrap.dedent(code))
+          ' "$f" || exit 1
           done
-          echo "All TOML files valid"
+          echo "All TOML files structurally valid for bootc"
 
       - name: Check for footgun packages in PACKAGES.md
         run: |

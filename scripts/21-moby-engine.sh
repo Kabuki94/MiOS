@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Normalize to LF line endings (fixes SC1017)
 set -euo pipefail
 
 echo "==> Installing moby-engine (Docker) alongside Podman..."

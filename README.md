@@ -2,7 +2,7 @@
 
 **Self-replicating, immutable, cloud-native workstation OS built on bootc.**
 
-> Version **v0.1.3** · [ghcr.io/kabuki94/cloudws-bootc:latest](https://ghcr.io/kabuki94/cloudws-bootc)
+> Version **v0.1.8** · [ghcr.io/kabuki94/cloudws-bootc:latest](https://ghcr.io/kabuki94/cloudws-bootc)
 
 GNOME 50 • Gamescope Steam Session • KVM/QEMU/VFIO • Podman/K3s • Pacemaker HA • CrowdSec (Sovereign)
 
@@ -205,6 +205,20 @@ Per-release changelogs prior to the consolidated root `CHANGELOG.md` live in [`d
 ---
 
 ## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for the full release history.
+
+### v0.1.8 (current)
+
+- **GNOME Remote Desktop for Hyper-V Enhanced Session** — xRDP deprecated (Mutter 50 dropped X11); RDP now delivered via `grdctl --system rdp` + vsock. First-boot TLS cert generation via `/usr/libexec/cloudws-grd-setup`.
+- **FreeIPA enrollment consolidation** — single path through `22-freeipa-client.sh` + `cloudws-freeipa-enroll.service`. Removed the parallel `50-freeipa-client.sh` / `cloudws-ipa-enroll.service` stack that referenced a non-existent service.
+- **WSL2 gating consolidated in `20-services.sh`** — `WSL_SKIP_SERVICES` is the single source of truth for skip drop-ins; `18-apply-boot-fixes.sh` and `38-vm-gating.sh` no longer duplicate them.
+- **Logically Bound Images** — every Quadlet `.container` shipped via the overlay is symlinked into `/usr/lib/bootc/bound-images.d/` at build time, so `bootc upgrade` pre-fetches them.
+- **Renovate digest pinning for `ARG BASE_IMAGE`** — `customManager` regex rotates the `@sha256:...` suffix on the Containerfile ARG line (the `dockerfile` manager only pins bare `FROM` lines).
+- **CI build fix** — Containerfile `ARG BASE_IMAGE` default is tag-only until Renovate pins it; previously the unresolved `REPLACE_WITH_CURRENT_DIGEST` placeholder broke every default-path build.
+- **cloudws-init ordering** — now `After=network-online.target cloud-final.service ignition-firstboot-complete.service` so DHCP/NM settle before group/firewall setup runs.
+- **DHCP client-ID = MAC** — NetworkManager drop-in prevents IP conflicts in cloned VMs where `/etc/machine-id` is duplicated.
+- **dbus-daemon-wsl.service** — adds `Alias=dbus.service` so WSL2 boots without a D-Bus deadlock even when preset-all misses the unit.
 
 ### v0.1.3
 

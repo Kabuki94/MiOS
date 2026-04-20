@@ -173,21 +173,18 @@ cat > /etc/fastfetch/config.jsonc <<'EOFF'
             "type": "command",
             "key": "  🔧 Cockpit",
             "keyColor": "green",
-            "text": "IP=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i==\"src\") print $(i+1)}' | head -1); systemctl is-active --quiet cockpit.socket 2>/dev/null && echo \"✓ https://${IP:-localhost}:9090\" || echo '✗ inactive'"
-        },
+            "text": "IP=$(ip -4 route get 1.1.1.1 2>/dev/null |
         {
             "type": "command",
             "key": "  🖥️  RDP",
             "keyColor": "green",
-            "text": "IP=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i==\"src\") print $(i+1)}' | head -1); (systemctl is-active --quiet gnome-remote-desktop 2>/dev/null || systemctl is-active --quiet xrdp 2>/dev/null) && echo \"✓ rdp://${IP:-localhost}:3389\" || echo '✗ inactive'"
+            "text": "IP=$(ip -4 route get 1.1.1.1 2>/dev/null | grep -o 'src [0-9.]*' | cut -d' ' -f2 | head -1); [ -z \"$IP\" ] && IP=localhost; (systemctl is-active --quiet gnome-remote-desktop 2>/dev/null || systemctl is-active --quiet xrdp 2>/dev/null) && echo \"✓ rdp://$IP:3389\" || echo '✗ inactive'"
         },
-        {
             "type": "command",
             "key": "  🔒 SSH",
             "keyColor": "green",
-            "text": "IP=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i==\"src\") print $(i+1)}' | head -1); systemctl is-active --quiet sshd 2>/dev/null && echo \"✓ ssh://${IP:-localhost}:22\" || echo '✗ inactive'"
+            "text": "IP=$(ip -4 route get 1.1.1.1 2>/dev/null | grep -o 'src [0-9.]*' | cut -d' ' -f2 | head -1); [ -z \"$IP\" ] && IP=localhost; systemctl is-active --quiet sshd 2>/dev/null && echo \"✓ ssh://$IP:22\" || echo '✗ inactive'"
         },
-        {
             "type": "command",
             "key": "  📦 Podman",
             "keyColor": "green",

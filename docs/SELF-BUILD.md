@@ -104,7 +104,7 @@ If you're starting from scratch (no existing CloudWS image):
 
 1. Install Podman on any Linux system (Fedora, Ubuntu, etc.) or use Podman Desktop on Windows
 2. Clone the repo and run `podman build` (or `cloud-ws.ps1` on Windows)
-3. The Containerfile pulls `quay.io/fedora/fedora-bootc:rawhide` as the base — no prior CloudWS image needed
+3. The Containerfile pulls `ghcr.io/ublue-os/ucore-hci:stable-nvidia` (CloudWS-2 primary, pre-signed NVIDIA kmods) or `quay.io/fedora/fedora-bootc:rawhide` (CloudWS-1, akmod-built drivers) as the base — no prior CloudWS image needed
 4. Deploy the resulting image to your target (bare metal via ISO, Hyper-V via VHDX, etc.)
 5. Subsequent builds can use the running CloudWS itself (self-build mode)
 

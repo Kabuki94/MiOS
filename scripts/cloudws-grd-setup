@@ -15,8 +15,9 @@ grdctl --system rdp set-credentials cloudws cloudws 2>/dev/null || true
 grdctl --system rdp enable 2>/dev/null || true
 systemctl enable --now gnome-remote-desktop.service 2>/dev/null || true
 if command -v firewall-cmd &>/dev/null && firewall-cmd --state &>/dev/null 2>&1; then
+    # Apply runtime and permanent rules independently to avoid `--reload` flushing nftables
+    firewall-cmd --add-port=3389/tcp --add-port=8080/tcp 2>/dev/null || true
     firewall-cmd --permanent --add-port=3389/tcp --add-port=8080/tcp 2>/dev/null || true
-    firewall-cmd --reload 2>/dev/null || true
 fi
 mkdir -p "$(dirname "$SENTINEL")"
 touch "$SENTINEL"

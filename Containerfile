@@ -60,7 +60,11 @@
 # v2.3.3 fixed overlay failure at STEP 9/13 (/usr/local symlink) - kept.
 # ============================================================================
 
-ARG BASE_IMAGE=ghcr.io/ublue-os/ucore-hci:stable-nvidia@sha256:REPLACE_WITH_CURRENT_DIGEST
+# Renovate's customManager regex (renovate.json) rewrites this line to
+#   ARG BASE_IMAGE=ghcr.io/ublue-os/ucore-hci:stable-nvidia@sha256:<digest>
+# on its first run. Until then the tag-only default is valid and CI builds
+# resolve the current digest at pull time.
+ARG BASE_IMAGE=ghcr.io/ublue-os/ucore-hci:stable-nvidia
 
 # ----------------------------------------------------------------------------
 # ctx stage: build context (scripts, system_files, manifests, overlay dirs)

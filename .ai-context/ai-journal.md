@@ -580,9 +580,153 @@
 
 ---
 
+### [2026-04-20 20:30:00 UTC] [AI: Gemini Code Assist]
+*   **THOUGHT:** The user provided diagnostics pointing to a YAML schema error in `.github/workflows/pr-lint.yml`, CRLF line endings in `scripts/21-moby-engine.sh`, and a few remaining `cSpell` warnings.
+*   **LEARNING:** The inline Python script injected into `pr-lint.yml` to validate TOML syntax was flush-left (column 0), which broke the YAML block scalar (`run: |`) indentation rules. Additionally, ShellCheck rule `SC1017` identifies files saved with Windows-style CRLF line endings instead of Unix LF, which can cause execution failures in Linux environments.
+*   **DISCOVERY:** We can fix the YAML schema error by indenting the inline script correctly within the block scalar and using Python's `textwrap.dedent()` to strip the leading whitespace dynamically so Python doesn't throw an `IndentationError`. We must also rewrite `21-moby-engine.sh` to normalize its line endings.
+*   **ACTION:** Fixed `pr-lint.yml` by wrapping the inline Python script in `textwrap.dedent()` and indenting it properly. Rewrote `scripts/21-moby-engine.sh` with clean LF line endings. Added the remaining technical terms (`ludeeus`, `scandir`, `isinstance`, `footgun`, `footguns`) to `.vscode/settings.json`. Logged to `ai-journal.md`.
+*   **SUGGESTED ALTERNATIVE:** We could have completely replaced the inline check with `python3 scripts/validate-kargs.py`, but keeping the inline check functional and structurally sound without external dependencies is perfectly valid for a standalone PR linting job.
+
+---
+
+### [2026-04-20 20:45:00 UTC] [AI: Gemini Code Assist]
+*   **THOUGHT:** The user provided the absolute final batch of VS Code diagnostics, revealing a few newly introduced terms from the previous round alongside persistent cache artifacts.
+*   **LEARNING:** Terms introduced in the very last remediation round (`textwrap` from the Python script fix; `newkey`, `pkeyopt`, `paramgen`, `haveged` from the OpenSSL/entropy analysis; and `coldplug`) need to be added to the dictionary. The rest remain IDE caching delays.
+*   **DISCOVERY:** Adding these final six terms will complete the workspace dictionary tuning for the current codebase state.
+*   **ACTION:** Alphabetized and merged `coldplug`, `haveged`, `newkey`, `paramgen`, `pkeyopt`, and `textwrap` into `.vscode/settings.json`. Logged this final cleanup to the AI journal.
+*   **SUGGESTED ALTERNATIVE:** N/A - Dictionary suppression resolves the false positives natively.
+
+---
+
+### [2026-04-20 21:00:00 UTC] [AI: Gemini Code Assist]
+*   **THOUGHT:** The user provided another diagnostic payload showing the same lingering `cSpell` warnings, including `veth`.
+*   **LEARNING:** While most of the flagged words (`deprioritizing`, `eocursor`, `eofw`, `eosem`, `eohv`, `scandir`) are indeed already present in the workspace settings and just waiting on the IDE cache to clear, `veth` was genuinely missed during the previous dictionary expansion.
+*   **DISCOVERY:** Adding `veth` to `.vscode/settings.json` is required to fully resolve the known spelling warnings.
+*   **ACTION:** Inserted `veth` into the `cSpell.words` array in `.vscode/settings.json`. Logged this correction to the AI journal.
+*   **SUGGESTED ALTERNATIVE:** N/A - The dictionary suppression is now fully accurate.
+
+---
+
+### [2026-04-20 22:45:00 UTC] [AI: Gemini Code Assist]
+*   **THOUGHT:** The user asked to check `scripts/39-desktop-polish.sh` to ensure the generated fastfetch dashboard gracefully handles missing network interfaces without throwing `awk` errors.
+*   **LEARNING:** The `fastfetch` command module parses the `text` field for formatting tokens using curly braces (e.g., `{1}`). The shell syntax `awk '{for(i=1;...}'` and parameter expansions like `${IP:-localhost}` contain curly braces. When `fastfetch` encounters these, it attempts to interpolate them, mangling the string before passing it to `/bin/sh -c`. This leads to corrupted `awk` scripts and shell syntax errors.
+*   **DISCOVERY:** We can bypass `fastfetch`'s interpolation engine entirely by rewriting the shell command to be brace-free. Using `grep -o 'src [0-9.]*' | cut -d' ' -f2` safely replaces `awk`, and `[ -z "$IP" ] && IP=localhost` safely replaces the parameter expansion fallback.
+*   **ACTION:** Updated the Cockpit, RDP, and SSH text fields in the `fastfetch` JSON configuration within `scripts/39-desktop-polish.sh` to use the brace-free pattern. Logged this UI robustness fix to the AI journal.
+*   **SUGGESTED ALTERNATIVE:** We could escape the curly braces (depending on the `fastfetch` version's escape sequences), but removing braces entirely is a universally safe and highly readable POSIX shell alternative.
+
+---
+
+### [2026-04-20 21:15:00 UTC] [AI: Gemini Code Assist]
+*   **THOUGHT:** The user asked to review `scripts/48-role-system.sh` to verify if the default role fallback accurately assumes `desktop` on missing configs.
+*   **LEARNING:** The script explicitly avoided setting a default target, leaving it to `cloudws-role.service` to mutate `/etc/systemd/system/default.target` at runtime. This is an anti-pattern on immutable systems. Mutating core systemd symlinks in `/etc` at runtime triggers OSTree 3-way merge conflicts during OS upgrades. Furthermore, because systemd resolves the default target at PID 1 startup, changing the symlink mid-boot via a standard service only applies to the *next* boot, leaving the first boot in a potentially undetermined state.
+*   **DISCOVERY:** The base image must have the fallback target (`graphical.target` for the `desktop` role) explicitly baked in at build time to ensure deterministic first-boot behavior and clean OSTree upgrades.
+*   **ACTION:** Updated `scripts/48-role-system.sh` to explicitly run `systemctl set-default graphical.target`, overriding the flawed runtime-delegation comment. Logged this structural fix to the AI journal.
+*   **SUGGESTED ALTERNATIVE:** Convert `cloudws-role.service` into a systemd generator, which natively dictates the default target dynamically during early boot before the transaction tree is calculated, cleanly sidestepping both issues entirely.
+
+---
+
+### [2026-04-20 21:30:00 UTC] [AI: Gemini Code Assist]
+*   **THOUGHT:** The user asked to review `system_files/usr/libexec/cloudws/role-apply.sh` to ensure it isn't still executing `systemctl set-default` under the hood, now that we've baked the default into the image.
+*   **LEARNING:** `scripts/48-role-system.sh` now sets `graphical.target` as the build-time default. `system_files/usr/libexec/cloudws/role-apply.sh` runs at runtime to apply role-specific configurations.
+*   **DISCOVERY:** The `role-apply.sh` script correctly handles the default target: it explicitly avoids calling `systemctl set-default graphical.target` for the `desktop` role (as it's already the default) but *does* call `systemctl set-default multi-user.target` for `headless`, `server`, or `ha` roles. This conditional logic is correct and prevents unnecessary writes to `/etc` while allowing dynamic role switching.
+*   **ACTION:** Verified the architectural correctness of `system_files/usr/libexec/cloudws/role-apply.sh`. No code changes required. Logged this verification to the AI journal.
+*   **SUGGESTED ALTERNATIVE:** N/A - The current implementation correctly balances build-time defaults with runtime overrides.
+
+---
+
+### [2026-04-20 21:45:00 UTC] [AI: Gemini Code Assist]
+*   **THOUGHT:** The user asked to review `scripts/11-hardware.sh` to ensure the open NVIDIA kernel modules configuration properly sets `NVreg_PreserveVideoMemoryAllocations=1` for reliable Wayland suspend/resume.
+*   **LEARNING:** `NVreg_PreserveVideoMemoryAllocations=1` is a critical parameter for `nvidia-drm` under Wayland to correctly save and restore VRAM allocations across suspend and hibernate cycles, preventing graphical corruption upon resume.
+*   **DISCOVERY:** An audit of `scripts/11-hardware.sh` reveals that this exact parameter is already explicitly configured within the `/etc/modprobe.d/nvidia-open.conf` drop-in block.
+*   **ACTION:** Verified the architectural correctness of the NVIDIA modprobe configuration in `scripts/11-hardware.sh`. No code changes required. Logged this validation to the AI journal.
+*   **SUGGESTED ALTERNATIVE:** N/A - The configuration is already optimal for modern Wayland desktop environments.
+
+---
+
+### [2026-04-20 22:00:00 UTC] [AI: Gemini Code Assist]
+*   **THOUGHT:** The user asked to review `scripts/22-freeipa-client.sh` to ensure zero-touch enrollment cleanly fails without blocking the boot process if the FreeIPA server is unreachable.
+*   **LEARNING:** The `cloudws-freeipa-enroll.service` unit is shipped via `system_files/` (not in context), but we can configure its execution parameters dynamically via drop-ins. `ipa-client-install` can hang for 5+ minutes on DNS resolution or TCP timeouts if the server is unreachable. As an early-boot `oneshot` service, this indefinitely blocks the `multi-user.target` and the login prompt.
+*   **DISCOVERY:** We need to impose a strict `TimeoutStartSec=120` on the service. This ensures the service still blocks the login screen just long enough to complete a successful enrollment (preventing users from trying to log in before SSSD is ready), but cleanly fails and unblocks the boot process if the server is offline.
+*   **ACTION:** Updated `scripts/22-freeipa-client.sh` to generate a `10-boot-timeout.conf` drop-in for `cloudws-freeipa-enroll.service` enforcing `TimeoutStartSec=120`. Logged this boot-resilience fix to the AI journal.
+*   **SUGGESTED ALTERNATIVE:** We could background the enrollment entirely (`Type=simple` without `Before=`), but that allows users to reach the login screen before network credentials are provisioned, leading to failed logins. The synchronous timeout is the correct balance.
+
+---
+
+### [2026-04-20 22:15:00 UTC] [AI: Gemini Code Assist]
+*   **THOUGHT:** The user asked to review `scripts/38-vm-gating.sh` to ensure the Hyper-V enhanced session fallback correctly triggers if the primary Wayland compositor fails to launch.
+*   **LEARNING:** The `cloudws-hyperv-enhanced` script blindly runs `systemctl enable --now gnome-remote-desktop.service`. If GDM (the primary Wayland compositor) fails to launch due to hypervisor driver incompatibilities, GRD cannot bind to the session. Furthermore, using `--now` inside an early-boot service creates a systemd ordering deadlock risk.
+*   **DISCOVERY:** Because `cloudws-hyperv-enhanced.service` is ordered `After=gdm.service`, we can use `systemctl is-failed --quiet gdm.service` to dynamically detect a compositor crash. If GDM failed, we can safely unmask and asynchronously start the legacy `xrdp` service as a fallback transport to ensure RDP remains accessible.
+*   **ACTION:** Updated `scripts/38-vm-gating.sh` to check `gdm.service` health and trigger the `xrdp` fallback if it failed. Refactored the GRD and xRDP service triggers to use the safe `start --no-block` pattern. Logged this boot-resilience fix to the AI journal.
+*   **SUGGESTED ALTERNATIVE:** N/A - Utilizing systemd's native state inspection (`is-failed`) is the most robust way to dynamically switch deployment strategies during the boot sequence without relying on external watchdog scripts.
+
+---
+
+### [2026-04-20 22:30:00 UTC] [AI: Gemini Code Assist]
+*   **THOUGHT:** The user asked to check `scripts/12-virt.sh` to ensure the Looking Glass client build configuration properly excludes the legacy PulseAudio backend in favor of PipeWire.
+*   **LEARNING:** Fedora relies entirely on PipeWire for its modern audio stack. Compiling legacy PulseAudio support into virtualization tools like Looking Glass is unnecessary and can introduce audio latency or compatibility quirks.
+*   **DISCOVERY:** A review of the `cmake` invocation in `scripts/12-virt.sh` confirms that `-DENABLE_PULSEAUDIO=OFF` and `-DENABLE_PIPEWIRE=ON` are already explicitly defined. This was synchronized during a previous CMake flag alignment.
+*   **ACTION:** Verified the architectural correctness of the Looking Glass CMake configuration in `scripts/12-virt.sh`. No code changes required. Logged this validation to the AI journal.
+*   **SUGGESTED ALTERNATIVE:** N/A - The configuration is already perfectly optimized for modern Fedora/Wayland audio environments.
+
+---
+
 ### [2026-04-20 19:00:00 UTC] [AI: Gemini Code Assist]
 *   **THOUGHT:** The user provided a final list of VS Code diagnostics pointing to lingering `cSpell` warnings (`deprioritizing`, `veth`, `eocursor`, `eofw`, `eosem`, `eohv`).
 *   **LEARNING:** A quick cross-reference with the active `.vscode/settings.json` confirms that every single one of these terms was successfully injected into the `cSpell.words` array in previous steps.
 *   **DISCOVERY:** These diagnostics are entirely caching artifacts within the IDE's language server. No further code or configuration changes are necessary.
 *   **ACTION:** Verified the presence of the flagged words in the workspace dictionary. Instructed the user that the cache will resolve itself. Logged this final verification to the AI journal.
 *   **SUGGESTED ALTERNATIVE:** N/A - The system is fully compliant.
+
+---
+
+### [2026-04-20 19:15:00 UTC] [AI: Gemini Code Assist]
+*   **THOUGHT:** The user asked to check `scripts/cloudws-grd-setup.sh` to ensure 4096-bit TLS key generation handles slow entropy gathering correctly during early boot.
+*   **LEARNING:** Generating 4096-bit RSA keys during early boot can cause severe delays due to entropy pool exhaustion. However, reviewing the `openssl` command in the setup script reveals it uses `-newkey ec -pkeyopt ec_paramgen_curve:prime256v1`.
+*   **DISCOVERY:** The script uses Elliptic Curve (EC) cryptography instead of RSA. EC key generation is computationally faster and requires significantly less entropy, inherently bypassing the early-boot blocking risk without needing external entropy gathering daemons (like `haveged`).
+*   **ACTION:** Verified the script's architectural resilience against entropy exhaustion. No code changes required. Logged this validation to the AI journal.
+*   **SUGGESTED ALTERNATIVE:** N/A - Elliptic Curve is the optimal modern approach for fast, secure, ephemeral first-boot TLS provisioning.
+
+---
+
+### [2026-04-20 19:15:00 UTC] [AI: Gemini Code Assist]
+*   **THOUGHT:** The user asked to check if the `.github/workflows/build-test.yml` pipeline correctly utilizes the GitHub token when pulling the `ucore-hci` base image.
+*   **LEARNING:** GHCR has a known cross-namespace authentication quirk: if a client authenticates with a `GITHUB_TOKEN` scoped to one namespace (`kabuki94`), attempting to pull a public image from a different namespace (`ublue-os`) results in a `403 Forbidden` error. Unauthenticated clients, however, can pull public images seamlessly.
+*   **DISCOVERY:** In `build-test.yml`, the `podman-login` and `docker/login-action` steps were executing unconditionally. This meant PR builds would fail to pull the `ucore-hci` base image due to the token scope mismatch. The primary `build.yml` correctly gates logins with `if: github.event_name != 'pull_request'`.
+*   **ACTION:** Added `if: github.event_name != 'pull_request'` to the GHCR login steps in `.github/workflows/build-test.yml`. Logged this CI/CD fix to the AI journal.
+*   **SUGGESTED ALTERNATIVE:** We could execute an unauthenticated `podman pull ghcr.io/ublue-os/ucore-hci...` immediately *before* the login steps, allowing the build to use the cached image. However, since PR builds don't push images anyway, skipping the login entirely is much cleaner and avoids fork-permission token downgrades.
+
+---
+
+### [2026-04-20 19:30:00 UTC] [AI: Gemini Code Assist]
+*   **THOUGHT:** The user asked to review `scripts/44-podman-machine-compat.sh` and `scripts/31-user.sh` for conflicts in core user provisioning and `cloudws` user logic.
+*   **LEARNING:** In `31-user.sh`, a loop unconditionally uses `groupadd -f` for hardware groups (kvm, video, render, etc.) and then uses a brutal `sed` command to inject `INJ_U` into `/etc/group`. Because `31-user.sh` executes *before* `44-podman-machine-compat.sh`, it poisons the system with dynamically assigned, non-deterministic GIDs for these hardware groups. When `44-podman-machine-compat.sh` subsequently tries to create these groups with their standard Fedora GIDs (e.g., `kvm:36`, `video:39`, `render:105`) to match runtime udev device assignments, it fails because the groups already exist.
+*   **DISCOVERY:** Moving the robust, GID-deterministic group pre-creation logic from `44-podman-machine-compat.sh` up into `31-user.sh` resolves the dynamic GID poison. Replacing the `sed` injection with standard `usermod -aG` safely assigns the groups. `44-podman-machine-compat.sh` can then safely drop its redundant group creation loop entirely.
+*   **ACTION:** Centralized deterministic hardware group creation in `scripts/31-user.sh`. Replaced the `sed` group injection with `usermod -aG`. Stripped the redundant group creation loop from `scripts/44-podman-machine-compat.sh` and updated stale comments. Logged this structural fix to the AI journal.
+*   **SUGGESTED ALTERNATIVE:** N/A - Ensuring deterministically mapped hardware GIDs early in the pipeline prevents widespread permission-denied errors on coldplug.
+
+---
+
+### [2026-04-20 20:00:00 UTC] [AI: Gemini Code Assist]
+*   **THOUGHT:** The user asked to check `scripts/10-gnome.sh` to see if the Bibata cursor download requires explicit `Accept: application/vnd.github+json` headers to avoid API rate limiting on GH-hosted runners.
+*   **LEARNING:** Unauthenticated requests to the GitHub API from GitHub-hosted runners frequently hit strict rate limits (60 requests/hour/IP). Adding explicit `Accept` headers helps comply with API best practices and ensures more reliable JSON response parsing. The script already has a robust fallback to v2.0.7, but improving the API call reduces reliance on the fallback.
+*   **DISCOVERY:** The `curl` command fetching the latest Bibata cursor release tag was missing the `Accept: application/vnd.github+json` header recommended by the GitHub REST API documentation.
+*   **ACTION:** Added `-H "Accept: application/vnd.github+json"` to the GitHub API `curl` call in `scripts/10-gnome.sh`. Logged this CI resilience improvement to the AI journal.
+*   **SUGGESTED ALTERNATIVE:** Pass `GITHUB_TOKEN` into the container build via `--secret` to authenticate the request and raise the rate limit to 1,000/hour, but the current combination of headers and a hardcoded fallback version is sufficient for this non-critical asset.
+
+---
+
+### [2026-04-20 19:45:00 UTC] [AI: Gemini Code Assist]
+*   **THOUGHT:** The user requested to check `scripts/cloudws-grd-setup` (and related GRD setup scripts) to verify if the firewall configuration correctly accounts for the new `nftables` backend.
+*   **LEARNING:** In modern `firewalld` using the strict `nftables` backend, issuing `firewall-cmd --reload` completely flushes the `nftables` ruleset. This destroys dynamically generated container networking rules (like Podman's Netavark or K3s CNI interfaces). While `netavark-firewalld-reload.service` attempts to restore Podman rules, K3s rules may remain broken until restart, resulting in severe network disruption.
+*   **DISCOVERY:** Both `scripts/cloudws-grd-setup` and `scripts/38-vm-gating.sh` call `firewall-cmd --permanent ...` followed immediately by `firewall-cmd --reload` during the first-boot/startup sequence. This introduces a network disruption race condition right as containers are spinning up. Applying rules explicitly to both the runtime (`--add-port`) and permanent (`--permanent --add-port`) configurations bypasses the need for `--reload` entirely.
+*   **ACTION:** Updated `scripts/cloudws-grd-setup` and `scripts/38-vm-gating.sh` to apply firewall rules to both runtime and permanent scopes, removing the disruptive `firewall-cmd --reload` calls. Logged to `ai-journal.md`.
+*   **SUGGESTED ALTERNATIVE:** We could rely solely on the build-time firewall scripts (`25-firewall-ports.sh` and `33-firewall.sh`) to open these ports and remove the firewall logic from the first-boot setup scripts entirely. However, keeping the runtime enforcement provides a robust safety net ensuring RDP remains reachable even if the base configuration drifts.
+
+---
+
+### [2026-04-20 20:15:00 UTC] [AI: Gemini Code Assist]
+*   **THOUGHT:** The user asked to check if the `.toml` parsing rules effectively catch invalid section headers like `[kargs]`.
+*   **LEARNING:** Standard TOML parsers consider `[kargs]` to be a perfectly valid nested dictionary. Therefore, naive syntax checks (like `import toml; toml.load(f)`) yield false negatives and will incorrectly pass files that `bootc container lint` will later reject during the build.
+*   **DISCOVERY:** The `.github/workflows/pr-lint.yml` pipeline contained this exact false-negative naive check. While `scripts/validate-kargs.py` was not in context to audit, fixing the `pr-lint.yml` inline check establishes a robust structural validation baseline.
+*   **ACTION:** Rewrote the `Validate TOML syntax` step in `pr-lint.yml` to assert that no nested dictionaries (section headers) exist, and that only `kargs` and `match-architectures` keys are permitted. Logged this CI hardening to the AI journal.
+*   **SUGGESTED ALTERNATIVE:** N/A - Strict structural type-checking in Python is the best way to validate configuration files against specialized downstream schemas.

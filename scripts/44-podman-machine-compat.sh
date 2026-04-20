@@ -14,34 +14,10 @@ set -euo pipefail
 
 log() { printf '[44-podman-machine] %s\n' "$*"; }
 
-# --- Ensure groups referenced by useradd -G exist --------------------------
-# These groups are normally created by udev/systemd-sysusers at runtime. In
-# the buildroot they may be absent. Create them with their conventional GIDs
-# (matching Fedora defaults) so the user lands in the right group once udev
-# materializes the devices at runtime.
-for group_spec in \
-    "kvm:36" \
-    "render:$(getent group render | cut -d: -f3 || echo 105)" \
-    "video:$(getent group video | cut -d: -f3 || echo 39)" \
-    "libvirt:$(getent group libvirt | cut -d: -f3 || echo)" \
-    "input:$(getent group input | cut -d: -f3 || echo)" \
-    "dialout:$(getent group dialout | cut -d: -f3 || echo)" \
-    "docker:$(getent group docker | cut -d: -f3 || echo)"
-do
-    name="${group_spec%%:*}"
-    gid="${group_spec##*:}"
-    if ! getent group "$name" >/dev/null 2>&1; then
-        if [[ -n "$gid" ]]; then
-            groupadd -r -g "$gid" "$name" 2>/dev/null || groupadd -r "$name" || log "WARN: could not create group $name"
-        else
-            groupadd -r "$name" || log "WARN: could not create group $name"
-        fi
-        log "created group '$name'"
-    fi
-done
+log "Hardware groups are pre-created globally by 31-user.sh"
 
 # Create the 'core' user if missing (Podman machine convention).
-# Passwordless sudo via /etc/sudoers.d/wheel-nopasswd (shipped in system_files).
+# Passwordless sudo via /etc/sudoers.d/10-cloudws-wheel (shipped by 31-user.sh).
 # Use --groups with only groups that definitely exist; the others are joined
 # defensively via usermod -aG so a single missing group doesn't fail the user
 # creation entirely.
