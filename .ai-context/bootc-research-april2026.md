@@ -51,7 +51,13 @@
 | v1.14.0 | Mar 11, 2026 | Pre-flight disk space checks; composefs SELinux enforcement for sealed images; GC improvements; `/usr` overlay status display |
 | v1.14.1 | Mar 12, 2026 | Experimental `export --format=tar` for mutable installs |
 | v1.15.0 | Mar 31, 2026 | Tag-aware upgrade; human-readable cached update info in status; sealed UKI improvements; composefs verity fixes; disk space pre-flight |
-| **v1.15.1** | **Apr 14, 2026** | **Current stable.** Intel VROC fix; `--karg-delete`; dm semaphore deadlock fix; BLS GC fix |
+| v1.15.1 | Apr 14, 2026 | **Current stable.** Intel VROC fix; `--karg-delete`; dm semaphore deadlock fix; BLS GC fix |
+| **v1.16.0** | **Expected May 2026** | Tracked in Podman Desktop; improved BIB integration |
+
+**Workarounds integrated (April 2026):**
+- **NVIDIA 595+ Stability:** Injected `NVreg_UseKernelSuspendNotifiers=1` for open modules to resolveAda/Blackwell suspend cycles.
+- **WSL 2.7.0 User Session:** Gated `systemd-networkd-wait-online.service` on `!wsl` to prevent login timeouts.
+- **WSL 2.6.0.0 Permissions:** Enforced 0755 on `wsl-user-generator` via tmpfiles.d to fix security regression breaking user sessions.
 
 **bootc 1.1.6 notable:** `bootc container lint` expanded — now checks for missing `tmpfiles.d` entries and warns. This is actionable for CloudWS: ensure every `/var/lib/<service>` directory that a service needs is declared in `tmpfiles.d/`.
 

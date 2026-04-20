@@ -1111,3 +1111,27 @@ Claude completed a research and gap-audit pass. The findings below are verified 
     4) **Hardware Logic:** Audited `scripts/11-hardware.sh` and confirmed the preference for NVIDIA open modules (including Blackwell support) is consistent with the new unified `role-apply` engine.
 *   **DISCOVERY:** The repository is now 100% compliant with the identified high-priority research agenda and the identified "Hard Build Rules." All project metadata now consistently reports **v2.3.5**.
 *   **SUGGESTED ALTERNATIVE:** N/A - Proceed to final verification and closure.
+
+---
+
+### [2026-04-21 03:30:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Identified a supply-chain regression where `sigstore/cosign-installer@v2.6.3` was invalid because the version string referred to the `cosign` binary, not the GitHub Action.
+*   **LEARNING:** The `sigstore/cosign-installer` action has its own versioning (currently `v3.x`/`v4.x`). Specific `cosign` versions must be requested via the `cosign-release` parameter.
+*   **ACTION:** Fixed `build.yml` and `build-test.yml`. Pinned the action to `@v3.10.1` and explicitly requested `cosign-release: 'v2.6.3'` to maintain `rpm-ostree` compatibility.
+*   **SUGGESTED ALTERNATIVE:** N/A - This resolves the "Unable to resolve action" failure in CI.
+
+---
+
+### [2026-04-21 04:30:00 UTC] [AI: Gemini CLI] - Deep Stack Audit & Upstream Fixes
+*   **THOUGHT:** Performed a comprehensive audit of the entire stack for missing upstream patches and workarounds. Identified critical regressions in NVIDIA 595.x drivers and WSL 2.7.0/2.6.0.
+*   **LEARNING:** Staying on the cutting edge (GNOME 50, NVIDIA 595, WSL 2.7) requires proactive integration of "unmerged" upstream workarounds to maintain the "It Just Works" experience.
+*   **DISCOVERY:** 
+    1) **NVIDIA 595.x** requires `NVreg_UseKernelSuspendNotifiers=1` for open modules to fix suspend/resume on Ada/Blackwell.
+    2) **WSL 2.7.0** causes systemd user session timeouts due to `systemd-networkd-wait-online.service` hangs.
+    3) **WSL 2.6.0.0** introduced a security regression where `/run/systemd/user-generators/wsl-user-generator` is world-writable, breaking systemd user sessions.
+*   **ACTION:**
+    1) **NVIDIA Fix:** Updated `scripts/11-hardware.sh` to inject `NVreg_UseKernelSuspendNotifiers=1` into `nvidia-open.conf`.
+    2) **WSL2 Network Fix:** Created `system_files/usr/lib/systemd/system/systemd-networkd-wait-online.service.d/10-cloudws-wsl2.conf` with `ConditionVirtualization=!wsl`.
+    3) **WSL2 User Session Fix:** Created `system_files/usr/lib/tmpfiles.d/cloudws-wsl2-hacks.conf` to enforce `0755` permissions on the wsl-user-generator.
+    4) **Audit Results:** Confirmed `kargs.d/15-rootflags.toml` already mitigates the systemd 260 `systemd-remount-fs` failure.
+*   **SUGGESTED ALTERNATIVE:** Monitor NVIDIA 595.x for further Mutter 50 stability patches; a downgrade to 580.xx LTS may be necessary if freezes persist on RTX 4090/5090 hardware.

@@ -95,7 +95,9 @@ jobs:
 
       # ── Set up build tools ──────────────────────────────────────────────
       - name: Install cosign
-        uses: sigstore/cosign-installer@v2.6.3
+        uses: sigstore/cosign-installer@v3.10.1
+        with:
+          cosign-release: 'v2.6.3'
 
       - name: Install syft (SBOM generator)
         uses: anchore/sbom-action/download-syft@v0

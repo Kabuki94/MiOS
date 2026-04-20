@@ -47,7 +47,9 @@ jobs:
           echo "full_ref=ghcr.io/${OWNER_LC}/cloudws-bootc" >> "$GITHUB_OUTPUT"
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v2.6.3
+        uses: sigstore/cosign-installer@v3.10.1
+        with:
+          cosign-release: 'v2.6.3'
 
       - name: Log in to GHCR (for podman/buildah)
         if: github.event_name != 'pull_request'
