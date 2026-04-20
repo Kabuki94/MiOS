@@ -1,35 +1,75 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
+# WSL first-boot: home dirs, host keys, Podman socket, SSH pubkey injection,
+# role pin, trigger role resolver.
+#
+# Invoked by cloudws-wsl-firstboot.service (ConditionVirtualization=wsl,
+# ConditionPathExists=!/var/lib/cloudws/.wsl-firstboot-done). Idempotent.
 set -euo pipefail
 
-echo "Starting CloudWS WSL2 first-boot initialization..."
+log() { printf '[cloudws-wsl] %s\n' "$*"; }
 
-# Ensure base directories exist
-mkdir -p /var/home /var/lib/cloudws
+# Ensure base state dirs exist.
+install -d -m 0755 /var/home /var/lib/cloudws
 
-# Restore 'cloudws' user home
-if [ ! -d /var/home/cloudws ]; then
-    echo "Restoring /var/home/cloudws from /etc/skel..."
-    cp -aT /etc/skel /var/home/cloudws
-    chown -R cloudws:cloudws /var/home/cloudws
-    chmod 700 /var/home/cloudws
-fi
-
-# Restore 'core' user home (required for Podman Desktop / Docker Desktop interop)
-if id "core" &>/dev/null; then
-    if [ ! -d /var/home/core ]; then
-        echo "Restoring /var/home/core from /etc/skel..."
-        cp -aT /etc/skel /var/home/core
-        chown -R core:core /var/home/core
-        chmod 700 /var/home/core
+# Ensure the user home directories exist.
+# FCOS normally relies on Ignition to create /var/home/<user>, but WSL2 skips
+# Ignition. Without it, systemd-user-session fails with chdir ENOENT at login.
+# /var may also not persist across podman export, so we reseed from /etc/skel.
+for u in core cloudws; do
+    if id "$u" &>/dev/null; then
+        U_HOME="$(getent passwd "$u" | cut -d: -f6)"
+        if [[ -n "${U_HOME}" && ! -d "${U_HOME}" ]]; then
+            install -d -m 0700 -o "$u" -g "$u" "${U_HOME}"
+            cp -aT /etc/skel "${U_HOME}" 2>/dev/null || true
+            chown -R "$u":"$u" "${U_HOME}"
+            chmod 700 "${U_HOME}"
+            log "created missing home directory ${U_HOME}"
+        fi
     fi
+done
+
+# Ensure sshd host keys exist (silent if already present).
+ssh-keygen -A 2>/dev/null || true
+
+# Start Podman API socket and sshd for Windows host interop.
+systemctl start podman.socket sshd.service 2>/dev/null || true
+
+# Pin role=headless on WSL unless user overrode via /etc/cloudws/role.conf.
+if [[ ! -f /etc/cloudws/role.conf ]]; then
+    install -d -m 0755 /etc/cloudws
+    cat > /etc/cloudws/role.conf <<'EOF'
+ROLE=headless
+PROFILE=wsl
+FEATURES=nocloud-init
+EOF
+    log "pinned role=headless for WSL"
 fi
 
-# Start required interoperability services for WSL2 to host communication
-echo "Starting podman.socket and sshd for Windows host interop..."
-systemctl start podman.socket sshd.service || true
+# Inject Windows-side Podman-Desktop key if present.
+WIN_KEY="/mnt/c/ProgramData/containers/podman/id_rsa.pub"
+if [[ -r "$WIN_KEY" ]]; then
+    WIN_KEY_CONTENT="$(cat "$WIN_KEY")"
+    for u in core cloudws; do
+        if id "$u" &>/dev/null; then
+            U_HOME="$(getent passwd "$u" | cut -d: -f6)"
+            [[ -z "${U_HOME}" || ! -d "${U_HOME}" ]] && continue
+            install -d -m 0700 -o "$u" -g "$u" "$U_HOME/.ssh"
+            touch "$U_HOME/.ssh/authorized_keys"
+            if ! grep -qFx "$WIN_KEY_CONTENT" "$U_HOME/.ssh/authorized_keys"; then
+                printf '%s\n' "$WIN_KEY_CONTENT" >> "$U_HOME/.ssh/authorized_keys"
+                log "injected Podman-Desktop key into $u authorized_keys"
+            fi
+            chown -R "$u":"$u" "$U_HOME/.ssh"
+            chmod 700 "$U_HOME/.ssh"
+            chmod 600 "$U_HOME/.ssh/authorized_keys"
+        fi
+    done
+fi
 
-# Mark as completed so this only runs once
+# Trigger role resolver now so the right target comes up on first boot.
+systemctl start cloudws-role.service 2>/dev/null || true
+
+# Sentinel gates the service on subsequent boots.
 touch /var/lib/cloudws/.wsl-firstboot-done
 
-echo "WSL2 first-boot initialization complete."
-exit 0
+log "WSL2 first-boot initialization complete"
