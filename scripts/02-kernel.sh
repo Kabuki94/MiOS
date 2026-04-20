@@ -24,20 +24,20 @@ install_packages_strict "kernel"
 
 # Capture KVER for akmod builds later.
 # The base image kernel is the only one installed; grab it.
-KVER=$(find /lib/modules/ -mindepth 1 -maxdepth 1 -printf "%f\n" | sort -V | tail -1)
+KVER=$(find /usr/lib/modules/ -mindepth 1 -maxdepth 1 -printf "%f\n" | sort -V | tail -1)
 export KVER
 echo "[02-kernel] Kernel version: $KVER"
 echo "$KVER" > /tmp/cloudws-kver
 
 # Verify kernel modules directory exists (akmod build will fail without it)
-if [[ ! -d "/lib/modules/$KVER" ]]; then
-    echo "[02-kernel] FATAL: /lib/modules/$KVER does not exist"
+if [[ ! -d "/usr/lib/modules/$KVER" ]]; then
+    echo "[02-kernel] FATAL: /usr/lib/modules/$KVER does not exist"
     exit 1
 fi
 
 # Verify kernel-devel is installed (akmod-nvidia needs it)
-if [[ ! -d "/lib/modules/$KVER/build" ]]; then
-    echo "[02-kernel] WARNING: /lib/modules/$KVER/build missing — akmod may fail"
+if [[ ! -d "/usr/lib/modules/$KVER/build" ]]; then
+    echo "[02-kernel] WARNING: /usr/lib/modules/$KVER/build missing — akmod may fail"
 fi
 
 echo "[02-kernel] Kernel extras for $KVER installed successfully."

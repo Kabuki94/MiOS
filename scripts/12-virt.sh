@@ -14,7 +14,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
 
-KVER=$(cat /tmp/cloudws-kver 2>/dev/null || find /lib/modules/ -mindepth 1 -maxdepth 1 -printf "%f\n" | sort -V | tail -1)
+KVER=$(cat /tmp/cloudws-kver 2>/dev/null || find /usr/lib/modules/ -mindepth 1 -maxdepth 1 -printf "%f\n" | sort -V | tail -1)
 
 # ── KVM / QEMU / Libvirt ────────────────────────────────────────────────────
 echo "[12-virt] Installing KVM/QEMU/Libvirt..."
@@ -141,9 +141,12 @@ if [ -d LookingGlass ]; then
     cd client/build
     cmake \
         -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=/usr/lib \
+        -DCMAKE_BUILD_TYPE=Release \
         -DENABLE_LIBDECOR=ON \
         -DENABLE_PIPEWIRE=ON \
         -DENABLE_PULSEAUDIO=OFF \
+        -DENABLE_BACKTRACE=OFF \
         .. 2>/dev/null || true
     make -j"$(nproc)" 2>/dev/null || true
     if [ -f looking-glass-client ]; then
@@ -153,12 +156,12 @@ if [ -d LookingGlass ]; then
 
     # Build KVMFR kernel module manually (no dkms — avoids kernel-devel-matched conflict)
     cd /tmp/looking-glass-build/LookingGlass/module
-    if [ -f Makefile ] && [ -d "/lib/modules/$KVER/build" ]; then
+    if [ -f Makefile ] && [ -d "/usr/lib/modules/$KVER/build" ]; then
         echo "[12-virt] Building KVMFR module for kernel $KVER..."
         make KVER="$KVER" 2>/dev/null || true
         if [ -f kvmfr.ko ]; then
-            install -D -m 644 kvmfr.ko "/lib/modules/$KVER/extra/kvmfr.ko"
-            depmod -a "$KVER" 2>/dev/null || true
+            install -D -m 644 kvmfr.ko "/usr/lib/modules/$KVER/extra/kvmfr.ko"
+            depmod -a -b /usr "$KVER" 2>/dev/null || true
             echo "[12-virt] KVMFR module installed for $KVER"
         else
             echo "[12-virt] WARNING: KVMFR module build failed — Looking Glass IVSHMEM-only"

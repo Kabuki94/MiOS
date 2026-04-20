@@ -10,7 +10,7 @@
 #   ✓ Qt5/Qt6 apps — adwaita-qt + QGnomePlatform env vars
 #   ✓ Electron/Chromium apps — ELECTRON_FORCE_DARK_MODE
 #   ✓ Firefox — MOZ_ENABLE_WAYLAND + portal color-scheme
-#   ✓ xRDP sessions — XCURSOR_THEME + session env
+#   ✓ GNOME Remote Desktop — XCURSOR_THEME + session env
 #   ✓ TTY/console — no theming needed (terminal colors)
 #
 # MUST RUN BEFORE 30-user.sh (skel .bashrc must exist before useradd -m)
@@ -150,9 +150,20 @@ SKELGTK3
 # ── Compile GSchema overrides (THE correct way to set GNOME defaults) ──
 if [ -f /usr/share/glib-2.0/schemas/90-cloudws.gschema.override ]; then
     echo "[30-locale-theme] Compiling GSchema overrides..."
-    glib-compile-schemas /usr/share/glib-2.0/schemas/ 2>/dev/null || true
+    glib-compile-schemas /usr/share/glib-2.0/schemas/ || true
     echo "[30-locale-theme] ✓ GSchema overrides compiled"
 fi
-dconf update 2>/dev/null || true
+
+# Suppress DBus warnings during headless update without swallowing real syntax errors
+export GIO_USE_VFS=local
+dconf update || true
+
+# Migrate generated binary dconf databases to the immutable /usr/share path.
+# This prevents OSTree 3-way merge binary conflicts on /etc/dconf/db/local
+# during bootc upgrades if users make their own local dconf changes.
+if [ -d /etc/dconf/db ]; then
+    mkdir -p /usr/share/dconf/db
+    find /etc/dconf/db -maxdepth 1 -type f -exec mv -f {} /usr/share/dconf/db/ \; 2>/dev/null || true
+fi
 
 echo "[30-locale-theme] Dark theme configured for all toolkits."

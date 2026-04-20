@@ -350,7 +350,7 @@ test_user() {
         # Group membership
         local groups
         groups=$(id -nG cloudws 2>/dev/null)
-        for g in wheel libvirt kvm video render; do
+        for g in wheel libvirt kvm video render input dialout; do
             if echo "$groups" | grep -qw "$g"; then
                 pass "cloudws in group: $g"
             else

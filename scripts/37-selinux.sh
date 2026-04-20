@@ -26,9 +26,11 @@ fcontext -a -t boot_t '/boot/bootupd-state.json'
 fcontext -a -t accountsd_var_lib_t '/usr/share/accountsservice/interfaces(/.*)?'
 fcontext -a -t ceph_var_lib_t '/var/lib/ceph(/.*)?'
 fcontext -a -t ceph_log_t '/var/log/ceph(/.*)?'
+fcontext -a -t xdm_var_lib_t '/var/lib/gnome-remote-desktop(/.*)?'
 EOSEM
     restorecon -v /boot/bootupd-state.json 2>/dev/null || true
     restorecon -R /usr/share/accountsservice 2>/dev/null || true
+    restorecon -R /var/lib/gnome-remote-desktop 2>/dev/null || true
     echo "[37-selinux] ✓ Booleans and fcontexts applied"
 fi
 
@@ -78,9 +80,18 @@ require { type accountsd_t; type usr_t; class dir { watch watch_reads }; }
 allow accountsd_t usr_t:dir { watch watch_reads };'
 
     CLOUDWS_POLICIES[fapolicyd_gdm]='
-module cloudws_fapolicyd_gdm 1.0;
-require { type fapolicyd_t; type xdm_t; class unix_stream_socket connectto; }
-allow fapolicyd_t xdm_t:unix_stream_socket connectto;'
+module cloudws_fapolicyd_gdm 1.1;
+require { type fapolicyd_t; type xdm_t; class unix_stream_socket connectto; class fd use; class fifo_file write; }
+allow fapolicyd_t xdm_t:unix_stream_socket connectto;
+allow fapolicyd_t xdm_t:fd use;
+allow fapolicyd_t xdm_t:fifo_file write;'
+
+    CLOUDWS_POLICIES[fapolicyd_grd]='
+module cloudws_fapolicyd_grd 1.0;
+require { type fapolicyd_t; type gnome_remote_desktop_t; class unix_stream_socket connectto; class fd use; class fifo_file write; }
+allow fapolicyd_t gnome_remote_desktop_t:unix_stream_socket connectto;
+allow fapolicyd_t gnome_remote_desktop_t:fd use;
+allow fapolicyd_t gnome_remote_desktop_t:fifo_file write;'
 
     CLOUDWS_POLICIES[portabled]='
 module cloudws_portabled 1.0;

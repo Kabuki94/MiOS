@@ -13,6 +13,15 @@ if [[ ! -f /etc/cloudws/role.conf ]]; then
     cp -a /usr/share/cloudws/role.conf.example /etc/cloudws/role.conf 2>/dev/null || true
 fi
 
+# Scrub potential credential leaks from build-time placeholder injections
+log "scrubbing build-time credentials and override scripts"
+rm -f /etc/containers/auth.json \
+      /root/.docker/config.json \
+      /root/.containers/auth.json \
+      /ctx/scripts/99-overrides.sh \
+      /usr/local/bin/99-overrides.sh \
+      /usr/bin/99-overrides.sh 2>/dev/null || true
+
 # Trim dnf caches
 dnf5 clean all || true
 rm -rf /var/cache/libdnf5 /var/cache/dnf /var/log/dnf5.log* 2>/dev/null || true

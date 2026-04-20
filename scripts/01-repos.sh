@@ -15,6 +15,14 @@ sed -i '/^install_weakdeps=/d' /etc/dnf/dnf.conf 2>/dev/null || true
 sed -i '/^install_weak_deps=/d' /etc/dnf/dnf.conf 2>/dev/null || true
 echo "install_weak_deps=False" >> /etc/dnf/dnf.conf
 
+# ── Protect Base Repos from Third-Party Ties ───────────────────────────────
+echo "[01-repos] Elevating base repos to priority 98 to protect against rpmsphere/third-party ties..."
+for repo in /etc/yum.repos.d/fedora*.repo /etc/yum.repos.d/ublue-os*.repo; do
+    if [ -f "$repo" ] && ! grep -q '^priority=' "$repo"; then
+        sed -i '/^\[.*\]/a priority=98' "$repo"
+    fi
+done
+
 # ── Fedora 44 repo overlay ─────────────────────────────────────────────────
 echo "[01-repos] Adding Fedora 44 repository..."
 cat > /etc/yum.repos.d/fedora-44.repo <<'EOREPO'
@@ -60,8 +68,7 @@ dnf upgrade -y --allowerasing --best \
 
 echo "[01-repos] Phase 2: Full distro-sync to Fedora 44..."
 dnf distro-sync -y --best --allowerasing \
-    --exclude='shim-*' \
-    --exclude='kernel*' \
+    --setopt=excludepkgs="shim-*,kernel*" \
     --setopt=install_weak_deps=False
 
 echo "[01-repos] Verifying core package versions..."
@@ -130,5 +137,5 @@ gpgkey=https://nvidia.github.io/libnvidia-container/gpgkey
 EOREPO
 fi
 
-echo "[01-repos] Done. ucore base kernel + F44 userspace + RPMFusion + Terra + CrowdSec."
-echo "[01-repos] Priority: CrowdSec(80) < Terra(85) < RPMFusion(90) < F44(95) < ucore(99)"
+echo "[01-repos] Done. Protected base + F44 userspace + RPMFusion + Terra + CrowdSec."
+echo "[01-repos] Priority: CrowdSec(80) < Terra(85) < RPMFusion(90) < F44(95) < Base(98) < Default(99)"

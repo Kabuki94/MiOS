@@ -17,7 +17,7 @@ firewall-cmd --set-default-zone=drop 2>/dev/null || true
 for svc in cockpit ssh mdns; do
     firewall-cmd --permanent --add-service="$svc" 2>/dev/null || true
 done
-# RDP (xRDP standard + Hyper-V vsock)
+# RDP (GNOME Remote Desktop + Hyper-V vsock)
 firewall-cmd --permanent --add-port=3389/tcp --add-port=3390/tcp 2>/dev/null || true
 # Samba + NFS
 firewall-cmd --permanent --add-service=samba --add-service=nfs --add-service=rpc-bind --add-service=mountd 2>/dev/null || true
@@ -33,8 +33,9 @@ firewall-cmd --permanent --add-port=2224/tcp --add-port=5403-5405/udp 2>/dev/nul
 firewall-cmd --permanent --add-port=3000/tcp --add-port=26000/tcp 2>/dev/null || true
 # Cockpit on 9090 (already via service but explicit)
 firewall-cmd --permanent --add-port=9090/tcp 2>/dev/null || true
-# Trust internal interfaces
-for iface in lo podman0 virbr0 cni0 flannel.1 waydroid0; do
+# Trust internal interfaces (including dynamic netavark/k3s bridges via wildcards)
+# nftables backend drops unassigned interfaces strictly into the drop zone
+for iface in lo podman+ br-+ veth+ virbr0 cni0 flannel.1 waydroid0; do
     firewall-cmd --permanent --zone=trusted --add-interface="$iface" 2>/dev/null || true
 done
 

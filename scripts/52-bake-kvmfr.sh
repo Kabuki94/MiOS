@@ -94,8 +94,8 @@ else
 fi
 
 # --- Update module dependencies --------------------------------------------
-log "running depmod -a $KVER"
-depmod -a "$KVER" || log "WARN: depmod failed (non-fatal)"
+log "running depmod -a -b /usr $KVER"
+depmod -a -b /usr "$KVER" || log "WARN: depmod failed (non-fatal)"
 
 # --- Sign the module with ublue MOK (if present, for Secure Boot) ----------
 PRIV_KEY="/etc/pki/akmods/private/private_key.priv"

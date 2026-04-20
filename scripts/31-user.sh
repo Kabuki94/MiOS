@@ -49,8 +49,8 @@ for g in wheel libvirt kvm video render input dialout; do
 done
 
 # ??? SUDOERS ???
-sed -i 's/^# %wheel\s*ALL=(ALL)\s*NOPASSWD:\s*ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
-echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel; chmod 440 /etc/sudoers.d/wheel
+echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/10-cloudws-wheel
+chmod 440 /etc/sudoers.d/10-cloudws-wheel
 
 # ??? LOCALE ???
 echo "LANG=en_US.UTF-8" > /etc/locale.conf

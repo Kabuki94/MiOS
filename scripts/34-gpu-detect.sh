@@ -45,8 +45,8 @@ EOMOD
     done
 
     cat > "$RENDERER_CONF" <<'EORENDER'
-GSK_RENDERER=cairo
-GDK_DISABLE=vulkan
+# GTK 4.16+ removed the cairo renderer. ngl via llvmpipe is the optimal VM fallback.
+GSK_RENDERER=ngl
 EORENDER
 
     case "$VIRT" in

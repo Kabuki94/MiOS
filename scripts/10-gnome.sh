@@ -47,7 +47,11 @@ for tracker_entry in \
     localsearch-writeback-3.desktop; do
     cat > "/etc/xdg/autostart/$tracker_entry" <<EOF
 [Desktop Entry]
+Type=Application
+Name=${tracker_entry%.desktop} Override
+Exec=/usr/bin/true
 Hidden=true
+X-GNOME-Autostart-enabled=false
 EOF
 done
 

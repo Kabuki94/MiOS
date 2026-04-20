@@ -6,11 +6,21 @@ set -euo pipefail
 
 echo "[35-init-service] Installing CloudWS init service..."
 
+# Prevent DHCP IP conflicts in cloned VM environments by forcing
+# NetworkManager to use the MAC address for DHCP client IDs instead
+# of the potentially duplicated /etc/machine-id.
+mkdir -p /etc/NetworkManager/conf.d
+cat > /etc/NetworkManager/conf.d/10-cloudws-dhcp-mac.conf <<'EONM'
+[connection]
+ipv4.dhcp-client-id=mac
+ipv6.dhcp-duid=ll
+EONM
+
 cat > /usr/lib/systemd/system/cloudws-init.service <<'EOSVC'
 [Unit]
 Description=CloudWS System Init
 Wants=network-online.target
-After=network-online.target
+After=network-online.target cloud-final.service ignition-firstboot-complete.service
 [Service]
 Type=oneshot
 ExecStart=/usr/libexec/cloudws-init
@@ -23,9 +33,12 @@ cat > /usr/libexec/cloudws-init <<'EOINIT'
 #!/bin/bash
 set -euo pipefail
 
-# ── Unique hostname from machine-id (stable across reboots) ──
-if [ -f /etc/machine-id ] && [ -s /etc/machine-id ]; then
-    TAG=$(head -c 5 /etc/machine-id)
+# ── Unique hostname (stable across reboots, unique across VM clones) ──
+MAC=$(cat /sys/class/net/e*/address /sys/class/net/w*/address 2>/dev/null | head -1 || echo "")
+MACH_ID=$(cat /etc/machine-id 2>/dev/null || echo "")
+
+if [ -n "$MACH_ID" ]; then
+    TAG=$(echo "${MACH_ID}${MAC}" | md5sum | head -c 5)
     CURRENT=$(hostname -s 2>/dev/null || echo "")
     if [ "$CURRENT" = "cloudws" ] || [ "$CURRENT" = "localhost" ] || [ "$CURRENT" = "linux" ]; then
         hostnamectl set-hostname "cloudws-${TAG}" 2>/dev/null || true

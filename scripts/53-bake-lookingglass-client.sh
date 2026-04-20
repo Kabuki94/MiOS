@@ -52,7 +52,14 @@ fi
 log "configuring client build"
 mkdir -p "$BUILD_DIR/client/build"
 cd "$BUILD_DIR/client/build"
-if ! cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_BACKTRACE=OFF ..; then
+if ! cmake -DCMAKE_INSTALL_PREFIX=/usr \
+           -DCMAKE_INSTALL_LIBDIR=/usr/lib \
+           -DCMAKE_BUILD_TYPE=Release \
+           -DENABLE_LIBDECOR=ON \
+           -DENABLE_PIPEWIRE=ON \
+           -DENABLE_PULSEAUDIO=OFF \
+           -DENABLE_BACKTRACE=OFF \
+           ..; then
     log "SKIP: cmake configure failed - check -devel packages"
     exit 0
 fi

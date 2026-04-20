@@ -19,7 +19,15 @@ log() { printf '[44-podman-machine] %s\n' "$*"; }
 # the buildroot they may be absent. Create them with their conventional GIDs
 # (matching Fedora defaults) so the user lands in the right group once udev
 # materializes the devices at runtime.
-for group_spec in "kvm:36" "render:$(getent group render | cut -d: -f3 || echo 105)" "video:$(getent group video | cut -d: -f3 || echo 39)" "libvirt:$(getent group libvirt | cut -d: -f3 || echo)"; do
+for group_spec in \
+    "kvm:36" \
+    "render:$(getent group render | cut -d: -f3 || echo 105)" \
+    "video:$(getent group video | cut -d: -f3 || echo 39)" \
+    "libvirt:$(getent group libvirt | cut -d: -f3 || echo)" \
+    "input:$(getent group input | cut -d: -f3 || echo)" \
+    "dialout:$(getent group dialout | cut -d: -f3 || echo)" \
+    "docker:$(getent group docker | cut -d: -f3 || echo)"
+do
     name="${group_spec%%:*}"
     gid="${group_spec##*:}"
     if ! getent group "$name" >/dev/null 2>&1; then
@@ -42,7 +50,7 @@ if ! id -u core >/dev/null 2>&1; then
     passwd -l core
     log "created user 'core' (wheel; key-auth only)"
 
-    for g in libvirt kvm video render; do
+    for g in libvirt kvm video render input dialout docker; do
         if getent group "$g" >/dev/null 2>&1; then
             usermod -aG "$g" core && log "  added core to $g"
         else

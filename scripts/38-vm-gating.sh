@@ -65,7 +65,7 @@ polkit.addRule(function(action, subject) {
          action.id == "org.freedesktop.color-manager.delete-profile" ||
          action.id == "org.freedesktop.color-manager.modify-device" ||
          action.id == "org.freedesktop.color-manager.modify-profile") &&
-        subject.isInGroup("{users}")) {
+        subject.isInGroup("wheel")) {
         return polkit.Result.YES;
     }
 });
