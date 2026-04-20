@@ -1,0 +1,6 @@
+# Apply root mount options directly via kernel arguments
+# Bypasses the systemd-remount-fs composefs interop bug on Fedora 42+
+match-architectures = ["x86_64"]
+kargs = [
+    "rootflags=compress=zstd:1,discard=async"
+]
