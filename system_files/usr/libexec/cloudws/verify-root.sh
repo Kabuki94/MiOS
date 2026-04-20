@@ -67,7 +67,7 @@ done
 KVER=$(uname -r)
 if [[ ! -d "/usr/lib/modules/${KVER}" ]]; then
     log_err "cloudws-verify TierA: MISSING /usr/lib/modules/${KVER}"
-    MISSING=$((MISSING + 1))
+        MISSING=$((MISSING + 1))
 fi
 
 if (( MISSING > 0 )); then

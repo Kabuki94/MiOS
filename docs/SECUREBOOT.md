@@ -161,7 +161,7 @@ Use `mokutil --import` as normal — the test VM has its own MOK database.
 
 ## References
 
-- [GRUB2 Secure Boot flow (Fedora)](https://fedoraproject.org/wiki/Shim)
-- [mokutil man page](https://github.com/lcp/mokutil)
-- [bootc UKI tracking issue](https://github.com/bootc-dev/bootc/issues/806)
-- [systemd-cryptenroll PCR binding](https://www.freedesktop.org/software/systemd/man/latest/systemd-cryptenroll.html)
+- GRUB2 Secure Boot flow (Fedora)
+- mokutil man page
+- bootc UKI tracking issue
+- systemd-cryptenroll PCR binding
