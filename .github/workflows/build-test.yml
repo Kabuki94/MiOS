@@ -115,7 +115,7 @@ jobs:
         env:
           DIGEST: ${{ steps.push.outputs.digest }}
           IMAGE:  ${{ steps.push.outputs.image }}
-        run: cosign sign --yes "${IMAGE}@${DIGEST}"
+        run: cosign sign --new-bundle-format=false --yes "${IMAGE}@${DIGEST}"
 
       - name: Verify signature (keyless)
         if: github.event_name != 'pull_request'

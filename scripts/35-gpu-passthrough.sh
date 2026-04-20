@@ -26,10 +26,10 @@ SRC_ROOT="${SRC_ROOT:-/ctx}"
 # Systemd units (per-vendor + umbrella status)
 # ----------------------------------------------------------------------------
 install -d -m 0755 /usr/lib/systemd/system
-install -m 0644 "${SRC_ROOT}/kargs.d/cloudws-gpu-status.service"  /usr/lib/systemd/system/
-install -m 0644 "${SRC_ROOT}/kargs.d/cloudws-gpu-nvidia.service"  /usr/lib/systemd/system/
-install -m 0644 "${SRC_ROOT}/kargs.d/cloudws-gpu-amd.service"     /usr/lib/systemd/system/
-install -m 0644 "${SRC_ROOT}/kargs.d/cloudws-gpu-intel.service"   /usr/lib/systemd/system/
+install -m 0644 "${SRC_ROOT}/systemd/cloudws-gpu-status.service"  /usr/lib/systemd/system/
+install -m 0644 "${SRC_ROOT}/systemd/cloudws-gpu-nvidia.service"  /usr/lib/systemd/system/
+install -m 0644 "${SRC_ROOT}/systemd/cloudws-gpu-amd.service"     /usr/lib/systemd/system/
+install -m 0644 "${SRC_ROOT}/systemd/cloudws-gpu-intel.service"   /usr/lib/systemd/system/
 
 # ----------------------------------------------------------------------------
 # NVIDIA upstream nvidia-cdi-refresh.service drop-in
@@ -40,7 +40,7 @@ install -m 0644 "${SRC_ROOT}/kargs.d/cloudws-gpu-intel.service"   /usr/lib/syste
 if rpm -q nvidia-container-toolkit >/dev/null 2>&1; then
   log "nvidia-container-toolkit present; installing ordering drop-in"
   install -d -m 0755 /usr/lib/systemd/system/nvidia-cdi-refresh.service.d
-  install -m 0644 "${SRC_ROOT}/kargs.d/nvidia-cdi-refresh.service.d/10-cloudws-ordering.conf" \
+  install -m 0644 "${SRC_ROOT}/systemd/nvidia-cdi-refresh.service.d/10-cloudws-ordering.conf" \
     /usr/lib/systemd/system/nvidia-cdi-refresh.service.d/
 else
   log "nvidia-container-toolkit not in image; skipping NVIDIA drop-in"
