@@ -32,8 +32,8 @@ get_packages_strict() {
     echo "$result"
 }
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/common.sh"
+_PKG_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${_PKG_DIR}/common.sh"
 
 install_packages() {
     local category="$1"
