@@ -34,7 +34,7 @@ fi
 
 # WSL auto-headless unless explicitly overridden
 VIRT=$(systemd-detect-virt 2>/dev/null || echo "none")
-if [[ -z "$ROLE" ]] && [[ "$VIRT" == "wsl" || "$VIRT" == "microsoft" || -e /dev/dxg || -f /proc/sys/fs/binfmt_misc/WSLInterop ]]; then
+if [[ -z "$ROLE" ]] && [[ "$VIRT" == "wsl" || -e /dev/dxg ]]; then
     ROLE="headless"
     log "WSL detected - defaulting to headless role"
 fi

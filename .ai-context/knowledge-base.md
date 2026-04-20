@@ -46,3 +46,11 @@ Performed a line-by-line audit using `PSScriptAnalyzer` and `shellcheck`.
 - **PowerShell**: Avoid `Invoke-Expression`. Do not use empty `catch` blocks. Use `[SecureString]` for sensitive data.
 - **Bash**: Heavily rely on `shellcheck`. Use `compgen -G` instead of `ls | grep` for file existence checks. Quote variables. Use `read -ra` for word splitting.
 - **Idempotency**: Scripts in this repository (especially builders) are designed to be idempotent. Ensure actions can be safely re-run without breaking state.
+
+### April 20, 2026 - WSL2 Detection & Gating Standardization
+Standardized system-wide WSL2 detection to use systemd-native primitives.
+
+- **Standard**: `ConditionVirtualization=!wsl` is now the canonical way to gate services in systemd drop-ins.
+- **Scripts**: Updated `scripts/20-services.sh`, `scripts/35-init-service.sh`, `scripts/cloudws-test`, and `scripts/cloudws-toggle-headless` to use `systemd-detect-virt` and `ConditionVirtualization` checks.
+- **Fixes**: Added `fapolicyd` to the WSL skip list in `20-services.sh` due to binfmt_misc conflicts in WSL2. Fixed redundant service enablement and clobbering between `34-gpu-detect.sh` and `35-gpu-passthrough.sh`.
+- **Documentation**: Updated `CONTRIBUTING.md` to mandate the new standard for all future PRs.

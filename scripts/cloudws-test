@@ -8,7 +8,7 @@ VERSION="1.2.0"
 PASS=0; FAIL=0; SKIP=0; WARN=0
 VIRT=$(systemd-detect-virt 2>/dev/null || echo "none")
 IS_WSL=false
-[ -f /proc/sys/fs/binfmt_misc/WSLInterop ] && IS_WSL=true
+[[ "$VIRT" == "wsl" ]] && IS_WSL=true
 IS_ROOT=false
 [ "$(id -u)" -eq 0 ] && IS_ROOT=true
 

@@ -84,7 +84,7 @@ systemctl restart pmproxy.service 2>/dev/null || true
 flatpak override --system --env=ADW_DEBUG_COLOR_SCHEME=prefer-dark 2>/dev/null || true
 
 # Hyper-V Enhanced Session auto-enable
-if [ "$VIRT" = "microsoft" ] && [ ! -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
+if [[ "$VIRT" == "microsoft" ]]; then
     /usr/libexec/cloudws-hyperv-enhanced 2>/dev/null || true
 fi
 

@@ -122,6 +122,7 @@ WSL_SKIP_SERVICES=(
     nvidia-powerd
     crowdsec
     crowdsec-firewall-bouncer
+    fapolicyd
     dev-binderfs.mount
     ceph-bootstrap
     auditd
@@ -140,7 +141,7 @@ for svc in "${WSL_SKIP_SERVICES[@]}"; do
         cat > "/usr/lib/systemd/system/${unit}.d/10-skip-wsl.conf" <<'DROPIN'
 [Unit]
 # CloudWS: Skip in WSL2 — service incompatible with WSL2 environment
-ConditionPathExists=!/proc/sys/fs/binfmt_misc/WSLInterop
+ConditionVirtualization=!wsl
 DROPIN
     fi
 done

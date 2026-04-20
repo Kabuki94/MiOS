@@ -68,7 +68,7 @@ The PowerShell script handles Podman machine creation, credential injection, ima
 ### Services
 
 - Bare-metal-only services get `ConditionVirtualization=no` drop-ins.
-- WSL2-incompatible services get `ConditionPathExists=!/proc/sys/fs/binfmt_misc/WSLInterop` gating.
+- WSL2-incompatible services get `ConditionVirtualization=!wsl` gating (native systemd detection, v252+).
 - Use `systemctl enable ... || true` for optional services that may not be installed.
 
 ## Submitting Changes
