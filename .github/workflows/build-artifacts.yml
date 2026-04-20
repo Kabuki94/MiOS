@@ -12,8 +12,6 @@ on:
         description: "Tag of ghcr.io/kabuki94/cloudws-bootc to convert"
         required: false
         default: "latest"
-  schedule:
-    - cron: "0 5 * * 0"
   workflow_run:
     workflows: ["Build CloudWS-bootc"]
     types: [completed]
@@ -30,7 +28,7 @@ env:
 
 jobs:
   build-artifact:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     strategy:
