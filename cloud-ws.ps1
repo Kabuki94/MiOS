@@ -234,53 +234,15 @@ if ($DoBuild) {
 Write-Phase "1" "Podman Builder Machine"
 $ErrorActionPreference = "Continue"
 
-# ── Ensure a clean, working builder machine ──────────────────────────────────
-# Podman can leave stale metadata when Hyper-V VMs are removed externally
-# or when a previous build crashed. Strategy: try start → if fail, nuke and
-# recreate from scratch. This handles the "inspect passes but VM is gone" bug.
-$machineReady = $false
+$builderScript = Join-Path $PWD "scripts\cloud-ws-builder.ps1"
+if (-not (Test-Path $builderScript)) { Write-Fatal "Missing $builderScript" }
 
-$null = & podman machine inspect $BuilderMachine 2>&1
-if ($LASTEXITCODE -eq 0) {
-    Write-Step "Found existing '$BuilderMachine' — verifying VM is intact..."
-    & podman machine stop $BuilderMachine 2>$null; Start-Sleep 2
-    & podman machine start $BuilderMachine 2>$null
-    if ($LASTEXITCODE -eq 0) {
-        $machineReady = $true
-        Write-OK "Existing builder machine started successfully"
-    } else {
-        Write-Warn "Stale machine metadata detected (VM missing from hypervisor) — removing..."
-        & podman machine rm -f $BuilderMachine 2>$null
-        wsl --unregister "podman-$BuilderMachine" 2>$null
-        wsl --unregister $BuilderMachine 2>$null
-        Remove-VM -Name $BuilderMachine -Force -ErrorAction SilentlyContinue
-        Start-Sleep 3
-    }
-} else {
-    Write-Step "No existing '$BuilderMachine' metadata found"
-}
-
-if (-not $machineReady) {
-    # Always force-remove before init — handles BOTH stale states:
-    #   1. Metadata exists but VM is gone (handled above)
-    #   2. VM exists on hypervisor but metadata is gone (orphaned VM)
-    Write-Step "Cleaning up any orphaned state..."
-    & podman machine rm -f $BuilderMachine 2>$null; Start-Sleep 1
-    Remove-VM -Name $BuilderMachine -Force -ErrorAction SilentlyContinue
-    # Podman prefixes WSL distros with "podman-"
-    wsl --unregister "podman-$BuilderMachine" 2>$null
-    wsl --unregister $BuilderMachine 2>$null
-    Start-Sleep 2
-    Write-Step "Creating dedicated '$BuilderMachine' ($cpu CPUs, $([math]::Round($ram/1024))GB RAM, 250GB disk)..."
-    & podman machine init $BuilderMachine --rootful --cpus $cpu --memory $ram --disk-size 250
-    if ($LASTEXITCODE -ne 0) { Write-Fatal "Failed to create $BuilderMachine — check Hyper-V / WSL2 status" }
-    Write-Step "Starting '$BuilderMachine'..."
-    & podman machine start $BuilderMachine
-    if ($LASTEXITCODE -ne 0) { Write-Fatal "$BuilderMachine failed to start" }
-}
+Write-Step "Executing dedicated builder provisioning script..."
+& $builderScript -MachineName $BuilderMachine
+if ($LASTEXITCODE -ne 0) { Write-Fatal "Builder provisioning failed." }
 
 & podman system connection default "${BuilderMachine}-root"
-Write-OK "Builder ready: ${BuilderMachine}-root ($cpu CPUs, $([math]::Round($ram/1024))GB RAM)"
+Write-OK "Builder connection set to: ${BuilderMachine}-root"
 $ErrorActionPreference = "Stop"
 
 
