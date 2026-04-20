@@ -253,6 +253,7 @@ libguestfs-tools
 # v2.2 additions
 virt-viewer
 qemu-device-display-virtio-gpu
+virt-firmware
 ```
 
 ## Container Runtime
@@ -303,6 +304,8 @@ bootupd
 dnf5-plugins
 systemd-boot-unsigned
 efibootmgr
+systemd-ukify
+binutils
 ```
 
 ## Cockpit Web Management

@@ -3,8 +3,8 @@ set -euo pipefail
 
 echo "==> Preparing Unified Kernel Image (UKI) configuration..."
 
-# Install ukify and required binary utilities
-dnf install -y systemd-ukify binutils
+# systemd-ukify and binutils are required for this step.
+# Ensure they are declared in docs/PACKAGES.md per the single-source-of-truth rules.
 
 # In a bootc Containerfile build, we use `bootc container render-kargs`
 # to flatten all kargs.d/*.toml drop-ins into a single string for the UKI.

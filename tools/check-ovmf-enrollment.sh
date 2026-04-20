@@ -93,23 +93,22 @@ if [ "$HAS_SECBOOT_VARS" = true ]; then
     echo
 else
     echo -e "${YELLOW}Option 1: Check for additional packages${NC}"
-    echo -e "  Some distros have separate packages for enrolled OVMF:"
-    echo -e "  ${CYAN}yay -Ss ovmf${NC}"
-    echo -e "  ${CYAN}yay -Ss edk2${NC}"
-    echo -e "  Look for: edk2-ovmf-secureboot, ovmf-git, etc."
+    echo -e "  Fedora provides these in the main edk2-ovmf package."
+    echo -e "  Ensure it is fully installed:"
+    echo -e "  ${CYAN}sudo dnf install edk2-ovmf${NC}"
     echo
-    
+
     echo -e "${YELLOW}Option 2: Download pre-enrolled OVMF files manually${NC}"
     echo -e "  From Fedora/Ubuntu packages (known to work):"
     echo -e "  ${CYAN}https://www.kraxel.org/repos/jenkins/edk2/${NC}"
     echo -e "  Download: edk2.git-ovmf-x64-*.rpm (then extract)"
     echo
-    
+
     echo -e "${YELLOW}Option 3: Create enrolled VARS using virt-firmware${NC}"
-    echo -e "  ${CYAN}sudo pacman -S virt-firmware${NC}"
+    echo -e "  ${CYAN}sudo dnf install virt-firmware${NC}"
     echo -e "  Then enroll Microsoft keys manually"
     echo
-    
+
     echo -e "${YELLOW}Option 4: Use QEMU's automatic enrollment (simpler)${NC}"
     echo -e "  Use firmware autoselection with enrolled-keys feature"
     echo -e "  I can create this configuration for you"

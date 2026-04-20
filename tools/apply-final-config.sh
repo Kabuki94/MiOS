@@ -45,7 +45,7 @@ fi
 echo -e "\n${BLUE}[1/6] Checking/installing virt-firmware...${NC}"
 if ! command -v virt-fw-vars &>/dev/null; then
     echo -e "${YELLOW}Installing virt-firmware...${NC}"
-    pacman -S --noconfirm virt-firmware python-cryptography
+    dnf install -y virt-firmware python3-cryptography
     echo -e "${GREEN}✓ Installed${NC}"
 else
     echo -e "${GREEN}✓ Already installed${NC}"
