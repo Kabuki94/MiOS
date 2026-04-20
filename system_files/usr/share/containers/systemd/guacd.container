@@ -1,0 +1,15 @@
+[Unit]
+Description=Guacamole Proxy Daemon (guacd)
+ConditionVirtualization=!wsl
+
+[Container]
+Image=docker.io/guacamole/guacd:latest
+ContainerName=guacd
+Network=guacamole.network
+AutoUpdate=registry
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

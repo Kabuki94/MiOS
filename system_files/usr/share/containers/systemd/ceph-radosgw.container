@@ -1,0 +1,18 @@
+[Unit]
+Description=Standalone Ceph RADOS Gateway Client
+ConditionVirtualization=no
+
+[Container]
+Image=quay.io/ceph/ceph:latest
+ContainerName=ceph-radosgw
+PublishPort=8000:8080
+# Bind-mount the persistent /etc/ceph configs so the container can auth with the cluster
+Volume=/etc/ceph:/etc/ceph:ro
+Volume=/var/lib/ceph:/var/lib/ceph:ro
+Exec=radosgw --cluster ceph --name client.rgw.standalone --setuser ceph --setgroup ceph -f
+
+[Service]
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
