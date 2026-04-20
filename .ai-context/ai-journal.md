@@ -1004,3 +1004,86 @@
 *   The `gcloud` environment in this Cloud Shell session is currently utilizing a temporary configuration directory in `/tmp`, which may cause credential persistence issues during deep tree operations.
 *   Blackwell (RTX 50) support is currently in a "Safety-First Headless" fallback state if detection is triggered.
 
+---
+
+### [2026-04-20 UTC] [AI: Claude Code (Sonnet 4.6)] — Upstream research pass + gap audit
+*   **THOUGHT:** Kabu asked for a research pass on what's currently missing in CloudWS-bootc. I read `NEXT-RESEARCH.md`, `bootc-research-april2026.md` (through sections 1–3), the live git log, and verified key files against journal claims before doing a parallel web research sweep on 10 upstream topics.
+*   **LEARNING:**
+    1. **bootc v1.15.1** is current stable (April 14, 2026). No v1.15.2 or v1.16.0 yet. `bootc container lint` check list is stable at items documented in §1 of `bootc-research-april2026.md`.
+    2. **composefs-native backend (issue #1190)** — rollback bug partially fixed upstream but composefs-native still not production-ready. CloudWS correctly stays on OSTree+verity (`[composefs] enabled = verity` ≠ composefs-native backend).
+    3. **cosign** — GHSA-w6c6-c85g-mmv6 is fixed in v2.6.3 AND in cosign v3.0.6+. `build.yml` already uses `@v3` with `--new-bundle-format=false` (correct workaround). BUT `@v3` is a mutable major-version tag — not pinned to a specific release. Supply-chain hardening requires pinning to a commit SHA or specific semver tag.
+    4. **NVIDIA container toolkit** — v1.19.0 is still current (no v1.19.1/v1.20.0). Issue #1735 (`After=multi-user.target` ordering) is still open. CloudWS's `ublue-nvctk-cdi.service.d/10-cloudws.conf` gates on `ConditionPathExists=/dev/nvidiactl` which prevents the service running in VMs — this is an adequate workaround.
+    5. **ucore-hci:stable-nvidia** — NVIDIA 595.58.03 confirmed as current default. No 597.x yet. New `stable-nvidia-lts` (NVIDIA 580) tag available as a stability alternative.
+    6. **Fedora 44** — NOT SHIPPED as of April 20, 2026. Target date remains April 28 (potential slippage). F44 uses Linux 6.19. ucore-hci `stable-nvidia` remains on F42/F43 stable kernel until F44 lands.
+    7. **greenboot-rs** — Package name remains `greenboot` (Rust rewrite is v0.16.0+ under the same package name). Unit names `greenboot-rpm-ostree-grub2-check-fallback.service`, `greenboot-grub2-set-counter.service`, `redboot-auto-reboot.service` should still be valid in Fedora 43/44 but were not independently verified against the greenboot-rs source. Risk: if unit names changed, `46-greenboot.sh` and `90-cloudws.preset` need updating.
+    8. **Podman 5.7** — Shipped April 14, 2026. No breaking Quadlet changes. Safe to use.
+    9. **CrowdSec** — Still at v1.7.7; no v1.8.0. No `acquis.yaml` syntax changes.
+    10. **K3s #13710** — Confirmed unfixed: k3s-uninstall.sh calls `dnf` on the read-only bootc rootfs. Advisory for CloudWS since it doesn't invoke k3s-uninstall.sh, but warrants a note in `19-k3s-selinux.sh` docs.
+*   **DISCOVERY:**
+    1. **`bound-images.d/` NOT present** — Gemini's journal entry at 06:45 UTC claims it created symlinks in `system_files/usr/lib/bootc/bound-images.d/`, but the directory does not exist in the working tree. The logically-bound images feature is unimplemented.
+    2. **`cosign-installer@v3` is unpinned** — `build.yml` line 98 uses `sigstore/cosign-installer@v3` (mutable major tag). Should pin to a specific version (e.g., `@v3.8.2`) or commit SHA for supply-chain integrity.
+    3. **Renovate App not yet running** — `renovate.json` is correctly configured with the `ARG BASE_IMAGE` customManager regex and `docker:pinDigests`, but the Containerfile still shows `ghcr.io/ublue-os/ucore-hci:stable-nvidia` without a digest. The Renovate GitHub App needs to be installed on the repo to activate digest pinning.
+    4. **`build-sign.yml` does not exist** — CLAUDE.md §5 references it, but cosign signing was consolidated into `build.yml`. The docs reference is stale (minor doc-only issue).
+    5. **`tmpfiles.d/` coverage is minimal** — Only `cloudws-gpu.conf` covers `/var/lib/cloudws/gpu`. Multiple Gemini journal entries claim to have added tmpfiles entries for GRD, IPA, virtio-win, and cloudws-backups — these claims need spot-checking before trusting them.
+    6. **greenboot unit names unverified for greenboot-rs** — Risk low but non-zero that the grub2-specific unit names changed in the Rust rewrite.
+*   **ACTION:** Journaled this research pass. Produced gap report for Kabu. No code changes made this turn — findings are advisory.
+*   **SUGGESTED ALTERNATIVE:** Spawn a dedicated bootc container lint run against a local build to mechanically surface all missing tmpfiles.d entries rather than auditing scripts manually. This is the highest-signal low-effort verification.
+
+---
+
+### [2026-04-20 UTC] [AI: Claude Code (Sonnet 4.6)] — HANDOFF TO GEMINI: review findings and continue
+
+**Gemini — read this entry before your next turn. This is a direct handoff.**
+
+Claude completed a research and gap-audit pass. The findings below are verified against the live working tree (not just prior journal entries). Several of your prior journal claims (e.g., `bound-images.d/` creation at 06:45 UTC) did NOT land in the repo. Before implementing anything new, verify the current file exists on disk — do not assume your journal entry means the code landed.
+
+---
+
+#### What has been confirmed as WORKING (do not touch):
+
+- `system_files/usr/lib/systemd/system-preset/90-cloudws.preset` — fully restored, all role-gated disables present.
+- `system_files/usr/libexec/cloudws/wsl-firstboot` — host-key gen + Podman-Desktop key injection + role trigger reinstated.
+- `system_files/etc/systemd/system/ublue-nvctk-cdi.service.d/10-cloudws.conf` — correctly gates CDI service on `ConditionPathExists=/dev/nvidiactl`.
+- `scripts/38-vm-gating.sh` — `cloudws-hyperv-enhanced.service` correctly uses `WantedBy=graphical.target`.
+- `scripts/34-gpu-detect.sh` — ordering uses `Before=systemd-modules-load.service systemd-udevd.service`, `After=systemd-journald.socket`.
+- `system_files/usr/lib/systemd/system/cloudws-cdi-detect.service` — exists.
+- `docs/PACKAGES.md` — `gnome-remote-desktop` present, zero `xrdp`/`xorgxrdp` references.
+- `scripts/26-gnome-remote-desktop.sh` — wired into Containerfile at line 142.
+- `renovate.json` — correctly configured with customManager regex for `ARG BASE_IMAGE` digest pinning + `docker:pinDigests`.
+- `greenboot` health check scripts in `system_files/etc/greenboot/check/required.d/` — three scripts present.
+
+---
+
+#### What is MISSING or UNVERIFIED (work queue for Gemini):
+
+**Priority 1 — One-line supply-chain fix (do it now):**
+- `.github/workflows/build.yml` line 98: `sigstore/cosign-installer@v3` is an unpinned mutable major-version tag. Pin it to a specific release tag, e.g. `sigstore/cosign-installer@v3.8.2` (or whatever the current latest v3.x is). Do NOT downgrade to v2.x — the `--new-bundle-format=false` flag already handles the protobuf compat issue on v3.
+
+**Priority 2 — Verify Gemini's own prior claims (audit before shipping anything):**
+- `bound-images.d/` does NOT exist at `system_files/usr/lib/bootc/bound-images.d/`. Your 06:45 UTC journal entry claimed to create it and symlink the CrowdSec Quadlet. The directory is absent. Either it was never committed or was reverted. Check `scripts/12-virt.sh` for the `GlobalArgs` injection claim too.
+- `tmpfiles.d/` coverage: only `cloudws-gpu.conf` is confirmed. Your 07:15 UTC entry claimed to add `cloudws-grd.conf`, `cloudws-ipa.conf`, and `cloudws-virtio.conf`. Verify each file actually exists at `system_files/usr/lib/tmpfiles.d/` or wherever they were placed. If missing, re-create them.
+- `system_files/etc/greenboot/check/wanted.d/30-nvidia-cdi.sh` — your 10:00 UTC entry claimed to rewrite this to use `nvidia-ctk cdi list`. Verify the file exists and contains the `nvidia-ctk cdi list | grep "nvidia.com/gpu"` validation.
+
+**Priority 3 — Greenboot unit names (verify before F44 rebase):**
+- The `greenboot-rpm-ostree-grub2-check-fallback.service` and `greenboot-grub2-set-counter.service` unit names in `46-greenboot.sh` and `90-cloudws.preset` may have been renamed in the greenboot-rs Rust rewrite (Fedora 43/44). Look up the actual unit names shipped in `greenboot` v0.16.0+ and update if changed.
+
+**Priority 4 — CLAUDE.md doc cleanup (cosmetic, low urgency):**
+- CLAUDE.md §5 still references `build-sign.yml` as a separate workflow file. It does not exist — signing lives in `build.yml`. Update the table in §5 to reflect this.
+
+**Priority 5 — Logically-bound images (roadmap, implement when ready):**
+- Create `system_files/usr/lib/bootc/bound-images.d/` and wire CrowdSec dashboard + Guacamole Quadlets as logically-bound images per the `bootc-research-april2026.md` §1 spec. Reference architecture: symlink `.container` files + add `GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage`.
+
+---
+
+#### Upstream context for your work (current as of 2026-04-20):
+
+- bootc v1.15.1 is current. No v1.16.0 yet.
+- Fedora 44 NOT shipped (targeting April 28, may slip). Linux 6.19 kernel. ucore-hci `stable-nvidia` remains on F42/F43 until then.
+- NVIDIA 595.58.03 is the current default. New `stable-nvidia-lts` (NVIDIA 580) tag exists as a stability alternative — no decision needed yet.
+- CrowdSec still v1.7.7 (no v1.8.0).
+- K3s #13710 (uninstall script calls dnf on read-only rootfs) is unfixed upstream — advisory only, no CloudWS action required.
+- Podman 5.7 is out (April 14); safe to reference, no breaking Quadlet changes.
+
+**Journaling law reminder:** Every substantive action must be appended to this file. Chat-only output is a violation. Write diffs directly to the affected files — do not produce PowerShell push-script wrappers unless Kabu explicitly requests one.
+
+
