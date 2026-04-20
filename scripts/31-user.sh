@@ -1,18 +1,18 @@
 #!/bin/bash
-# CloudWS v2.0 ? 31-user: PAM, user creation, groups, sudoers
+# CloudWS v2.0 — 31-user: PAM, user creation, groups, sudoers
 # Must run AFTER skel is populated (31-locale-theme writes skel/.bashrc)
 # and BEFORE any service that references the user.
 set -euo pipefail
 
-echo "???????????????????????????????????????????????????????????????????"
-echo "  CloudWS v2.0 ? User & Authentication"
-echo "???????????????????????????????????????????????????????????????????"
+echo "——————————————————————?"
+echo "  CloudWS v2.0 — User & Authentication"
+echo "——————————————————————?"
 
-# ??? PAM FIX ???
+# — PAM FIX —
 echo "[31-user] Configuring PAM via authselect..."
 if command -v authselect &>/dev/null; then
     authselect select local --force 2>/dev/null || {
-        echo "[31-user] WARNING: authselect failed ? applying manual pam_unix fallback"
+        echo "[31-user] WARNING: authselect failed — applying manual pam_unix fallback"
         for pf in system-auth password-auth; do
             cat > "/etc/pam.d/${pf}" <<'EOPAM'
 auth        required      pam_env.so
@@ -31,8 +31,8 @@ EOPAM
     }
 fi
 
-# ??? USER CREATION ???
-# Password is pre-hashed (SHA-512) by the orchestrator ? plaintext NEVER in build log.
+# — USER CREATION —
+# Password is pre-hashed (SHA-512) by the orchestrator — plaintext NEVER in build log.
 echo "[31-user] Creating user cloudws..."
 useradd -m -d /var/home/INJ_U -s /bin/bash INJ_U 2>/dev/null || true
 echo "INJ_U:INJ_HASH" | chpasswd -e
@@ -45,7 +45,7 @@ passwd -u INJ_U 2>/dev/null || true
 u cloudws - "CloudWS User" /var/home/INJ_U /bin/bash
 EOF
 
-# ??? GROUP INJECTION ???
+# — GROUP INJECTION —
 # Pre-create hardware groups with standard Fedora GIDs if missing.
 # This prevents dynamic GID drift that breaks udev device assignments.
 for group_spec in "kvm:36" "video:39" "render:105" "libvirt:" "input:" "dialout:" "docker:"; do
@@ -66,15 +66,15 @@ for g in wheel libvirt kvm video render input dialout docker; do
     fi
 done
 
-# ??? SUDOERS ???
+# — SUDOERS —
 echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/10-cloudws-wheel
 chmod 440 /etc/sudoers.d/10-cloudws-wheel
 
-# ??? LOCALE ???
+# — LOCALE —
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
 localedef -i en_US -f UTF-8 en_US.UTF-8 2>/dev/null || true
 
-# ??? CLOUD-INIT ???
+# — CLOUD-INIT —
 mkdir -p /etc/cloud/cloud.cfg.d
 cat > /etc/cloud/cloud.cfg.d/10-cloudws.cfg <<'EOCI'
 preserve_hostname: false
@@ -89,7 +89,7 @@ system_info:
 datasource_list: [NoCloud, None, Azure, GCE, Ec2, Openstack]
 EOCI
 
-# ??? MULTIPATH ???
+# — MULTIPATH —
 mkdir -p /etc/multipath
 cat > /etc/multipath.conf <<'EOMP'
 defaults {
@@ -98,7 +98,7 @@ defaults {
 }
 EOMP
 
-# ??? FIX HOME DIRECTORY OWNERSHIP ???
+# — FIX HOME DIRECTORY OWNERSHIP —
 echo "[31-user] Fixing home directory ownership..."
 awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd | while read -r u; do
     home=$(getent passwd "$u" | cut -d: -f6)
@@ -108,7 +108,7 @@ awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd | while read -r u; do
     fi
 done
 
-# ??? NFS STATE DIRECTORY ???
+# — NFS STATE DIRECTORY —
 # Managed via system_files/usr/lib/tmpfiles.d/cloudws-nfs.conf
 
 echo "[31-user] User & authentication configured."

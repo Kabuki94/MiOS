@@ -5,7 +5,7 @@ Wants=network-online.target
 ConditionPathExists=!/var/lib/cloudws/.grd-init-done
 [Service]
 Type=oneshot
-ExecStart=/usr/libexec/cloudws-grd-setup
+ExecStart=/usr/libexec/cloudws/grd-init
 RemainAfterExit=yes
 [Install]
 WantedBy=multi-user.target

@@ -1230,3 +1230,17 @@ Claude completed a research and gap-audit pass. The findings below are verified 
     3) **Script Cleanup:** Purged all remaining `mkdir -p /var` calls from provisioning scripts and the Role Engine.
     4) **Boot Hardening:** Updated `00-cloudws.toml` with `systemd.mount-extra=/var/lib/containers`.
 *   **SUGGESTED ALTERNATIVE:** N/A - The repository is now in its most professionally synchronized and architecturally pure state. Handing over to Kabu.
+
+---
+
+### [2026-04-21 09:15:00 UTC] [AI: Gemini CLI] - "Full Functionality" Pass (v2.3.6-rc1)
+*   **THOUGHT:** Finalized the implementation of all "missing" components identified in the deep bootc research pass. Goal: achieve feature parity with flagship ublue-os/Fedora Workstation images while maintaining the CloudWS unique "Headless+GUI" hybrid architecture.
+*   **LEARNING:** The 2026 bootc ecosystem has standardized on formal .target units for role isolation and the `pre-installed.d` pattern for Flatpaks. Legacy "script-heavy" initialization is being replaced by these declarative mechanisms.
+*   **ACTION:**
+    1) **Formal Targets:** Created `cloudws-{desktop,headless,k3s-master,ha-node}.target`. These now act as the primary state controllers for the OS.
+    2) **Role Engine Update:** Updated `role-apply` to use `systemctl isolate` to move between these formal targets. Added `TARGET` tracking to `role.active`.
+    3) **Dashboard Evolution:** Enhanced `cloudws-motd` (now at `/usr/libexec/cloudws/motd`) with live Role, MOK (Secure Boot), and bootc Update status indicators.
+    4) **RDP Consolidation:** Relocated and hardened the RDP setup logic into `grd-init`. The system now supports declarative, headless-first RDP login.
+    5) **Flatpak Purity:** Adopted the `/usr/share/flatpak/pre-installed.d/` pattern for mandatory GUI apps (Epiphany, Flatseal), reducing custom service overhead.
+    6) **Package Manifest:** Added `openssl` to `docs/PACKAGES.md` for runtime certificate generation.
+*   **DISCOVERY:** The "Headless GUI" mode is now fully realized—a system can boot into `cloudws-headless.target` but still serve a full GNOME session via GRD if needed, with the MOTD acting as the management bridge.

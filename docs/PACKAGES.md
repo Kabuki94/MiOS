@@ -509,6 +509,7 @@ tree
 jq
 yq
 bc
+openssl
 distrobox
 just
 driverctl

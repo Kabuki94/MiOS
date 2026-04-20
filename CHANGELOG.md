@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 ### 🏗️ Build & Overlay
 * **Overlay Stability:** Fixed a critical failure during the `/usr/local` symlink creation on ucore/bootc bases (v2.3.3 legacy fix).
 * **Passthrough Plumbing:** Staged all passthrough-related overlay directories (`systemd/`, `udev/`, `tmpfiles.d/`, `sysusers.d/`, `kargs.d/`) into the build context for reliable injection into the image.
+* **Logging Purity:** Audited and fixed malformed UTF-8/encoding issues in shell scripts. Standardized build logging with high-visibility ASCII separators and descriptive STEP markers for professional CI/CD output.
 
 ## [v2.3.4] - 2026-04-18
 

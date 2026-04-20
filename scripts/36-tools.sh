@@ -79,7 +79,7 @@ case "$CMD" in
         podman run --rm -v /:/scan:ro docker.io/clamav/clamav:latest \
             clamscan -r /scan/home --max-filesize=100M --max-scansize=500M 2>/dev/null
         ;;
-    motd)        exec /usr/libexec/cloudws-motd ;;
+    motd)        exec /usr/libexec/cloudws/motd ;;
     *)
         echo "Unknown command: $CMD"
         echo "Run 'cloudws --help' for available commands."

@@ -116,9 +116,6 @@ curl -sL "$VIRTIO_URL" -o /usr/share/cloudws/virtio/virtio-win.iso 2>/dev/null |
 # Managed via system_files/usr/lib/tmpfiles.d/cloudws-virtio.conf
 
 # ── libvirtd service shutdown timeout ───────────────────────────────────────
-# libvirtd has a default 45-second TimeoutStopSec which
-
-# ── libvirtd service shutdown timeout ───────────────────────────────────────
 # libvirtd has a default 45-second TimeoutStopSec which is often insufficient
 # for graceful VM shutdown, especially with large memory VMs or active storage.
 # Increase to 120 seconds to allow for more robust shutdown behavior.

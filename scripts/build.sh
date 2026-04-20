@@ -27,10 +27,10 @@ log_ts() {
 
 VERSION_STR="$(cat "${SCRIPT_DIR}/../VERSION" 2>/dev/null || cat /ctx/VERSION 2>/dev/null || echo '2.0.0')"
 
-echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║  CloudWS v${VERSION_STR} — Building OS Image               ║"
-echo "║  Base: ucore-hci:stable-nvidia + F44 + Rawhide kernel    ║"
-echo "╚══════════════════════════════════════════════════════════════╝"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  CloudWS v${VERSION_STR} — Building OS Image"
+echo "  Base: ucore-hci:stable-nvidia + F44 + Rawhide kernel"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 log_ts "Build started"
 log_ts "PACKAGES.MD : $PACKAGES_MD"
@@ -62,10 +62,9 @@ for script in "$SCRIPT_DIR"/[0-9][0-9]-*.sh; do
         continue
     fi
     SCRIPT_COUNT=$((SCRIPT_COUNT + 1))
-    echo ""
-    echo "═══════════════════════════════════════════════════════════════"
-    log_ts "==> Running: $SCRIPT_NAME"
-    echo "═══════════════════════════════════════════════════════════════"
+    echo "───────────────────────────────────────────────────────────────────"
+    log_ts "==> STEP $SCRIPT_COUNT: $SCRIPT_NAME"
+    echo "───────────────────────────────────────────────────────────────────"
 
     STEP_START=$SECONDS
 
@@ -77,11 +76,12 @@ for script in "$SCRIPT_DIR"/[0-9][0-9]-*.sh; do
     STEP_ELAPSED=$(( SECONDS - STEP_START ))
 
     if [[ $SCRIPT_EXIT -eq 0 ]]; then
-        log_ts "==> $SCRIPT_NAME completed (${STEP_ELAPSED}s)"
+        log_ts "✓ $SCRIPT_NAME completed (${STEP_ELAPSED}s)"
     else
-        log_ts "==> $SCRIPT_NAME FAILED (exit $SCRIPT_EXIT, ${STEP_ELAPSED}s)"
+        log_ts "✗ $SCRIPT_NAME FAILED (exit $SCRIPT_EXIT, ${STEP_ELAPSED}s)"
         SCRIPT_FAIL=$((SCRIPT_FAIL + 1))
     fi
+    echo ""
 done
 
 # ── Suppress ucore base bloat (build-up approach — no dnf remove) ──────────
@@ -102,10 +102,9 @@ for app in gnome-tour gnome-initial-setup; do
 done
 
 # ── Post-build validation ──────────────────────────────────────────────────
-echo ""
-echo "═══════════════════════════════════════════════════════════════"
-log_ts "==> Post-build validation"
-echo "═══════════════════════════════════════════════════════════════"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+log_ts "Post-build validation"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 CRITICAL_PACKAGES=(
     gnome-shell gdm podman bootc libvirt kernel firewalld cockpit
@@ -191,15 +190,15 @@ rm -f /tmp/cloudws-build.log
 # ── Summary ─────────────────────────────────────────────────────────────────
 TOTAL_ELAPSED=$(( SECONDS - TOTAL_START ))
 echo ""
-echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║  BUILD COMPLETE                                            ║"
-echo "╠══════════════════════════════════════════════════════════════╣"
-echo "║  Base:      ucore-hci:stable-nvidia + F44 + Rawhide kernel  ║"
-echo "║  Scripts:   $SCRIPT_COUNT executed, $SCRIPT_FAIL failed"
-echo "║  Packages:  $VALIDATION_FAIL critical missing"
-echo "║  Duration:  ${TOTAL_ELAPSED}s ($((TOTAL_ELAPSED / 60))m $((TOTAL_ELAPSED % 60))s)"
-echo "║  Version:   $VERSION_STR"
-echo "╚══════════════════════════════════════════════════════════════╝"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  BUILD SUMMARY"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Scripts:   $SCRIPT_COUNT executed, $SCRIPT_FAIL failed"
+echo "  Packages:  $VALIDATION_FAIL critical missing"
+echo "  Duration:  ${TOTAL_ELAPSED}s ($((TOTAL_ELAPSED / 60))m $((TOTAL_ELAPSED % 60))s)"
+echo "  Version:   v$VERSION_STR"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
 
 if [[ $SCRIPT_FAIL -gt 0 ]]; then
     log_ts "FATAL: $SCRIPT_FAIL scripts failed — review build output above"

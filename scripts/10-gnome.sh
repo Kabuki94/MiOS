@@ -129,12 +129,12 @@ done
 
 # VERIFY cursor files actually exist — fail build if missing
 if [ "$BIBATA_OK" -eq 0 ] || [ ! -d "$BIBATA_DIR/cursors" ]; then
-    echo "══════════════════════════════════════════════════════════════════"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "  FATAL: Bibata cursor theme download FAILED after 3 attempts"
     echo "  URL: $BIBATA_URL"
     echo "  The cursor will show as a SQUARE without this theme."
     echo "  BUILD CANNOT CONTINUE."
-    echo "══════════════════════════════════════════════════════════════════"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     exit 1
 fi
 

@@ -1,9 +1,8 @@
 [Unit]
-Description=CloudWS K3s master role (control plane)
-Requires=multi-user.target
+Description=CloudWS K3s Master Role
+Requires=multi-user.target k3s.service
 After=multi-user.target
+Conflicts=cloudws-desktop.target cloudws-headless.target cloudws-ha-node.target
 AllowIsolate=yes
-Wants=k3s.service
-
 [Install]
-Alias=default.target.cloudws-k3s-master
+WantedBy=multi-user.target

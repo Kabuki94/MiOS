@@ -2,11 +2,7 @@
 # ============================================================================
 # cloudws role-apply: CloudWS Unified Initialization & Role Engine
 # ============================================================================
-# Handles EVERY-BOOT initialization and role-specific service management.
-# 1. System-wide init (hostname, users, groups, home dirs)
-# 2. Virtualization & Hardware detection (RTX 50 Blackwell safety)
-# 3. Role resolution (cmdline > role.conf > environment default)
-# 4. Target & Service selection (Asynchronous --no-block)
+# v2.3.6: FORMAL TARGET TRANSITION. Uses systemd .target units for roles.
 # ============================================================================
 set -euo pipefail
 
@@ -19,8 +15,6 @@ log() { printf '[cloudws-role] %s\n' "$*"; }
 # ----------------------------------------------------------------------------
 # PHASE 1: System-wide Initialization
 # ----------------------------------------------------------------------------
-
-# Unique hostname (stable across reboots, unique across VM clones)
 MAC=$(cat /sys/class/net/e*/address /sys/class/net/w*/address 2>/dev/null | head -1 || echo "")
 MACH_ID=$(cat /etc/machine-id 2>/dev/null || echo "")
 
@@ -33,7 +27,7 @@ if [[ -n "$MACH_ID" ]]; then
     fi
 fi
 
-# Ensure home directories and groups exist for standard users
+# Standard user home management
 for u in $(awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd); do
     home=$(getent passwd "$u" | cut -d: -f6)
     if [[ ! -d "$home" ]]; then
@@ -42,7 +36,6 @@ for u in $(awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd); do
         uid=$(id -u "$u"); gid=$(id -g "$u")
         chown -R "${uid}:${gid}" "$home"
     fi
-    # Standard group membership
     for g in wheel libvirt kvm video render input dialout; do
         usermod -aG "$g" "$u" 2>/dev/null || true
     done
@@ -101,56 +94,28 @@ FEATURES="${FEATURES:-}"
 log "resolved role=$ROLE profile=$PROFILE features=$FEATURES"
 
 # ----------------------------------------------------------------------------
-# PHASE 4: Service Set Management (Asynchronous)
+# PHASE 4: Target Selection (Formal systemd isolation)
 # ----------------------------------------------------------------------------
-enable_units() {
-    for u in "$@"; do
-        systemctl enable "$u" 2>/dev/null || true
-        systemctl start --no-block "$u" 2>/dev/null || true
-    done
-}
-disable_units() {
-    for u in "$@"; do
-        systemctl disable "$u" 2>/dev/null || true
-        systemctl stop --no-block "$u" 2>/dev/null || true
-    done
-}
-
+TARGET="cloudws-headless.target"
 case "$ROLE" in
-    desktop)
-        enable_units gdm.service libvirtd.service libvirtd.socket virtnetworkd.service \
-                     virtqemud.service virtstoraged.service virtnodedevd.service
-        disable_units k3s.service k3s-agent.service corosync.service pacemaker.service
-        systemctl set-default cloudws-desktop.target
-        ;;
-    headless)
-        disable_units gdm.service libvirtd.service k3s-agent.service \
-                      corosync.service pacemaker.service
-        systemctl set-default cloudws-headless.target
-        ;;
-    k3s*)
-        enable_units k3s.service
-        disable_units gdm.service
-        systemctl set-default cloudws-k3s-master.target
-        ;;
-    ha*)
-        enable_units corosync.service pacemaker.service
-        disable_units gdm.service
-        systemctl set-default cloudws-ha-node.target
-        ;;
-    *)
-        log "WARN: unknown role '$ROLE' - defaulting to headless"
-        systemctl set-default cloudws-headless.target
-        ;;
+    desktop)  TARGET="cloudws-desktop.target" ;;
+    headless) TARGET="cloudws-headless.target" ;;
+    k3s*)     TARGET="cloudws-k3s-master.target" ;;
+    ha*)      TARGET="cloudws-ha-node.target" ;;
+    *)        log "WARN: unknown role '$ROLE' - defaulting to headless" ;;
 esac
 
-# Feature gates
+log "Setting default target to $TARGET"
+systemctl set-default --no-block "$TARGET" 2>/dev/null || true
+systemctl isolate --no-block "$TARGET" 2>/dev/null || true
+
+# Feature gates (Optional side-cars)
 IFS=',' read -r -a FEAT_ARR <<< "$FEATURES"
 for f in "${FEAT_ARR[@]}"; do
     case "$f" in
-        ceph-mon)    enable_units "ceph-mon@$(hostname -s).service" ;;
-        gamescope)   enable_units gamescope-session.target ;;
-        waydroid)    enable_units waydroid-container.service ;;
+        ceph-mon)    systemctl start --no-block "ceph-mon@$(hostname -s).service" 2>/dev/null || true ;;
+        gamescope)   systemctl start --no-block gamescope-session.target 2>/dev/null || true ;;
+        waydroid)    systemctl start --no-block waydroid-container.service 2>/dev/null || true ;;
     esac
 done
 
@@ -161,7 +126,8 @@ PROFILE=$PROFILE
 FEATURES=$FEATURES
 VIRT=$VIRT
 BLACKWELL=$IS_BLACKWELL
+TARGET=$TARGET
 APPLIED=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 EOF
 
-log "role apply complete; default target now $(systemctl get-default)"
+log "role apply complete; system is transitioning to $TARGET"
