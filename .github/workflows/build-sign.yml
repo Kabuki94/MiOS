@@ -116,7 +116,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Sign (key-based)
-        if: ${{ secrets.COSIGN_PRIVATE_KEY != '' }}
         env:
           COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
