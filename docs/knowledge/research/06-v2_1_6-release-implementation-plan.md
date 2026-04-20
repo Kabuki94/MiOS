@@ -946,3 +946,9 @@ Outstanding item C (akmod guards):
 Nothing in this plan introduces features outside the explicit item list. Not included (deliberately): Flatpak preinstall changes, brand/theme overlays, additional COPR repos, BIB AMI/GCE outputs, keyed signing fallback, SBOM generation, Trivy scanning, attestations beyond cosign sign, kvmfr systemd unit (no unit exists to guard). These can be queued for v2.1.7+ if desired.
 
 The flatpack is ready to generate from this document alone; every file listed in §8a has exact contents specified in §1–§7; the push script requirements in §8c are fully spelled out; and the commit message in §8d can be used verbatim.
+
+---
+
+## UPDATE: DEPRECATION SHIM REJECTED
+
+**CRITICAL OVERRIDE:** The decision in section 4 to deprecate `push-to-github.ps1` and use versioned scripts (`push-vX.Y.Z.ps1`) has been explicitly rejected and reversed by the maintainer. `push-to-github.ps1` is the **only** variant to keep, as it is a core part of the local build stack. All versioned variants must be merged back into the main `push-to-github.ps1` file. Do NOT create versioned push scripts.

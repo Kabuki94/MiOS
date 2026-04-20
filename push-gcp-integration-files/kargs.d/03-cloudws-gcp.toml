@@ -1,9 +1,0 @@
-# Flat top-level kargs array — NO [kargs] section header, NO delete sub-keys.
-kargs = [
-  "console=ttyS0,38400n8d",
-  "console=tty0",
-  "no_timer_check",
-  "net.ifnames=0",
-  "biosdevname=0",
-  "scsi_mod.use_blk_mq=Y",
-]

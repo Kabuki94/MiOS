@@ -1,20 +1,20 @@
 ---
-description: Scaffold a push-vX.Y.Z.ps1 script for a release (Kabu's deliverable pattern)
+description: Prepare the push-to-github.ps1 script for a release (Kabu's deliverable pattern)
 argument-hint: <version> [commit-message]
 ---
 
-Create a PowerShell push script named `push-v$1.ps1` at the export root
-(not inside the repo) that follows the CloudWS-bootc deliverable
-contract defined in `CLAUDE.md` §4.
+Update the central PowerShell push script named `push-to-github.ps1`.
+Do NOT create versioned `push-vX.Y.Z.ps1` files. `push-to-github.ps1` is the
+single source of truth for the local build stack and follows the CloudWS-bootc
+deliverable contract defined in `CLAUDE.md` §4.
 
 The script must:
 
 1. **Clone the existing repo** to a temp directory —
    `github.com/Kabuki94/CloudWS-bootc`. Never `git init`, never
    create a new repo.
-2. **Copy every file** from a companion directory
-   (`./push-v$1-files/`) into the repo, preserving layout relative
-   to the repo root. Complete replacement files only.
+2. **Copy every file** from the staged companion directory into the repo,
+   preserving layout relative to the repo root. Complete replacement files only.
 3. **Never delete files** that aren't explicitly targeted by the copy.
 4. **Bump `VERSION`** to `$1`.
 5. **Update `CHANGELOG.md`** with a new section at the top under
@@ -23,7 +23,7 @@ The script must:
    ```
    release: v$1 — <commit-message or "summary">
 
-   <bulleted list of what changed, drawn from the companion-dir contents>
+   <bulleted list of what changed, drawn from the staged contents>
    ```
 7. **Push to `main`**, using `$env:GH_TOKEN` or the already-configured
    credential helper. Do not embed tokens in plaintext; use
@@ -41,6 +41,5 @@ Hard constraints (from CLAUDE.md §3.8):
   the script is piped via `irm | iex`, that line breaks — use a temp
   file pattern instead.
 
-Name the script `push-v$1.ps1`. Put companion files in `push-v$1-files/`.
-Do not push anything on the user's behalf — the script is the
-deliverable; humans run it.
+Ensure `push-to-github.ps1` is the ONLY script used for this process. Do not
+push anything on the user's behalf — the script is the deliverable; humans run it.

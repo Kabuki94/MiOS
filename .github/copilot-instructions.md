@@ -123,9 +123,9 @@ flat top-level `kargs = [ ... ]` array instead.
 
 - **Complete replacement files only.** Not patches. Not "edit this
   section". Not "paste this into X". The whole file, every time.
-- Release deliverables are **PowerShell push scripts** named
-  `push-vX.Y.Z.ps1` that clone the repo, copy companion files in,
-  commit with a structured message, and push to `main`.
+- Release deliverables must be pushed using the single central **PowerShell push script**
+  named `push-to-github.ps1` that clones the repo, copies files in,
+  commits with a structured message, and pushes to `main`. Do NOT create `push-vX.Y.Z.ps1` variants.
 - Never `git init`. Never push without human review.
 - Don't delete files that weren't explicitly targeted.
 
