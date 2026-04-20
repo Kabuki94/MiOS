@@ -1,2 +1,3 @@
 # Mitigate RTX 50-Series (Blackwell) GSP firmware initialization bug
+match-architectures = ["x86_64"]
 kargs = ["vfio-pci.disable_idle_d3=1"]

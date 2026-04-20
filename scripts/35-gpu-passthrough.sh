@@ -97,6 +97,9 @@ fi
 # kargs.d
 # ----------------------------------------------------------------------------
 install -d -m 0755 /usr/lib/bootc/kargs.d
-install -m 0644 "${SRC_ROOT}/kargs.d/02-cloudws-gpu.toml" /usr/lib/bootc/kargs.d/
+for _toml in "${SRC_ROOT}/kargs.d/"*.toml; do
+    [ -f "$_toml" ] || continue
+    install -m 0644 "$_toml" /usr/lib/bootc/kargs.d/
+done
 
 log "GPU passthrough plumbing installed successfully"

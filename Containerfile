@@ -92,11 +92,6 @@ LABEL org.opencontainers.image.licenses="Apache-2.0"
 LABEL org.opencontainers.image.version="0.1.1"
 LABEL containers.bootc="1"
 
-# Expose ports for Podman Desktop UI and local port forwarding
-# 22: SSH | 3389: RDP | 6443: K3s API | 8080: Guacamole
-# 8443: Ceph Dashboard | 9090: Cockpit Web UI
-EXPOSE 22 3389 6443 8080 8443 9090
-
 # Build context mounted read-only
 COPY --from=ctx /ctx /ctx
 
