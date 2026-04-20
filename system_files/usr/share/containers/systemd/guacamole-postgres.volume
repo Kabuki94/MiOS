@@ -1,0 +1,3 @@
+[Volume]
+# Persistent storage for Guacamole's Postgres database (stored in /var/lib/containers/storage/volumes)
+VolumeName=guacamole-postgres-data

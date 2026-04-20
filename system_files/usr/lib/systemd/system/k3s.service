@@ -1,18 +1,18 @@
 [Unit]
-Description=Lightweight Kubernetes
+Description=Lightweight Kubernetes (K3s)
 Documentation=https://k3s.io
-Wants=network-online.target
-After=network-online.target remote-fs.target
+Wants=network-online.target cloudws-k3s-init.service
+After=network-online.target cloudws-k3s-init.service
 
 [Service]
 Type=notify
 EnvironmentFile=-/etc/default/%N
 EnvironmentFile=-/etc/sysconfig/%N
-ExecStartPre=-/sbin/modprobe br_netfilter
-ExecStartPre=-/sbin/modprobe overlay
-ExecStart=/usr/local/bin/k3s server
+EnvironmentFile=-/etc/systemd/system/k3s.service.env
 KillMode=process
 Delegate=yes
+# Having non-zero Limit*s causes performance problems due to accounting overhead
+# in the kernel. We recommend using cgroups to do container-local accounting.
 LimitNOFILE=1048576
 LimitNPROC=infinity
 LimitCORE=infinity
@@ -20,6 +20,9 @@ TasksMax=infinity
 TimeoutStartSec=0
 Restart=always
 RestartSec=5s
+ExecStartPre=-/sbin/modprobe br_netfilter
+ExecStartPre=-/sbin/modprobe overlay
+ExecStart=/usr/local/bin/k3s server --disable traefik --write-kubeconfig-mode 644
 
 [Install]
 WantedBy=multi-user.target

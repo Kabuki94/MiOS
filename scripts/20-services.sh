@@ -93,6 +93,7 @@ BARE_METAL_SERVICES=(
     pacemaker
     corosync
     pcsd
+    cloudws-ha-bootstrap
     crowdsec
     crowdsec-firewall-bouncer
     multipathd
@@ -159,4 +160,3 @@ fi
 tuned-adm profile throughput-performance 2>/dev/null || true
 
 echo "[20-services] All services enabled and gated. v1.3 complete."
-

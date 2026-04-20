@@ -1,0 +1,19 @@
+[Unit]
+Description=Guacamole PostgreSQL Database
+ConditionVirtualization=!wsl
+
+[Container]
+Image=docker.io/postgres:15
+ContainerName=guacamole-postgres
+Network=guacamole.network
+Volume=guacamole-postgres.volume:/var/lib/postgresql/data
+Environment=POSTGRES_PASSWORD=guacamole
+Environment=POSTGRES_USER=guacamole
+Environment=POSTGRES_DB=guacamole
+AutoUpdate=registry
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

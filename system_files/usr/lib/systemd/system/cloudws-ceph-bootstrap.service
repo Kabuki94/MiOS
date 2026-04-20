@@ -1,15 +1,19 @@
 [Unit]
-Description=CloudWS Ceph Single-Node Bootstrap
-After=network-online.target podman.service
-Wants=network-online.target
-ConditionPathExists=!/var/lib/ceph/.cloudws-bootstrapped
+Description=CloudWS Ceph Cluster Bootstrap
 ConditionVirtualization=no
+# Only run if the cluster hasn't been bootstrapped yet
+ConditionPathExists=!/etc/ceph/ceph.conf
+After=network-online.target podman.socket
+Wants=network-online.target podman.socket
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/local/bin/cloudws-ceph-bootstrap
-TimeoutStartSec=600
+# Grab the primary IP and bootstrap the orchestrator container
+ExecStart=/bin/bash -c "IP=$(ip -4 route get 1.1.1.1 | awk '{for(i=1;i<=NF;i++) if($i==\"src\") print $(i+1)}' | head -1) && cephadm bootstrap --mon-ip $IP --initial-dashboard-user admin --initial-dashboard-password cloudws --dashboard-password-noupdate"
+
+# Secure the admin keyring after generation
+ExecStartPost=/bin/chmod 0600 /etc/ceph/ceph.client.admin.keyring
 
 [Install]
 WantedBy=multi-user.target

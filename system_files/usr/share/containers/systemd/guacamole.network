@@ -2,4 +2,4 @@
 # A dedicated bridge network for the Guacamole stack
 NetworkName=guacamole-net
 Label=app=guacamole
-Subnet=10.88.0.0/24
+Subnet=10.88.1.0/24
