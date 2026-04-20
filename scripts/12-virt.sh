@@ -113,10 +113,7 @@ curl -sL "$VIRTIO_URL" -o /usr/share/cloudws/virtio/virtio-win.iso 2>/dev/null |
 }
 
 # Symlink the immutable ISO into /var/lib/libvirt/images via tmpfiles.d so it survives upgrades
-mkdir -p /usr/lib/tmpfiles.d
-cat > /usr/lib/tmpfiles.d/cloudws-virtio.conf <<'EOF'
-L+ /var/lib/libvirt/images/virtio-win.iso 0644 - - - /usr/share/cloudws/virtio/virtio-win.iso
-EOF
+# Managed via system_files/usr/lib/tmpfiles.d/cloudws-virtio.conf
 
 # ── libvirtd service shutdown timeout ───────────────────────────────────────
 # libvirtd has a default 45-second TimeoutStopSec which
@@ -230,43 +227,8 @@ if [ -n "$BUILD_DEPS" ]; then
     done
 fi
 
-# ── Podman Quadlet: CrowdSec (example pattern for containerized services) ───
-# This is the recommended pattern for managing services on bootc images.
-# Placed in /usr/share/containers/systemd/ (immutable, baked into image).
-mkdir -p /usr/share/containers/systemd
-cat > /usr/share/containers/systemd/crowdsec-dashboard.container <<'EOQUAD'
-# CloudWS — CrowdSec Metabase dashboard (Podman Quadlet)
-# Only runs on bare-metal/VM; WSL2 lacks the dbus/socket environment needed
-# for reliable container startup. Restart=on-failure prevents infinite loops
-# when crowdsec itself is not yet enrolled.
-[Unit]
-ConditionVirtualization=!wsl
-
-[Container]
-Image=docker.io/crowdsecurity/metabase:latest
-ContainerName=crowdsec-dashboard
-GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage
-PublishPort=3000:3000
-Volume=crowdsec-data.volume:/metabase-data
-AutoUpdate=registry
-
-[Service]
-Restart=on-failure
-RestartSec=30
-TimeoutStartSec=300
-
-[Install]
-WantedBy=multi-user.target
-EOQUAD
-
-# Logically bind the image so bootc pre-fetches it during OS upgrades
-mkdir -p /usr/lib/bootc/bound-images.d
-ln -sf /usr/share/containers/systemd/crowdsec-dashboard.container /usr/lib/bootc/bound-images.d/crowdsec-dashboard.container
-
-# ── CrowdSec data volume (required by crowdsec-dashboard.container quadlet) ──
-cat > /usr/share/containers/systemd/crowdsec-data.volume <<'EOVOL'
-[Volume]
-# CloudWS v2.0: Persistent storage for CrowdSec Metabase dashboard
-EOVOL
+# ── Podman Quadlet: CrowdSec ────────────────────────────────────────────────
+# Managed via system_files/usr/share/containers/systemd/
+# Logically bound via system_files/usr/lib/bootc/bound-images.d/
 
 echo "[12-virt] Virtualization stack complete. LG: ${LG_VERSION} (K3s in 13-ceph-k3s.sh)"

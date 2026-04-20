@@ -22,10 +22,6 @@ EOF
 chmod 0644 /usr/lib/systemd/system/gnome-remote-desktop.service.d/10-network-wait.conf
 
 # Ensure internal CloudWS and GRD state directories are pre-created
-mkdir -p /usr/lib/tmpfiles.d
-cat << 'EOF' > /usr/lib/tmpfiles.d/cloudws-grd.conf
-d /var/lib/gnome-remote-desktop 0770 gnome-remote-desktop gnome-remote-desktop -
-d /var/lib/cloudws 0755 root root -
-EOF
+# Managed via system_files/usr/lib/tmpfiles.d/cloudws-grd.conf
 
 echo "GNOME Remote Desktop provisioning complete."

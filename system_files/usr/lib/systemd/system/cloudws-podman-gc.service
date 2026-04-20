@@ -1,0 +1,5 @@
+[Unit]
+Description=CloudWS Podman Garbage Collection
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/podman system prune -a -f

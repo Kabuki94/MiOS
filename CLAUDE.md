@@ -343,8 +343,8 @@ many iterations and should be treated as a contract.
 | Smoke test | `scripts/smoke-check.sh <serial-log>` |
 | MOK enrollment | `scripts/enroll-mok.sh` (sbctl or mokutil) |
 | Lint (CI) | `.github/workflows/pr-lint.yml` — shellcheck + hadolint + TOML validation |
-| Full build (CI) | `.github/workflows/build-test.yml` — build + BIB + ephemeral QEMU boot |
-| Signed publish | `.github/workflows/build-sign.yml` — cosign keyless (Fulcio/Rekor) |
+| Build & Test (CI) | `.github/workflows/build.yml` — build + BIB + ephemeral QEMU boot |
+| Signed Publish | `.github/workflows/build.yml` — cosign keyless (Fulcio/Rekor) |
 | Artifact build | `.github/workflows/build-artifacts.yml` — RAW / VHDX / ISO / WSL |
 
 ### 5.1 Base images

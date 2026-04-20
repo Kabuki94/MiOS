@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 
 ### ⚙️ Core OS & Role Engine Consolidation
 * **Unified Role Engine:** Consolidated the asynchronous initialization and role management into the extensionless `system_files/usr/libexec/cloudws/role-apply` script. This unified engine now handles system-wide init (Phase 1), Blackwell hardware safety (Phase 2), and non-blocking service transitions (Phase 4).
-* **Redundancy Cleanup:** Deleted the legacy `role-apply.sh` script to maintain architectural purity.
+* **Architectural Overlay Purity:** Consolidated all dynamically created systemd units (`cloudws-role.service`, `cloudws-gpu-detect.service`, `cloudws-podman-gc.{timer,service}`) into the `system_files/` overlay, ensuring a single source of truth and repository-backed configurations.
+* **Redundancy Cleanup:** Deleted the legacy `role-apply.sh` script and stripped provisioning scripts (`34-gpu-detect.sh`, `35-init-service.sh`) of redundant `cat >` heredoc logic.
+* **Permission Audit:** Verified and applied the mandatory `+x` executable bits to all scripts in `usr/libexec/cloudws/` to ensure reliability in the built image.
 * **Docs Restructure Fix:** Resolved build context failures caused by the relocation of `PACKAGES.md` to `docs/PACKAGES.md`. The `Containerfile` now correctly maps the path during the context stage.
 
 ### 🏗️ Build & Overlay

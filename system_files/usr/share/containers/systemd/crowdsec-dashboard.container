@@ -1,0 +1,23 @@
+# CloudWS — CrowdSec Metabase dashboard (Podman Quadlet)
+# Only runs on bare-metal/VM; WSL2 lacks the dbus/socket environment needed
+# for reliable container startup. Restart=on-failure prevents infinite loops
+# when crowdsec itself is not yet enrolled.
+[Unit]
+Description=CrowdSec Metabase Dashboard
+ConditionVirtualization=!wsl
+
+[Container]
+Image=docker.io/crowdsecurity/metabase:latest
+ContainerName=crowdsec-dashboard
+GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage
+PublishPort=3000:3000
+Volume=crowdsec-data.volume:/metabase-data
+AutoUpdate=registry
+
+[Service]
+Restart=on-failure
+RestartSec=30
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target
