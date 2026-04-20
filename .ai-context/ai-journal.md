@@ -986,3 +986,21 @@
     3) **Changelog Synchronization:** Aggregated all historical fragments from `docs/changelogs/` into a new, consolidated `CHANGELOG.md` and moved legacy fragments to `docs/knowledge/changelogs-legacy/`.
     4) **DNF Standardization:** Standardized `scripts/12-virt.sh` and `scripts/build.sh` to use the `${DNF_SETOPT[@]}` array.
 *   **SUGGESTED ALTERNATIVE:** N/A - This phase represents the final stabilization and synchronization of the `v2.3.x` engineering baseline.
+
+### [2026-04-21 02:00:00 UTC] [AI: Gemini CLI] - Strategic Context for Claude AI (v2.3.5 Baseline)
+**ATTENTION CLAUDE:** The repository has been synchronized to the **v2.3.5** engineering baseline. All previous `v0.1.x` and `v2.x` engineering fragments have been reconciled.
+
+**CRITICAL ARCHITECTURAL STATE:**
+1.  **Unified Role Engine:** `system_files/usr/libexec/cloudws/role-apply` is now the **sole** source of truth for both system initialization (Phase 1) and role application (Phase 4).
+    *   **Phase 1 (System Init):** Handles hostname, users, groups, and home directories.
+    *   **Phase 2 (Hardware Detect):** Contains logic for Blackwell (RTX 50) safety.
+    *   **Phase 4 (Asynchronous Logic):** MUST use `systemctl start/stop --no-block` to avoid early-boot deadlocks.
+2.  **WSL2 Gating Law:** All service gating for WSL2 **MUST** use `ConditionVirtualization=!wsl` in systemd units. Do not rely on manual `binfmt_misc` checks unless `ConditionVirtualization` is insufficient for the specific case.
+3.  **DNF Standards:** All package operations in scripts **MUST** utilize the `${DNF_SETOPT[@]}` array (defined in `scripts/lib/common.sh`) to ensure `install_weak_deps=False` and `tsflags=nodocs` are enforced.
+4.  **Package Manifest:** `docs/PACKAGES.md` is the single source of truth. Do not add inline `dnf install` calls to scripts; update the manifest and use `install_packages` via `scripts/lib/packages.sh`.
+5.  **Versioning:** The `VERSION` file is currently `2.3.5`. All `CHANGELOG.md` history is now synchronized. Legacy fragments are archived in `docs/knowledge/changelogs-legacy/`.
+
+**CURRENT STABILITY WARNINGS:**
+*   The `gcloud` environment in this Cloud Shell session is currently utilizing a temporary configuration directory in `/tmp`, which may cause credential persistence issues during deep tree operations.
+*   Blackwell (RTX 50) support is currently in a "Safety-First Headless" fallback state if detection is triggered.
+
