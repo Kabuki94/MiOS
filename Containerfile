@@ -122,6 +122,9 @@ RUN mkdir -p /etc/dnf \
 RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     --mount=type=cache,dst=/var/cache/dnf,sharing=locked     \
     set -e; \
+    # CI fallback: remove INJ_U/INJ_HASH placeholders used by Windows build script
+    sed -i 's/INJ_U/cloudws/g' /ctx/scripts/31-user.sh 2>/dev/null || true; \
+    sed -i '/INJ_HASH/d' /ctx/scripts/31-user.sh 2>/dev/null || true; \
     chmod +x /ctx/scripts/build.sh /ctx/scripts/*.sh 2>/dev/null || true; \
     /ctx/scripts/build.sh && \
     /ctx/scripts/18-apply-boot-fixes.sh && \
