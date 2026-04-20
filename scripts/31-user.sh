@@ -109,9 +109,6 @@ awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd | while read -r u; do
 done
 
 # ??? NFS STATE DIRECTORY ???
-mkdir -p /var/lib/nfs/statd
-cat > /usr/lib/tmpfiles.d/cloudws-nfs.conf <<'EOTMP'
-d /var/lib/nfs/statd 0755 rpcuser rpcuser -
-EOTMP
+# Managed via system_files/usr/lib/tmpfiles.d/cloudws-nfs.conf
 
 echo "[31-user] User & authentication configured."

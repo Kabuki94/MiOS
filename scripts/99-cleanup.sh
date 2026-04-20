@@ -43,7 +43,6 @@ ostree container commit 2>&1 || true
 
 # 7. Recreate /var/tmp (required by systemd)
 echo "[99-cleanup] Recreating /var/tmp..."
-mkdir -p /var/tmp
 chmod 1777 /var/tmp
 
 # 8. Clean DNF caches

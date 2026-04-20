@@ -630,5 +630,26 @@
 
   "geminicodeassist.project": "cloudws-os",
   "geminicodeassist.inlineSuggestions.enableAuto": true,
-  "geminicodeassist.enableTelemetry": false
+  "geminicodeassist.enableTelemetry": false,
+
+  "terminal.integrated.env.linux": {
+    "AI_ARCH_BASELINE": "v2.3.5",
+    "AI_DNF_POLICY": "--setopt=install_weak_deps=False",
+    "AI_WSL_GATING": "ConditionVirtualization=!wsl",
+    "AI_OVERLAY_PATH": "system_files/",
+    "AI_PKG_SOURCE": "docs/PACKAGES.md",
+    "AI_COSIGN_PIN": "v2.6.3",
+    "AI_WORKSPACE_TYPE": "bootable-container",
+    "AI_JOURNALING_LAW": "MANDATORY"
+  },
+  "terminal.integrated.env.windows": {
+    "AI_ARCH_BASELINE": "v2.3.5",
+    "AI_DNF_POLICY": "--setopt=install_weak_deps=False",
+    "AI_WSL_GATING": "ConditionVirtualization=!wsl",
+    "AI_OVERLAY_PATH": "system_files/",
+    "AI_PKG_SOURCE": "docs/PACKAGES.md",
+    "AI_COSIGN_PIN": "v2.6.3",
+    "AI_WORKSPACE_TYPE": "bootable-container",
+    "AI_JOURNALING_LAW": "MANDATORY"
+  }
 }

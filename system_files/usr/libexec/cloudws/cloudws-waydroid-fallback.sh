@@ -5,7 +5,6 @@ set -eou pipefail
 # due to missing Mesa EGL support. We must force CPU software rendering (SwiftShader).
 if lspci | grep -qi "VGA compatible controller: NVIDIA"; then
     echo "==> NVIDIA GPU detected. Forcing Waydroid to use SwiftShader EGL..."
-    mkdir -p /var/lib/waydroid
 
     # Initialize or update the waydroid config
     touch /var/lib/waydroid/waydroid.cfg

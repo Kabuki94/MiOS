@@ -18,6 +18,17 @@
 
 1.  **[`.ai-context/AI-README.md`](./.ai-context/AI-README.md)** — Unified entry point and core AI laws.
 2.  **[`.ai-context/ai-journal.md`](./.ai-context/ai-journal.md)** — Mandatory chronological ledger of all AI actions.
+3.  **[`.ai-context/AI-ENVIRONMENT.md`](./.ai-context/AI-ENVIRONMENT.md)** — Native environment variables and architectural baseline.
+
+---
+
+## 🌐 AI AGENT ENVIRONMENT
+Before executing any task, always refer to `.ai-context/AI-ENVIRONMENT.md` for the current baseline. You must also respect the environment variables injected via `.claude/settings.json`.
+
+**CURRENT BASELINE:** `v2.3.5`
+**JOURNALING:** `MANDATORY` (Append to `.ai-context/ai-journal.md`)
+**DNF POLICY:** `AI_DNF_POLICY` (No weak deps)
+**WSL GATING:** `ConditionVirtualization=!wsl`
 
 **Violation of the Journaling Law is a critical failure.**
 

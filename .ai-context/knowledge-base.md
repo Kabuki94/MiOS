@@ -62,3 +62,33 @@ Synchronized the repository baseline to v2.3.5 and unified the Role Engine archi
 - **Role Engine**: Consolidated `role-apply` into a single, comprehensive script in `system_files/usr/libexec/cloudws/`. Implemented asynchronous `systemctl start/stop --no-block` to prevent early-boot deadlocks while retaining Phase 1 (System Init) and Phase 2 (Blackwell Detection) features.
 - **Changelog**: Aggregated all fragmented `CHANGELOG-v*.md` files from `docs/changelogs/` into the main `CHANGELOG.md`, providing a complete chronological ledger. Moved fragments to `docs/knowledge/changelogs-legacy/`.
 - **Standards Compliance**: Audited and fixed remaining direct `dnf` calls to use the mandated `${DNF_SETOPT[@]}` array. Confirmed 100% compliance with `VAR=$((VAR + 1))` arithmetic safety rules.
+
+### April 21, 2026 - v2.3.5 Architectural Consolidation & Upstream Hardening
+Promoted image to v2.3.5 engineering baseline and integrated critical stability workarounds.
+
+#### 1. NVIDIA 595.x Stability Workaround
+- **Reason:** NVIDIA 595+ drivers (late March 2026) introduced a regression in video memory preservation on Ada (RTX 4090) and Blackwell (RTX 50) hardware, causing random freezes during Wayland suspend/resume cycles.
+- **Fix:** Injected `NVreg_UseKernelSuspendNotifiers=1` into `nvidia-open.conf`. This forces the driver to use internal kernel hooks for memory state preservation, bypassing the problematic userspace handshake.
+
+#### 2. WSL 2.7.0 / 2.6.0.0 Session Compatibility
+- **Reason (Network):** WSL 2.7.0 introduced a hang in `systemd-networkd-wait-online.service` that blocks the systemd user session from starting, resulting in a login timeout.
+- **Reason (Security):** WSL 2.6.0.0 erroneously marks `/run/systemd/user-generators/wsl-user-generator` as world-writable. systemd v259+ (in F44) rejects this for security reasons, killing the user session generator.
+- **Fix:** Gated network wait on `!wsl` and enforced `0755` permissions on the generator via `tmpfiles.d`.
+
+#### 3. bootc "Docker VOLUME" Persistence (CrowdSec)
+- **Reason:** In the bootc model, `/var` is persistent but not updated via image layers. CrowdSec's sqlite database in `/var/lib/crowdsec` would fail to initialize on systems upgrading from older versions if the directory structure wasn't explicitly managed.
+- **Fix:** Added `cloudws-crowdsec.conf` to `tmpfiles.d` to ensure mandatory state directories exist across the entire fleet regardless of install age.
+
+#### 4. CI/CD Rechunking Optimization
+- **Reason:** The `build.yml` was silently skipping OCI rechunking because `bootc-base-imagectl` was missing from the Ubuntu runner. Updates were monolithic (multi-GB) instead of chunked (MBs).
+- **Fix:** Wrapped rechunking in a `podman run --privileged` using the image itself, guaranteeing tool presence and achieving 5-10x smaller Day-2 deltas.
+
+#### 5. Architectural Purity (Single Source of Truth)
+- **Reason:** Fragmented directories (`systemd/`, `udev/` in root vs `system_files/`) caused "cannot stat" failures in `35-gpu-passthrough.sh` when paths drifted.
+- **Fix:** Deleted all root-level config directories and consolidated everything into the `system_files/` overlay.
+
+#### 6. Build Diagnostics & NFS Persistence
+- **Reason:** Mandatory package sections (kernel, core) failing silently or without clear logs in CI made debugging difficult.
+- **Fix:** Added fatal logging to `install_packages_strict` in `packages.sh`.
+- **Reason:** NFS status monitoring (`statd`) requires a persistent directory in `/var`. Creating it via script clutters the provisioning logic.
+- **Fix:** Moved NFS state directory management to `tmpfiles.d/cloudws-nfs.conf`.

@@ -8,6 +8,7 @@ kargs = [
     "rd.driver.blacklist=nouveau",
     "modprobe.blacklist=nouveau",
     "systemd.show-status=true",
+    "systemd.mount-extra=/var/lib/containers:none:bind,rw,x-systemd.makefs",
     "console=tty0",
     "console=ttyS0,115200n8"
 ]

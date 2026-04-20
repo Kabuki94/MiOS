@@ -33,9 +33,6 @@ if [[ -n "$MACH_ID" ]]; then
     fi
 fi
 
-# Ensure /var/opt exists (for /opt -> /var/opt symlink)
-mkdir -p /var/opt
-
 # Ensure home directories and groups exist for standard users
 for u in $(awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd); do
     home=$(getent passwd "$u" | cut -d: -f6)

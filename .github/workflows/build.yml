@@ -179,17 +179,21 @@ jobs:
           # content-addressed chunks grouped by RPM ownership.
           # This gives 5-10x smaller Day-2 delta updates.
           podman pull "$IMAGE"
-          if command -v bootc-base-imagectl &>/dev/null; then
+          
+          # ARCHITECTURAL FIX: Run rechunk inside the bootc container so the tool is guaranteed present.
+          # We map the host storage into the container.
+          sudo podman run --rm --privileged \
+            --security-opt label=type:unconfined_t \
+            -v /var/lib/containers:/var/lib/containers \
+            "$IMAGE" \
             bootc-base-imagectl rechunk \
               --max-layers 67 \
-              "$IMAGE" \
-              "rechunked-${{ matrix.variant.tag }}"
-            podman push --digestfile=rechunk-digest.txt "localhost/rechunked-${{ matrix.variant.tag }}" "$IMAGE"
-            FINAL_DIGEST=$(cat rechunk-digest.txt)
-            echo "Rechunk successful. New digest: $FINAL_DIGEST"
-          else
-            echo "::warning::bootc-base-imagectl not available — skipping rechunk"
-          fi
+              "containers-storage:$IMAGE" \
+              "containers-storage:localhost/rechunked-${{ matrix.variant.tag }}"
+          
+          podman push --digestfile=rechunk-digest.txt "localhost/rechunked-${{ matrix.variant.tag }}" "$IMAGE"
+          FINAL_DIGEST=$(cat rechunk-digest.txt)
+          echo "Rechunk successful. New digest: $FINAL_DIGEST"
 
           echo "digest=$FINAL_DIGEST" >> "$GITHUB_OUTPUT"
 

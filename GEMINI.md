@@ -86,6 +86,9 @@ expected deliverable is:
 2. A companion directory of files to be copied into the repo,
 3. Atomic commit with a structured message.
 
+## 🌐 AI-AGENT ENVIRONMENT
+Before executing any task, always refer to `.ai-context/AI-ENVIRONMENT.md` for the current baseline. You may also source `.ai-context/AI-ENVIRONMENT.sh` in the shell to automatically configure your environment variables.
+
 Nothing is run without Kabu's explicit confirmation.
 
 ---

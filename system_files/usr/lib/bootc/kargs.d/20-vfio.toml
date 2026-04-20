@@ -2,7 +2,7 @@
 kargs = [
   "amd_iommu=on",
   "iommu=pt",
-  "rd.driver.pre=vfio-pci",
+  "rd.driver.pre=vfio_pci",
   "kvm.ignore_msrs=1",
   "kvm.report_ignored_msrs=0",
 ]
