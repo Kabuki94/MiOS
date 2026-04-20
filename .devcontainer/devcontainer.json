@@ -9,7 +9,10 @@
       "settings": {
         "dev.containers.dockerPath": "podman",
         "dev.containers.dockerComposePath": "podman-compose"
-      }
+      },
+      "extensions": [
+        "Google.gemini-cli-vscode-ide-companion"
+      ]
     }
   },
   "postCreateCommand": "bash.devcontainer/install.sh"
