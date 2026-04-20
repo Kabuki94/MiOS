@@ -1,4 +1,4 @@
-# CloudWS-bootc v2.1.6 release — complete implementation plan
+# CloudWS-bootc v0.1.8 release — complete implementation plan
 
 **Bottom line:** The CI break is a `/usr/local` symlink collision inherited from the Fedora-CoreOS / ucore lineage; fix it by targeting `/var/usrlocal` directly (that's what the symlink points to) and eliminate the `cp -a` trailing-slash gotcha entirely. Of the three defensive audit fixes, the cleanest shape for v2.1.6 is to ship a full replacement `scripts/05-enable-external-repos.sh` (no RPM Fusion, `dnf` not `dnf5`, array-form `DNF_SETOPT`) and turn `push-to-github.ps1` into a 5-line deprecation shim that exec's `push-v2.1.6.ps1`. DNF_SETOPT becomes a bash array sourced from a new `scripts/lib/common.sh`, applied to every `dnf install/remove/swap/group install` call site. The three highest-ROI outstanding items — cosign keyless (Item A), bootc-image-builder artifacts (Item B), and akmod ExecCondition guards (Item C) — are all deliverable in this release with exact file contents, no further research required. One material research surprise: **ublue-os bluefin/bazzite use keyed cosign signing, not keyless**, so the keyless pattern is modeled on travier/cosign-test and the Sigstore CI quickstart, which are the authoritative keyless references for containers/image-based verification.
 
@@ -755,7 +755,7 @@ Recommend backporting the same widening to v2.1.5's `nvidia-cdi-refresh` drop-in
 `/usr/lib/systemd/system/<svc>.service.d/10-cloudws-akmod-guard.conf`:
 
 ```ini
-# CloudWS-bootc v2.1.6 akmod-guard
+# CloudWS-bootc v0.1.8 akmod-guard
 # Skip unit if akmods has not yet registered the nvidia kernel module
 # for the currently running kernel. Pattern tolerates:
 #   - kernel/drivers/... paths (negativo17 packaging)
@@ -771,7 +771,7 @@ ExecCondition=/bin/bash -c 'grep -Eq "(^|/)nvidia\\.ko(\\.[xz]z|\\.zst)?:" /lib/
 
 ```bash
 #!/usr/bin/env bash
-# scripts/36-akmod-guards.sh — CloudWS-bootc v2.1.6
+# scripts/36-akmod-guards.sh — CloudWS-bootc v0.1.8
 # Install ExecCondition drop-ins making NVIDIA systemd units exit cleanly
 # (skipped, not failed) when the running kernel's nvidia module has not yet
 # been registered by akmods/depmod. Build-time script; does not touch runtime.
@@ -805,7 +805,7 @@ for svc in "${SERVICES[@]}"; do
     path="${dir}/${DROPIN_NAME}"
     tmp="$(mktemp)"
     cat > "${tmp}" <<EOF
-# CloudWS-bootc v2.1.6 akmod-guard
+# CloudWS-bootc v0.1.8 akmod-guard
 # Skip unit if akmods has not yet registered the nvidia kernel module
 # for the currently running kernel. ExecCondition is additive (AND
 # semantics, systemd.service(5)). Ref: NVIDIA/nvidia-container-toolkit#1395

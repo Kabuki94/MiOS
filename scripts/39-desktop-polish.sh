@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v2.3.1 — 39-desktop-polish: Desktop entries, Cockpit webapp, MOTD
+# CloudWS v0.1.8 — 39-desktop-polish: Desktop entries, Cockpit webapp, MOTD
 #
 # CHANGELOG v2.3.1:
 #   - FIX: cloudws-motd source path was /tmp/build/scripts/ (never exists).
@@ -228,7 +228,7 @@ EOFF
 # keep the fallback for minimal images that skip the utils section.
 echo "[39-desktop-polish] Updating profile.d for terminal/TTY..."
 cat > /etc/profile.d/cloudws-motd.sh <<'EOPROFILE'
-# CloudWS v2.3.1 — Terminal/TTY dashboard
+# CloudWS v0.1.8 — Terminal/TTY dashboard
 # Shows fastfetch services panel on interactive login.
 # Suppress with:  export CLOUDWS_NO_MOTD=1
 if [[ $- == *i* ]] && [ -z "${CLOUDWS_NO_MOTD:-}" ]; then

@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v2.0 — 30-locale-theme: Unified dark theme for EVERY window type
+# CloudWS v0.1.8 — 30-locale-theme: Unified dark theme for EVERY window type
 #
 # Coverage matrix (ALL must be dark):
 #   ✓ libadwaita / GTK4 apps (GNOME native) — color-scheme=prefer-dark via dconf
@@ -17,14 +17,14 @@
 set -euo pipefail
 
 echo "═══════════════════════════════════════════════════════════════════"
-echo "  CloudWS v2.0 — Universal Dark Theme"
+echo "  CloudWS v0.1.8 — Universal Dark Theme"
 echo "═══════════════════════════════════════════════════════════════════"
 
 # ═══ SKEL .bashrc (MUST come BEFORE useradd -m) ═══
 echo "[30-locale-theme] Writing /etc/skel/.bashrc..."
 cat >> /etc/skel/.bashrc <<'EOBASH'
 
-# ── CloudWS v2.0 ──────────────────────────────────────────────────
+# ── CloudWS v0.1.8 ──────────────────────────────────────────────────
 # Show system dashboard on interactive terminal open
 if [[ $- == *i* ]]; then
     # Fastfetch with services dashboard
@@ -108,7 +108,7 @@ EOENV
 
 # GTK3 dark theme env (separate file for clarity)
 cat > /etc/environment.d/70-cloudws-theme.conf <<'EOENV'
-# CloudWS v2.0: GTK3 legacy apps — adw-gtk3-dark matches libadwaita
+# CloudWS v0.1.8: GTK3 legacy apps — adw-gtk3-dark matches libadwaita
 GTK_THEME=adw-gtk3-dark
 EOENV
 

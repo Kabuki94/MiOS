@@ -1,4 +1,4 @@
-# CloudWS-bootc v2.2.6 - Restore UTF-8 BOM on .ps1 files
+# CloudWS-bootc v0.1.8 - Restore UTF-8 BOM on .ps1 files
 
 ## What went wrong
 

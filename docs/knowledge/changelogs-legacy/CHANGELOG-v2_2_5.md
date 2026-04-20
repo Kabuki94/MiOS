@@ -1,4 +1,4 @@
-# CloudWS-bootc v2.2.5 - CI lowercase + cloud-ws.ps1 token-leak fix
+# CloudWS-bootc v0.1.8 - CI lowercase + cloud-ws.ps1 token-leak fix
 
 ## Two bugs, independent, both critical
 

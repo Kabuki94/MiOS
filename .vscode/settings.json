@@ -633,7 +633,7 @@
   "geminicodeassist.enableTelemetry": false,
 
   "terminal.integrated.env.linux": {
-    "AI_ARCH_BASELINE": "v2.3.5",
+    "AI_ARCH_BASELINE": "v0.1.8",
     "AI_DNF_POLICY": "--setopt=install_weak_deps=False",
     "AI_WSL_GATING": "ConditionVirtualization=!wsl",
     "AI_OVERLAY_PATH": "system_files/",
@@ -643,7 +643,7 @@
     "AI_JOURNALING_LAW": "MANDATORY"
   },
   "terminal.integrated.env.windows": {
-    "AI_ARCH_BASELINE": "v2.3.5",
+    "AI_ARCH_BASELINE": "v0.1.8",
     "AI_DNF_POLICY": "--setopt=install_weak_deps=False",
     "AI_WSL_GATING": "ConditionVirtualization=!wsl",
     "AI_OVERLAY_PATH": "system_files/",

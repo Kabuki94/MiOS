@@ -32,7 +32,7 @@ Set-StrictMode -Version Latest
 # ══════════════════════════════════════════════════════════════════════════════
 #  CONFIGURATION
 # ══════════════════════════════════════════════════════════════════════════════
-$v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "2.3.5" }
+$v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "0.1.8" }
 $ImageName      = "cloudws"
 $ImageTag       = "latest"
 $DefUser        = "cloudws"

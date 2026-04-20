@@ -3,7 +3,7 @@
 # This file is NATIVELY PARSABLE by all shell-aware AI Agents and APIs.
 # It defines the engineering baseline and strict build policies.
 
-export AI_ARCH_BASELINE="v2.3.5"
+export AI_ARCH_BASELINE="v0.1.8"
 export AI_DNF_POLICY='--setopt=install_weak_deps=False'
 export AI_WSL_GATING="ConditionVirtualization=!wsl"
 export AI_OVERLAY_PATH="system_files/"

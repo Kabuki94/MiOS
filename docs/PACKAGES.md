@@ -1,4 +1,4 @@
-# CloudWS v2.1 — Package Manifest
+# CloudWS v0.1.8 — Package Manifest
 
 This file is both documentation and the **single source of truth** for all packages installed in CloudWS.
 Build scripts parse the fenced code blocks below using `scripts/lib/packages.sh`.

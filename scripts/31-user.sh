@@ -1,11 +1,11 @@
 #!/bin/bash
-# CloudWS v2.0 — 31-user: PAM, user creation, groups, sudoers
+# CloudWS v0.1.8 — 31-user: PAM, user creation, groups, sudoers
 # Must run AFTER skel is populated (31-locale-theme writes skel/.bashrc)
 # and BEFORE any service that references the user.
 set -euo pipefail
 
 echo "——————————————————————?"
-echo "  CloudWS v2.0 — User & Authentication"
+echo "  CloudWS v0.1.8 — User & Authentication"
 echo "——————————————————————?"
 
 # — PAM FIX —

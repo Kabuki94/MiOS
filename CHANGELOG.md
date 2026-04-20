@@ -1,71 +1,63 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [v2.3.5] - 2026-04-20
+## [v0.1.8] - 2026-04-21
 
 ### ⚙️ Core OS & Role Engine Consolidation
-* **Unified Role Engine:** Consolidated the asynchronous initialization and role management into the extensionless `system_files/usr/libexec/cloudws/role-apply` script. This unified engine now handles system-wide init (Phase 1), Blackwell hardware safety (Phase 2), and non-blocking service transitions (Phase 4).
-* **Architectural Overlay Purity:** Consolidated all dynamically created systemd units (`cloudws-role.service`, `cloudws-gpu-detect.service`, `cloudws-podman-gc.{timer,service}`) into the `system_files/` overlay, ensuring a single source of truth and repository-backed configurations.
-* **Redundancy Cleanup:** Deleted the legacy `role-apply.sh` script and stripped provisioning scripts (`34-gpu-detect.sh`, `35-init-service.sh`) of redundant `cat >` heredoc logic.
-* **Permission Audit:** Verified and applied the mandatory `+x` executable bits to all scripts in `usr/libexec/cloudws/` to ensure reliability in the built image.
-* **Docs Restructure Fix:** Resolved build context failures caused by the relocation of `PACKAGES.md` to `docs/PACKAGES.md`. The `Containerfile` now correctly maps the path during the context stage.
+* **Unified Role Engine:** Consolidated the asynchronous initialization and role management into the extensionless `system_files/usr/libexec/cloudws/role-apply` script.
+* **Formal Role Targets:** Introduced `cloudws-{desktop,headless,k3s-master,ha-node}.target` for strict role isolation.
+* **Architectural Overlay Purity:** Consolidated all dynamically created systemd units into the `system_files/` overlay. Removed redundant root-level config directories.
+* **Next-Gen MOTD:** Enhanced `/usr/libexec/cloudws/motd` with live Role, MOK (Secure Boot), and Update status indicators.
+* **2026 Flatpak Standard:** Adopted `/usr/share/flatpak/pre-installed.d/` for mandatory application delivery.
+* **Logging Purity:** Audited and fixed malformed UTF-8/encoding issues in all shell scripts.
 
-### 🏗️ Build & Overlay
-* **Overlay Stability:** Fixed a critical failure during the `/usr/local` symlink creation on ucore/bootc bases (v2.3.3 legacy fix).
-* **Passthrough Plumbing:** Staged all passthrough-related overlay directories (`systemd/`, `udev/`, `tmpfiles.d/`, `sysusers.d/`, `kargs.d/`) into the build context for reliable injection into the image.
-* **Logging Purity:** Audited and fixed malformed UTF-8/encoding issues in shell scripts. Standardized build logging with high-visibility ASCII separators and descriptive STEP markers for professional CI/CD output.
+### 🏗️ Build & CI/CD Optimization
+* **Rechunking Fix:** Optimized the CI pipeline to generate 5-10x smaller updates by running rechunking inside a privileged container.
+* **Docs Restructure Fix:** Resolved build failures caused by the relocation of `PACKAGES.md` to `docs/PACKAGES.md`.
+* **Build Diagnostics:** Enhanced `packages.sh` with FATAL error logging for mandatory sections.
 
-## [v2.3.4] - 2026-04-18
+## [v0.1.7] - 2026-04-18
 
 ### 🛠️ Hardware & GPU Passthrough
-* **Umbrella Rename:** Renamed `cloudws-gpu-detect.service` to `cloudws-gpu-status.service` to prevent name collisions with the hardware-renderer detection service.
-* **Blackwell Safety Fix:** Superseded the `v2.2.8` fix for Blackwell (RTX 50) VFIO reset cycles with a more robust `vfio_pci.disable_idle_d3=1` implementation in `kargs.d`.
+* **NVIDIA 595+ Stability:** Injected `NVreg_UseKernelSuspendNotifiers=1` to fix Wayland freezes on Ada/Blackwell hardware.
+* **WSL 2.7.0 Fix:** Gated `systemd-networkd-wait-online.service` on `!wsl` to prevent session timeouts.
+* **WSL 2.6.0 Fix:** Enforced 0755 on `wsl-user-generator` to fix login failures.
+* **Blackwell Safety Fix:** Implemented `vfio_pci.disable_idle_d3=1` workaround in `kargs.d`.
 
-## [v2.3.2] - 2026-04-16
+## [v0.1.6] - 2026-04-16
 
 ### ⚙️ Driver & Hardware Optimization
-* **NVIDIA Open Modules:** Standardized on NVIDIA open kernel modules as the default for Turing+ and the exclusive option for Blackwell. Added `NVreg_OpenRmEnableUnsupportedGpus=1` to support older Pascal/Maxwell cards.
-* **CDI Generation:** Integrated build-time CDI specification generation for NVIDIA GPUs, with a runtime refresh path for hotplug events.
+* **NVIDIA Open Modules:** Standardized on NVIDIA open kernel modules as the default for Turing+.
+* **CDI Generation:** Integrated build-time CDI specification generation for NVIDIA GPUs.
 
-## [v2.3.0] - 2026-04-14
+## [v0.1.5] - 2026-04-14
 
 ### 🖥️ Desktop & UI Evolution
-* **GNOME 50 Transition:** Migrated to GNOME 50 (Wayland-only). Removed all legacy X11 session components in accordance with Fedora 43+ upstream changes.
-* **DNF5 Build Shift:** Fully transitioned the build pipeline to `dnf5` for improved performance and reliable transaction handling.
+* **GNOME 50 Transition:** Migrated to GNOME 50 (Wayland-only). Removed all legacy X11 session components.
+* **DNF5 Build Shift:** Fully transitioned the build pipeline to `dnf5`.
 
-## [v2.2.7] - 2026-04-10
-
-### 🐚 Scripting & Compatibility
-* **IRM Compatibility:** Rewrote `install.ps1` and `preflight.ps1` using ASCII-only decorations to ensure compatibility with `irm | iex` consumption paths, avoiding UTF-8 BOM decoding errors.
-
-## [v2.2.4] - 2026-04-05
-
-### 🏗️ Single Source of Truth Enforcement
-* **Package Manifest Consolidation:** Enforced `docs/PACKAGES.md` as the absolute single source of truth. All provisioning scripts (41-47) were stripped of inline `dnf install` calls, delegating all installations to the `packages.sh` parser.
-* **Redundant Logic Removal:** Deleted `scripts/51-install-unified-packages.sh` and consolidated its logic into the core numbered pipeline.
-
-## [v2.2.0] - 2026-03-25
+## [v0.1.4] - 2026-03-25
 
 ### 🚀 Unified Image Architecture
-* **Role-at-Boot:** Introduced the `cloudws-role.service` and `role.conf` system, allowing a single OCI image to transform into any role (desktop, k3s, HA, headless) at boot time.
-* **ublue-os Adoption:** Integrated pre-signed NVIDIA kmods from the Universal Blue ecosystem and adopted the `uupd` unified updater.
-* **Image Signing:** Implemented `cosign` keyless signing via GitHub Actions with SLSA provenance attestations.
+* **Role-at-Boot:** Introduced the `cloudws-role.service` and `role.conf` system.
+* **ublue-os Adoption:** Integrated pre-signed NVIDIA kmods and adopted the `uupd` unified updater.
+* **Image Signing:** Implemented `cosign` keyless signing via GitHub Actions.
 
-## [v2.1.0] - 2026-03-12
+## [v0.1.3] - 2026-03-12
 
 ### 🔒 Ecosystem Intelligence & Hardening
-* **SecureBlue Integration:** Deployed 15 kernel hardening parameters and 4 critical sysctl hardening settings based on the SecureBlue audit.
-* **Bootloader Management:** Added `bootupd` for unified bootloader updates (Fedora 44 Phase 1).
+* **SecureBlue Integration:** Deployed SecureBlue-inspired kernel and sysctl hardening.
+* **Bootloader Management:** Added `bootupd` for unified bootloader updates.
 
-## [v1.3.0] - 2026-02-15
+## [v0.1.2] - 2026-02-15
 
 ### ⚙️ Core OS Foundation
-* **systemd 260 Compliance:** Removed cgroup v1 support and SysV service script compatibility.
-* **composefs Integration:** Promoted root filesystem to `enabled = yes` with dedup support via `prepare-root.conf`.
+* **systemd 260 Compliance:** Removed cgroup v1 support and SysV compatibility.
+* **composefs Integration:** Promoted root filesystem to `enabled = yes`.
 
 ## [v0.1.1] - 2026-01-20
 
 ### 🛠️ Hardware & WSL2 Optimization
 * **Intel Battlemage Support:** Implemented strict `xe` driver bindings for Xe2 hardware.
-* **WSL2 Stability:** Resolved `dbus-broker` crashes on WSL2 kernels by injecting strict hypervisor gating.
+* **WSL2 Stability:** Resolved `dbus-broker` crashes on WSL2 kernels.
 * **RTX 50 VFIO fix:** Initial Blackwell GSP firmware workaround deployed.

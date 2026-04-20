@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v2.3.5 — 12-virt: Virtualization, containers, orchestration, gaming
+# CloudWS v0.1.8 — 12-virt: Virtualization, containers, orchestration, gaming
 #
 # CHANGELOG v1.3:
 #   - Looking Glass B7: Added -DENABLE_LIBDECOR=ON for GNOME Wayland

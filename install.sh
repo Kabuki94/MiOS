@@ -7,7 +7,7 @@ REPO="https://github.com/Kabuki94/CloudWS-bootc.git"
 DIR="${CLOUDWS_DIR:-$HOME/CloudWS-bootc}"
 
 # Read version from repo VERSION file, fallback to hardcoded
-VER="v2.3.5"
+VER="v0.1.8"
 _remote_ver=$(curl -fsSL "https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/VERSION" 2>/dev/null || true)
 [[ -n "$_remote_ver" ]] && VER="v${_remote_ver}"
 

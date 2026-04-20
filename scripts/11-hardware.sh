@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v2.3.2 — 11-hardware: GPU drivers (Mesa + AMD ROCm + Intel + NVIDIA)
+# CloudWS v0.1.8 — 11-hardware: GPU drivers (Mesa + AMD ROCm + Intel + NVIDIA)
 #
 # NVIDIA strategy (v2.3.2):
 #   Primary:  ucore-hci:stable-nvidia ships pre-signed kmods for the base
@@ -87,7 +87,7 @@ fi
 # cards too (Pascal, Maxwell) where supported.
 mkdir -p /etc/modprobe.d
 cat > /etc/modprobe.d/nvidia-open.conf <<'EONVOPEN'
-# CloudWS v2.3.2: Prefer NVIDIA open kernel modules (default for Turing+).
+# CloudWS v0.1.8: Prefer NVIDIA open kernel modules (default for Turing+).
 # Blackwell (RTX 50): open modules are the ONLY option.
 options nvidia NVreg_OpenRmEnableUnsupportedGpus=1
 # Use kernel suspend notifiers (595+) for internal video memory preservation.

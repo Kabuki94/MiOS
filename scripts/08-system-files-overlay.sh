@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# scripts/08-system-files-overlay.sh - CloudWS-bootc v2.1.6
+# scripts/08-system-files-overlay.sh - CloudWS-bootc v0.1.8
 # ----------------------------------------------------------------------------
 # Overlay /ctx/system_files/ onto the rootfs during the Containerfile build,
 # correctly handling the /usr/local -> /var/usrlocal symlink that ships on

@@ -1,4 +1,4 @@
-# CloudWS-bootc v2.2.0 - Unified Image + Upstream Adoptions
+# CloudWS-bootc v0.1.8 - Unified Image + Upstream Adoptions
 
 ## Summary
 

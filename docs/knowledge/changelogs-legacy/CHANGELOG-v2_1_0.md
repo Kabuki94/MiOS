@@ -1,4 +1,4 @@
-# CloudWS v2.1.0 CHANGELOG
+# CloudWS v0.1.8 CHANGELOG
 
 **Release Date:** April 12, 2026
 **Codename:** Ecosystem Intelligence Update

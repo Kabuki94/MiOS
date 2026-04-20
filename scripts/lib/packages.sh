@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v2.0.2 — Package extraction library
+# CloudWS v0.1.8 — Package extraction library
 # Parses PACKAGES.md fenced code blocks tagged with ```packages-<category>
 #
 # Usage:

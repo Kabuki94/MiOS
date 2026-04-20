@@ -1,4 +1,4 @@
-# CloudWS v2.2 — SecureBlue-adapted kernel hardening
+# CloudWS v0.1.8 — SecureBlue-adapted kernel hardening
 kargs = [
     "slab_nomerge",
     "init_on_alloc=1",

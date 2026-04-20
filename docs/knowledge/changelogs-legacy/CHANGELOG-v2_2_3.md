@@ -1,4 +1,4 @@
-# CloudWS-bootc v2.2.3 - Consolidate into PACKAGES.md
+# CloudWS-bootc v0.1.8 - Consolidate into PACKAGES.md
 
 ## What went wrong
 

@@ -1,4 +1,4 @@
-# GPU Passthrough Architecture (CloudWS-bootc v2.1.5)
+# GPU Passthrough Architecture (CloudWS-bootc v0.1.8)
 
 CloudWS-bootc ships universal container-runtime GPU passthrough plumbing for
 NVIDIA, AMD, and Intel GPUs, designed to work identically across bare metal,

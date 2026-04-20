@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v2.0 — 32-hostname: Unique per-instance hostname
+# CloudWS v0.1.8 — 32-hostname: Unique per-instance hostname
 #
 # Strategy: Set a template hostname in the image. On first boot, systemd
 # generates /etc/machine-id. The cloudws-init service (35-init-service.sh)

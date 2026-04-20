@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v0.1.4 — 01-repos: Fedora 44 overlay on ucore (base kernel preserved)
+# CloudWS v0.1.8 — 01-repos: Fedora 44 overlay on ucore (base kernel preserved)
 #
 # FIX v0.1.4: Two-phase distro-sync to handle filesystem scriptlet failure.
 # The filesystem package's lua %posttrans fails in container builds, aborting

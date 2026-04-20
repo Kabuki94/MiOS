@@ -93,7 +93,7 @@ Gamescope Steam Session, Waydroid, Looking Glass, xRDP, and FreeIPA/SSSD.
 
 - Before suggesting a fix, **clone the repo and look at the real
   file**. The layout changes (e.g. `PACKAGES.md` moved to
-  `docs/PACKAGES.md` in v2.3.5).
+  `docs/PACKAGES.md` in v0.1.8).
 - Simulate string replacements against actual content before
   shipping them.
 

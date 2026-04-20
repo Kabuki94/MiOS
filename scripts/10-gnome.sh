@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v0.1.3 — 10-gnome: GNOME 50 desktop — PURE BUILD-UP
+# CloudWS v0.1.8 — 10-gnome: GNOME 50 desktop — PURE BUILD-UP
 #
 # STRATEGY: ucore has ZERO GNOME packages. We install exactly what we need.
 # With install_weakdeps=False (set globally in 01-repos.sh), only hard deps

@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v2.0 — Master build runner
+# CloudWS v0.1.8 — Master build runner
 # Executes all numbered scripts in order, then cleans up.
 # Called from Containerfile RUN layer via bind mount.
 #

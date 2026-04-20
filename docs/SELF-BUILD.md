@@ -9,13 +9,13 @@ CloudWS ships all the tools needed to rebuild itself: Podman, Buildah, bootc, an
 The build chain is:
 
 ```
-CloudWS v1.3 (running) → builds → CloudWS v1.4 (OCI image)
+CloudWS v0.1.8 (running) → builds → CloudWS v0.1.8 (OCI image)
                                         ↓
                                   Rechunk → Sign → Push to GHCR
                                         ↓
-                              CloudWS v1.4 (running via bootc upgrade)
+                              CloudWS v0.1.8 (running via bootc upgrade)
                                         ↓
-                                  builds → CloudWS v1.5 ...
+                                  builds → CloudWS v0.1.8 ...
 ```
 
 ## Build Modes

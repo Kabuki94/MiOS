@@ -1,4 +1,4 @@
-# CloudWS v2.2 — Core kernel boot arguments
+# CloudWS v0.1.8 — Core kernel boot arguments
 # bootc kargs.d (v1.13+). Format: bare kargs = [...] ONLY.
 # NO [kargs] table headers. NO delete/append keys.
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v2.1.3 — 37-selinux: Build-time SELinux policy fixes
+# CloudWS v0.1.8 — 37-selinux: Build-time SELinux policy fixes
 # Custom per-rule modules for known Fedora Rawhide / systemd 260 denials.
 set -euo pipefail
 

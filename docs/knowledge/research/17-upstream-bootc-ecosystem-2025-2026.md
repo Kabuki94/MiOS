@@ -201,7 +201,7 @@ CloudWS adoptions:
 - `cs-firewall-bouncer` as host RPM (needs nftables).
 - Pin `:v1.7.6`, not `:latest`.
 
-**Flatcar Container Linux (Mar 3 2026)** — `/etc` shipped as systemd-confext in production. Proof that confext is ready for CloudWS v2.5.
+**Flatcar Container Linux (Mar 3 2026)** — `/etc` shipped as systemd-confext in production. Proof that confext is ready for CloudWS v0.1.8.
 
 ---
 

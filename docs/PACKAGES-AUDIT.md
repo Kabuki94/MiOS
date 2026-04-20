@@ -1,7 +1,7 @@
 # Package Audit: Suggested Additions vs Current State
 
 This audit cross-references the suggested "missing packages for portability" against
-what CloudWS-bootc v2.1 PACKAGES.md already includes. Most suggestions are duplicates
+what CloudWS-bootc v0.1.8 PACKAGES.md already includes. Most suggestions are duplicates
 of packages that are already present or pulled as dependencies.
 
 ---

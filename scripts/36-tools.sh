@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v2.0 — 36-tools: CLI tools and consolidated cloudws command
+# CloudWS v0.1.8 — 36-tools: CLI tools and consolidated cloudws command
 # Installs all cloudws-* tools to /usr/bin/ and the master 'cloudws' CLI.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -15,7 +15,7 @@ EOF
 # ═══ MASTER CLI: cloudws [command] [--options] ═══
 cat > /usr/bin/cloudws <<'EOTOOL'
 #!/bin/bash
-# CloudWS v2.0 — Unified management CLI
+# CloudWS v0.1.8 — Unified management CLI
 set -euo pipefail
 VERSION="2.0.0"
 CMD="${1:-help}"
@@ -92,7 +92,7 @@ EOTOOL
 cat > /usr/bin/cloudws-update <<'EOTOOL'
 #!/bin/bash
 set -euo pipefail
-echo "CloudWS v2.0 — Checking for updates..."
+echo "CloudWS v0.1.8 — Checking for updates..."
 ORIGIN=$(bootc status 2>/dev/null | grep -i "image:" | head -1 | awk '{print $NF}' || echo "")
 if echo "$ORIGIN" | grep -q "localhost"; then
     echo "WARNING: Update origin is localhost — switching to GHCR..."
@@ -164,7 +164,7 @@ EOTOOL
 # ═══ cloudws-status ═══
 cat > /usr/bin/cloudws-status <<'EOTOOL'
 #!/bin/bash
-echo "CloudWS v2.0 — System Status"
+echo "CloudWS v0.1.8 — System Status"
 echo "════════════════════════════════"
 echo ""
 echo "Hostname:  $(hostname)"
@@ -209,7 +209,7 @@ EOTOOL
 cat > /usr/bin/cloudws-vfio-check <<'EOTOOL'
 #!/bin/bash
 set -euo pipefail
-echo "CloudWS v2.0 — VFIO Passthrough Readiness Check"
+echo "CloudWS v0.1.8 — VFIO Passthrough Readiness Check"
 echo "════════════════════════════════════════════════"
 echo ""
 if dmesg 2>/dev/null | grep -qi "IOMMU enabled"; then
