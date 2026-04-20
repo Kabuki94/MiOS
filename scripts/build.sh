@@ -121,6 +121,24 @@ for pkg in "${CRITICAL_PACKAGES[@]}"; do
     fi
 done
 
+# Hardware & Driver Verification (Moved from legacy 41-akmods-copy.sh)
+if rpm -qa 'kmod-nvidia*' 2>/dev/null | grep -q . ; then
+    echo "  ✓ NVIDIA kmod(s) present"
+else
+    echo "  ⚠ NVIDIA kmod(s) MISSING (using ucore base?)"
+fi
+
+if compgen -G "/etc/pki/akmods/certs/*.der" > /dev/null; then
+    echo "  ✓ MOK certs present"
+fi
+
+# RTX 50 Blackwell Karg Check
+if grep -q "vfio_pci.disable_idle_d3=1" /usr/lib/bootc/kargs.d/*.toml 2>/dev/null; then
+    echo "  ✓ Blackwell VFIO workaround present in kargs.d"
+else
+    echo "  ⚠ Blackwell VFIO workaround missing in kargs.d"
+fi
+
 # malcontent-libs MUST be present (flatpak links against libmalcontent-0.so.0)
 if rpm -q malcontent-libs > /dev/null 2>&1; then
     echo "  ✓ malcontent-libs (required by flatpak)"

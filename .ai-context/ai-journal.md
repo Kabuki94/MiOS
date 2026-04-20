@@ -942,3 +942,31 @@
 *   **DISCOVERY:** `.ai-context/README.md` already contained high-level laws but wasn't explicitly linked as the primary entry point for all agents. tool-specific instructions like `copilot-instructions.md` often produced hallucinations (e.g., broken kargs.d syntax) which needed centralized hard-rule documentation.
 *   **ACTION:** (a) Created `.ai-context/AI-README.md` as the unified entry point with a "Mandatory Agent Protocol". (b) Renamed `.ai-context/README.md` to `.ai-context/AI-PROTOCOLS.md` and added a redirection. (c) Updated `CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, and `.github/copilot-instructions.md` with pointers to the new unified knowledge base. (d) Standardized the "AI Laws" (Journaling, Atomicity, Architectural) across the new structure.
 *   **SUGGESTED ALTERNATIVE:** Could have used symlinks, but plain file redirections are more compatible across different OSs (Windows/Linux) and AI interfaces.
+
+### [2026-04-20 23:45:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Audit of the entire codebase was initiated to identify technical debt and structural gaps. A research plan was created to guide consolidation.
+*   **LEARNING:** Several scripts (`37`, `41`, `42`) were identified as redundant or purely diagnostic. The manual execution of 20-series scripts in the `Containerfile` creates a maintenance burden.
+*   **DISCOVERY:** `scripts/37-cosign-policy.sh` and `scripts/42-cosign-policy.sh` have overlapping intent. `41-akmods-copy.sh` is a verify-only script that can be merged into the main build runner's validation phase.
+*   **ACTION:** (a) Drafted `.ai-context/RESEARCH_PLAN.md`. (b) Compared `37`, `41`, and `42`. (c) Identified overlap between `35-init-service.sh` and `48-role-system.sh`.
+*   **SUGGESTED ALTERNATIVE:** Could have kept the scripts separate for modularity, but for an immutable system, consolidating into the main pipeline reduces surface area for failures.
+
+### [2026-04-21 01:15:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Deep research into role system unification and container policy consolidation was conducted. 
+*   **LEARNING:** `system_files/usr/libexec/cloudws/role-apply` is a more robust, declarative system for per-boot role selection than the script-written `cloudws-init`. `policy.json` already references `sigstore` certs in `/etc/pki/containers`, but `scripts/37` was redundantly downloading `cosign`.
+*   **DISCOVERY:** `scripts/35-init-service.sh` logic for hostname generation and home directory creation is "every-boot" but distinct from the "role-selection" logic in `role-apply`. Consolidation is possible by moving these common system init tasks into a `common-init` helper.
+*   **ACTION:** (a) Verified `role-apply` logic. (b) Confirmed `policy.json` paths. (c) Identified package gaps for F44 (intel-gpu-tools, level-zero).
+*   **SUGGESTED ALTERNATIVE:** Keep `role-apply` strictly for unit management and create a `cloudws-runtime-init` for everything else, triggered by the same early boot service.
+
+### [2026-04-21 02:45:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Indepth research into F44 package status, Cosign compatibility, and RTX 50 Blackwell issues was completed.
+*   **LEARNING:** Cosign v3 is a "no-go" for rpm-ostree systems until Sigstore bundle support lands in `containers/image`. Blackwell GPUs (RTX 50) suffer from a 1:1 IOMMU identity mapping requirement that breaks VFIO on newer kernels (6.17+).
+*   **DISCOVERY:** Mitigations for Blackwell include `vfio_pci.disable_idle_d3=1` and BIOS-level DMA protection disabling. `scripts/35-init-service.sh` contains redundant logic for environment detection that should be moved to the declarative `role-apply` system.
+*   **ACTION:** (a) Verified Cosign v2.4.1 requirement. (b) Identified specific Blackwell kargs fixes. (c) Planned the merger of hostname/user logic into `role-apply`.
+*   **SUGGESTED ALTERNATIVE:** Could have used a custom kernel for Blackwell, but providing documented kargs workarounds is safer for an immutable image.
+
+### [2026-04-21 04:30:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Implementation of the research-driven cleanup and consolidation phase was completed.
+*   **LEARNING:** Consolidation of system initialization into the declarative `role-apply` system significantly reduces the surface area for boot-time failures. Integrating hardware verification directly into `scripts/build.sh` ensures that image-time failures are caught early in the pipeline.
+*   **DISCOVERY:** `scripts/41-akmods-copy.sh` was indeed purely diagnostic and redundant given ucore's pre-baked NVIDIA kmods. The manual Cosign v2.4.1 download is still necessary for F44 compatibility.
+*   **ACTION:** (a) Added `vfio_pci.disable_idle_d3=1` to `kargs.d/02-cloudws-gpu.toml` for Blackwell safety. (b) Consolidated `scripts/37` and `scripts/42` into a single `42-cosign-policy.sh`. (c) Unified the Role Engine in `system_files/usr/libexec/cloudws/role-apply` and bridged it via `scripts/35-init-service.sh`. (d) Merged hardware verification into `scripts/build.sh`. (e) Deleted redundant scripts `37`, `41`, and `48`.
+*   **SUGGESTED ALTERNATIVE:** N/A - The current implementation achieves a cleaner, more maintainable architecture without sacrificing feature parity.

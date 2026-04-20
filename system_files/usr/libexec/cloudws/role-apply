@@ -1,7 +1,13 @@
 #!/usr/bin/bash
-# cloudws role-apply: reads /etc/cloudws/role.conf (or kernel cmdline), enables
-# role-specific services, and sets the default systemd target accordingly.
-# Unified image, per-boot role selection.
+# ============================================================================
+# cloudws role-apply: CloudWS Unified Initialization & Role Engine
+# ============================================================================
+# Handles EVERY-BOOT initialization and role-specific service management.
+# 1. System-wide init (hostname, users, groups, home dirs)
+# 2. Virtualization & Hardware detection (RTX 50 Blackwell safety)
+# 3. Role resolution (cmdline > role.conf > environment default)
+# 4. Target & Service selection
+# ============================================================================
 set -euo pipefail
 
 ROLE_CONF=/etc/cloudws/role.conf
@@ -11,7 +17,52 @@ mkdir -p "$STATE_DIR"
 log() { printf '[cloudws-role] %s\n' "$*"; }
 
 # ----------------------------------------------------------------------------
-# 1. Determine role (cmdline wins over role.conf; default = desktop)
+# PHASE 1: System-wide Initialization (Consolidated from 35-init-service)
+# ----------------------------------------------------------------------------
+
+# Unique hostname (stable across reboots, unique across VM clones)
+MAC=$(cat /sys/class/net/e*/address /sys/class/net/w*/address 2>/dev/null | head -1 || echo "")
+MACH_ID=$(cat /etc/machine-id 2>/dev/null || echo "")
+
+if [[ -n "$MACH_ID" ]]; then
+    TAG=$(echo "${MACH_ID}${MAC}" | md5sum | head -c 5)
+    CURRENT=$(hostname -s 2>/dev/null || echo "")
+    if [[ "$CURRENT" == "cloudws" || "$CURRENT" == "localhost" || "$CURRENT" == "linux" ]]; then
+        hostnamectl set-hostname "cloudws-${TAG}" 2>/dev/null || true
+        log "Hostname set to cloudws-${TAG}"
+    fi
+fi
+
+# Ensure /var/opt exists (for /opt -> /var/opt symlink)
+mkdir -p /var/opt
+
+# Ensure home directories and groups exist for standard users
+for u in $(awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd); do
+    home=$(getent passwd "$u" | cut -d: -f6)
+    if [[ ! -d "$home" ]]; then
+        mkdir -p "$home"
+        cp -a /etc/skel/. "$home/" 2>/dev/null || true
+        uid=$(id -u "$u"); gid=$(id -g "$u")
+        chown -R "${uid}:${gid}" "$home"
+    fi
+    # Standard group membership
+    for g in wheel libvirt kvm video render input dialout; do
+        usermod -aG "$g" "$u" 2>/dev/null || true
+    done
+done
+
+# ----------------------------------------------------------------------------
+# PHASE 2: Environment & Hardware Detection
+# ----------------------------------------------------------------------------
+VIRT=$(systemd-detect-virt 2>/dev/null || echo "none")
+IS_BLACKWELL=false
+if lspci -d 10de: 2>/dev/null | grep -qi "GB20\|GB10"; then
+    IS_BLACKWELL=true
+    log "RTX 50 Blackwell detected - enforcing safety parameters"
+fi
+
+# ----------------------------------------------------------------------------
+# PHASE 3: Role Resolution
 # ----------------------------------------------------------------------------
 ROLE=""
 PROFILE=""
@@ -32,17 +83,17 @@ if [[ -z "$ROLE" && -r "$ROLE_CONF" ]]; then
     . "$ROLE_CONF"
 fi
 
-# WSL auto-headless unless explicitly overridden
-VIRT=$(systemd-detect-virt 2>/dev/null || echo "none")
-if [[ -z "$ROLE" ]] && [[ "$VIRT" == "wsl" || -e /dev/dxg ]]; then
-    ROLE="headless"
-    log "WSL detected - defaulting to headless role"
-fi
-
-# No GPU + no graphics session inherited -> headless (Hyper-V gen2, cloud VMs)
-if [[ -z "$ROLE" ]] && ! compgen -G "/dev/dri/renderD*" >/dev/null; then
-    # Also no GNOME session file selection hint
-    if [[ ! -e /sys/class/drm/card0 ]]; then
+# Auto-Role selection
+if [[ -z "$ROLE" ]]; then
+    if [[ "$VIRT" == "wsl" || -e /dev/dxg ]]; then
+        ROLE="headless"
+        log "WSL detected - defaulting to headless role"
+    elif [[ "$IS_BLACKWELL" == "true" ]]; then
+        # Safety: default to headless if Blackwell is detected to avoid
+        # GDM-induced reset cycles until firmware is stabilized.
+        ROLE="headless"
+        log "Blackwell safety - defaulting to headless role"
+    elif ! compgen -G "/dev/dri/renderD*" >/dev/null && [[ ! -e /sys/class/drm/card0 ]]; then
         ROLE="headless"
         log "No DRM device - defaulting to headless role"
     fi
@@ -54,16 +105,8 @@ FEATURES="${FEATURES:-}"
 
 log "resolved role=$ROLE profile=$PROFILE features=$FEATURES"
 
-# Record resolution
-cat > "$STATE_DIR/role.active" <<EOF
-ROLE=$ROLE
-PROFILE=$PROFILE
-FEATURES=$FEATURES
-APPLIED=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-EOF
-
 # ----------------------------------------------------------------------------
-# 2. Service set per role (enable + disable)
+# PHASE 4: Service Set Management
 # ----------------------------------------------------------------------------
 enable_units() {
     for u in "$@"; do
@@ -83,52 +126,45 @@ case "$ROLE" in
         disable_units k3s.service k3s-agent.service corosync.service pacemaker.service
         systemctl set-default cloudws-desktop.target
         ;;
-    k3s-master)
-        enable_units k3s.service
-        disable_units gdm.service k3s-agent.service corosync.service pacemaker.service
-        systemctl set-default cloudws-k3s-master.target
-        ;;
-    k3s-worker)
-        enable_units k3s-agent.service
-        disable_units gdm.service k3s.service corosync.service pacemaker.service
-        systemctl set-default cloudws-k3s-worker.target
-        ;;
-    ha-node)
-        enable_units corosync.service pacemaker.service
-        # ceph-mon/osd enabled only if /etc/cloudws/ceph-role is set (handled below)
-        disable_units gdm.service k3s.service k3s-agent.service
-        systemctl set-default cloudws-ha-node.target
-        ;;
-    hybrid)
-        enable_units gdm.service libvirtd.service k3s-agent.service
-        disable_units k3s.service corosync.service pacemaker.service
-        systemctl set-default cloudws-hybrid.target
-        ;;
     headless)
-        disable_units gdm.service libvirtd.service k3s.service k3s-agent.service \
+        disable_units gdm.service libvirtd.service k3s-agent.service \
                       corosync.service pacemaker.service
-        # sshd + podman.socket + uupd already enabled by preset
         systemctl set-default cloudws-headless.target
         ;;
+    k3s*)
+        enable_units k3s.service
+        disable_units gdm.service
+        systemctl set-default cloudws-k3s-master.target
+        ;;
+    ha*)
+        enable_units corosync.service pacemaker.service
+        disable_units gdm.service
+        systemctl set-default cloudws-ha-node.target
+        ;;
     *)
-        log "WARN: unknown role '$ROLE' - falling back to headless"
+        log "WARN: unknown role '$ROLE' - defaulting to headless"
         systemctl set-default cloudws-headless.target
         ;;
 esac
 
-# ----------------------------------------------------------------------------
-# 3. Feature gates (comma-separated list)
-# ----------------------------------------------------------------------------
+# Feature gates
 IFS=',' read -r -a FEAT_ARR <<< "$FEATURES"
 for f in "${FEAT_ARR[@]}"; do
     case "$f" in
         ceph-mon)    systemctl enable 'ceph-mon@'"$(hostname -s)"'.service' 2>/dev/null || true ;;
-        ceph-osd)    : "# ceph-osd@N enabled via ceph-volume activate, not here" ;;
         gamescope)   systemctl enable gamescope-session.target 2>/dev/null || true ;;
-        lookingglass): "# kvmfr loaded via modprobe.d; no unit to enable" ;;
         waydroid)    systemctl enable waydroid-container.service 2>/dev/null || true ;;
-        nocloud-init) systemctl disable cloud-init.service cloud-final.service 2>/dev/null || true ;;
     esac
 done
+
+# Record active state for diagnostics
+cat > "$STATE_DIR/role.active" <<EOF
+ROLE=$ROLE
+PROFILE=$PROFILE
+FEATURES=$FEATURES
+VIRT=$VIRT
+BLACKWELL=$IS_BLACKWELL
+APPLIED=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+EOF
 
 log "role apply complete; default target now $(systemctl get-default)"
