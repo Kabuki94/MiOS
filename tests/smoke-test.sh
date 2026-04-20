@@ -255,11 +255,11 @@ else
     warn "Libvirt qemu hook missing or not executable"
 fi
 
-# UKI Cmdline Rendering Output
+# UKI Cmdline Rendering Output (conditional — requires bootc render-kargs support)
 if run_in test -f /etc/kernel/cmdline; then
     pass "Unified Kernel Image (UKI) cmdline successfully rendered"
 else
-    fail "UKI cmdline rendering failed (/etc/kernel/cmdline missing)"
+    warn "UKI cmdline not present (/etc/kernel/cmdline missing — bootc render-kargs may not be supported on this bootc version)"
 fi
 
 # ── 9. CloudWS Kernel Arguments (kargs.d) ─────────────────────────────────

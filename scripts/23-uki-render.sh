@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eoux pipefail
+set -euo pipefail
 
 echo "==> Preparing Unified Kernel Image (UKI) configuration..."
 
