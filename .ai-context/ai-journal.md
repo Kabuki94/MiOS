@@ -1257,6 +1257,24 @@ Claude completed a research and gap-audit pass. The findings below are verified 
 
 ---
 
+### [2026-04-21 22:00:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Audited the project against 2026 `ublue-os` and `bootc` "Golden Patterns" to move beyond a standard custom image and into a production-grade immutable appliance. Focused on solving state drift, upgrade-resilient persistence, and atomic stack updates.
+*   **LEARNING:** The `/etc` 3-way merge boundary in `bootc` makes build-time writes to `/etc` a major technical debt item. SELinux modules installed at build-time with `semodule -i` create "opaque" layers that frequently break during major kernel/policy version jumps.
+*   **DISCOVERY:** 
+    1) **State Drift:** Configs in `/etc/modprobe.d` and `/etc/systemd` were identified as "Ghost Files" that cause merge conflicts.
+    2) **Frozen Var:** Manual `mkdir` calls for K3s and Ceph in scripts fail to fix structure/permissions on existing systems during updates.
+    3) **Orphaned Containers:** Sidecar containers (CrowdSec, Guacamole) were not atomically linked to the OS update lifecycle.
+*   **ACTION:**
+    1) **Pattern 1 (usr-over-etc):** Migrated modprobe configurations from `/etc` to `/usr/lib/modprobe.d`. Established `/usr` as the "Vendor" source of truth.
+    2) **Pattern 2 (Managed SELinux):** Refactored `37-selinux.sh` and `19-k3s-selinux.sh` to stage pre-compiled `.pp` modules in `/usr/share/selinux/packages/cloudws/`. Created `cloudws-selinux-init.service` to load them asynchronously at boot.
+    3) **Pattern 3 (Persistence Skeleton):** Consolidated K3s (`/var/lib/rancher`) and Ceph (`/var/lib/ceph`) directory management into `system_files/usr/lib/tmpfiles.d/cloudws-infra.conf`.
+    4) **Pattern 5 (Boot Shielding):** Optimized `01-repos.sh` to use `upgrade --refresh` with strict `excludepkgs="shim-*,kernel*"` to prevent bootloader regressions.
+    5) **Pattern 6 (Atomic Stack):** Implemented **Logically Bound Images** by symlinking Quadlets into `/usr/lib/bootc/bound-images.d/`, ensuring `bootc upgrade` pulls the entire stack atomically.
+*   **SUGGESTED ALTERNATIVE:** N/A - These changes represent the current industry-standard "Golden Patterns" for ublue-os derivatives.
+
+
+---
+
 ### [2026-04-21 21:00:00 UTC] [AI: Gemini CLI]
 *   **THOUGHT:** Finalized the "Full Stack Stabilization" phase by addressing reported build failures (Cockpit missing), the "Self-Building" mandate, and OCI container boot performance issues. Conducted a deep audit of all provisioning scripts to enforce architectural purity and SSOT principles.
 *   **LEARNING:** The "Single Source of Truth" for packages (`PACKAGES.md`) and state (`tmpfiles.d`) is the only way to prevent drift across a complex multi-agent build pipeline. Manual `mkdir` or `install` calls in scripts create "ghost paths" that break `bootc` update guarantees.
