@@ -242,6 +242,7 @@ Full KVM stack with virt-manager GUI and firmware/security tooling.
 ```packages-virt
 qemu-kvm
 libvirt
+libvirt-daemon
 virt-install
 virt-manager
 edk2-ovmf

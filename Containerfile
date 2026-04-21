@@ -96,6 +96,10 @@ LABEL org.opencontainers.image.source="https://github.com/Kabuki94/CloudWS-bootc
 LABEL org.opencontainers.image.licenses="Apache-2.0"
 LABEL org.opencontainers.image.version="0.1.8"
 LABEL containers.bootc="1"
+LABEL ostree.bootable="1"
+
+# Set /sbin/init as the default command for bootc compatibility
+CMD ["/sbin/init"]
 
 # Build context mounted read-only
 COPY --from=ctx /ctx /ctx

@@ -20,10 +20,18 @@ KVER=$(cat /tmp/cloudws-kver 2>/dev/null || find /usr/lib/modules/ -mindepth 1 -
 # ── KVM / QEMU / Libvirt ────────────────────────────────────────────────────
 echo "[12-virt] Installing KVM/QEMU/Libvirt..."
 install_packages_strict "virt"
+# In Fedora 42+, the `libvirt` meta-package no longer pulls in `libvirt-daemon`
+# (the monolithic daemon). libvirtd.socket lives in libvirt-daemon; without it
+# the unit file is absent and systemctl enable fails silently in 20-services.sh.
+dnf install -y libvirt-daemon
 
 # ── Containers (Podman, Buildah, Skopeo, bootc) ─────────────────────────────
 echo "[12-virt] Installing container runtime..."
 install_packages_strict "containers"
+
+# ── Boot & Update Management (bootupd, ukify, etc.) ─────────────────────────
+echo "[12-virt] Installing boot and update management tools..."
+install_packages "boot"
 
 # ── Cockpit Web Management ──────────────────────────────────────────────────
 echo "[12-virt] Installing Cockpit..."

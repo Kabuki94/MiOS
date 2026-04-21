@@ -28,6 +28,7 @@ rm -rf /var/cache/libdnf5 /var/cache/dnf /var/log/dnf5.log* 2>/dev/null || true
 
 # Set image metadata
 CLOUDWS_VERSION=$(cat /ctx/VERSION 2>/dev/null || echo "unknown")
+echo "${CLOUDWS_VERSION}" > /etc/cloudws-version
 mkdir -p /etc/cloudws
 cat > /etc/cloudws/version <<EOF
 CLOUDWS_VERSION=${CLOUDWS_VERSION}

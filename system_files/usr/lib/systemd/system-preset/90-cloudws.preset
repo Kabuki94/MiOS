@@ -5,6 +5,7 @@
 # --- Always-on core ---
 enable sshd.service
 enable podman.socket
+enable libvirtd.socket
 enable uupd.timer
 enable nvidia-cdi-refresh.path
 enable nvidia-cdi-refresh.service
@@ -44,7 +45,6 @@ disable systemd-remount-fs.service
 
 # --- Role-gated: default-off; cloudws-role.service turns on as appropriate ---
 disable libvirtd.service
-disable libvirtd.socket
 disable libvirtd-ro.socket
 disable libvirtd-admin.socket
 disable virtnetworkd.service
