@@ -233,5 +233,9 @@ rm -rf /tmp/looking-glass-build
 # ── Podman Quadlet: CrowdSec ────────────────────────────────────────────────
 # Managed via system_files/usr/share/containers/systemd/
 # Logically bound via system_files/usr/lib/bootc/bound-images.d/
+mkdir -p /usr/lib/bootc/bound-images.d
+ln -sf /usr/share/containers/systemd/crowdsec-dashboard.container /usr/lib/bootc/bound-images.d/
+ln -sf /usr/share/containers/systemd/cloudws-guacd.container /usr/lib/bootc/bound-images.d/
 
 echo "[12-virt] Virtualization stack complete. LG: ${LG_VERSION} (K3s in 13-ceph-k3s.sh)"
+

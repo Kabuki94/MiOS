@@ -11,6 +11,7 @@ enable nvidia-cdi-refresh.path
 enable nvidia-cdi-refresh.service
 enable nvidia-persistenced.service
 enable cloudws-role.service
+enable cloudws-selinux-init.service
 enable cloudws-cdi-detect.service
 enable cloudws-libvirtd-setup.service
 enable cloudws-grd-setup.service

@@ -85,9 +85,10 @@ fi
 # Turing+ (RTX 20xx and newer) supports open modules; RTX 50 Blackwell requires
 # them. NVreg_OpenRmEnableUnsupportedGpus=1 lets open modules attempt older
 # cards too (Pascal, Maxwell) where supported.
-mkdir -p /etc/modprobe.d
-cat > /etc/modprobe.d/nvidia-open.conf <<'EONVOPEN'
-# CloudWS v0.1.8: Prefer NVIDIA open kernel modules (default for Turing+).
+# ARCHITECTURAL FIX: Move to /usr/lib/modprobe.d/ to prevent /etc state drift.
+mkdir -p /usr/lib/modprobe.d
+cat > /usr/lib/modprobe.d/nvidia-open.conf <<'EONVOPEN'
+# CloudWS v2.3.5: Prefer NVIDIA open kernel modules (default for Turing+).
 # Blackwell (RTX 50): open modules are the ONLY option.
 options nvidia NVreg_OpenRmEnableUnsupportedGpus=1
 # Use kernel suspend notifiers (595+) for internal video memory preservation.
