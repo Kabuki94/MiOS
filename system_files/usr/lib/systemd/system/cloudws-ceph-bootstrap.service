@@ -10,7 +10,7 @@ Wants=network-online.target podman.socket
 Type=oneshot
 RemainAfterExit=yes
 # Grab the primary IP and bootstrap the orchestrator container
-ExecStart=/bin/bash -c "IP=$(ip -4 route get 1.1.1.1 | awk '{for(i=1;i<=NF;i++) if($i==\"src\") print $(i+1)}' | head -1) && cephadm bootstrap --mon-ip $IP --initial-dashboard-user admin --initial-dashboard-password cloudws --dashboard-password-noupdate"
+ExecStart=/bin/bash -c "IP=$(ip -4 route get 1.1.1.1 | grep -o 'src [0-9.]*' | cut -d' ' -f2 | head -1) && cephadm bootstrap --mon-ip $IP --initial-dashboard-user admin --initial-dashboard-password cloudws --dashboard-password-noupdate"
 
 # Secure the admin keyring after generation
 ExecStartPost=/bin/chmod 0600 /etc/ceph/ceph.client.admin.keyring

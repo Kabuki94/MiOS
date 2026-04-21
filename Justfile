@@ -6,7 +6,6 @@ IMAGE_NAME := "ghcr.io/kabuki94/cloudws-bootc"
 VERSION := `cat VERSION 2>/dev/null || echo "1.3.0"`
 LOCAL := "localhost/cloudws:latest"
 BIB := "quay.io/centos-bootc/bootc-image-builder:latest"
-RECHUNK := "quay.io/centos-bootc/centos-bootc:stream10"
 
 # Build OCI image
 build:
@@ -18,8 +17,8 @@ rechunk: build
     podman run --rm \
         --security-opt label=type:unconfined_t \
         -v /var/lib/containers/storage:/var/lib/containers/storage \
-        {{RECHUNK}} \
-        bootc-base-imagectl rechunk containers-storage:{{LOCAL}} containers-storage:{{IMAGE_NAME}}:{{VERSION}}
+        {{LOCAL}} \
+        /usr/libexec/bootc-base-imagectl rechunk containers-storage:{{LOCAL}} containers-storage:{{IMAGE_NAME}}:{{VERSION}}
     podman tag {{IMAGE_NAME}}:{{VERSION}} {{IMAGE_NAME}}:latest
     @echo "✓ Rechunked: {{IMAGE_NAME}}:{{VERSION}}"
 

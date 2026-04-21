@@ -289,6 +289,8 @@ selinux-policy-devel
 # bootc-image-builder REMOVED: not in F44 repos; pulled as container at targets time.
 # podman-plugins REMOVED: not in F44 repos.
 # cosign REMOVED: not in F44 repos. Install via COPR or go-install if needed.
+bootc-base-imagectl
+konflux-image-tools
 containers-common
 toolbox
 kubectl

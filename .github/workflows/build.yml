@@ -190,7 +190,7 @@ jobs:
             --security-opt label=type:unconfined_t \
             -v /var/lib/containers:/var/lib/containers \
             "$IMAGE" \
-            bootc-base-imagectl rechunk \
+            /usr/libexec/bootc-base-imagectl rechunk \
               --max-layers 67 \
               "containers-storage:$IMAGE" \
               "containers-storage:localhost/rechunked-${{ matrix.variant.tag }}"

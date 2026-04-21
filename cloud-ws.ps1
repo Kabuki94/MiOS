@@ -167,16 +167,26 @@ Write-Phase "0" "Configuration"
 if ($DoCustom) {
     $U = Read-Timed "Username:" $DefUser
     $P = Read-Timed "Password:" $DefPass -Secret
+    $HostIn = Read-Timed "Static Hostname (blank for cloudws-XXXXX):" "cloudws"
     $luksIn = Read-Timed "Enable LUKS encryption? (y/N):" "N"
     $UseLuks = $luksIn -match "^[yY]"
     $LuksPass = if ($UseLuks) { Read-Timed "LUKS passphrase:" "cloudws" -Secret } else { "" }
     $RegistryUrl = Read-Timed "Registry URL:" $DefRegistry
+
+    Write-Host ""
+    Write-Host "      Select Deployment Targets (comma separated or 'all'):" -ForegroundColor DarkCyan
+    Write-Host "      1) RAW, 2) VHDX, 3) WSL, 4) ISO" -ForegroundColor DarkGray
+    $targetIn = Read-Timed "Targets:" "all"
+    if ($targetIn -eq "all") { $SelectedTargets = 1..4 }
+    else { $SelectedTargets = $targetIn -split ',' | ForEach-Object { $_.Trim() } }
 } else {
     $U = $DefUser
     $P = $DefPass
+    $HostIn = "cloudws"
     $UseLuks = $false
     $LuksPass = ""
     $RegistryUrl = $DefRegistry
+    $SelectedTargets = 1..4
 }
 
 $GhcrImage = "${RegistryUrl}:${ImageTag}"
@@ -335,13 +345,19 @@ if ($DoPull) {
     $ovr | Set-Content "scripts/31-user.sh" -NoNewline -Encoding ascii
     Write-OK "Credentials injected (hashed — NO plaintext in build log)"
 
+    # ── Inject hostname ──
+    if ($HostIn -ne "cloudws") {
+        Write-Step "Injecting static hostname: $HostIn ..."
+        Set-Content "system_files/etc/hostname" "$HostIn" -Encoding ascii
+    }
+
     $t0 = Get-Date
     Write-Step "Building OCI image (all $cpu threads, MAKEFLAGS=-j$cpu)..."
     & podman build --no-cache --build-arg MAKEFLAGS="-j$cpu" --jobs 2 -t $LocalImage .
     if ($LASTEXITCODE -ne 0) { Write-Fatal "podman build failed" }
 
-    # Restore 31-user.sh immediately
-    & git checkout scripts/31-user.sh 2>$null
+    # Restore build-time injection files
+    & git checkout scripts/31-user.sh system_files/etc/hostname 2>$null
     if ($LASTEXITCODE -ne 0) {
         $ovr = Get-Content "scripts/31-user.sh" -Raw
         $ovr = $ovr -replace [regex]::Escape($U), 'INJ_U'
@@ -360,9 +376,17 @@ if ($DoPull) {
     # Rechunk
     Write-Step "Rechunking for optimized OCI layers..."
     $ErrorActionPreference = "Continue"
+    # Use the freshly built image as the rechunker tool (Self-Building)
+    # Falls back to external RECHUNK_IMAGE if local fails
     & podman run --rm --privileged `
         -v /var/lib/containers/storage:/var/lib/containers/storage `
-        $RechunkImage /usr/libexec/bootc-base-imagectl rechunk $LocalImage $LocalImage
+        $LocalImage /usr/libexec/bootc-base-imagectl rechunk $LocalImage $LocalImage
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warn "Self-build rechunk failed; falling back to external rechunker"
+        & podman run --rm --privileged `
+            -v /var/lib/containers/storage:/var/lib/containers/storage `
+            $RechunkImage /usr/libexec/bootc-base-imagectl rechunk $LocalImage $LocalImage
+    }
     $ErrorActionPreference = "Stop"
 
     Write-OK "Rechunk complete"
@@ -439,67 +463,75 @@ function Get-BIBArgs {
 }
 
 # ── RAW ──
-Write-Step "TARGET 1 — RAW disk image..."
-Clear-BIBTemp
-$rawArgs = Get-BIBArgs "raw"
-& podman @rawArgs 2>&1
-if ($LASTEXITCODE -eq 0) {
-    $rawFile = Get-ChildItem $OutputFolder -Recurse -Filter "*.raw" | Select-Object -First 1
-    if ($rawFile) { Move-Item $rawFile.FullName $RawImg -Force; Write-OK "RAW: $(Get-FileSize $RawImg)" }
-} else { Write-Warn "RAW build failed" }
+if ($SelectedTargets -contains 1) {
+    Write-Step "TARGET 1 — RAW disk image..."
+    Clear-BIBTemp
+    $rawArgs = Get-BIBArgs "raw"
+    & podman @rawArgs 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        $rawFile = Get-ChildItem $OutputFolder -Recurse -Filter "*.raw" | Select-Object -First 1
+        if ($rawFile) { Move-Item $rawFile.FullName $RawImg -Force; Write-OK "RAW: $(Get-FileSize $RawImg)" }
+    } else { Write-Warn "RAW build failed" }
+}
 
 # ── VHDX ──
-Write-Step "TARGET 2 — VHD → VHDX (Hyper-V Gen2)..."
-Clear-BIBTemp
-$vhdArgs = Get-BIBArgs "vhd"
-& podman @vhdArgs 2>&1
-if ($LASTEXITCODE -eq 0) {
-    # BIB nests output in subdirectories (vpc/disk.vhd or image/disk.vhd).
-    # Move to output root first so the container mount path is simple.
-    $vhdFile = Get-ChildItem $OutputFolder -Recurse -Include "*.vhd","*.vpc" | Select-Object -First 1
-    if ($vhdFile) {
-        $vhdSrc = Join-Path $OutputFolder "disk.vhd"
-        if ($vhdFile.FullName -ne $vhdSrc) {
-            Move-Item $vhdFile.FullName $vhdSrc -Force
-        }
-        Write-Step "Converting disk.vhd → VHDX (parallel coroutines)..."
-        # -m 16 -W enables 16 parallel coroutines and out-of-order writes for massive speedup
-        if ($HelperImage) {
-            & podman run --rm -v "${OutputFolder}:/data:z" $HelperImage `
-                qemu-img convert -m 16 -W -f vpc -O vhdx /data/disk.vhd /data/cloudws-hyperv.vhdx
+if ($SelectedTargets -contains 2) {
+    Write-Step "TARGET 2 — VHD → VHDX (Hyper-V Gen2)..."
+    Clear-BIBTemp
+    $vhdArgs = Get-BIBArgs "vhd"
+    & podman @vhdArgs 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        # BIB nests output in subdirectories (vpc/disk.vhd or image/disk.vhd).
+        # Move to output root first so the container mount path is simple.
+        $vhdFile = Get-ChildItem $OutputFolder -Recurse -Include "*.vhd","*.vpc" | Select-Object -First 1
+        if ($vhdFile) {
+            $vhdSrc = Join-Path $OutputFolder "disk.vhd"
+            if ($vhdFile.FullName -ne $vhdSrc) {
+                Move-Item $vhdFile.FullName $vhdSrc -Force
+            }
+            Write-Step "Converting disk.vhd → VHDX (parallel coroutines)..."
+            # -m 16 -W enables 16 parallel coroutines and out-of-order writes for massive speedup
+            if ($HelperImage) {
+                & podman run --rm -v "${OutputFolder}:/data:z" $HelperImage `
+                    qemu-img convert -m 16 -W -f vpc -O vhdx /data/disk.vhd /data/cloudws-hyperv.vhdx
+            } else {
+                & podman run --rm -v "${OutputFolder}:/data:z" $FallbackConvert sh -c `
+                    "apk add --quiet qemu-img && qemu-img convert -m 16 -W -f vpc -O vhdx /data/disk.vhd /data/cloudws-hyperv.vhdx"
+            }
+            Remove-Item $vhdSrc -Force -ErrorAction SilentlyContinue
+            Clear-BIBTemp
+            if (Test-Path $TargetVhdx) { Write-OK "VHDX: $(Get-FileSize $TargetVhdx)" }
+            else { Write-Warn "VHDX conversion failed — qemu-img error" }
         } else {
-            & podman run --rm -v "${OutputFolder}:/data:z" $FallbackConvert sh -c `
-                "apk add --quiet qemu-img && qemu-img convert -m 16 -W -f vpc -O vhdx /data/disk.vhd /data/cloudws-hyperv.vhdx"
+            Write-Warn "VHD file not found in BIB output"
         }
-        Remove-Item $vhdSrc -Force -ErrorAction SilentlyContinue
-        Clear-BIBTemp
-        if (Test-Path $TargetVhdx) { Write-OK "VHDX: $(Get-FileSize $TargetVhdx)" }
-        else { Write-Warn "VHDX conversion failed — qemu-img error" }
-    } else {
-        Write-Warn "VHD file not found in BIB output"
-    }
-} else { Write-Warn "VHD build failed" }
+    } else { Write-Warn "VHD build failed" }
+}
 
 # ── WSL ──
-Write-Step "TARGET 3 — WSL2 tarball..."
-$wslCid = & podman create $LocalImage 2>$null
-if ($wslCid) {
-    # Use -o flag to write directly to file — PS 7 can't pipe binary through Set-Content
-    & podman export $wslCid -o $TargetWsl 2>$null
-    & podman rm $wslCid 2>$null
+if ($SelectedTargets -contains 3) {
+    Write-Step "TARGET 3 — WSL2 tarball..."
+    $wslCid = & podman create $LocalImage 2>$null
+    if ($wslCid) {
+        # Use -o flag to write directly to file — PS 7 can't pipe binary through Set-Content
+        & podman export $wslCid -o $TargetWsl 2>$null
+        & podman rm $wslCid 2>$null
+    }
+    if (Test-Path $TargetWsl) { Write-OK "WSL: $(Get-FileSize $TargetWsl)" }
+    else { Write-Warn "WSL export failed" }
 }
-if (Test-Path $TargetWsl) { Write-OK "WSL: $(Get-FileSize $TargetWsl)" }
-else { Write-Warn "WSL export failed" }
 
 # ── ISO ──
-Write-Step "TARGET 4 — Anaconda installer ISO..."
-Clear-BIBTemp
-$isoArgs = Get-BIBArgs "anaconda-iso"
-& podman @isoArgs 2>&1
-if ($LASTEXITCODE -eq 0) {
-    $isoFile = Get-ChildItem $OutputFolder -Recurse -Filter "*.iso" | Select-Object -First 1
-    if ($isoFile) { Move-Item $isoFile.FullName $TargetIso -Force; Write-OK "ISO: $(Get-FileSize $TargetIso)" }
-} else { Write-Warn "ISO failed" }
+if ($SelectedTargets -contains 4) {
+    Write-Step "TARGET 4 — Anaconda installer ISO..."
+    Clear-BIBTemp
+    $isoArgs = Get-BIBArgs "anaconda-iso"
+    & podman @isoArgs 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        $isoFile = Get-ChildItem $OutputFolder -Recurse -Filter "*.iso" | Select-Object -First 1
+        if ($isoFile) { Move-Item $isoFile.FullName $TargetIso -Force; Write-OK "ISO: $(Get-FileSize $TargetIso)" }
+    } else { Write-Warn "ISO failed" }
+}
 
 # Clean LUKS temp
 Remove-Item (Join-Path $OutputFolder ".luks-tmp") -Force -ErrorAction SilentlyContinue

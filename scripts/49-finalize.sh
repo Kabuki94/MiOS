@@ -7,6 +7,10 @@ log() { printf '[49-finalize] %s\n' "$*"; }
 # Apply all shipped presets now (so `systemctl is-enabled` reflects intent)
 systemctl preset-all 2>/dev/null || true
 
+# Set a safe build-time default target. Containers will reach this quickly.
+# Bare-metal/VM roles will switch this to graphical.target/etc. at runtime.
+systemctl set-default multi-user.target 2>/dev/null || true
+
 # Ensure role directory exists with example config
 mkdir -p /etc/cloudws
 if [[ ! -f /etc/cloudws/role.conf ]]; then

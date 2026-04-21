@@ -25,9 +25,26 @@ install_packages_strict "virt"
 # the unit file is absent and systemctl enable fails silently in 20-services.sh.
 dnf install -y libvirt-daemon
 
-# ── Containers (Podman, Buildah, Skopeo, bootc) ─────────────────────────────
-echo "[12-virt] Installing container runtime..."
+# ── Containers (Podman, Buildah, Skopeo, bootc, self-build tools) ────────────
+echo "[12-virt] Installing container runtime and self-building tools..."
 install_packages_strict "containers"
+
+# bootc-image-builder is a critical self-replication tool but often missing from repos.
+# If not installed via packages-containers, build/install it natively.
+if ! command -v bootc-image-builder &>/dev/null; then
+    echo "[12-virt] bootc-image-builder missing from repos; installing via Go..."
+    # Ensure go is installed for this step
+    dnf "${DNF_SETOPT[@]}" install -y golang
+    export GOPATH=/tmp/go
+    go install github.com/osbuild/bootc-image-builder/cmd/bootc-image-builder@latest
+    if [ -f /tmp/go/bin/bootc-image-builder ]; then
+        install -m 755 /tmp/go/bin/bootc-image-builder /usr/bin/bootc-image-builder
+        echo "[12-virt] bootc-image-builder installed to /usr/bin/"
+    fi
+    # Cleanup go after build to keep image small
+    rm -rf /tmp/go
+    dnf "${DNF_SETOPT[@]}" remove -y golang
+fi
 
 # ── Boot & Update Management (bootupd, ukify, etc.) ─────────────────────────
 echo "[12-virt] Installing boot and update management tools..."

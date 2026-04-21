@@ -42,16 +42,34 @@ Requires=sysinit.target
 After=sysinit.target
 EOF
 
-# 5. WSL2 Compatibility Gating
-# All WSL2 service skips (gdm, firewalld, waydroid-container, nvidia-powerd,
-# crowdsec*, dev-binderfs.mount, ceph-bootstrap, audit*, bootloader-update,
-# coreos-printk-quiet, coreos-populate-lvmdevices, usbguard) are owned by
-# 20-services.sh's WSL_SKIP_SERVICES loop. Drop-ins for dbus-broker / upower
-# ship via the system_files overlay. Nothing more to gate here.
+# 5. OCI Container and WSL2 Service Gating
+# Custom CloudWS services that require hardware access or full system init
+# should skip OCI containers and WSL2 where they cause boot loops or delays.
+SERVICES_TO_GATE=(
+    cloudws-cdi-detect
+    cloudws-grd-setup
+    cloudws-libvirtd-setup
+    cloudws-waydroid-init
+    cloudws-flatpak-install
+    cloudws-gpu-nvidia
+    cloudws-gpu-amd
+    cloudws-gpu-intel
+    cloudws-gpu-status
+    cloudws-nvidia-cdi
+    cloudws-ha-bootstrap
+    cloudws-k3s-init
+    cloudws-ceph-bootstrap
+)
 
-# dbus-daemon-wsl.service is shipped via system_files overlay — enable it here
-# (preset already lists it, but this guards against a preset-all miss).
-systemctl enable dbus-daemon-wsl.service 2>/dev/null || true
+for svc in "${SERVICES_TO_GATE[@]}"; do
+    mkdir -p "/etc/systemd/system/${svc}.service.d"
+    cat << 'EOF' > "/etc/systemd/system/${svc}.service.d/10-virt-gate.conf"
+[Unit]
+# CloudWS: Skip in containers/WSL2
+ConditionVirtualization=!container
+ConditionVirtualization=!wsl
+EOF
+done
 
-# 6. Escape-sequence fix no longer needed here — 36-akmod-guards.sh now writes
-# \\\\ in the heredoc so all 7 service drop-ins have correct \\. from the start.
+# 6. WSL2 Compatibility Gating (Legacy section kept for unit-specific fallbacks)
+

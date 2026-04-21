@@ -113,15 +113,14 @@ DROPIN
 done
 echo "[20-services] Bare-metal-only drop-ins created"
 
-# ─── WSL2-specific service gating ────────────────────────────────────────────
-# These services crash-loop or are useless in WSL2.
-WSL_SKIP_SERVICES=(
+# ─── WSL2 & Container Service Gating ─────────────────────────────────────────
+# These services crash-loop, are useless, or create deadlocks in WSL2/Containers.
+# Standardizing on ConditionVirtualization=!wsl !container for maximum stability.
+VIRT_SKIP_SERVICES=(
     gdm
     firewalld
     waydroid-container
     nvidia-powerd
-    crowdsec
-    crowdsec-firewall-bouncer
     fapolicyd
     dev-binderfs.mount
     ceph-bootstrap
@@ -131,21 +130,47 @@ WSL_SKIP_SERVICES=(
     coreos-printk-quiet
     coreos-populate-lvmdevices
     usbguard
+    chronyd
+    tuned
 )
 
-for svc in "${WSL_SKIP_SERVICES[@]}"; do
+for svc in "${VIRT_SKIP_SERVICES[@]}"; do
+    unit="${svc}"
+    [[ "$unit" != *.* ]] && unit="${unit}.service"
+    # Search in both /usr and /etc
+    if [ -f "/usr/lib/systemd/system/${unit}" ] || [ -f "/etc/systemd/system/${unit}" ]; then
+        mkdir -p "/usr/lib/systemd/system/${unit}.d"
+        cat > "/usr/lib/systemd/system/${unit}.d/10-cloudws-virt-gate.conf" <<'DROPIN'
+[Unit]
+# CloudWS: Skip in WSL2 and OCI containers for stability and performance
+ConditionVirtualization=!wsl
+ConditionVirtualization=!container
+DROPIN
+    fi
+done
+echo "[20-services] WSL2/Container skip drop-ins installed"
+
+# ─── Container-specific additional skips ────────────────────────────────────
+# Services that might work in WSL2 but are strictly redundant in OCI.
+CONTAINER_ONLY_SKIP=(
+    NetworkManager
+    systemd-resolved
+)
+
+for svc in "${CONTAINER_ONLY_SKIP[@]}"; do
     unit="${svc}"
     [[ "$unit" != *.* ]] && unit="${unit}.service"
     if [ -f "/usr/lib/systemd/system/${unit}" ] || [ -f "/etc/systemd/system/${unit}" ]; then
         mkdir -p "/usr/lib/systemd/system/${unit}.d"
-        cat > "/usr/lib/systemd/system/${unit}.d/10-skip-wsl.conf" <<'DROPIN'
+        cat > "/usr/lib/systemd/system/${unit}.d/10-cloudws-container-gate.conf" <<'DROPIN'
 [Unit]
-# CloudWS: Skip in WSL2 — service incompatible with WSL2 environment
-ConditionVirtualization=!wsl
+# CloudWS: Redundant in OCI containers (handled by Podman/Docker)
+ConditionVirtualization=!container
 DROPIN
     fi
 done
-echo "[20-services] WSL2 skip drop-ins installed"
+echo "[20-services] Container-only skip drop-ins installed"
+
 
 # ─── nvidia-powerd: skip in ALL VMs (no physical NVIDIA GPU) ─────────────────
 if [ -f /usr/lib/systemd/system/nvidia-powerd.service ]; then
