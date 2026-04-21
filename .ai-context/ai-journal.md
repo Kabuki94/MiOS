@@ -1254,3 +1254,22 @@ Claude completed a research and gap-audit pass. The findings below are verified 
     1) **CI Hardening:** Injected a `Hardened Build Sync` step (`sync && sleep 2`) into `build.yml` and `build-test.yml` immediately before the container build phase. This clears the OverlayFS upper-dir state and prevents "checksum of ref" failures.
     2) **NVIDIA Stability:** Research confirmed `ucore-hci:stable-nvidia` (595 branch) is currently experiencing fan/clock instability and loading failures. Standardized on `NVreg_UseKernelSuspendNotifiers=1` and updated `NEXT-RESEARCH.md` to flag `stable-nvidia-lts` (580) as the recommended production fallback.
 *   **DISCOVERY:** The "failed to calculate checksum" error seen in the user's logs is a classic symptom of this OverlayFS kernel bug.
+
+---
+
+### [2026-04-21 21:00:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Finalized the "Full Stack Stabilization" phase by addressing reported build failures (Cockpit missing), the "Self-Building" mandate, and OCI container boot performance issues. Conducted a deep audit of all provisioning scripts to enforce architectural purity and SSOT principles.
+*   **LEARNING:** The "Single Source of Truth" for packages (`PACKAGES.md`) and state (`tmpfiles.d`) is the only way to prevent drift across a complex multi-agent build pipeline. Manual `mkdir` or `install` calls in scripts create "ghost paths" that break `bootc` update guarantees.
+*   **DISCOVERY:** 
+    1) **Cockpit Failure:** `cockpit` was missing because `12-virt.sh` failed during the `go install` for `bootc-image-builder`, blocking subsequent installs.
+    2) **Self-Building:** The image lacked `make`, `gcc`, and `golang` in its final layer, preventing it from rebuilding its own components.
+    3) **OCI Boot Loops:** Containers were attempting to run bare-metal hardware services (GPU detection, CDI generation, full system initialization), leading to deadlocks and long startup times.
+*   **ACTION:**
+    1) **Unified Image Pipeline:** Consolidated CI into a single "Unified Image" build, removing the matrix strategy and redundant `BASE_IMAGE` variables.
+    2) **Self-Build Fulfillment:** Added `make`, `gcc`, `gcc-c++`, `cmake`, and `golang` to `PACKAGES.md`. Refactored `12-virt.sh` to install `bootc-image-builder` via Go and keep the build toolchain.
+    3) **Cockpit Fix:** Moved `cockpit` installation to the top of `12-virt.sh` and switched to `install_packages_strict` for immediate failure visibility.
+    4) **OCI Optimization:** Implemented a "Container Detection" bail-out in `role-apply`. Gated dozens of hardware services with `ConditionVirtualization=!container`. Set `multi-user.target` as the build-time default.
+    5) **Architectural Purity:** Consolidated all manual `/var` directory creation into `system_files/usr/lib/tmpfiles.d/cloudws-infra.conf`. Moved manual systemd drop-ins into the `system_files/` overlay.
+    6) **Active Bloat Removal:** Updated `build.sh` to proactively `dnf remove` non-essential UI components (`malcontent-*`, `PackageKit`, `gnome-tour`) as commanded.
+*   **SUGGESTED ALTERNATIVE:** We could use a multi-stage build to compile `bootc-image-builder`, but keeping the toolchain in the final image is required to satisfy the user's "self-building" mandate.
+

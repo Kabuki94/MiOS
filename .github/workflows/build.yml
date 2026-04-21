@@ -40,10 +40,8 @@ concurrency:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  # CloudWS-1 base (Fedora Rawhide bootc)
-  BASE_IMAGE_1: quay.io/fedora/fedora-bootc:rawhide
-  # CloudWS-2 base (Universal Blue ucore-hci)
-  BASE_IMAGE_2: ghcr.io/ublue-os/ucore-hci:stable-nvidia
+  # Unified base image (Universal Blue ucore-hci)
+  BASE_IMAGE: ghcr.io/ublue-os/ucore-hci:stable-nvidia
 
 permissions:
   contents: read
@@ -51,21 +49,9 @@ permissions:
   id-token: write    # Required for cosign keyless (OIDC) signing
 
 jobs:
-  # ─── Build Matrix ──────────────────────────────────────────────────────────
+  # ─── Build Job ─────────────────────────────────────────────────────────────
   build:
     runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        variant:
-          - name: cloudws-1
-            containerfile: Containerfile
-            tag: latest
-          # Uncomment when CloudWS-2 Containerfile is ready:
-          # - name: cloudws-2
-          #   containerfile: Containerfile.ucore
-          #   tag: ucore
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -80,7 +66,7 @@ jobs:
         run: |
           VERSION=$(cat VERSION 2>/dev/null || echo "0.0.0")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Building CloudWS v$VERSION (${{ matrix.variant.name }})"
+          echo "Building CloudWS v$VERSION (Unified Image)"
 
       # ── Free disk space (GitHub runners have ~14 GB free) ────────────────
       - name: Maximize build space
@@ -124,7 +110,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=${{ matrix.variant.tag }}
+            type=raw,value=latest
             type=raw,value=v${{ steps.version.outputs.version }}
             type=sha,prefix=
             type=schedule,pattern={{date 'YYYYMMDD'}}
@@ -134,12 +120,11 @@ jobs:
         run: sync && sleep 2
 
       - name: Build image
-
         id: build
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ${{ matrix.variant.containerfile }}
+          file: Containerfile
           load: ${{ github.event_name == 'pull_request' }}
           push: ${{ github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || inputs.force_push) }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -151,10 +136,10 @@ jobs:
       # ── Smoke test ──────────────────────────────────────────────────
       - name: Run smoke tests
         run: |
-          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.variant.tag }}"
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
           # For PRs, test the locally-built image
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            IMAGE="${{ env.IMAGE_NAME }}:${{ matrix.variant.tag }}"
+            IMAGE="${{ env.IMAGE_NAME }}:latest"
           fi
           chmod +x tests/smoke-test.sh
           ./tests/smoke-test.sh "$IMAGE"
@@ -163,7 +148,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: full-stack-report-${{ matrix.variant.name }}
+          name: full-stack-report
           path: cloudws-full-stack-report.log
           retention-days: 14
 
@@ -173,7 +158,7 @@ jobs:
         if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         run: |
           # Pull the just-pushed image and rechunk it
-          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.variant.tag }}"
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
           echo "Rechunking $IMAGE..."
 
           # Default to the original digest in case rechunking is skipped
@@ -193,9 +178,9 @@ jobs:
             /usr/libexec/bootc-base-imagectl rechunk \
               --max-layers 67 \
               "containers-storage:$IMAGE" \
-              "containers-storage:localhost/rechunked-${{ matrix.variant.tag }}"
+              "containers-storage:localhost/rechunked-latest"
           
-          podman push --digestfile=rechunk-digest.txt "localhost/rechunked-${{ matrix.variant.tag }}" "$IMAGE"
+          podman push --digestfile=rechunk-digest.txt "localhost/rechunked-latest" "$IMAGE"
           FINAL_DIGEST=$(cat rechunk-digest.txt)
           echo "Rechunk successful. New digest: $FINAL_DIGEST"
 
@@ -240,16 +225,16 @@ jobs:
       - name: Generate SBOM
         if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         run: |
-          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.variant.tag }}"
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
           syft packages "$IMAGE" \
-            -o spdx-json=cloudws-${{ matrix.variant.name }}-sbom.spdx.json \
-            -o cyclonedx-json=cloudws-${{ matrix.variant.name }}-sbom.cdx.json
+            -o spdx-json=cloudws-sbom.spdx.json \
+            -o cyclonedx-json=cloudws-sbom.cdx.json
 
       - name: Upload SBOM artifacts
         if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         uses: actions/upload-artifact@v4
         with:
-          name: sbom-${{ matrix.variant.name }}
+          name: sbom
           path: cloudws-*-sbom.*.json
           retention-days: 90
 
@@ -260,9 +245,9 @@ jobs:
           DIGEST: ${{ steps.rechunk.outputs.digest }}
         run: |
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
-          if [ -n "$DIGEST" ] && [ -f "cloudws-${{ matrix.variant.name }}-sbom.spdx.json" ]; then
+          if [ -n "$DIGEST" ] && [ -f "cloudws-sbom.spdx.json" ]; then
             cosign attach sbom \
-              --sbom "cloudws-${{ matrix.variant.name }}-sbom.spdx.json" \
+              --sbom "cloudws-sbom.spdx.json" \
               "${IMAGE}@${DIGEST}" || true
           fi
 
