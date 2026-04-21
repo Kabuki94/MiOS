@@ -33,19 +33,16 @@ rm -f /var/lib/systemd/random-seed 2>/dev/null || true
 echo "[99-cleanup] Cleaning /tmp..."
 find /tmp/* -maxdepth 0 -exec rm -fr {} \; 2>/dev/null || true
 
-# 5. Clean build context (/ctx)
-echo "[99-cleanup] Cleaning build context (/ctx)..."
-rm -rf /ctx 2>/dev/null || true
-
-# 6. ostree container commit — CRITICAL: finalizes OSTree layer metadata
+# 5. ostree container commit — CRITICAL: finalizes OSTree layer metadata
 echo "[99-cleanup] Running ostree container commit..."
 ostree container commit 2>&1 || true
 
-# 7. Recreate /var/tmp (required by systemd)
+# 6. Recreate /var/tmp (required by systemd)
 echo "[99-cleanup] Recreating /var/tmp..."
+mkdir -p /var/tmp
 chmod 1777 /var/tmp
 
-# 8. Clean DNF caches
+# 7. Clean DNF caches
 echo "[99-cleanup] Cleaning package manager caches..."
 dnf clean all 2>/dev/null || true
 
