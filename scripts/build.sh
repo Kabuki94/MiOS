@@ -86,12 +86,23 @@ for script in "$SCRIPT_DIR"/[0-9][0-9]-*.sh; do
     echo ""
 done
 
-# ── Suppress ucore base bloat (build-up approach — no dnf remove) ──────────
-# Per §3.9: dnf remove is never needed; mask services and add NoDisplay instead.
-# PackageKit: mask the daemon so it never runs
-# gnome-tour / gnome-initial-setup: hide via NoDisplay=true desktop entries
+# ── Bloat Removal (active removal approach) ──────────
+# Per user mandate: remove anything that's bloat.
+# malcontent-libs must remain (gnome-control-center hard dep), but
+# malcontent-control/pam/tools are UI/CLI components we don't need.
+# Leaf apps like gnome-tour and gnome-initial-setup are safe to remove.
 echo ""
-log_ts "==> Suppressing base image bloat (mask/hide, not remove)..."
+log_ts "==> Removing known bloat packages..."
+dnf "${DNF_SETOPT[@]}" remove -y \
+    malcontent-control malcontent-pam malcontent-tools \
+    gnome-tour gnome-initial-setup \
+    PackageKit PackageKit-command-not-found \
+    2>/dev/null || true
+
+# ── Suppress remaining ucore base bloat (mask/hide) ──────────
+# For things that can't be easily removed without cascade, hide them.
+echo ""
+log_ts "==> Suppressing remaining base image bloat (mask/hide)..."
 systemctl mask packagekit.service 2>/dev/null || true
 for app in gnome-tour gnome-initial-setup; do
     desktop="/usr/share/applications/${app}.desktop"

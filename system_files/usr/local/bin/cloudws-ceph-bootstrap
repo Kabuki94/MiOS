@@ -12,7 +12,8 @@ PRIMARY_IP=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{print $7; exit}')
 [ -z "$PRIMARY_IP" ] && PRIMARY_IP=$(hostname -I | awk '{print $1}')
 log "IP: ${PRIMARY_IP}, Host: $(hostname -s)"
 
-mkdir -p /var/lib/ceph /var/log/ceph /etc/ceph
+# Ensure /etc/ceph (others handled by tmpfiles.d)
+mkdir -p /etc/ceph
 
 log "Running cephadm bootstrap..."
 cephadm bootstrap \

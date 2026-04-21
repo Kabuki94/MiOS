@@ -20,44 +20,48 @@ KVER=$(cat /tmp/cloudws-kver 2>/dev/null || find /usr/lib/modules/ -mindepth 1 -
 # ── KVM / QEMU / Libvirt ────────────────────────────────────────────────────
 echo "[12-virt] Installing KVM/QEMU/Libvirt..."
 install_packages_strict "virt"
-# In Fedora 42+, the `libvirt` meta-package no longer pulls in `libvirt-daemon`
-# (the monolithic daemon). libvirtd.socket lives in libvirt-daemon; without it
-# the unit file is absent and systemctl enable fails silently in 20-services.sh.
-dnf install -y libvirt-daemon
 
 # ── Containers (Podman, Buildah, Skopeo, bootc, self-build tools) ────────────
 echo "[12-virt] Installing container runtime and self-building tools..."
 install_packages_strict "containers"
 
-# bootc-image-builder is a critical self-replication tool but often missing from repos.
-# If not installed via packages-containers, build/install it natively.
-if ! command -v bootc-image-builder &>/dev/null; then
-    echo "[12-virt] bootc-image-builder missing from repos; installing via Go..."
-    # Ensure go is installed for this step
-    dnf "${DNF_SETOPT[@]}" install -y golang
-    export GOPATH=/tmp/go
-    go install github.com/osbuild/bootc-image-builder/cmd/bootc-image-builder@latest
-    if [ -f /tmp/go/bin/bootc-image-builder ]; then
-        install -m 755 /tmp/go/bin/bootc-image-builder /usr/bin/bootc-image-builder
-        echo "[12-virt] bootc-image-builder installed to /usr/bin/"
-    fi
-    # Cleanup go after build to keep image small
-    rm -rf /tmp/go
-    dnf "${DNF_SETOPT[@]}" remove -y golang
-fi
+# Extra self-build tools (image-rechunking, etc. - may be repo-dependent)
+install_packages "self-build"
+
+# ── Cockpit Web Management ──────────────────────────────────────────────────
+echo "[12-virt] Installing Cockpit..."
+install_packages_strict "cockpit"
 
 # ── Boot & Update Management (bootupd, ukify, etc.) ─────────────────────────
 echo "[12-virt] Installing boot and update management tools..."
 install_packages "boot"
 
-# ── Cockpit Web Management ──────────────────────────────────────────────────
-echo "[12-virt] Installing Cockpit..."
-install_packages "cockpit"
+# bootc-image-builder is a critical self-replication tool but often missing from repos.
+# If not installed via packages-containers, build/install it natively.
+if ! command -v bootc-image-builder &>/dev/null; then
+    echo "[12-virt] bootc-image-builder missing from repos; installing via Go..."
+    export GOPATH=/tmp/go
+    # Use subshell to catch failure without killing script if we want to be safe,
+    # but since it's a self-build tool, we want to know if it fails.
+    if ! go install github.com/osbuild/bootc-image-builder/cmd/bootc-image-builder@latest; then
+        echo "[12-virt] WARNING: bootc-image-builder Go installation failed"
+    fi
+    if [ -f /tmp/go/bin/bootc-image-builder ]; then
+        install -m 755 /tmp/go/bin/bootc-image-builder /usr/bin/bootc-image-builder
+        echo "[12-virt] bootc-image-builder installed to /usr/bin/"
+    fi
+    # Cleanup go build cache but KEEP golang if self-building is required
+    rm -rf /tmp/go
+fi
 
-# Cockpit plugins from git (machines, podman extended features)
+# ── Cockpit plugins from git (machines, podman extended features) ──────────
+# Cloned here if missing, then built.
 echo "[12-virt] Building Cockpit plugins..."
 install_packages "cockpit-plugins-build"
 for plugin in cockpit-machines cockpit-podman; do
+    if [ ! -d "/tmp/$plugin" ]; then
+        git clone --depth=1 "https://github.com/cockpithq/$plugin.git" "/tmp/$plugin" 2>/dev/null || true
+    fi
     if [ -d "/tmp/$plugin" ]; then
         if cd "/tmp/$plugin"; then
             make install 2>/dev/null || true
@@ -142,28 +146,11 @@ curl -sL "$VIRTIO_URL" -o /usr/share/cloudws/virtio/virtio-win.iso 2>/dev/null |
 # Symlink the immutable ISO into /var/lib/libvirt/images via tmpfiles.d so it survives upgrades
 # Managed via system_files/usr/lib/tmpfiles.d/cloudws-virtio.conf
 
-# ── libvirtd service shutdown timeout ───────────────────────────────────────
-# libvirtd has a default 45-second TimeoutStopSec which is often insufficient
-# for graceful VM shutdown, especially with large memory VMs or active storage.
-# Increase to 120 seconds to allow for more robust shutdown behavior.
-echo "[12-virt] Configuring libvirtd.service TimeoutStopSec to 120s..."
-mkdir -p /usr/lib/systemd/system/libvirtd.service.d
-cat > /usr/lib/systemd/system/libvirtd.service.d/10-cloudws.conf <<'EOF'
-[Service]
-TimeoutStopSec=120
-EOF
-chmod 0644 /usr/lib/systemd/system/libvirtd.service.d/10-cloudws.conf
-
 # ── Looking Glass B7 (compile from source) ──────────────────────────────────
 echo "[12-virt] Building Looking Glass B7..."
 # Exclude dkms: it requires kernel-devel-matched which conflicts when the
 # base kernel doesn't match the fc44 repos. KVMFR is built manually below.
-LG_BUILD_PKGS=$(get_packages "looking-glass-build")
-if [[ -n "$LG_BUILD_PKGS" ]]; then
-    (dnf "${DNF_SETOPT[@]}" -y install --skip-unavailable --exclude=dkms $LG_BUILD_PKGS) || {
-        echo "[12-virt] WARNING: Some Looking Glass build packages failed to install" >&2
-    }
-fi
+install_packages_strict "looking-glass-build"
 
 LG_VERSION="B7"
 mkdir -p /tmp/looking-glass-build
@@ -240,18 +227,8 @@ cat > /etc/modprobe.d/kvmfr.conf <<'EOKVMFR'
 options kvmfr static_size_mb=128
 EOKVMFR
 
-# Clean up build deps (keep binary, remove sources)
+# Clean up build source code (keep binaries)
 rm -rf /tmp/looking-glass-build
-
-# Remove build-only packages to shrink image
-echo "[12-virt] Removing Looking Glass build dependencies..."
-BUILD_DEPS=$(get_packages "looking-glass-build" 2>/dev/null || echo "")
-if [ -n "$BUILD_DEPS" ]; then
-    # Only remove packages that are truly build-only (cmake, *-devel)
-    for pkg in cmake gcc gcc-c++ libglvnd-devel fontconfig-devel; do
-        dnf "${DNF_SETOPT[@]}" remove -y "$pkg" 2>/dev/null || true
-    done
-fi
 
 # ── Podman Quadlet: CrowdSec ────────────────────────────────────────────────
 # Managed via system_files/usr/share/containers/systemd/
