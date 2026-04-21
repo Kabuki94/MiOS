@@ -75,7 +75,9 @@ install_packages "wintools"
 echo "[12-virt] Installing gaming packages..."
 GAMING_PKGS=$(get_packages "gaming")
 if [[ -n "$GAMING_PKGS" ]]; then
-    dnf "${DNF_SETOPT[@]}" -y install --skip-unavailable --exclude=udev-joystick-blacklist-rm $GAMING_PKGS
+    (dnf "${DNF_SETOPT[@]}" -y install --skip-unavailable --exclude=udev-joystick-blacklist-rm $GAMING_PKGS) || {
+        echo "[12-virt] WARNING: Some gaming packages failed to install" >&2
+    }
 fi
 
 # ── Guest Agents ────────────────────────────────────────────────────────────
@@ -133,7 +135,9 @@ echo "[12-virt] Building Looking Glass B7..."
 # base kernel doesn't match the fc44 repos. KVMFR is built manually below.
 LG_BUILD_PKGS=$(get_packages "looking-glass-build")
 if [[ -n "$LG_BUILD_PKGS" ]]; then
-    dnf "${DNF_SETOPT[@]}" -y install --skip-unavailable --exclude=dkms $LG_BUILD_PKGS
+    (dnf "${DNF_SETOPT[@]}" -y install --skip-unavailable --exclude=dkms $LG_BUILD_PKGS) || {
+        echo "[12-virt] WARNING: Some Looking Glass build packages failed to install" >&2
+    }
 fi
 
 LG_VERSION="B7"

@@ -54,6 +54,7 @@ CONTAINERFILE_SCRIPTS="18-apply-boot-fixes.sh 19-k3s-selinux.sh 20-fapolicyd-tru
 TOTAL_START=$SECONDS
 SCRIPT_COUNT=0
 SCRIPT_FAIL=0
+FAILED_SCRIPTS=()
 
 for script in "$SCRIPT_DIR"/[0-9][0-9]-*.sh; do
     SCRIPT_NAME="$(basename "$script")"
@@ -80,6 +81,7 @@ for script in "$SCRIPT_DIR"/[0-9][0-9]-*.sh; do
     else
         log_ts "✗ $SCRIPT_NAME FAILED (exit $SCRIPT_EXIT, ${STEP_ELAPSED}s)"
         SCRIPT_FAIL=$((SCRIPT_FAIL + 1))
+        FAILED_SCRIPTS+=("$SCRIPT_NAME")
     fi
     echo ""
 done
@@ -194,6 +196,9 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "  BUILD SUMMARY"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Scripts:   $SCRIPT_COUNT executed, $SCRIPT_FAIL failed"
+if [[ $SCRIPT_FAIL -gt 0 ]]; then
+    echo "  Failed:    ${FAILED_SCRIPTS[*]}"
+fi
 echo "  Packages:  $VALIDATION_FAIL critical missing"
 echo "  Duration:  ${TOTAL_ELAPSED}s ($((TOTAL_ELAPSED / 60))m $((TOTAL_ELAPSED % 60))s)"
 echo "  Version:   v$VERSION_STR"
