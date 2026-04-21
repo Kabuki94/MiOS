@@ -10,8 +10,30 @@ source "$(dirname "$0")/lib/common.sh"
 dnf "${DNF_SETOPT[@]}" install -y selinux-policy-devel git make
 
 # Clone the upstream k3s-selinux repository
-git clone https://github.com/k3s-io/k3s-selinux.git /tmp/k3s-selinux
+git clone --depth 1 https://github.com/k3s-io/k3s-selinux.git /tmp/k3s-selinux
 cd /tmp/k3s-selinux
+
+# K3s SELinux repo stores policies in subdirectories (e.g., policy/coreos or policy/centos9)
+# We find the best matching policy source files for Fedora.
+POLICY_DIR=""
+if [ -d "policy/coreos" ]; then
+    POLICY_DIR="policy/coreos"
+elif [ -d "policy/centos9" ]; then
+    POLICY_DIR="policy/centos9"
+elif [ -d "policy/rhel9" ]; then
+    POLICY_DIR="policy/rhel9"
+else
+    # Fallback to the first directory containing k3s.te
+    POLICY_DIR=$(find policy -name k3s.te -printf '%h\n' | head -n 1)
+fi
+
+if [ -z "$POLICY_DIR" ]; then
+    echo "FATAL: Could not find k3s.te in the repository."
+    exit 1
+fi
+
+echo "Using policy source from: $POLICY_DIR"
+cp "$POLICY_DIR"/k3s.* .
 
 # Compile the policy using the Fedora 44 SELinux Makefile
 make -f /usr/share/selinux/devel/Makefile k3s.pp
