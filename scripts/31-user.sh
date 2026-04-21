@@ -34,16 +34,23 @@ fi
 # — USER CREATION —
 # Password is pre-hashed (SHA-512) by the orchestrator — plaintext NEVER in build log.
 echo "[31-user] Creating user cloudws..."
-useradd -m -d /var/home/INJ_U -s /bin/bash INJ_U 2>/dev/null || true
-echo "INJ_U:INJ_HASH" | chpasswd -e
-echo "root:INJ_HASH" | chpasswd -e
-passwd -u INJ_U 2>/dev/null || true
+if ! getent passwd INJ_U >/dev/null; then
+    useradd -m -d /var/home/INJ_U -s /bin/bash INJ_U 2>/dev/null || true
+fi
+
+if getent passwd INJ_U >/dev/null; then
+    echo "INJ_U:INJ_HASH" | chpasswd -e 2>/dev/null || true
+    echo "root:INJ_HASH" | chpasswd -e 2>/dev/null || true
+    passwd -u INJ_U 2>/dev/null || true
 
     # Add sysusers.d entry for cloudws user (fixes bootc lint sysusers warning)
     mkdir -p /usr/lib/sysusers.d
     cat > /usr/lib/sysusers.d/cloudws.conf <<EOF
 u cloudws - "CloudWS User" /var/home/INJ_U /bin/bash
 EOF
+else
+    echo "[31-user] ERROR: Failed to create user INJ_U"
+fi
 
 # — GROUP INJECTION —
 # Pre-create hardware groups with standard Fedora GIDs if missing.
@@ -61,7 +68,7 @@ for group_spec in "kvm:36" "video:39" "render:105" "libvirt:" "input:" "dialout:
 done
 
 for g in wheel libvirt kvm video render input dialout docker; do
-    if getent group "$g" >/dev/null 2>&1; then
+    if getent group "$g" >/dev/null 2>&1 && getent passwd INJ_U >/dev/null; then
         usermod -aG "$g" INJ_U 2>/dev/null || true
     fi
 done

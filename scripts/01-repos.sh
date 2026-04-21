@@ -143,5 +143,8 @@ gpgkey=https://nvidia.github.io/libnvidia-container/gpgkey
 EOREPO
 fi
 
+# Ensure all repo files have correct permissions
+chmod 0644 /etc/yum.repos.d/*.repo 2>/dev/null || true
+
 echo "[01-repos] Done. Protected base + F44 userspace + RPMFusion + Terra + CrowdSec."
 echo "[01-repos] Priority: CrowdSec(80) < Terra(85) < RPMFusion(90) < F44(95) < Base(98) < Default(99)"

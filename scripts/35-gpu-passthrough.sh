@@ -25,10 +25,14 @@ WANTS=/usr/lib/systemd/system/multi-user.target.wants
 install -d -m 0755 "${WANTS}"
 
 # These files are already installed in /usr/lib/systemd/system/ via overlay
-ln -sf ../cloudws-gpu-status.service "${WANTS}/cloudws-gpu-status.service"
-ln -sf ../cloudws-gpu-nvidia.service "${WANTS}/cloudws-gpu-nvidia.service"
-ln -sf ../cloudws-gpu-amd.service    "${WANTS}/cloudws-gpu-amd.service"
-ln -sf ../cloudws-gpu-intel.service  "${WANTS}/cloudws-gpu-intel.service"
+for svc in cloudws-gpu-status.service cloudws-gpu-nvidia.service cloudws-gpu-amd.service cloudws-gpu-intel.service; do
+  if [[ -f "/usr/lib/systemd/system/${svc}" ]]; then
+    ln -sf "../${svc}" "${WANTS}/${svc}"
+    log "Enabled ${svc}"
+  else
+    log "WARN: ${svc} missing from /usr/lib/systemd/system/ — skipping"
+  fi
+done
 
 # Enable the upstream NVIDIA path unit where the toolkit shipped it.
 if [[ -f /usr/lib/systemd/system/nvidia-cdi-refresh.path ]]; then
