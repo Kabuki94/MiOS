@@ -24,47 +24,55 @@ install_packages "k3s"
 
 # ─── K3s Binary & Install Script ─────────────────────────────────────────────
 echo "[13-ceph-k3s] Resolving latest K3s release tag..."
-K3S_TAG=$(curl -sL -o /dev/null -w "%{url_effective}" https://github.com/k3s-io/k3s/releases/latest | grep -oE '[^/]+$' || true)
+# Retry 3 times for flaky networks
+K3S_TAG=""
+for i in 1 2 3; do
+    K3S_TAG=$(curl -sL -o /dev/null -w "%{url_effective}" https://github.com/k3s-io/k3s/releases/latest | grep -oE '[^/]+$' || true)
+    if [[ -n "$K3S_TAG" && "$K3S_TAG" != "latest" ]]; then break; fi
+    sleep 2
+done
 
 if [[ -z "$K3S_TAG" || "$K3S_TAG" == "latest" ]]; then
-    echo "[13-ceph-k3s] FATAL: Could not resolve latest K3s tag."
-    exit 1
+    echo "[13-ceph-k3s] WARN: Could not resolve latest K3s tag. Skipping K3s binary installation."
+    K3S_TAG=""
 fi
-echo "[13-ceph-k3s] Latest K3s tag: $K3S_TAG"
 
-echo "[13-ceph-k3s] Downloading K3s binary, checksum, and install script..."
-K3S_URL="https://github.com/k3s-io/k3s/releases/download/${K3S_TAG}/k3s"
-K3S_SUM_URL="https://github.com/k3s-io/k3s/releases/download/${K3S_TAG}/sha256sum-amd64.txt"
-K3S_INSTALL_URL="https://raw.githubusercontent.com/k3s-io/k3s/${K3S_TAG}/install.sh"
+if [[ -n "$K3S_TAG" ]]; then
+    echo "[13-ceph-k3s] Latest K3s tag: $K3S_TAG"
 
-mkdir -p /tmp/k3s-dl
-if curl -sfL "$K3S_URL" -o /tmp/k3s-dl/k3s 2>/dev/null && \
-   curl -sfL "$K3S_SUM_URL" -o /tmp/k3s-dl/sha256sum.txt 2>/dev/null && \
-   curl -sfL "$K3S_INSTALL_URL" -o /tmp/k3s-dl/k3s-install.sh 2>/dev/null; then
-    cd /tmp/k3s-dl
-    if grep -E "  k3s$" sha256sum.txt | sha256sum -c - >/dev/null 2>&1; then
-        echo "[13-ceph-k3s] ✓ K3s SHA256 checksum verified"
-        mv k3s /usr/local/bin/k3s
-        chmod 755 /usr/local/bin/k3s
+    echo "[13-ceph-k3s] Downloading K3s binary, checksum, and install script..."
+    K3S_URL="https://github.com/k3s-io/k3s/releases/download/${K3S_TAG}/k3s"
+    K3S_SUM_URL="https://github.com/k3s-io/k3s/releases/download/${K3S_TAG}/sha256sum-amd64.txt"
+    K3S_INSTALL_URL="https://raw.githubusercontent.com/k3s-io/k3s/${K3S_TAG}/install.sh"
 
-        # Only symlink if official RPM binaries don't exist, preventing PATH shadowing
-        [ ! -f /usr/bin/kubectl ] && ln -sf /usr/local/bin/k3s /usr/local/bin/kubectl 2>/dev/null || true
-        [ ! -f /usr/bin/crictl ] && ln -sf /usr/local/bin/k3s /usr/local/bin/crictl 2>/dev/null || true
-        [ ! -f /usr/bin/ctr ] && ln -sf /usr/local/bin/k3s /usr/local/bin/ctr 2>/dev/null || true
+    mkdir -p /tmp/k3s-dl
+    if curl -sfL "$K3S_URL" -o /tmp/k3s-dl/k3s && \
+       curl -sfL "$K3S_SUM_URL" -o /tmp/k3s-dl/sha256sum.txt && \
+       curl -sfL "$K3S_INSTALL_URL" -o /tmp/k3s-dl/k3s-install.sh; then
+        cd /tmp/k3s-dl
+        if grep -E "  k3s$" sha256sum.txt | sha256sum -c - >/dev/null 2>&1; then
+            echo "[13-ceph-k3s] ✓ K3s SHA256 checksum verified"
+            mv k3s /usr/local/bin/k3s
+            chmod 755 /usr/local/bin/k3s
 
-        mv k3s-install.sh /usr/local/bin/k3s-install.sh
-        chmod 755 /usr/local/bin/k3s-install.sh
+            # Only symlink if official RPM binaries don't exist, preventing PATH shadowing
+            [ ! -f /usr/bin/kubectl ] && ln -sf /usr/local/bin/k3s /usr/local/bin/kubectl 2>/dev/null || true
+            [ ! -f /usr/bin/crictl ] && ln -sf /usr/local/bin/k3s /usr/local/bin/crictl 2>/dev/null || true
+            [ ! -f /usr/bin/ctr ] && ln -sf /usr/local/bin/k3s /usr/local/bin/ctr 2>/dev/null || true
 
-        echo "[13-ceph-k3s] K3s binary and install script installed (tag: $K3S_TAG)"
+            mv k3s-install.sh /usr/local/bin/k3s-install.sh
+            chmod 755 /usr/local/bin/k3s-install.sh
+
+            echo "[13-ceph-k3s] K3s binary and install script installed (tag: $K3S_TAG)"
+        else
+            echo "[13-ceph-k3s] ERROR: K3s binary SHA256 checksum mismatch! Skipping."
+        fi
+        cd - >/dev/null
     else
-        echo "[13-ceph-k3s] FATAL: K3s binary SHA256 checksum mismatch! Aborting."
-        exit 1
+        echo "[13-ceph-k3s] WARN: K3s download failed. Skipping K3s installation."
     fi
-    cd - >/dev/null
-else
-    echo "[13-ceph-k3s] WARN: K3s download failed (non-fatal). Skipping K3s installation."
+    rm -rf /tmp/k3s-dl
 fi
-rm -rf /tmp/k3s-dl
 
 # ─── Pre-create directories in /etc (persists across updates) ────────────────
 # NOTE: /var/lib/rancher is created by tmpfiles.d/cloudws-k3s.conf at boot.

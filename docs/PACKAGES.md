@@ -188,7 +188,7 @@ vulkan-loader
 vulkan-tools
 libva-utils
 linux-firmware
-microcode_ctl
+# microcode_ctl removed: redundant on F44+
 ```
 
 ## GPU Drivers — AMD Compute (optional, fault-tolerant)

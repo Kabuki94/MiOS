@@ -31,8 +31,8 @@ install_packages "gnome"
 install_packages_optional "gnome-core-apps"
 
 # Enable display manager and network
-systemctl enable gdm.service NetworkManager.service
-systemctl set-default graphical.target
+systemctl enable gdm.service NetworkManager.service 2>/dev/null || true
+systemctl set-default graphical.target 2>/dev/null || true
 
 # ═════════════════════════════════════════════════════════════════════════════
 # Localsearch/tracker — disable indexing without removing

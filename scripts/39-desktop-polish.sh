@@ -79,19 +79,10 @@ chmod 0644 /usr/share/applications/cockpit.desktop \
            /usr/share/applications/ceph-dashboard.desktop
 
 # ═══ MOTD DASHBOARD ═══
-# Source lives alongside this script (scripts/cloudws-motd in the repo,
-# /ctx/scripts/cloudws-motd at build time). SCRIPT_DIR resolves both.
-# If the source file is missing, FAIL - better to break the build than
-# ship an image with no MOTD.
-echo "[39-desktop-polish] Installing CloudWS MOTD dashboard..."
-MOTD_SRC="${SCRIPT_DIR}/cloudws-motd"
-if [[ ! -f "$MOTD_SRC" ]]; then
-    echo "[39-desktop-polish] FATAL: cloudws-motd not found at $MOTD_SRC"
-    echo "[39-desktop-polish]        scripts/cloudws-motd must be present in repo"
-    exit 1
-fi
-install -D -m 0755 "$MOTD_SRC" /usr/libexec/cloudws-motd
-echo "[39-desktop-polish] ✓ /usr/libexec/cloudws-motd installed ($(wc -l <"$MOTD_SRC") lines)"
+# v2.3.5: ARCHITECTURAL PURITY FIX. The MOTD script is now delivered via the
+# system_files overlay to /usr/libexec/cloudws/motd. We no longer perform
+# manual 'install' calls here.
+echo "[39-desktop-polish] MOTD dashboard delivered via overlay."
 
 # ═══ FASTFETCH CONFIG — services dashboard on terminal open ═══
 echo "[39-desktop-polish] Installing fastfetch system config..."
@@ -223,9 +214,7 @@ EOFF
 
 # ═══ PROFILE.D — fastfetch + MOTD on terminal/TTY open ═══
 # fastfetch is the preferred frontend (ships its own per-service probes);
-# cloudws-motd is the fallback. With v2.3.1 the 12-virt.sh containers section
-# now completes, so "utils" gets installed, so fastfetch IS present - but we
-# keep the fallback for minimal images that skip the utils section.
+# cloudws-motd is the fallback.
 echo "[39-desktop-polish] Updating profile.d for terminal/TTY..."
 cat > /etc/profile.d/cloudws-motd.sh <<'EOPROFILE'
 # CloudWS v0.1.8 — Terminal/TTY dashboard
@@ -234,8 +223,8 @@ cat > /etc/profile.d/cloudws-motd.sh <<'EOPROFILE'
 if [[ $- == *i* ]] && [ -z "${CLOUDWS_NO_MOTD:-}" ]; then
     if command -v fastfetch &>/dev/null; then
         fastfetch 2>/dev/null || true
-    elif [[ -x /usr/libexec/cloudws-motd ]]; then
-        /usr/libexec/cloudws-motd 2>/dev/null || true
+    elif [[ -x /usr/libexec/cloudws/motd ]]; then
+        /usr/libexec/cloudws/motd 2>/dev/null || true
     fi
 fi
 EOPROFILE
