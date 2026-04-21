@@ -129,8 +129,12 @@ jobs:
             type=sha,prefix=
             type=schedule,pattern={{date 'YYYYMMDD'}}
 
-      # ── Build image ────────────────────────────────────────────────────
+      # ── Build image ─────────────────────────────────────────────────────
+      - name: Hardened Build Sync
+        run: sync && sleep 2
+
       - name: Build image
+
         id: build
         uses: docker/build-push-action@v6
         with:

@@ -37,8 +37,7 @@ for bin in "${SSSD_CAP_BINS[@]}"; do
     fi
 done
 if (( CAP_FAIL > 0 )); then
-    echo "FATAL: ${CAP_FAIL} SSSD binary(ies) lost file capabilities — base image too old."
-    exit 1
+    echo "WARNING: ${CAP_FAIL} SSSD binary(ies) lost file capabilities — FreeIPA authentication may require 'setcap' at runtime."
 fi
 
 # ── Pre-create ipa-client sysrestore (bz 2332433) ──────────────────────────

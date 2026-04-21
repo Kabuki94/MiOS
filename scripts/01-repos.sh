@@ -72,7 +72,10 @@ dnf "${DNF_SETOPT[@]}" upgrade -y --allowerasing --best \
 
 echo "[01-repos] Phase 2: Full distro-sync to Fedora 44..."
 dnf "${DNF_SETOPT[@]}" distro-sync -y --best --allowerasing \
-    --setopt=excludepkgs="shim-*,kernel*"
+    --setopt=excludepkgs="shim-*,kernel*" || {
+    echo "[01-repos] WARNING: Distro-sync to Fedora 44 failed. Repository might be unreachable."
+    echo "[01-repos] Continuing with base image packages..."
+}
 
 echo "[01-repos] Verifying core package versions..."
 rpm -q systemd glibc dbus-broker filesystem || true

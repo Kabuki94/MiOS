@@ -67,6 +67,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Hardened Build Sync
+        run: sync && sleep 2
+
       - name: Build container image with buildah
         id: build
         uses: redhat-actions/buildah-build@v2

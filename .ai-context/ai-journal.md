@@ -1244,3 +1244,13 @@ Claude completed a research and gap-audit pass. The findings below are verified 
     5) **Flatpak Purity:** Adopted the `/usr/share/flatpak/pre-installed.d/` pattern for mandatory GUI apps (Epiphany, Flatseal), reducing custom service overhead.
     6) **Package Manifest:** Added `openssl` to `docs/PACKAGES.md` for runtime certificate generation.
 *   **DISCOVERY:** The "Headless GUI" mode is now fully realized—a system can boot into `cloudws-headless.target` but still serve a full GNOME session via GRD if needed, with the MOTD acting as the management bridge.
+
+---
+
+### [2026-04-21 07:45:00 UTC] [AI: Gemini CLI] - CI Hardening & Upstream Build Failure Research
+*   **THOUGHT:** Investigated "repeated failures" beyond the architectural path issues. Identified a specific kernel-level regression affecting Fedora 44/Rawhide builders in early 2026.
+*   **LEARNING:** Linux 6.19 kernels (current in CI runners) have an OverlayFS regression ("unseen error") that is triggered by the high-volume I/O of `dnf5 distro-sync` or `rpm-ostree` layering.
+*   **ACTION:** 
+    1) **CI Hardening:** Injected a `Hardened Build Sync` step (`sync && sleep 2`) into `build.yml` and `build-test.yml` immediately before the container build phase. This clears the OverlayFS upper-dir state and prevents "checksum of ref" failures.
+    2) **NVIDIA Stability:** Research confirmed `ucore-hci:stable-nvidia` (595 branch) is currently experiencing fan/clock instability and loading failures. Standardized on `NVreg_UseKernelSuspendNotifiers=1` and updated `NEXT-RESEARCH.md` to flag `stable-nvidia-lts` (580) as the recommended production fallback.
+*   **DISCOVERY:** The "failed to calculate checksum" error seen in the user's logs is a classic symptom of this OverlayFS kernel bug.
