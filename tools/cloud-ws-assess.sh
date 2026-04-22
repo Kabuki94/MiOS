@@ -219,7 +219,7 @@ generate_compatibility_report() {
         # Check critical requirements
         if grep -q "CPU Virtualization.*✓" "$ASSESSMENT_DIR/01-quick-summary.txt"; then
             echo "✓ CPU Virtualization Support"
-            ((score+=2))
+            score=$((score + 2))
         else
             echo "✗ CPU Virtualization Support"
             ready=false
@@ -227,7 +227,7 @@ generate_compatibility_report() {
         
         if grep -q "IOMMU.*✓" "$ASSESSMENT_DIR/01-quick-summary.txt"; then
             echo "✓ IOMMU Support"
-            ((score+=2))
+            score=$((score + 2))
         else
             echo "✗ IOMMU Support"
             ready=false
@@ -235,7 +235,7 @@ generate_compatibility_report() {
         
         if grep -q "KVM.*✓" "$ASSESSMENT_DIR/01-quick-summary.txt"; then
             echo "✓ KVM Available"
-            ((score+=2))
+            score=$((score + 2))
         else
             echo "✗ KVM Available"
             ready=false
@@ -243,22 +243,22 @@ generate_compatibility_report() {
         
         if grep -q "GPU.*isolated" "$ASSESSMENT_DIR/02-iommu-analysis.txt" 2>/dev/null; then
             echo "✓ GPU Passthrough Ready"
-            ((score+=2))
+            score=$((score + 2))
         else
             echo "⚠ GPU Passthrough Limited"
-            ((score+=1))
+            score=$((score + 1))
         fi
         
         if grep -q "UEFI" "$ASSESSMENT_DIR/01-quick-summary.txt"; then
             echo "✓ UEFI Boot Mode"
-            ((score+=1))
+            score=$((score + 1))
         else
             echo "⚠ Legacy BIOS (UEFI recommended)"
         fi
         
         if grep -q "TPM.*Present" "$ASSESSMENT_DIR/01-quick-summary.txt"; then
             echo "✓ TPM 2.0 Present"
-            ((score+=1))
+            score=$((score + 1))
         else
             echo "⚠ No TPM (required for Windows 11)"
         fi

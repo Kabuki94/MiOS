@@ -34,45 +34,12 @@ fi
 
 # 4. Fix Systemd Ordering Cycle for GPU Passthrough
 # Log trace: sockets.target: Found ordering cycle: docker.socket/start after cloudws-gpu-nvidia.service/start after basic.target
-# Default dependencies tangle the GPU loading logic with standard user-level sockets.
-mkdir -p /etc/systemd/system/cloudws-gpu-nvidia.service.d/
-cat << 'EOF' > /etc/systemd/system/cloudws-gpu-nvidia.service.d/10-cycle-fix.conf
-[Unit]
-DefaultDependencies=no
-Requires=sysinit.target
-After=sysinit.target
-EOF
+# Drop-in handled via overlay.
 
 # 5. OCI Container and WSL2 Service Gating
 # Custom CloudWS services that require hardware access or full system init
-# should skip OCI containers and WSL2 where they cause boot loops or delays.
-SERVICES_TO_GATE=(
-    cloudws-role
-    cloudws-selinux-init
-    cloudws-cdi-detect
-    cloudws-grd-setup
-    cloudws-libvirtd-setup
-    cloudws-waydroid-init
-    cloudws-flatpak-install
-    cloudws-gpu-nvidia
-    cloudws-gpu-amd
-    cloudws-gpu-intel
-    cloudws-gpu-status
-    cloudws-nvidia-cdi
-    cloudws-ha-bootstrap
-    cloudws-k3s-init
-    cloudws-ceph-bootstrap
-)
-
-for svc in "${SERVICES_TO_GATE[@]}"; do
-    mkdir -p "/etc/systemd/system/${svc}.service.d"
-    cat << 'EOF' > "/etc/systemd/system/${svc}.service.d/10-virt-gate.conf"
-[Unit]
-# CloudWS: Skip in containers/WSL2
-ConditionVirtualization=!container
-ConditionVirtualization=!wsl
-EOF
-done
+# skip OCI containers and WSL2 via drop-ins in system_files overlay.
+echo "==> Service gating drop-ins active via overlay"
 
 # 6. WSL2 Compatibility Gating (Legacy section kept for unit-specific fallbacks)
 

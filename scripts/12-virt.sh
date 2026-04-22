@@ -76,16 +76,7 @@ install_packages "security"
 
 # Sovereign mode: disable Central API, use local-only decisions
 if [ -d /etc/crowdsec ]; then
-    mkdir -p /etc/crowdsec/acquis.d
-    cat > /etc/crowdsec/acquis.d/journalctl.yaml <<'EOACQ'
-source: journalctl
-journalctl_filter:
-  - "_SYSTEMD_UNIT=sshd.service"
-  - "_SYSTEMD_UNIT=nginx.service"
-  - "_SYSTEMD_UNIT=httpd.service"
-labels:
-  type: syslog
-EOACQ
+    # acquis.d/journalctl.yaml managed via system_files/ overlay
 
     # Disable online API for sovereign operation
     if [ -f /etc/crowdsec/config.yaml ]; then
@@ -205,27 +196,10 @@ if [ -d LookingGlass ]; then
 fi
 
 # Looking Glass config: Force OpenGL renderer (fixes NVIDIA+Wayland flicker)
-mkdir -p /etc/skel/.config/looking-glass
-cat > /etc/skel/.config/looking-glass/client.ini <<'EOLGCFG'
-[app]
-renderer=opengl
-
-[win]
-fullScreen=no
-maximize=no
-
-[input]
-grabKeyboardOnFocus=yes
-escapeKey=KEY_RIGHTCTRL
-EOLGCFG
+# Managed via system_files/etc/skel/.config/looking-glass/client.ini
 
 # KVMFR module config
-mkdir -p /etc/modprobe.d
-cat > /etc/modprobe.d/kvmfr.conf <<'EOKVMFR'
-# CloudWS: KVMFR shared memory for Looking Glass
-# 128MB sufficient for 4K SDR. Increase for ultrawide or HDR.
-options kvmfr static_size_mb=128
-EOKVMFR
+# Managed via system_files/etc/modprobe.d/kvmfr.conf
 
 # Clean up build source code (keep binaries)
 rm -rf /tmp/looking-glass-build

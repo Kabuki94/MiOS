@@ -24,16 +24,7 @@ echo "[38-vm-gating] Configuring VM-specific service gating..."
 # Do NOT duplicate them here — last writer wins and we want 20's canonical drop-ins.
 
 # ═══ Polkit container workaround ═══
-mkdir -p /usr/lib/systemd/system/polkit.service.d
-cat > /usr/lib/systemd/system/polkit.service.d/10-cloudws-container.conf <<'DROPIN'
-[Unit]
-StartLimitIntervalSec=300
-StartLimitBurst=3
-
-[Service]
-Restart=on-failure
-RestartSec=30
-DROPIN
+# Managed via system_files/usr/lib/systemd/system/polkit.service.d/10-cloudws-container.conf
 
 # ═══ Cockpit socket drop-in permissions ═══
 if [ -f /etc/systemd/system/cockpit.socket.d/listen.conf ]; then
@@ -46,9 +37,7 @@ fi
 echo "[38-vm-gating] Configuring Hyper-V Enhanced Session (gnome-remote-desktop)..."
 
 # 1. Blacklist VMware vsock (conflicts with Hyper-V hv_sock)
-cat > /etc/modprobe.d/blacklist-vmw_vsock.conf <<'EOMOD'
-blacklist vmw_vsock_vmci_transport
-EOMOD
+# Managed via system_files/etc/modprobe.d/blacklist-vmw_vsock.conf
 
 # 2. Ensure hv_sock loads on boot (required for vsock RDP transport)
 if ! grep -q 'hv_sock' /etc/modules-load.d/cloudws.conf 2>/dev/null; then
@@ -56,79 +45,11 @@ if ! grep -q 'hv_sock' /etc/modules-load.d/cloudws.conf 2>/dev/null; then
 fi
 
 # 3. Polkit rule for colord (prevents "not authorized" errors in RDP sessions)
-mkdir -p /etc/polkit-1/rules.d
-cat > /etc/polkit-1/rules.d/45-allow-colord.rules <<'EOPOLKIT'
-polkit.addRule(function(action, subject) {
-    if ((action.id == "org.freedesktop.color-manager.create-device" ||
-         action.id == "org.freedesktop.color-manager.create-profile" ||
-         action.id == "org.freedesktop.color-manager.delete-device" ||
-         action.id == "org.freedesktop.color-manager.delete-profile" ||
-         action.id == "org.freedesktop.color-manager.modify-device" ||
-         action.id == "org.freedesktop.color-manager.modify-profile") &&
-        subject.isInGroup("wheel")) {
-        return polkit.Result.YES;
-    }
-});
-EOPOLKIT
+# Managed via system_files/etc/polkit-1/rules.d/45-allow-colord.rules
 
 # 4. Hyper-V Enhanced Session service — uses gnome-remote-desktop (NOT xrdp)
-# GRD provides Wayland-native RDP. On Hyper-V, it listens on vsock or TCP 3389.
-cat > /usr/lib/systemd/system/cloudws-hyperv-enhanced.service <<'EOSVC'
-[Unit]
-Description=CloudWS Hyper-V Enhanced Session Setup (gnome-remote-desktop)
-After=local-fs.target network.target gdm.service
-ConditionVirtualization=microsoft
-
-[Service]
-Type=oneshot
-ExecStart=/usr/libexec/cloudws-hyperv-enhanced
-RemainAfterExit=yes
-
-[Install]
-WantedBy=graphical.target
-EOSVC
-
-cat > /usr/libexec/cloudws-hyperv-enhanced <<'EOHV'
-#!/bin/bash
-set -euo pipefail
-echo "[cloudws-hyperv] Configuring Enhanced Session via gnome-remote-desktop..."
-
-# Load hv_sock module for vsock transport
-modprobe hv_sock 2>/dev/null || true
-
-# Check if the primary Wayland compositor (GDM) failed to launch.
-# If so, GRD cannot bind to the session. Unmask and fallback to legacy xrdp.
-if systemctl is-failed --quiet gdm.service 2>/dev/null; then
-    echo "[cloudws-hyperv] WARNING: GDM failed to launch. Falling back to legacy xrdp..."
-    systemctl unmask xrdp.service xrdp-sesman.service 2>/dev/null || true
-    systemctl enable xrdp.service 2>/dev/null || true
-    systemctl start --no-block xrdp.service 2>/dev/null || true
-else
-    # Enable gnome-remote-desktop system service (Wayland RDP)
-    # The cloudws-grd-setup.service handles TLS cert generation and credentials.
-    systemctl enable gnome-remote-desktop.service 2>/dev/null || true
-    systemctl start --no-block gnome-remote-desktop.service 2>/dev/null || true
-fi
-
-# Open firewall for RDP
-if command -v firewall-cmd >/dev/null 2>&1 && firewall-cmd --state >/dev/null 2>&1; then
-    # Apply to runtime and permanent independently to avoid --reload flushing nftables
-    firewall-cmd --add-port=3389/tcp 2>/dev/null || true
-    firewall-cmd --permanent --add-port=3389/tcp 2>/dev/null || true
-fi
-
-# Ensure NVIDIA modules don't probe in Hyper-V (no physical GPU)
-# This prevents module load delays and error messages
-if [ ! -d /sys/bus/pci/drivers/nvidia ]; then
-    echo "blacklist nvidia" > /etc/modprobe.d/cloudws-hyperv-nvidia.conf 2>/dev/null || true
-    echo "blacklist nvidia_drm" >> /etc/modprobe.d/cloudws-hyperv-nvidia.conf 2>/dev/null || true
-    echo "blacklist nvidia_modeset" >> /etc/modprobe.d/cloudws-hyperv-nvidia.conf 2>/dev/null || true
-    echo "blacklist nvidia_uvm" >> /etc/modprobe.d/cloudws-hyperv-nvidia.conf 2>/dev/null || true
-fi
-
-echo "[cloudws-hyperv] Enhanced Session ready (Wayland RDP via gnome-remote-desktop)"
-EOHV
-chmod +x /usr/libexec/cloudws-hyperv-enhanced
+# Managed via system_files/usr/lib/systemd/system/cloudws-hyperv-enhanced.service
+# and system_files/usr/libexec/cloudws-hyperv-enhanced
 systemctl enable cloudws-hyperv-enhanced.service 2>/dev/null || true
 
 # 5. xrdp: configure but do NOT auto-enable globally
@@ -143,11 +64,7 @@ if [ -f /etc/xrdp/xrdp.ini ]; then
     sed -i 's/^crypt_level=.*/crypt_level=none/' /etc/xrdp/xrdp.ini
 
     # Allow any user to start X server (for non-GNOME xorgxrdp sessions)
-    mkdir -p /etc/X11
-    cat > /etc/X11/Xwrapper.config <<'EOXWRAP'
-allowed_users=anybody
-needs_root_rights=yes
-EOXWRAP
+    # Managed via system_files/etc/X11/Xwrapper.config
 fi
 
 # 6. GNOME Remote Desktop — first-boot setup script
@@ -163,11 +80,6 @@ chmod +x /usr/libexec/cloudws-grd-setup 2>/dev/null || true
 # to be misconfigured on bare metal.
 
 # Ensure systemd-machined doesn't block dbus in WSL2
-mkdir -p /etc/systemd/system/systemd-machined.service.d
-cat > /etc/systemd/system/systemd-machined.service.d/wsl2-optional.conf <<'MACHINEDFIX'
-[Unit]
-# Make machined non-fatal in WSL2 (it needs cgroup features WSL2 lacks)
-ConditionVirtualization=!wsl
-MACHINEDFIX
+# Managed via system_files/usr/lib/systemd/system/systemd-machined.service.d/wsl2-optional.conf
 
 echo "[38-vm-gating] VM gating + Hyper-V Enhanced Session (gnome-remote-desktop) configured."

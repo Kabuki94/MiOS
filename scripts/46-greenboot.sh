@@ -17,15 +17,8 @@ do
     systemctl enable "$unit" 2>/dev/null || log "note: $unit not installed"
 done
 
-# Greenboot configuration
-mkdir -p /etc/greenboot
-cat > /etc/greenboot/greenboot.conf <<'EOF'
-# CloudWS-bootc greenboot configuration
-GREENBOOT_MAX_BOOTS=3
-GREENBOOT_WATCHDOG_CHECK_ENABLED=false
-EOF
-
 # Make health-check scripts executable (shipped via system_files/)
+# Directory creation and config installation moved to system_files/ overlay.
 chmod +x /etc/greenboot/check/required.d/*.sh 2>/dev/null || true
 chmod +x /etc/greenboot/check/wanted.d/*.sh   2>/dev/null || true
 chmod +x /etc/greenboot/green.d/*.sh          2>/dev/null || true

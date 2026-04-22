@@ -1310,4 +1310,17 @@ Claude completed a research and gap-audit pass. The findings below are verified 
     10. Missing OCI Image Spec recommended labels: `org.opencontainers.image.base.name`, `org.opencontainers.image.base.digest`.
     11. `bib-configs/qemu.toml` comment says "btrfs - verity-capable" but no btrfs is configured — stale comment.
     12. `cloudws-nvidia-blacklist.conf` missing trailing newline.
-*   **ACTION:** Produced 
+*   **ACTION:** Produced ### [2026-04-22 15:31:46 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** The user wants to refactor `mkdir` and `install` calls in scripts to move them to `system_files/` or `tmpfiles.d`. Also, I need to fix `((VAR++))` syntax across the repo.
+*   **LEARNING:** `((VAR++))` returns 1 when `VAR=0`, which triggers `set -e` and exits the script. Standalone arithmetic expressions like this must be replaced with `VAR=$((VAR + 1))`. Many directories created via `mkdir` in scripts are already defined in `system_files/usr/lib/tmpfiles.d/cloudws-infra.conf` or are part of the `system_files/` overlay.
+*   **ACTION:** I am refactoring the `((VAR++))` syntax first, then I will surgically update the provisioning scripts to remove redundant `mkdir`/`install` calls while ensuring the declarative state is maintained in `tmpfiles.d` and the overlay.
+### [2026-04-22 15:45:30 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Continued the refactoring of arithmetic and redundant `mkdir`/`install` calls. Moving as much as possible to `system_files` declarative overlay.
+*   **LEARNING:** Several CLI tools were being written via `cat` heredocs in `scripts/36-tools.sh`. Moving these to `system_files/usr/bin/` improves maintainability and adheres to the project's declarative goal.
+*   **ACTION:**
+    1.  Refactored `tools/cloud-ws-assess.sh` to use `score=$((score + N))` for safety under `set -e`.
+    2.  Moved Cockpit unencrypted configuration to `system_files/etc/cockpit/cockpit.conf.d/10-cloudws-unencrypted.conf` and removed `scripts/24-cockpit-config.sh`.
+    3.  Simplified `scripts/26-gnome-remote-desktop.sh` by removing redundant drop-in creation (already in `system_files`).
+    4.  Refactored `scripts/36-tools.sh`: moved 10 CLI tools (cloudws, cloudws-update, etc.) to `system_files/usr/bin/` and `cloudws-backup.conf` to `system_files/usr/lib/tmpfiles.d/`.
+    5.  Updated `Containerfile` and `scripts/build.sh` to remove deleted script references.
+    6.  Verified `ConditionVirtualization=!wsl` usage in service gating drop-ins.

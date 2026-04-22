@@ -103,19 +103,11 @@ BARE_METAL_SERVICES=(
 
 for svc in "${BARE_METAL_SERVICES[@]}"; do
     systemctl enable "${svc}.service" 2>/dev/null || true
-    DROPIN_DIR="/usr/lib/systemd/system/${svc}.service.d"
-    mkdir -p "$DROPIN_DIR"
-    cat > "${DROPIN_DIR}/10-bare-metal-only.conf" <<'DROPIN'
-[Unit]
-# CloudWS: Skip this service in VMs/containers — bare metal only
-ConditionVirtualization=no
-DROPIN
 done
-echo "[20-services] Bare-metal-only drop-ins created"
+echo "[20-services] Bare-metal-only services enabled"
 
 # ─── WSL2 & Container Service Gating ─────────────────────────────────────────
-# These services crash-loop, are useless, or create deadlocks in WSL2/Containers.
-# Standardizing on ConditionVirtualization=!wsl !container for maximum stability.
+# These services skip OCI/WSL2 via drop-ins in system_files overlay.
 VIRT_SKIP_SERVICES=(
     gdm
     firewalld
@@ -133,22 +125,7 @@ VIRT_SKIP_SERVICES=(
     chronyd
     tuned
 )
-
-for svc in "${VIRT_SKIP_SERVICES[@]}"; do
-    unit="${svc}"
-    [[ "$unit" != *.* ]] && unit="${unit}.service"
-    # Search in both /usr and /etc
-    if [ -f "/usr/lib/systemd/system/${unit}" ] || [ -f "/etc/systemd/system/${unit}" ]; then
-        mkdir -p "/usr/lib/systemd/system/${unit}.d"
-        cat > "/usr/lib/systemd/system/${unit}.d/10-cloudws-virt-gate.conf" <<'DROPIN'
-[Unit]
-# CloudWS: Skip in WSL2 and OCI containers for stability and performance
-ConditionVirtualization=!wsl
-ConditionVirtualization=!container
-DROPIN
-    fi
-done
-echo "[20-services] WSL2/Container skip drop-ins installed"
+echo "[20-services] WSL2/Container skip drop-ins active via overlay"
 
 # ─── Container-specific additional skips ────────────────────────────────────
 # Services that might work in WSL2 but are strictly redundant in OCI.
@@ -156,31 +133,11 @@ CONTAINER_ONLY_SKIP=(
     NetworkManager
     systemd-resolved
 )
-
-for svc in "${CONTAINER_ONLY_SKIP[@]}"; do
-    unit="${svc}"
-    [[ "$unit" != *.* ]] && unit="${unit}.service"
-    if [ -f "/usr/lib/systemd/system/${unit}" ] || [ -f "/etc/systemd/system/${unit}" ]; then
-        mkdir -p "/usr/lib/systemd/system/${unit}.d"
-        cat > "/usr/lib/systemd/system/${unit}.d/10-cloudws-container-gate.conf" <<'DROPIN'
-[Unit]
-# CloudWS: Redundant in OCI containers (handled by Podman/Docker)
-ConditionVirtualization=!container
-DROPIN
-    fi
-done
-echo "[20-services] Container-only skip drop-ins installed"
+echo "[20-services] Container-only skip drop-ins active via overlay"
 
 
 # ─── nvidia-powerd: skip in ALL VMs (no physical NVIDIA GPU) ─────────────────
-if [ -f /usr/lib/systemd/system/nvidia-powerd.service ]; then
-    mkdir -p /usr/lib/systemd/system/nvidia-powerd.service.d
-    cat > /usr/lib/systemd/system/nvidia-powerd.service.d/10-bare-metal-only.conf <<'DROPIN'
-[Unit]
-# CloudWS: NVIDIA power daemon only works with physical GPU
-ConditionVirtualization=no
-DROPIN
-fi
+# Drop-in handled via overlay.
 
 
 # ─── TuneD: set throughput-performance profile ──────────────────────────────

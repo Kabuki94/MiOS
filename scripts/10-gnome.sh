@@ -37,33 +37,15 @@ systemctl set-default graphical.target 2>/dev/null || true
 # ═════════════════════════════════════════════════════════════════════════════
 # Localsearch/tracker — disable indexing without removing
 # Removing localsearch breaks Nautilus search + Activities Overview.
-# Hide via autostart overrides instead.
+# Hide via autostart overrides in system_files/etc/xdg/autostart/
 # ═════════════════════════════════════════════════════════════════════════════
 echo "[10-gnome] Disabling localsearch/tracker indexing (keep package, hide autostart)..."
-mkdir -p /etc/xdg/autostart
-for tracker_entry in \
-    localsearch-3.desktop \
-    localsearch-control-3.desktop \
-    localsearch-writeback-3.desktop; do
-    cat > "/etc/xdg/autostart/$tracker_entry" <<EOF
-[Desktop Entry]
-Type=Application
-Name=${tracker_entry%.desktop} Override
-Exec=/usr/bin/true
-Hidden=true
-X-GNOME-Autostart-enabled=false
-EOF
-done
 
 # ═════════════════════════════════════════════════════════════════════════════
 # Qt Adwaita theming — required for Qt apps to match GNOME look
+# Managed via system_files/etc/environment.d/60-cloudws-qt-adwaita.conf
 # ═════════════════════════════════════════════════════════════════════════════
-echo "[10-gnome] Setting Qt Adwaita environment variables..."
-mkdir -p /etc/environment.d
-cat > /etc/environment.d/60-cloudws-qt-adwaita.conf <<'EOF'
-QT_QPA_PLATFORMTHEME=adwaita
-QT_STYLE_OVERRIDE=adwaita-dark
-EOF
+echo "[10-gnome] Setting Qt Adwaita environment variables (managed via overlay)..."
 
 # ═════════════════════════════════════════════════════════════════════════════
 # Geist Font (Vercel)
@@ -140,18 +122,8 @@ else
 fi
 
 # Comprehensive cursor default — every layer that reads cursor theme
-# 1. Default cursor theme for X11 (read by ALL X clients including xRDP)
-mkdir -p /usr/share/icons/default
-cat > /usr/share/icons/default/index.theme <<'EOCURSOR'
-[Icon Theme]
-Name=Default
-Comment=Default Cursor Theme
-Inherits=Bibata-Modern-Classic
-EOCURSOR
-
-# 2. Also write to /usr/share/X11/icons/default (some X servers check here)
-mkdir -p /usr/share/X11/icons/default
-cp /usr/share/icons/default/index.theme /usr/share/X11/icons/default/index.theme 2>/dev/null || true
+# Managed via system_files/usr/share/icons/default/index.theme
+# and system_files/usr/share/X11/icons/default/index.theme
 
 # 3. update-alternatives for x-cursor-theme (Fedora cursor resolution)
 if [ -d "$BIBATA_DIR/cursors" ]; then
@@ -168,9 +140,7 @@ ln -sf /usr/share/icons/Bibata-Modern-Classic /usr/share/cursors/xorg-x11/Bibata
 chmod -R a+rX "$BIBATA_DIR" 2>/dev/null || true
 
 # 6. Xresources fallback (oldest X11 cursor method)
-mkdir -p /etc/X11
-echo "Xcursor.theme: Bibata-Modern-Classic" > /etc/X11/Xresources 2>/dev/null || true
-echo "Xcursor.size: 24" >> /etc/X11/Xresources 2>/dev/null || true
+# Managed via system_files/etc/X11/Xresources
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

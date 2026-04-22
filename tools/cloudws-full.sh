@@ -440,7 +440,8 @@ spinner() {
     local i=0
     
     while kill -0 $pid 2>/dev/null; do
-        printf "\r      ${C_INFO}%s${NC} %s" "${spin:i++%${#spin}:1}" "$message"
+        printf "\r      ${C_INFO}%s${NC} %s" "${spin:i%${#spin}:1}" "$message"
+        i=$((i + 1))
         sleep 0.1
     done
     printf "\r      ${C_SUCCESS}âœ”${NC} %s\n" "$message"
@@ -615,7 +616,7 @@ install_packages() {
             echo -e "        ${C_MUTED}â†» Retry $attempt/$MAX_RETRY...${NC}"
             sleep 2
         fi
-        ((attempt++))
+        attempt=$((attempt + 1))
     done
     
     msg_fail "$description"
@@ -647,7 +648,7 @@ install_aur() {
             echo -e "        ${C_MUTED}â†» Retry $attempt/$MAX_RETRY...${NC}"
             sleep 2
         fi
-        ((attempt++))
+        attempt=$((attempt + 1))
     done
     
     msg_fail "$package (AUR)"
@@ -737,7 +738,7 @@ detect_cpu() {
     fi
     
     # NUMA topology
-    for ((node=0; node<${CPU_INFO[numa_nodes]:-1}; node++)); do
+    for ((node=0; node<${CPU_INFO[numa_nodes]:-1}; node+=1)); do
         local cpus=$(lscpu 2>/dev/null | grep "NUMA node${node} CPU(s):" | awk '{print $4}')
         NUMA_MAP[$node]="$cpus"
     done
@@ -839,7 +840,7 @@ detect_gpu() {
     if lspci 2>/dev/null | grep -qi "nvidia"; then
         GPU_INFO[has_nvidia]="true"
         GPU_INFO[nvidia_model]=$(lspci 2>/dev/null | grep -i "VGA.*nvidia\|3D.*nvidia" | head -1 | sed 's/.*: //')
-        ((gpu_count++))
+        gpu_count=$((gpu_count + 1))
         
         # Check for nvidia driver
         if lsmod | grep -q "^nvidia"; then
@@ -855,7 +856,7 @@ detect_gpu() {
     if lspci 2>/dev/null | grep -qiE "amd.*vga|radeon|amd.*display"; then
         GPU_INFO[has_amd]="true"
         GPU_INFO[amd_model]=$(lspci 2>/dev/null | grep -iE "VGA.*amd|VGA.*radeon|Display.*amd" | head -1 | sed 's/.*: //')
-        ((gpu_count++))
+        gpu_count=$((gpu_count + 1))
         
         if lsmod | grep -q "^amdgpu"; then
             GPU_INFO[amd_driver]="amdgpu"
@@ -870,7 +871,7 @@ detect_gpu() {
     if lspci 2>/dev/null | grep -qiE "intel.*vga|intel.*display|intel.*graphics"; then
         GPU_INFO[has_intel]="true"
         GPU_INFO[intel_model]=$(lspci 2>/dev/null | grep -iE "VGA.*intel|Display.*intel" | head -1 | sed 's/.*: //')
-        ((gpu_count++))
+        gpu_count=$((gpu_count + 1))
         
         if lsmod | grep -q "^i915"; then
             GPU_INFO[intel_driver]="i915"
@@ -1111,7 +1112,7 @@ show_cpu_topology() {
     if [[ "${CPU_INFO[is_x3d]}" == "true" ]]; then
         echo -e "${C_HEADER}    â•‘${NC} Architecture: ${C_SUCCESS}AMD X3D (V-Cache)${NC}"
         echo -e "${C_HEADER}    â•‘${NC} CCDs:         ${CPU_INFO[ccd_count]:-2}"
-        for ((i=0; i<${CPU_INFO[ccd_count]:-0}; i++)); do
+        for ((i=0; i<${CPU_INFO[ccd_count]:-0}; i+=1)); do
             local label="CCD$i"
             [[ $i -eq 0 ]] && label="CCD0 (V-Cache)"
             echo -e "${C_HEADER}    â•‘${NC}   $label: CPUs ${CCD_MAP[$i]:-?}"
@@ -1132,7 +1133,7 @@ show_cpu_topology() {
     local threads=${CPU_INFO[threads]:-0}
     local per_row=16
     
-    for ((i=0; i<threads; i++)); do
+    for ((i=0; i<threads; i+=1)); do
         if [[ $((i % per_row)) -eq 0 ]] && [[ $i -gt 0 ]]; then
             echo ""
             echo -n "    "
@@ -1199,11 +1200,11 @@ analyze_iommu_groups() {
             local device_info=$(lspci -nns "$pci_addr" 2>/dev/null)
             
             devices+=("$device_info")
-            ((total_count++))
+            total_count=$((total_count + 1))
             
             if echo "$device_info" | grep -qiE "VGA|3D controller|Display"; then
                 has_gpu=true
-                ((gpu_count++))
+                gpu_count=$((gpu_count + 1))
             fi
         done
         
@@ -1215,11 +1216,11 @@ analyze_iommu_groups() {
             if [[ $total_count -gt 5 ]]; then
                 status_color="$C_WARNING"
                 status_icon="âš "
-                ((problematic_groups++))
+                problematic_groups=$((problematic_groups + 1))
             fi
             
             if [[ $total_count -le 2 ]] && [[ "$has_gpu" == "true" ]]; then
-                ((isolated_gpus++))
+                isolated_gpus=$((isolated_gpus + 1))
             fi
             
             echo -e "${C_HEADER}    â•‘${NC}"
@@ -2072,7 +2073,7 @@ vfio_detect_devices() {
         VFIO_ALL_IDS[$counter]="$device_id"
         VFIO_ALL_DRIVERS[$counter]="${current_driver:-none}"
         
-        ((counter++))
+        counter=$((counter + 1))
     done
     
     VFIO_DEVICE_COUNT=$((counter - 1))
@@ -2096,7 +2097,7 @@ vfio_select_devices() {
             msg_info "Cancelled"
             return 1
         elif [[ "$selection" == "a" ]]; then
-            for ((i=1; i<=VFIO_DEVICE_COUNT; i++)); do
+            for ((i=1; i<=VFIO_DEVICE_COUNT; i+=1)); do
                 VFIO_SELECTED_DEVICES+=("${VFIO_ALL_ADDRS[$i]}")
                 VFIO_SELECTED_IDS+=("${VFIO_ALL_IDS[$i]}")
                 VFIO_SELECTED_DRIVERS+=("${VFIO_ALL_DRIVERS[$i]}")
@@ -2558,13 +2559,13 @@ cpu_preset_x3d_gaming() {
     
     # Host gets last 4 threads of CCD1
     HOST_CPUS=()
-    for ((i=total-4; i<total; i++)); do
+    for ((i=total-4; i<total; i+=1)); do
         HOST_CPUS+=($i)
     done
     
     # VM gets all of CCD0 (V-Cache)
     ISOLATED_CPUS=()
-    for ((i=0; i<half; i++)); do
+    for ((i=0; i<half; i+=1)); do
         ISOLATED_CPUS+=($i)
     done
     
@@ -2589,7 +2590,7 @@ cpu_preset_vm_priority() {
     
     # VM gets the rest
     ISOLATED_CPUS=()
-    for ((i=0; i<total; i++)); do
+    for ((i=0; i<total; i+=1)); do
         local is_host=false
         for h in "${HOST_CPUS[@]}"; do
             [[ $i -eq $h ]] && is_host=true
@@ -2611,7 +2612,7 @@ cpu_preset_balanced() {
     HOST_CPUS=()
     ISOLATED_CPUS=()
     
-    for ((i=0; i<total; i++)); do
+    for ((i=0; i<total; i+=1)); do
         if [[ $i -lt $host_count ]]; then
             HOST_CPUS+=($i)
         else
@@ -2632,7 +2633,7 @@ cpu_preset_host_priority() {
     HOST_CPUS=()
     ISOLATED_CPUS=()
     
-    for ((i=0; i<total; i++)); do
+    for ((i=0; i<total; i+=1)); do
         if [[ $i -lt $host_count ]]; then
             HOST_CPUS+=($i)
         else
@@ -2662,7 +2663,7 @@ cpu_preset_custom() {
     IFS=',' read -ra ranges <<< "$isolated_input"
     for range in "${ranges[@]}"; do
         if [[ "$range" =~ ^([0-9]+)-([0-9]+)$ ]]; then
-            for ((i=${BASH_REMATCH[1]}; i<=${BASH_REMATCH[2]}; i++)); do
+            for ((i=${BASH_REMATCH[1]}; i<=${BASH_REMATCH[2]}; i+=1)); do
                 ISOLATED_CPUS+=($i)
             done
         elif [[ "$range" =~ ^[0-9]+$ ]]; then
@@ -2671,7 +2672,7 @@ cpu_preset_custom() {
     done
     
     # Calculate host CPUs
-    for ((i=0; i<total; i++)); do
+    for ((i=0; i<total; i+=1)); do
         local is_isolated=false
         for iso in "${ISOLATED_CPUS[@]}"; do
             [[ $i -eq $iso ]] && is_isolated=true
@@ -2890,9 +2891,9 @@ cpu_apply_immediate() {
     
     for pid in $(ps -eo pid --no-headers 2>/dev/null); do
         if taskset -cp "$host_cpus" "$pid" 2>/dev/null; then
-            ((moved++))
+            moved=$((moved + 1))
         else
-            ((failed++))
+            failed=$((failed + 1))
         fi
     done
     
@@ -2918,7 +2919,7 @@ cpu_show_summary() {
     local idx=0
     for cpu in "${ISOLATED_CPUS[@]:0:4}"; do
         echo -e "        <vcpupin vcpu='$idx' cpuset='$cpu'/>"
-        ((idx++))
+        idx=$((idx + 1))
     done
     [[ ${#ISOLATED_CPUS[@]} -gt 4 ]] && echo -e "        <!-- ... more pins ... -->"
     echo -e "      </cputune>"
@@ -2946,10 +2947,10 @@ run_verification() {
     for svc in "${services[@]}"; do
         if systemctl is-active --quiet "$svc" 2>/dev/null; then
             msg_success "$svc is running"
-            ((passed++))
+            passed=$((passed + 1))
         elif systemctl is-enabled --quiet "$svc" 2>/dev/null; then
             msg_warn "$svc is enabled but not running"
-            ((warned++))
+            warned=$((warned + 1))
         else
             msg_skip "$svc" "not configured"
         fi
@@ -2959,18 +2960,18 @@ run_verification() {
     
     if [[ -e /dev/kvm ]]; then
         msg_success "KVM available"
-        ((passed++))
+        passed=$((passed + 1))
     else
         msg_fail "KVM not available"
-        ((failed++))
+        failed=$((failed + 1))
     fi
     
     if [[ "${SYSTEM_INFO[iommu_enabled]}" == "true" ]]; then
         msg_success "IOMMU enabled (${SYSTEM_INFO[iommu_groups]} groups)"
-        ((passed++))
+        passed=$((passed + 1))
     else
         msg_warn "IOMMU not enabled"
-        ((warned++))
+        warned=$((warned + 1))
     fi
     
     print_subsection "VFIO Status"
@@ -2979,7 +2980,7 @@ run_verification() {
     for mod in "${vfio_modules[@]}"; do
         if lsmod | grep -q "^$mod"; then
             msg_success "$mod module loaded"
-            ((passed++))
+            passed=$((passed + 1))
         else
             msg_info "$mod not loaded (normal if not configured)"
         fi
@@ -2997,7 +2998,7 @@ run_verification() {
     if echo "$cmdline" | grep -q "isolcpus="; then
         local isolated=$(echo "$cmdline" | grep -oP 'isolcpus=\K[^ ]+')
         msg_success "CPU isolation configured: $isolated"
-        ((passed++))
+        passed=$((passed + 1))
     else
         msg_info "No kernel CPU isolation configured"
     fi
@@ -3005,7 +3006,7 @@ run_verification() {
     if grep -q "^CPUAffinity=" /etc/systemd/system.conf 2>/dev/null; then
         local affinity=$(grep "^CPUAffinity=" /etc/systemd/system.conf | cut -d'=' -f2)
         msg_success "systemd affinity: $affinity"
-        ((passed++))
+        passed=$((passed + 1))
     else
         msg_info "No systemd CPU affinity configured"
     fi
@@ -3014,18 +3015,18 @@ run_verification() {
     
     if groups "$REAL_USER" | grep -q "libvirt"; then
         msg_success "$REAL_USER in libvirt group"
-        ((passed++))
+        passed=$((passed + 1))
     else
         msg_warn "$REAL_USER not in libvirt group"
-        ((warned++))
+        warned=$((warned + 1))
     fi
     
     if groups "$REAL_USER" | grep -q "kvm"; then
         msg_success "$REAL_USER in kvm group"
-        ((passed++))
+        passed=$((passed + 1))
     else
         msg_warn "$REAL_USER not in kvm group"
-        ((warned++))
+        warned=$((warned + 1))
     fi
     
     print_subsection "Verification Summary"
@@ -3500,7 +3501,7 @@ vm_pin_configure_vm() {
         vm_array+=("$vm")
         local state=$(virsh domstate "$vm" 2>/dev/null | head -1)
         echo -e "      ${C_HIGHLIGHT}$i)${NC} $vm ${C_MUTED}($state)${NC}"
-        ((i++))
+        i=$((i + 1))
     done <<< "$vms"
     
     echo ""
@@ -3535,12 +3536,12 @@ vm_pin_configure_vm() {
         1)
             # Use isolated CPUs if configured
             if [[ ${#ISOLATED_CPUS[@]} -gt 0 ]]; then
-                for ((i=0; i<vcpu_count && i<${#ISOLATED_CPUS[@]}; i++)); do
+                for ((i=0; i<vcpu_count && i<${#ISOLATED_CPUS[@]}; i+=1)); do
                     pin_cpus+=("${ISOLATED_CPUS[$i]}")
                 done
             else
                 # Default: start from CPU 2
-                for ((i=0; i<vcpu_count; i++)); do
+                for ((i=0; i<vcpu_count; i+=1)); do
                     pin_cpus+=($((i + 2)))
                 done
             fi
@@ -3548,7 +3549,7 @@ vm_pin_configure_vm() {
         2)
             # X3D: Use CCD0 (first half of CPUs)
             local half=$((${CPU_INFO[threads]:-32} / 2))
-            for ((i=0; i<vcpu_count && i<half; i++)); do
+            for ((i=0; i<vcpu_count && i<half; i+=1)); do
                 pin_cpus+=($i)
             done
             ;;
@@ -3571,7 +3572,7 @@ vm_pin_configure_vm() {
     # Apply pinning
     msg_info "Applying CPU pinning..."
     
-    for ((i=0; i<vcpu_count; i++)); do
+    for ((i=0; i<vcpu_count; i+=1)); do
         if virsh vcpupin "$selected_vm" $i ${pin_cpus[$i]} --config >> "$DEBUG_LOG" 2>&1; then
             msg_success "vCPU $i â†’ CPU ${pin_cpus[$i]}"
         else
@@ -3765,7 +3766,7 @@ vm_pin_generate_xml() {
     echo "    <vcpu placement='static'>$vcpu_count</vcpu>"
     echo "    <cputune>"
     
-    for ((i=0; i<vcpu_count; i++)); do
+    for ((i=0; i<vcpu_count; i+=1)); do
         echo "      <vcpupin vcpu='$i' cpuset='$((start_cpu + i))'/>"
     done
     
@@ -4493,4 +4494,6 @@ main() {
 }
 
 # Run main
+main "$@"
+in
 main "$@"

@@ -74,7 +74,7 @@ detect_cpu_topology() {
     CPU_INFO[numa_nodes]=$(lscpu | grep "NUMA node(s):" | awk '{print $3}')
     
     # Build NUMA map
-    for ((node=0; node<${CPU_INFO[numa_nodes]}; node++)); do
+    for ((node=0; node<${CPU_INFO[numa_nodes]}; node+=1)); do
         local cpus=$(lscpu | grep "NUMA node${node} CPU(s):" | awk '{print $4}')
         NUMA_MAP[$node]="$cpus"
     done
@@ -155,7 +155,7 @@ display_ccd_layout() {
     local threads_per_ccd=$((${CPU_INFO[threads]} / ${CPU_INFO[ccd_count]}))
     local cores_per_ccd=${CPU_INFO[cores_per_ccd]}
     
-    for ((ccd=0; ccd<${CPU_INFO[ccd_count]}; ccd++)); do
+    for ((ccd=0; ccd<${CPU_INFO[ccd_count]}; ccd+=1)); do
         local start=$((ccd * threads_per_ccd))
         local end=$((start + threads_per_ccd - 1))
         
@@ -166,7 +166,7 @@ display_ccd_layout() {
         fi
         
         echo -n "  Cores: "
-        for ((core=0; core<cores_per_ccd; core++)); do
+        for ((core=0; core<cores_per_ccd; core+=1)); do
             local cpu=$((start + core))
             local sibling=$((start + cores_per_ccd + core))
             
@@ -190,7 +190,7 @@ display_linear_layout() {
     echo ""
     
     local cols=8
-    for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu++)); do
+    for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu+=1)); do
         printf "${CYAN}%3d${NC} " $cpu
         if [[ $(((cpu + 1) % cols)) -eq 0 ]]; then
             echo ""
@@ -940,7 +940,7 @@ view_allocation_map() {
     
     # Create allocation array
     declare -a cpu_alloc
-    for ((i=0; i<${CPU_INFO[threads]}; i++)); do
+    for ((i=0; i<${CPU_INFO[threads]}; i+=1)); do
         cpu_alloc[$i]="HOST"
     done
     
@@ -955,7 +955,7 @@ view_allocation_map() {
             if [[ "$range" =~ ^([0-9]+)-([0-9]+)$ ]]; then
                 local start="${BASH_REMATCH[1]}"
                 local end="${BASH_REMATCH[2]}"
-                for ((cpu=start; cpu<=end; cpu++)); do
+                for ((cpu=start; cpu<=end; cpu+=1)); do
                     cpu_alloc[$cpu]="$vm_name"
                 done
             elif [[ "$range" =~ ^[0-9]+$ ]]; then
@@ -969,7 +969,7 @@ view_allocation_map() {
     echo -e "${CYAN}Ã¢"â€š${NC} CPU ${CYAN}Ã¢"â€š${NC} Allocated To              ${CYAN}Ã¢"â€š${NC}"
     echo -e "${CYAN}Ã¢"Å“Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"Â¼Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"Â¤${NC}"
     
-    for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu++)); do
+    for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu+=1)); do
         local alloc="${cpu_alloc[$cpu]}"
         local color="$GRAY"
         
@@ -1062,7 +1062,7 @@ EOFXML
         if [[ "$range" =~ ^([0-9]+)-([0-9]+)$ ]]; then
             local start="${BASH_REMATCH[1]}"
             local end="${BASH_REMATCH[2]}"
-            for ((cpu=start; cpu<=end; cpu++)); do
+            for ((cpu=start; cpu<=end; cpu+=1)); do
                 echo "  <vcpupin vcpu='$vcpu_idx' cpuset='$cpu'/>"
                 vcpu_idx=$((vcpu_idx + 1))
             done
@@ -1116,7 +1116,7 @@ EOFXML
             if [[ "$range" =~ ^([0-9]+)-([0-9]+)$ ]]; then
                 local start="${BASH_REMATCH[1]}"
                 local end="${BASH_REMATCH[2]}"
-                for ((cpu=start; cpu<=end; cpu++)); do
+                for ((cpu=start; cpu<=end; cpu+=1)); do
                     echo "  <vcpupin vcpu='$vcpu_idx' cpuset='$cpu'/>" >> "$output_file"
                     vcpu_idx=$((vcpu_idx + 1))
                 done

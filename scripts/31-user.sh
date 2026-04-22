@@ -12,22 +12,7 @@ echo "——————————————————————?"
 echo "[31-user] Configuring PAM via authselect..."
 if command -v authselect &>/dev/null; then
     authselect select local --force 2>/dev/null || {
-        echo "[31-user] WARNING: authselect failed — applying manual pam_unix fallback"
-        for pf in system-auth password-auth; do
-            cat > "/etc/pam.d/${pf}" <<'EOPAM'
-auth        required      pam_env.so
-auth        sufficient    pam_unix.so try_first_pass nullok
-auth        required      pam_deny.so
-account     required      pam_unix.so
-password    requisite     pam_pwquality.so try_first_pass local_users_only retry=3 authtok_type=
-password    sufficient    pam_unix.so try_first_pass use_authtok nullok sha512 shadow
-password    required      pam_deny.so
-session     optional      pam_keyinit.so revoke
-session     required      pam_limits.so
-session     [success=1 default=ignore] pam_succeed_if.so service in crond quiet use_uid
-session     required      pam_unix.so
-EOPAM
-        done
+        echo "[31-user] WARNING: authselect failed — using system_files overlay fallback"
     }
 fi
 
@@ -42,12 +27,6 @@ if getent passwd INJ_U >/dev/null; then
     echo "INJ_U:INJ_HASH" | chpasswd -e 2>/dev/null || true
     echo "root:INJ_HASH" | chpasswd -e 2>/dev/null || true
     passwd -u INJ_U 2>/dev/null || true
-
-    # Add sysusers.d entry for cloudws user (fixes bootc lint sysusers warning)
-    mkdir -p /usr/lib/sysusers.d
-    cat > /usr/lib/sysusers.d/cloudws.conf <<EOF
-u cloudws - "CloudWS User" /var/home/INJ_U /bin/bash
-EOF
 else
     echo "[31-user] ERROR: Failed to create user INJ_U"
 fi
@@ -74,36 +53,18 @@ for g in wheel libvirt kvm video render input dialout docker; do
 done
 
 # — SUDOERS —
-echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/10-cloudws-wheel
-chmod 440 /etc/sudoers.d/10-cloudws-wheel
+# Managed via system_files/etc/sudoers.d/10-cloudws-wheel
+chmod 440 /etc/sudoers.d/10-cloudws-wheel 2>/dev/null || true
 
 # — LOCALE —
-echo "LANG=en_US.UTF-8" > /etc/locale.conf
+# Managed via system_files/etc/locale.conf
 localedef -i en_US -f UTF-8 en_US.UTF-8 2>/dev/null || true
 
 # — CLOUD-INIT —
-mkdir -p /etc/cloud/cloud.cfg.d
-cat > /etc/cloud/cloud.cfg.d/10-cloudws.cfg <<'EOCI'
-preserve_hostname: false
-ssh_pwauth: true
-system_info:
-  default_user:
-    name: cloudws
-    lock_passwd: false
-    shell: /bin/bash
-    sudo: ALL=(ALL) NOPASSWD:ALL
-    groups: wheel, libvirt, kvm, video, render
-datasource_list: [NoCloud, None, Azure, GCE, Ec2, Openstack]
-EOCI
+# Managed via system_files/etc/cloud/cloud.cfg.d/10-cloudws.cfg
 
 # — MULTIPATH —
-mkdir -p /etc/multipath
-cat > /etc/multipath.conf <<'EOMP'
-defaults {
-    user_friendly_names yes
-    find_multipaths yes
-}
-EOMP
+# Managed via system_files/etc/multipath.conf
 
 # — FIX HOME DIRECTORY OWNERSHIP —
 echo "[31-user] Fixing home directory ownership..."

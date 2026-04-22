@@ -49,7 +49,7 @@ export container=podman
 # ── Execute numbered scripts ────────────────────────────────────────────────
 # Scripts 18/19/20-fapolicyd/21/22 are called explicitly by the Containerfile
 # AFTER this script completes. Skip them here to prevent double-execution.
-CONTAINERFILE_SCRIPTS="18-apply-boot-fixes.sh 19-k3s-selinux.sh 20-fapolicyd-trust.sh 21-moby-engine.sh 22-freeipa-client.sh 23-uki-render.sh 24-cockpit-config.sh 25-firewall-ports.sh 26-gnome-remote-desktop.sh"
+CONTAINERFILE_SCRIPTS="18-apply-boot-fixes.sh 19-k3s-selinux.sh 20-fapolicyd-trust.sh 21-moby-engine.sh 22-freeipa-client.sh 23-uki-render.sh 25-firewall-ports.sh 26-gnome-remote-desktop.sh"
 
 TOTAL_START=$SECONDS
 SCRIPT_COUNT=0
@@ -181,10 +181,7 @@ fi
 # ── Cleanup ─────────────────────────────────────────────────────────────────
 
 # Create sysusers.d entry for cloudws user (fixes bootc lint sysusers warning)
-mkdir -p /usr/lib/sysusers.d
-cat > /usr/lib/sysusers.d/cloudws.conf <<'EOF'
-u cloudws - "CloudWS User" /home/cloudws /bin/bash
-EOF
+# Delivered via system_files overlay.
 
 echo ""
 log_ts "Cleaning up..."

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.9
 # ============================================================================
-# CloudWS-bootc - Unified Image (v2.3.5)
+# CloudWS-bootc - Unified Image (v0.1.8)
 # ============================================================================
 # One image. Every role. Every surface. Every GPU vendor.
 #
@@ -10,7 +10,7 @@
 # AMD:      Mesa + ROCm in-image (PACKAGES.md packages-gpu-amd-compute)
 # Intel:    intel-compute-runtime + intel-media-driver (packages-gpu-intel-compute)
 #
-# v2.3.5 fixes the docs-restructure fallout from commit 0eff8d8:
+# v0.1.8 fixes the docs-restructure fallout from commit 0eff8d8:
 #
 #   1) PACKAGES.md was relocated from the repo root to docs/PACKAGES.md
 #      together with the other long-form docs. The ctx stage still copied
@@ -142,10 +142,8 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     /ctx/scripts/21-moby-engine.sh && \
     /ctx/scripts/22-freeipa-client.sh && \
     /ctx/scripts/23-uki-render.sh && \
-    /ctx/scripts/24-cockpit-config.sh && \
     /ctx/scripts/25-firewall-ports.sh && \
     /ctx/scripts/26-gnome-remote-desktop.sh
-
 # Ensure dracut-live + squashfs-tools for the ISO artifact build leg
 RUN dnf install -y dracut-live squashfs-tools \
  && dnf clean all
