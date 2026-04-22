@@ -1,8 +1,9 @@
 [Unit]
 Description=CloudWS NVIDIA GPU container plumbing
+ConditionVirtualization=!container
+ConditionVirtualization=!wsl
 Documentation=https://github.com/Kabuki94/CloudWS-bootc/blob/main/docs/gpu-passthrough.md
 ConditionPathExists=/dev/nvidia0
-ConditionVirtualization=!wsl
 After=systemd-modules-load.service systemd-udev-settle.service akmods.service
 Wants=systemd-udev-settle.service
 Before=nvidia-cdi-refresh.service

@@ -1,5 +1,6 @@
 [Unit]
 Description=CloudWS CDI spec detection (WSL vs bare metal vs VM)
+ConditionVirtualization=!container
 Before=nvidia-cdi-refresh.service
 After=local-fs.target
 

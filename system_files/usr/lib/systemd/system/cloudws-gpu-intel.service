@@ -1,5 +1,6 @@
 [Unit]
 Description=CloudWS Intel GPU container plumbing (i915/xe + renderD*)
+ConditionVirtualization=!container
 Documentation=https://github.com/Kabuki94/CloudWS-bootc/blob/main/docs/gpu-passthrough.md
 ConditionPathExists=/dev/dri/renderD128
 After=systemd-modules-load.service systemd-udev-settle.service

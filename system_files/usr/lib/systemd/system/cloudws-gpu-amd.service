@@ -1,5 +1,6 @@
 [Unit]
 Description=CloudWS AMD GPU container plumbing (ROCm/KFD + DRI)
+ConditionVirtualization=!container
 Documentation=https://github.com/Kabuki94/CloudWS-bootc/blob/main/docs/gpu-passthrough.md
 ConditionPathExists=/dev/kfd
 After=systemd-modules-load.service systemd-udev-settle.service

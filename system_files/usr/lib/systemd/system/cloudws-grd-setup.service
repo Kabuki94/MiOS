@@ -1,5 +1,6 @@
 [Unit]
 Description=CloudWS GNOME Remote Desktop Setup
+ConditionVirtualization=!container
 After=local-fs.target network-online.target gdm.service
 Wants=network-online.target
 ConditionPathExists=!/var/lib/cloudws/.grd-init-done

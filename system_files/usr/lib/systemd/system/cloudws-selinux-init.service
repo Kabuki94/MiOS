@@ -1,5 +1,6 @@
 [Unit]
 Description=CloudWS SELinux Policy Loader
+ConditionVirtualization=!container
 DefaultDependencies=no
 After=local-fs.target
 Before=sysinit.target

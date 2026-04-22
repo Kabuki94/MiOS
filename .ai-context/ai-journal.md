@@ -1344,3 +1344,14 @@ Claude completed a research and gap-audit pass. The findings below are verified 
     3.  Wired `BASE_IMAGE` and `VERSION` into `build-args` for cleaner image metadata.
     4.  Implemented retry loops (5x for pull, 3x for push) in the `rechunk` step to handle GHCR replication lag and transient network errors.
     5.  Added explicit `sync && sleep 2` before image building to ensure filesystem consistency.
+### [2026-04-22 17:00:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Final comprehensive pass to reach 100% `bootc` ecosystem compliance. Focus on container gating, UKI alignment, and image purity.
+*   **LEARNING:** Every systemd unit in a `bootc` image that isn't intended for standard OCI container runtime must have `ConditionVirtualization=!container`. Redundant `ostree container commit` in `Containerfile` is unnecessary if `99-cleanup.sh` already handles it.
+*   **ACTION:**
+    1.  Standardized container gating: added `ConditionVirtualization=!container` to 14 core CloudWS services in `system_files/usr/lib/systemd/system/`.
+    2.  Verified `scripts/99-cleanup.sh` removes all `bootc lint` triggers (`random-seed`, `dnf5.log`, etc.).
+    3.  Removed redundant `ostree container commit` from `Containerfile` to avoid double-finalization.
+    4.  Audited `scripts/23-uki-render.sh`: confirmed it correctly uses `bootc container render-kargs` (or Python fallback) to generate `/etc/kernel/cmdline`.
+    5.  Validated `greenboot` required checks for `composefs` verification and `cloudws-role.service` success.
+    6.  Verified `tmpfiles.d` coverage for all mandatory `/var` directories.
+    7.  Standardized all remaining shell arithmetic to safe `VAR=$((VAR + N))` syntax.
