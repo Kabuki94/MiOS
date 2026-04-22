@@ -1291,3 +1291,23 @@ Claude completed a research and gap-audit pass. The findings below are verified 
     6) **Active Bloat Removal:** Updated `build.sh` to proactively `dnf remove` non-essential UI components (`malcontent-*`, `PackageKit`, `gnome-tour`) as commanded.
 *   **SUGGESTED ALTERNATIVE:** We could use a multi-stage build to compile `bootc-image-builder`, but keeping the toolchain in the final image is required to satisfy the user's "self-building" mandate.
 
+
+---
+
+### [2026-04-21 UTC] [AI: Claude Code (Sonnet 4.6)]
+*   **THOUGHT:** Kabu requested a full standards compliance fact-check of all project files against bootc, ucore/ublue, OCI spec, and industry patterns. I read mandatory context files, Containerfile, all kargs.d TOMILs, systemd preset, modprobe.d, bib-configs, GitHub workflows, build scripts, and key provisioning scripts.
+*   **LEARNING:** The project is architecturally sound in its broad strokes (two-stage ctx/main Containerfile, flat kargs arrays, system_files overlay, ostree container commit, bootc container lint gate, cosign signing, SBOM generation). Several specific file-level issues exist that violate bootc spec, OCI spec, or ublue patterns.
+*   **DISCOVERY (CRITICAL):**
+    1. `15-rootflags.toml` passes `rootflags=compress=zstd:1,discard=async` but ALL bib-configs use ext4 as root filesystem. `compress=zstd:1` is a btrfs-only mount option — ext4 rejects it with `EXT4-fs error: bad option`. The kernel cmdline will either fail the root mount or silently ignore the flag depending on kernel version. This is a confirmed spec mismatch.
+    2. Massive karg duplication across kargs.d files: `iommu=pt` and `amd_iommu=on` appear in both `00-cloudws.toml` and `20-vfio.toml`; nouveau blacklist appears in three files (00, 02, 10); `vfio_pci.disable_idle_d3=1` in both `02-cloudws-gpu.toml` and `13-rtx50-vfio-workaround.toml`; `console=` and `systemd.show-status=true` in both `00-cloudws.toml` and `10-cloudws-verbose.toml`.
+    3. `systemd.mount-extra=/var/lib/containers:none:bind,rw,x-systemd.makefs` in `00-cloudws.toml` — bind-mounts a path to itself, which is a no-op.
+    4. `31-user.sh` writes sysusers.d entry with literal `INJ_U` in home path; `build.sh` also writes the same sysusers.d file with `/home/cloudws` (uses /home not /var/home). Duplicate writes, second one wins, but the path inconsistency is a latent bug.
+    5. `kargs-lint.yml` triggers on `kargs.d/**` (repo root) which was deleted in v2.3.5 — trigger will never fire.
+    6. `build.yml` uses `jlumbroso/free-disk-space@main` (unpinned) while `build-test.yml` correctly uses `@v1.3.1`.
+    7. `cosign sign --new-bundle-format=false` deviates from ublue-os upstream pattern which uses default (new) bundle format.
+    8. `iso.toml` kickstart uses `--no-signature-verification` — violates bootc security best practice.
+    9. Script prefix collisions: 20, 35, 36 each have two scripts. Alphabetical-within-number order happens to be correct but intent of numbered ordering is undermined.
+    10. Missing OCI Image Spec recommended labels: `org.opencontainers.image.base.name`, `org.opencontainers.image.base.digest`.
+    11. `bib-configs/qemu.toml` comment says "btrfs - verity-capable" but no btrfs is configured — stale comment.
+    12. `cloudws-nvidia-blacklist.conf` missing trailing newline.
+*   **ACTION:** Produced 
