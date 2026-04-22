@@ -30,10 +30,6 @@ install_packages "gnome"
 # Optional GNOME Core Apps (all commented out by default in PACKAGES.md)
 install_packages_optional "gnome-core-apps"
 
-# Enable display manager and network
-systemctl enable gdm.service NetworkManager.service 2>/dev/null || true
-systemctl set-default graphical.target 2>/dev/null || true
-
 # ═════════════════════════════════════════════════════════════════════════════
 # Localsearch/tracker — disable indexing without removing
 # Removing localsearch breaks Nautilus search + Activities Overview.

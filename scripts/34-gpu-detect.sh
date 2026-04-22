@@ -5,10 +5,9 @@
 # Actual logic lives in /usr/libexec/cloudws/gpu-detect (system_files overlay).
 set -euo pipefail
 
-echo "[34-gpu-detect] Enabling GPU auto-detect service..."
+echo "[34-gpu-detect] Configuring GPU auto-detect service..."
 
-# Unit and script are now delivered via system_files overlay.
-# We only handle the enablement here for late-stage build consistency.
-systemctl enable cloudws-gpu-detect.service 2>/dev/null || true
+# Unit and script are delivered via system_files overlay.
+# Enablement is handled via system_files/usr/lib/systemd/system-preset/90-cloudws.preset
 
 echo "[34-gpu-detect] GPU detection service enabled."

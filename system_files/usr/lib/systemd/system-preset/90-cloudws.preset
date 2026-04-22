@@ -4,17 +4,28 @@
 
 # --- Always-on core ---
 enable sshd.service
+enable NetworkManager.service
 enable podman.socket
+enable podman-auto-update.timer
 enable libvirtd.socket
+enable virtnetworkd.socket
+enable virtqemud.socket
 enable uupd.timer
 enable nvidia-cdi-refresh.path
 enable nvidia-cdi-refresh.service
 enable nvidia-persistenced.service
+enable firewalld.service
+enable chronyd.service
+enable systemd-resolved.service
+enable pmproxy.service
+enable bootloader-update.service
 enable cloudws-role.service
+enable cloudws-gpu-detect.service
 enable cloudws-selinux-init.service
 enable cloudws-cdi-detect.service
 enable cloudws-libvirtd-setup.service
 enable cloudws-grd-setup.service
+enable gnome-remote-desktop.service
 enable cloudws-firstboot.target
 enable greenboot-healthcheck.service
 enable greenboot-grub2-set-counter.service
@@ -25,7 +36,6 @@ enable redboot-auto-reboot.service
 enable cockpit.socket
 enable usbguard.service
 enable auditd.service
-enable chronyd.service
 enable crowdsec.service
 enable crowdsec-firewall-bouncer.service
 enable nftables.service
@@ -59,3 +69,19 @@ disable corosync.service
 disable pacemaker.service
 disable ceph-mon@.service
 disable ceph-osd@.service
+
+# --- Optional / Fail-silent (default disabled) ---
+disable fapolicyd.service
+disable tailscaled.service
+disable waydroid-container.service
+disable smb.service
+disable nmb.service
+disable nfs-server.service
+disable rpcbind.service
+disable libvirt-guests.service
+disable cloudws-ha-bootstrap.service
+disable osbuild-composer.service
+disable osbuild-worker@1.service
+disable multipathd.service
+disable cloud-init-local.service
+disable cloud-config.service

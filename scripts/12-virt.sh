@@ -129,7 +129,6 @@ fi
 # ── VirtIO-Win ISO (latest stable) ─────────────────────────────────────────
 echo "[12-virt] Downloading VirtIO-Win ISO..."
 VIRTIO_URL="https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso"
-mkdir -p /usr/share/cloudws/virtio
 curl -sL "$VIRTIO_URL" -o /usr/share/cloudws/virtio/virtio-win.iso 2>/dev/null || {
     echo "[12-virt] WARNING: VirtIO-Win ISO download failed — download manually later"
 }
@@ -203,13 +202,6 @@ fi
 
 # Clean up build source code (keep binaries)
 rm -rf /tmp/looking-glass-build
-
-# ── Podman Quadlet: CrowdSec ────────────────────────────────────────────────
-# Managed via system_files/usr/share/containers/systemd/
-# Logically bound via system_files/usr/lib/bootc/bound-images.d/
-mkdir -p /usr/lib/bootc/bound-images.d
-ln -sf /usr/share/containers/systemd/crowdsec-dashboard.container /usr/lib/bootc/bound-images.d/
-ln -sf /usr/share/containers/systemd/cloudws-guacd.container /usr/lib/bootc/bound-images.d/
 
 echo "[12-virt] Virtualization stack complete. LG: ${LG_VERSION} (K3s in 13-ceph-k3s.sh)"
 

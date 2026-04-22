@@ -113,27 +113,11 @@ COPY --from=ctx /ctx /ctx
 # correctly (previous inline cp -a failed with 'File exists').
 RUN bash /ctx/scripts/08-system-files-overlay.sh
 
-# DNF defaults: no weak deps, no docs, protect running kernel, speed optimizations
-RUN mkdir -p /etc/dnf \
- && printf '%s\n' \
-      '[main]' \
-      'install_weak_deps=False' \
-      'tsflags=nodocs' \
-      'defaultyes=True' \
-      'clean_requirements_on_remove=True' \
-      'protect_running_kernel=True' \
-      'max_parallel_downloads=20' \
-      'fastestmirror=True' \
-    > /etc/dnf/dnf.conf
-
 # Run the full numbered pipeline (orchestrated by scripts/build.sh).
 # CrowdSec sslcacert=  is stripped inside 05-enable-external-repos.sh.
 RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     --mount=type=cache,dst=/var/cache/dnf,sharing=locked     \
     set -e; \
-    # CI fallback: remove INJ_U/INJ_HASH placeholders used by Windows build script
-    sed -i 's/INJ_U/cloudws/g' /ctx/scripts/31-user.sh 2>/dev/null || true; \
-    sed -i '/INJ_HASH/d' /ctx/scripts/31-user.sh 2>/dev/null || true; \
     chmod +x /ctx/scripts/build.sh /ctx/scripts/*.sh 2>/dev/null || true; \
     /ctx/scripts/build.sh && \
     /ctx/scripts/18-apply-boot-fixes.sh && \

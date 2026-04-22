@@ -93,11 +93,12 @@ done
 # Leaf apps like gnome-tour and gnome-initial-setup are safe to remove.
 echo ""
 log_ts "==> Removing known bloat packages..."
-dnf "${DNF_SETOPT[@]}" remove -y \
-    malcontent-control malcontent-pam malcontent-tools \
-    gnome-tour gnome-initial-setup \
-    PackageKit PackageKit-command-not-found \
-    2>/dev/null || true
+BLOAT_PACKAGES=$(source "${SCRIPT_DIR}/lib/packages.sh"; get_packages "bloat")
+if [[ -n "$BLOAT_PACKAGES" ]]; then
+    dnf "${DNF_SETOPT[@]}" remove -y $BLOAT_PACKAGES 2>/dev/null || true
+else
+    log_ts "NOTE: No bloat packages defined in manifest."
+fi
 
 # ── Suppress remaining ucore base bloat (mask/hide) ──────────
 # For things that can't be easily removed without cascade, hide them.
@@ -107,6 +108,7 @@ systemctl mask packagekit.service 2>/dev/null || true
 for app in gnome-tour gnome-initial-setup; do
     desktop="/usr/share/applications/${app}.desktop"
     if [ -f "$desktop" ]; then
+        # Ensure target directory exists for NoDisplay override
         mkdir -p /usr/local/share/applications
         grep -v '^NoDisplay=' "$desktop" > "/usr/local/share/applications/${app}.desktop"
         echo "NoDisplay=true" >> "/usr/local/share/applications/${app}.desktop"
@@ -119,19 +121,21 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 log_ts "Post-build validation"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-CRITICAL_PACKAGES=(
-    gnome-shell gdm podman bootc libvirt kernel firewalld cockpit
-    NetworkManager pipewire tuned chrony openssh-server
-)
+source "${SCRIPT_DIR}/lib/packages.sh"
+CRITICAL_PACKAGES=($(get_packages "critical"))
 VALIDATION_FAIL=0
-for pkg in "${CRITICAL_PACKAGES[@]}"; do
-    if rpm -q "$pkg" > /dev/null 2>&1; then
-        echo "  ✓ $pkg"
-    else
-        echo "  ✗ $pkg MISSING"
-        VALIDATION_FAIL=$((VALIDATION_FAIL + 1))
-    fi
-done
+if [[ ${#CRITICAL_PACKAGES[@]} -eq 0 ]]; then
+    log_ts "WARNING: No critical packages found in manifest validation section!"
+else
+    for pkg in "${CRITICAL_PACKAGES[@]}"; do
+        if rpm -q "$pkg" > /dev/null 2>&1; then
+            echo "  ✓ $pkg"
+        else
+            echo "  ✗ $pkg MISSING"
+            VALIDATION_FAIL=$((VALIDATION_FAIL + 1))
+        fi
+    done
+fi
 
 # Hardware & Driver Verification (Moved from legacy 41-akmods-copy.sh)
 if rpm -qa 'kmod-nvidia*' 2>/dev/null | grep -q . ; then
@@ -164,10 +168,7 @@ if rpm -q gnome-software > /dev/null 2>&1; then
 fi
 
 # Footgun check — these should NOT be present after bloat removal
-FOOTGUN_PACKAGES=(
-    PackageKit gnome-initial-setup gnome-tour
-    malcontent-pam malcontent-tools
-)
+FOOTGUN_PACKAGES=($(get_packages "bloat"))
 for pkg in "${FOOTGUN_PACKAGES[@]}"; do
     if rpm -q "$pkg" > /dev/null 2>&1; then
         echo "  ⚠ FOOTGUN: $pkg is installed (should not be in build-up image)"

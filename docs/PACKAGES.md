@@ -623,3 +623,41 @@ uupd
 greenboot
 greenboot-default-health-checks
 ```
+
+---
+
+## Internal — Critical Validation
+
+These packages MUST be present in the final image. Build scripts use this
+section for post-build verification.
+
+```packages-critical
+gnome-shell
+gdm
+podman
+bootc
+libvirt
+kernel
+firewalld
+cockpit
+NetworkManager
+pipewire
+tuned
+chrony
+openssh-server
+```
+
+## Internal — Bloat Removal
+
+These packages are explicitly removed during the build to keep the image
+lean and free of unwanted UI components.
+
+```packages-bloat
+malcontent-control
+malcontent-pam
+malcontent-tools
+gnome-tour
+gnome-initial-setup
+PackageKit
+PackageKit-command-not-found
+```

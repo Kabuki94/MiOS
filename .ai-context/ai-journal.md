@@ -1324,3 +1324,14 @@ Claude completed a research and gap-audit pass. The findings below are verified 
     4.  Refactored `scripts/36-tools.sh`: moved 10 CLI tools (cloudws, cloudws-update, etc.) to `system_files/usr/bin/` and `cloudws-backup.conf` to `system_files/usr/lib/tmpfiles.d/`.
     5.  Updated `Containerfile` and `scripts/build.sh` to remove deleted script references.
     6.  Verified `ConditionVirtualization=!wsl` usage in service gating drop-ins.
+### [2026-04-22 16:15:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Finalized the transition to a declarative OCI build model.
+*   **LEARNING:** Moving build-time configuration (like `dnf.conf`) and service enablement (presets) to the overlay significantly reduces the number of imperative `RUN` layers and script complexity.
+*   **ACTION:**
+    1.  Moved `dnf.conf` to `system_files/etc/dnf/dnf.conf` and removed imperative creation from `Containerfile`.
+    2.  Established `docs/PACKAGES.md` as the sole source of truth for bloat removal and critical validation by adding new manifest sections.
+    3.  Updated `scripts/build.sh` to dynamically parse these sections, eliminating hardcoded lists and potential drift.
+    4.  Consolidated service enablement into `system_files/usr/lib/systemd/system-preset/90-cloudws.preset`.
+    5.  Simplified `scripts/10-gnome.sh`, `20-services.sh`, `26-gnome-remote-desktop.sh`, and `34-gpu-detect.sh` by removing redundant `systemctl` calls.
+    6.  Removed redundant `mkdir` calls in `12-virt.sh`, `13-ceph-k3s.sh`, and `49-finalize.sh` (already handled by `tmpfiles.d`).
+    7.  Refactored `31-user.sh` to use environment variables for user/password, removing `sed` modifications of the build context in `Containerfile`.
