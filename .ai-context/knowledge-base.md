@@ -28,7 +28,7 @@ Performed a line-by-line audit using `PSScriptAnalyzer` and `shellcheck`.
 - **`scripts/11-hardware.sh`, `scripts/12-virt.sh`, `scripts/52-bake-kvmfr.sh`**: Fixed SC2012. Replaced `ls -1 /dir/ | sort` with `find /dir/ -mindepth 1 -maxdepth 1 -printf "%f\n" | sort`.
 
 #### Deep System Scripts Audit (`system_files/` & Extensionless Scripts)
-- **`system_files/usr/libexec/cloudws/role-apply` & `select-cdi-spec`**: 
+- **`system_files/usr/libexec/cloudws/role-apply` & `select-cdi-spec`**:
   - Fixed SC2010 (`ls | grep`). Replaced `ls /dev/nvidia* | grep -q .` with the safer `compgen -G "/dev/nvidia*" >/dev/null`.
   - Fixed SC2013 (`for var in $(cat file)`). Used `for var in $(< file)` to prevent subshell/cat overhead.
 - **`system_files/etc/greenboot/check/wanted.d/30-nvidia-cdi.sh`**: Replaced `ls | grep` hardware checks with `compgen -G`.
@@ -101,7 +101,7 @@ Unified the repository on the v0.1.8 baseline and implemented missing architectu
 - **Action:** Re-mapped the `CHANGELOG.md` history to align engineering milestones with the v0.1.x chronological ledger.
 
 #### 2. Formal Target Architecture
-- **Reason:** Legacy role initialization via scripts was brittle and hard to isolate. 
+- **Reason:** Legacy role initialization via scripts was brittle and hard to isolate.
 - **Fix:** Created formal systemd targets (`cloudws-desktop.target`, etc.) and updated the Role Engine to use `systemctl isolate`. This provides clean state transitions and robust dependency management.
 
 #### 3. Management Dashboard (MOTD)
@@ -122,7 +122,7 @@ Unified the repository on the v0.1.8 baseline and implemented missing architectu
 Refactored the provisioning pipeline to move away from imperative scripts towards a declarative system_files overlay.
 
 #### 1. Manifest as Single Source of Truth
-- **Action:** Established `docs/PACKAGES.md` as the authority for both installation and validation. 
+- **Action:** Established `docs/PACKAGES.md` as the authority for both installation and validation.
 - **Reason:** Previous lists for "bloat" removal and "critical" package validation were hardcoded in `scripts/build.sh`, creating a risk of drift.
 - **Fix:** Added `packages-bloat` and `packages-critical` sections to the manifest. Updated `scripts/build.sh` to dynamically parse these sections using `get_packages`.
 
