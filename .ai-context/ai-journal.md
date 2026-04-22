@@ -1335,3 +1335,12 @@ Claude completed a research and gap-audit pass. The findings below are verified 
     5.  Simplified `scripts/10-gnome.sh`, `20-services.sh`, `26-gnome-remote-desktop.sh`, and `34-gpu-detect.sh` by removing redundant `systemctl` calls.
     6.  Removed redundant `mkdir` calls in `12-virt.sh`, `13-ceph-k3s.sh`, and `49-finalize.sh` (already handled by `tmpfiles.d`).
     7.  Refactored `31-user.sh` to use environment variables for user/password, removing `sed` modifications of the build context in `Containerfile`.
+### [2026-04-22 16:30:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Investigated GitHub Actions build failures. Suspected network race conditions and flaky registry interactions.
+*   **LEARNING:** GitHub runners often struggle with `network: host` in Docker builds. Hybrid Docker/Podman workflows require explicit retries to handle GHCR replication lag.
+*   **ACTION:**
+    1.  Pinned `jlumbroso/free-disk-space` to `v1.3.1` for stability.
+    2.  Removed `network: host` from `docker/build-push-action` to improve reliability on GitHub runners.
+    3.  Wired `BASE_IMAGE` and `VERSION` into `build-args` for cleaner image metadata.
+    4.  Implemented retry loops (5x for pull, 3x for push) in the `rechunk` step to handle GHCR replication lag and transient network errors.
+    5.  Added explicit `sync && sleep 2` before image building to ensure filesystem consistency.
