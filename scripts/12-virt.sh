@@ -2,14 +2,12 @@
 # CloudWS v0.1.8 — 12-virt: Virtualization, containers, orchestration, gaming
 #
 # CHANGELOG v1.3:
-#   - Looking Glass B7: Added -DENABLE_LIBDECOR=ON for GNOME Wayland
-#   - Looking Glass: Force OpenGL renderer config (fixes NVIDIA+Wayland flicker)
+#   - Looking Glass B7: MOVED to 53-bake-lookingglass-client.sh (refactored out)
+#   - KVMFR module: MOVED to 52-bake-kvmfr.sh (refactored out)
 #   - K3s: MOVED to 13-ceph-k3s.sh (no longer duplicated here)
 #   - CrowdSec: Updated sovereign mode config (RE2 regex engine default)
 #   - Added Podman quadlet example for CrowdSec
 #   - VirtIO-Win ISO: Updated URL pattern
-#   - dkms excluded: conflicts with kernel-devel-matched on mixed kernel builds
-#   - KVMFR built manually with make instead of dkms
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
@@ -129,6 +127,7 @@ fi
 # ── VirtIO-Win ISO (latest stable) ─────────────────────────────────────────
 echo "[12-virt] Downloading VirtIO-Win ISO..."
 VIRTIO_URL="https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso"
+mkdir -p /usr/share/cloudws/virtio
 curl -sL "$VIRTIO_URL" -o /usr/share/cloudws/virtio/virtio-win.iso 2>/dev/null || {
     echo "[12-virt] WARNING: VirtIO-Win ISO download failed — download manually later"
 }
@@ -136,72 +135,4 @@ curl -sL "$VIRTIO_URL" -o /usr/share/cloudws/virtio/virtio-win.iso 2>/dev/null |
 # Symlink the immutable ISO into /var/lib/libvirt/images via tmpfiles.d so it survives upgrades
 # Managed via system_files/usr/lib/tmpfiles.d/cloudws-virtio.conf
 
-# ── Looking Glass B7 (compile from source) ──────────────────────────────────
-echo "[12-virt] Building Looking Glass B7..."
-# Exclude dkms: it requires kernel-devel-matched which conflicts when the
-# base kernel doesn't match the fc44 repos. KVMFR is built manually below.
-install_packages_strict "looking-glass-build"
-
-LG_VERSION="B7"
-mkdir -p /tmp/looking-glass-build
-cd /tmp/looking-glass-build
-
-git clone --depth=1 --recurse-submodules --branch "${LG_VERSION}" \
-    https://github.com/gnif/LookingGlass.git 2>/dev/null || true
-
-if [ -d LookingGlass ]; then
-    cd LookingGlass
-    mkdir -p client/build host/build
-
-    # Build client with libdecor (required for GNOME Wayland window decorations)
-    cd client/build
-    cmake \
-        -DCMAKE_INSTALL_PREFIX=/usr \
-        -DCMAKE_INSTALL_LIBDIR=/usr/lib \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DENABLE_LIBDECOR=ON \
-        -DENABLE_PIPEWIRE=ON \
-        -DENABLE_PULSEAUDIO=OFF \
-        -DENABLE_BACKTRACE=OFF \
-        .. 2>/dev/null || true
-    make -j"$(nproc)" 2>/dev/null || true
-    if [ -f looking-glass-client ]; then
-        install -m 755 looking-glass-client /usr/bin/looking-glass-client
-        echo "[12-virt] Looking Glass client installed"
-    fi
-
-    # Build KVMFR kernel module manually (no dkms — avoids kernel-devel-matched conflict)
-    cd /tmp/looking-glass-build/LookingGlass/module
-    if [ -f Makefile ] && [ -d "/usr/lib/modules/$KVER/build" ]; then
-        echo "[12-virt] Building KVMFR module for kernel $KVER..."
-        make KVER="$KVER" 2>/dev/null || true
-        if [ -f kvmfr.ko ]; then
-            install -D -m 644 kvmfr.ko "/usr/lib/modules/$KVER/extra/kvmfr.ko" || true # Ensure correct path
-            depmod -a -b /usr "$KVER" 2>/dev/null || true # Explicitly target /usr for depmod
-            echo "[12-virt] KVMFR module installed for $KVER"
-        else
-            echo "[12-virt] WARNING: KVMFR module build failed — Looking Glass IVSHMEM-only"
-        fi
-    elif [ -f dkms.conf ]; then
-        # Fallback: try dkms if it happens to be installed
-        mkdir -p /usr/src/kvmfr-0.0.1
-        cp -a . /usr/src/kvmfr-0.0.1/
-        dkms add kvmfr/0.0.1 2>/dev/null || true
-        dkms build kvmfr/0.0.1 -k "$KVER" 2>/dev/null || true
-        dkms install kvmfr/0.0.1 -k "$KVER" 2>/dev/null || true
-    fi
-
-    cd /
-fi
-
-# Looking Glass config: Force OpenGL renderer (fixes NVIDIA+Wayland flicker)
-# Managed via system_files/etc/skel/.config/looking-glass/client.ini
-
-# KVMFR module config
-# Managed via system_files/etc/modprobe.d/kvmfr.conf
-
-# Clean up build source code (keep binaries)
-rm -rf /tmp/looking-glass-build
-
-echo "[12-virt] Virtualization stack complete. LG: ${LG_VERSION} (K3s in 13-ceph-k3s.sh)"
-
+echo "[12-virt] Virtualization stack complete. (LG: refactored to 53-lg; K3s: refactored to 13-ceph-k3s)"

@@ -1355,3 +1355,18 @@ Claude completed a research and gap-audit pass. The findings below are verified 
     5.  Validated `greenboot` required checks for `composefs` verification and `cloudws-role.service` success.
     6.  Verified `tmpfiles.d` coverage for all mandatory `/var` directories.
     7.  Standardized all remaining shell arithmetic to safe `VAR=$((VAR + N))` syntax.
+### [2026-04-22 17:50:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Investigated the build failure in `scripts/12-virt.sh` (CloudWS v0.1.8).
+*   **LEARNING:** `dkms` conflicts with `kernel-devel-matched` when the base kernel version (from ucore/bootc) doesn't perfectly match the version available in the Fedora 44 Updates repository during the build transaction. Although `12-virt.sh` had comments about excluding `dkms`, it was still present in the mandatory `packages-looking-glass-build` section of `docs/PACKAGES.md`, causing `install_packages_strict` to fail.
+*   **ACTION:**
+    1.  Removed `dkms` from `docs/PACKAGES.md` under the `packages-looking-glass-build` section to resolve the dependency conflict.
+    2.  Hardened `scripts/12-virt.sh` by adding `mkdir -p /usr/share/cloudws/virtio` before the VirtIO-Win ISO download to prevent potential `curl` errors.
+    3.  Verified that other `install_packages_strict` calls in the script have corresponding manifest sections.
+### [2026-04-22 18:10:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Identified redundant Looking Glass build in `12-virt.sh` and `53-bake-lookingglass-client.sh`. `12-virt.sh` was failing due to its own Looking Glass build step, which should have been handled by the later dedicated script.
+*   **LEARNING:** The build log revealed `fontconfig` was missing during the `53-bake-lookingglass-client.sh` step, despite `fontconfig-devel` being present. `12-virt.sh` had its own build logic that was failing silently due to `2>/dev/null || true` but likely causing the script to exit non-zero if a command failed BEFORE the redirection, or if `install_packages_strict` failed.
+*   **ACTION:**
+    1.  Refactored `12-virt.sh`: removed the redundant and failing Looking Glass build section. It now relies on `52-bake-kvmfr.sh` and `53-bake-lookingglass-client.sh`.
+    2.  Added `fontconfig` to `packages-looking-glass-build` in `docs/PACKAGES.md` to resolve dependency issues in the standalone build script.
+    3.  Hardened `12-virt.sh` by ensuring `/usr/share/cloudws/virtio` exists before download.
+    4.  Updated `CHANGELOG.md` with these refactoring fixes.

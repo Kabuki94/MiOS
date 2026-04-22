@@ -562,6 +562,7 @@ make
 binutils
 pkgconf-pkg-config
 libglvnd-devel
+fontconfig
 fontconfig-devel
 spice-protocol
 nettle-devel
@@ -577,7 +578,6 @@ wayland-protocols-devel
 libdecor-devel
 pipewire-devel
 libsamplerate-devel
-dkms
 ```
 
 ## Cockpit Plugin Build Dependencies

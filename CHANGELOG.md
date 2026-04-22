@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [v0.1.8] - 2026-04-21
+## [v0.1.8] - 2026-04-22
 
 ### ⚙️ Core OS & Role Engine Consolidation
 * **Unified Role Engine:** Consolidated the asynchronous initialization and role management into the extensionless `system_files/usr/libexec/cloudws/role-apply` script.
@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file.
 * **Rechunking Fix:** Optimized the CI pipeline to generate 5-10x smaller updates by running rechunking inside a privileged container.
 * **Docs Restructure Fix:** Resolved build failures caused by the relocation of `PACKAGES.md` to `docs/PACKAGES.md`.
 * **Build Diagnostics:** Enhanced `packages.sh` with FATAL error logging for mandatory sections.
+* **Fix (Virtualization):** Removed `dkms` from `packages-looking-glass-build` manifest to resolve `kernel-devel-matched` dependency conflict on mixed kernel builds.
+* **Fix (Scripts):** Hardened `12-virt.sh` to ensure `/usr/share/cloudws/virtio` exists before VirtIO-Win ISO download.
 
 ## [v0.1.7] - 2026-04-18
 
