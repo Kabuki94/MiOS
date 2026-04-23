@@ -22,6 +22,14 @@ FAIL=0
 WARN=0
 REPORT_FILE="cloudws-full-stack-report.log"
 
+# Pull the image so podman inspect and all run_in calls use a local copy.
+# Without this, podman inspect on a remote image returns no output, causing
+# the label checks to fail even when the labels are present in the image.
+if [[ "$IMAGE" == *"/"* ]]; then
+    echo "Pulling image: $IMAGE"
+    podman pull "$IMAGE" || { echo "ERROR: Failed to pull $IMAGE"; exit 1; }
+fi
+
 # ── Formatting ──────────────────────────────────────────────────────────────
 RED='\033[0;31m'
 GREEN='\033[0;32m'

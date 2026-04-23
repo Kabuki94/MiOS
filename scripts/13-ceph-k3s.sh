@@ -74,11 +74,6 @@ if [[ -n "$K3S_TAG" ]]; then
     rm -rf /tmp/k3s-dl
 fi
 
-# ─── Pre-create directories in /etc (persists across updates) ────────────────
-# NOTE: /var/lib/rancher is created by tmpfiles.d/cloudws-k3s.conf at boot.
-# Manifests live in /usr/share/cloudws/k3s-manifests/ and get copied on first boot.
-mkdir -p /etc/ceph /etc/rancher/k3s
-
 # ─── Make bootstrap script executable ────────────────────────────────────────
 chmod 755 /usr/local/bin/ceph-bootstrap.sh 2>/dev/null || true
 

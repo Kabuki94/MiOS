@@ -11,12 +11,7 @@ echo "[98-boot-config] Configuring boot console output..."
 if [ -f /usr/lib/bootc/kargs.d/10-cloudws-console.toml ]; then
     echo "[98-boot-config] Configuring plymouth disable via kernel cmdline..."
 else
-    echo "[98-boot-config] WARNING: 10-cloudws-console.toml not found — creating..."
-    mkdir -p /usr/lib/bootc/kargs.d
-    cat > /usr/lib/bootc/kargs.d/10-cloudws-console.toml << 'TOMLEOF'
-# CloudWS: Disable plymouth
-kargs = ["plymouth.enable=0"]
-TOMLEOF
+    echo "[98-boot-config] ERROR: 10-cloudws-console.toml not found — check overlay!"
 fi
 
 # ── Ensure agetty on tty1 ─────────────────────────────────────────────────
@@ -34,12 +29,7 @@ echo "[98-boot-config] Enabling serial-getty on ttyS0..."
 systemctl enable serial-getty@ttyS0.service 2>/dev/null || true
 
 # ── NetworkManager-wait-online timeout ────────────────────────────────────
-echo "[98-boot-config] Setting NetworkManager-wait-online timeout..."
-mkdir -p /etc/systemd/system/NetworkManager-wait-online.service.d
-cat > /etc/systemd/system/NetworkManager-wait-online.service.d/timeout.conf << 'EOF'
-[Service]
-TimeoutStartSec=10
-EOF
+echo "[98-boot-config] NetworkManager-wait-online timeout delivered via overlay."
 
 echo "[98-boot-config] ✓ Boot console configured"
 echo "[98-boot-config]   plymouth: disabled (kernel cmdline plymouth.enable=0)"

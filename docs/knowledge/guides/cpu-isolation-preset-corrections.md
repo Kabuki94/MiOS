@@ -323,11 +323,11 @@ cpu_preset_host_priority() {
         local total=${CPU_INFO[threads]}
         local half=$((total / 2))
         
-        for ((i=0; i<half; i++)); do
+        for ((i=0; i<half; i=i+1)); do
             HOST_CPUS+=($i)
         done
         
-        for ((i=half; i<total; i++)); do
+        for ((i=half; i<total; i=i+1)); do
             ISOLATED_CPUS+=($i)
         done
         
@@ -651,7 +651,7 @@ EOF
             local i=0
             for cpu in "${cpus[@]}"; do
                 pin_config+="    <vcpupin vcpu=\"$i\" cpuset=\"$cpu\"/>"$'\n'
-                ((i++))
+                i=$((i + 1))
             done
             
             local cores=$((vcpu_count / 2))
@@ -877,7 +877,7 @@ vm_apply_pinning_only() {
         vm_array+=("$vm")
         local state=$(virsh domstate "$vm" 2>/dev/null | head -1)
         echo -e "      ${C_HIGHLIGHT}$i)${NC} $vm ${C_MUTED}($state)${NC}"
-        ((i++))
+        i=$((i + 1))
     done <<< "$vms"
     
     echo ""
@@ -935,7 +935,7 @@ vm_apply_pinning_only() {
     # Apply pinning
     msg_info "Applying CPU pinning..."
     
-    for ((i=0; i<vcpu_count && i<${#pin_cpus[@]}; i++)); do
+    for ((i=0; i<vcpu_count && i<${#pin_cpus[@]}; i+=1)); do
         if virsh vcpupin "$selected_vm" $i ${pin_cpus[$i]} --config >> "$DEBUG_LOG" 2>&1; then
             msg_success "vCPU $i → CPU ${pin_cpus[$i]}"
         else

@@ -70,9 +70,11 @@ dnf "${DNF_SETOPT[@]}" upgrade -y --allowerasing --best \
     echo "[01-repos] NOTE: Pre-upgrade had warnings (likely filesystem lua scriptlet), continuing..."
 }
 
-echo "[01-repos] Phase 2: Full distro-sync to Fedora 44..."
-dnf "${DNF_SETOPT[@]}" distro-sync -y --best --allowerasing \
-    --setopt=excludepkgs="shim-*,kernel*" || {
+echo "[01-repos] Phase 2: Distro-upgrade and userspace alignment..."
+# We use 'upgrade --refresh' to ensure we have fresh metadata and catch latest
+# userspace patches, followed by 'distro-sync' to align the remainder with F44.
+dnf "${DNF_SETOPT[@]}" --setopt=excludepkgs="shim-*,kernel*" upgrade --refresh -y
+dnf "${DNF_SETOPT[@]}" --setopt=excludepkgs="shim-*,kernel*" distro-sync -y --best --allowerasing || {
     echo "[01-repos] WARNING: Distro-sync to Fedora 44 failed. Repository might be unreachable."
     echo "[01-repos] Continuing with base image packages..."
 }

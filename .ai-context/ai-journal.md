@@ -1254,3 +1254,119 @@ Claude completed a research and gap-audit pass. The findings below are verified 
     1) **CI Hardening:** Injected a `Hardened Build Sync` step (`sync && sleep 2`) into `build.yml` and `build-test.yml` immediately before the container build phase. This clears the OverlayFS upper-dir state and prevents "checksum of ref" failures.
     2) **NVIDIA Stability:** Research confirmed `ucore-hci:stable-nvidia` (595 branch) is currently experiencing fan/clock instability and loading failures. Standardized on `NVreg_UseKernelSuspendNotifiers=1` and updated `NEXT-RESEARCH.md` to flag `stable-nvidia-lts` (580) as the recommended production fallback.
 *   **DISCOVERY:** The "failed to calculate checksum" error seen in the user's logs is a classic symptom of this OverlayFS kernel bug.
+
+---
+
+### [2026-04-21 22:00:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Audited the project against 2026 `ublue-os` and `bootc` "Golden Patterns" to move beyond a standard custom image and into a production-grade immutable appliance. Focused on solving state drift, upgrade-resilient persistence, and atomic stack updates.
+*   **LEARNING:** The `/etc` 3-way merge boundary in `bootc` makes build-time writes to `/etc` a major technical debt item. SELinux modules installed at build-time with `semodule -i` create "opaque" layers that frequently break during major kernel/policy version jumps.
+*   **DISCOVERY:** 
+    1) **State Drift:** Configs in `/etc/modprobe.d` and `/etc/systemd` were identified as "Ghost Files" that cause merge conflicts.
+    2) **Frozen Var:** Manual `mkdir` calls for K3s and Ceph in scripts fail to fix structure/permissions on existing systems during updates.
+    3) **Orphaned Containers:** Sidecar containers (CrowdSec, Guacamole) were not atomically linked to the OS update lifecycle.
+*   **ACTION:**
+    1) **Pattern 1 (usr-over-etc):** Migrated modprobe configurations from `/etc` to `/usr/lib/modprobe.d`. Established `/usr` as the "Vendor" source of truth.
+    2) **Pattern 2 (Managed SELinux):** Refactored `37-selinux.sh` and `19-k3s-selinux.sh` to stage pre-compiled `.pp` modules in `/usr/share/selinux/packages/cloudws/`. Created `cloudws-selinux-init.service` to load them asynchronously at boot.
+    3) **Pattern 3 (Persistence Skeleton):** Consolidated K3s (`/var/lib/rancher`) and Ceph (`/var/lib/ceph`) directory management into `system_files/usr/lib/tmpfiles.d/cloudws-infra.conf`.
+    4) **Pattern 5 (Boot Shielding):** Optimized `01-repos.sh` to use `upgrade --refresh` with strict `excludepkgs="shim-*,kernel*"` to prevent bootloader regressions.
+    5) **Pattern 6 (Atomic Stack):** Implemented **Logically Bound Images** by symlinking Quadlets into `/usr/lib/bootc/bound-images.d/`, ensuring `bootc upgrade` pulls the entire stack atomically.
+*   **SUGGESTED ALTERNATIVE:** N/A - These changes represent the current industry-standard "Golden Patterns" for ublue-os derivatives.
+
+
+---
+
+### [2026-04-21 21:00:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Finalized the "Full Stack Stabilization" phase by addressing reported build failures (Cockpit missing), the "Self-Building" mandate, and OCI container boot performance issues. Conducted a deep audit of all provisioning scripts to enforce architectural purity and SSOT principles.
+*   **LEARNING:** The "Single Source of Truth" for packages (`PACKAGES.md`) and state (`tmpfiles.d`) is the only way to prevent drift across a complex multi-agent build pipeline. Manual `mkdir` or `install` calls in scripts create "ghost paths" that break `bootc` update guarantees.
+*   **DISCOVERY:** 
+    1) **Cockpit Failure:** `cockpit` was missing because `12-virt.sh` failed during the `go install` for `bootc-image-builder`, blocking subsequent installs.
+    2) **Self-Building:** The image lacked `make`, `gcc`, and `golang` in its final layer, preventing it from rebuilding its own components.
+    3) **OCI Boot Loops:** Containers were attempting to run bare-metal hardware services (GPU detection, CDI generation, full system initialization), leading to deadlocks and long startup times.
+*   **ACTION:**
+    1) **Unified Image Pipeline:** Consolidated CI into a single "Unified Image" build, removing the matrix strategy and redundant `BASE_IMAGE` variables.
+    2) **Self-Build Fulfillment:** Added `make`, `gcc`, `gcc-c++`, `cmake`, and `golang` to `PACKAGES.md`. Refactored `12-virt.sh` to install `bootc-image-builder` via Go and keep the build toolchain.
+    3) **Cockpit Fix:** Moved `cockpit` installation to the top of `12-virt.sh` and switched to `install_packages_strict` for immediate failure visibility.
+    4) **OCI Optimization:** Implemented a "Container Detection" bail-out in `role-apply`. Gated dozens of hardware services with `ConditionVirtualization=!container`. Set `multi-user.target` as the build-time default.
+    5) **Architectural Purity:** Consolidated all manual `/var` directory creation into `system_files/usr/lib/tmpfiles.d/cloudws-infra.conf`. Moved manual systemd drop-ins into the `system_files/` overlay.
+    6) **Active Bloat Removal:** Updated `build.sh` to proactively `dnf remove` non-essential UI components (`malcontent-*`, `PackageKit`, `gnome-tour`) as commanded.
+*   **SUGGESTED ALTERNATIVE:** We could use a multi-stage build to compile `bootc-image-builder`, but keeping the toolchain in the final image is required to satisfy the user's "self-building" mandate.
+
+
+---
+
+### [2026-04-21 UTC] [AI: Claude Code (Sonnet 4.6)]
+*   **THOUGHT:** Kabu requested a full standards compliance fact-check of all project files against bootc, ucore/ublue, OCI spec, and industry patterns. I read mandatory context files, Containerfile, all kargs.d TOMILs, systemd preset, modprobe.d, bib-configs, GitHub workflows, build scripts, and key provisioning scripts.
+*   **LEARNING:** The project is architecturally sound in its broad strokes (two-stage ctx/main Containerfile, flat kargs arrays, system_files overlay, ostree container commit, bootc container lint gate, cosign signing, SBOM generation). Several specific file-level issues exist that violate bootc spec, OCI spec, or ublue patterns.
+*   **DISCOVERY (CRITICAL):**
+    1. `15-rootflags.toml` passes `rootflags=compress=zstd:1,discard=async` but ALL bib-configs use ext4 as root filesystem. `compress=zstd:1` is a btrfs-only mount option — ext4 rejects it with `EXT4-fs error: bad option`. The kernel cmdline will either fail the root mount or silently ignore the flag depending on kernel version. This is a confirmed spec mismatch.
+    2. Massive karg duplication across kargs.d files: `iommu=pt` and `amd_iommu=on` appear in both `00-cloudws.toml` and `20-vfio.toml`; nouveau blacklist appears in three files (00, 02, 10); `vfio_pci.disable_idle_d3=1` in both `02-cloudws-gpu.toml` and `13-rtx50-vfio-workaround.toml`; `console=` and `systemd.show-status=true` in both `00-cloudws.toml` and `10-cloudws-verbose.toml`.
+    3. `systemd.mount-extra=/var/lib/containers:none:bind,rw,x-systemd.makefs` in `00-cloudws.toml` — bind-mounts a path to itself, which is a no-op.
+    4. `31-user.sh` writes sysusers.d entry with literal `INJ_U` in home path; `build.sh` also writes the same sysusers.d file with `/home/cloudws` (uses /home not /var/home). Duplicate writes, second one wins, but the path inconsistency is a latent bug.
+    5. `kargs-lint.yml` triggers on `kargs.d/**` (repo root) which was deleted in v2.3.5 — trigger will never fire.
+    6. `build.yml` uses `jlumbroso/free-disk-space@main` (unpinned) while `build-test.yml` correctly uses `@v1.3.1`.
+    7. `cosign sign --new-bundle-format=false` deviates from ublue-os upstream pattern which uses default (new) bundle format.
+    8. `iso.toml` kickstart uses `--no-signature-verification` — violates bootc security best practice.
+    9. Script prefix collisions: 20, 35, 36 each have two scripts. Alphabetical-within-number order happens to be correct but intent of numbered ordering is undermined.
+    10. Missing OCI Image Spec recommended labels: `org.opencontainers.image.base.name`, `org.opencontainers.image.base.digest`.
+    11. `bib-configs/qemu.toml` comment says "btrfs - verity-capable" but no btrfs is configured — stale comment.
+    12. `cloudws-nvidia-blacklist.conf` missing trailing newline.
+*   **ACTION:** Produced ### [2026-04-22 15:31:46 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** The user wants to refactor `mkdir` and `install` calls in scripts to move them to `system_files/` or `tmpfiles.d`. Also, I need to fix `((VAR++))` syntax across the repo.
+*   **LEARNING:** `((VAR++))` returns 1 when `VAR=0`, which triggers `set -e` and exits the script. Standalone arithmetic expressions like this must be replaced with `VAR=$((VAR + 1))`. Many directories created via `mkdir` in scripts are already defined in `system_files/usr/lib/tmpfiles.d/cloudws-infra.conf` or are part of the `system_files/` overlay.
+*   **ACTION:** I am refactoring the `((VAR++))` syntax first, then I will surgically update the provisioning scripts to remove redundant `mkdir`/`install` calls while ensuring the declarative state is maintained in `tmpfiles.d` and the overlay.
+### [2026-04-22 15:45:30 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Continued the refactoring of arithmetic and redundant `mkdir`/`install` calls. Moving as much as possible to `system_files` declarative overlay.
+*   **LEARNING:** Several CLI tools were being written via `cat` heredocs in `scripts/36-tools.sh`. Moving these to `system_files/usr/bin/` improves maintainability and adheres to the project's declarative goal.
+*   **ACTION:**
+    1.  Refactored `tools/cloud-ws-assess.sh` to use `score=$((score + N))` for safety under `set -e`.
+    2.  Moved Cockpit unencrypted configuration to `system_files/etc/cockpit/cockpit.conf.d/10-cloudws-unencrypted.conf` and removed `scripts/24-cockpit-config.sh`.
+    3.  Simplified `scripts/26-gnome-remote-desktop.sh` by removing redundant drop-in creation (already in `system_files`).
+    4.  Refactored `scripts/36-tools.sh`: moved 10 CLI tools (cloudws, cloudws-update, etc.) to `system_files/usr/bin/` and `cloudws-backup.conf` to `system_files/usr/lib/tmpfiles.d/`.
+    5.  Updated `Containerfile` and `scripts/build.sh` to remove deleted script references.
+    6.  Verified `ConditionVirtualization=!wsl` usage in service gating drop-ins.
+### [2026-04-22 16:15:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Finalized the transition to a declarative OCI build model.
+*   **LEARNING:** Moving build-time configuration (like `dnf.conf`) and service enablement (presets) to the overlay significantly reduces the number of imperative `RUN` layers and script complexity.
+*   **ACTION:**
+    1.  Moved `dnf.conf` to `system_files/etc/dnf/dnf.conf` and removed imperative creation from `Containerfile`.
+    2.  Established `docs/PACKAGES.md` as the sole source of truth for bloat removal and critical validation by adding new manifest sections.
+    3.  Updated `scripts/build.sh` to dynamically parse these sections, eliminating hardcoded lists and potential drift.
+    4.  Consolidated service enablement into `system_files/usr/lib/systemd/system-preset/90-cloudws.preset`.
+    5.  Simplified `scripts/10-gnome.sh`, `20-services.sh`, `26-gnome-remote-desktop.sh`, and `34-gpu-detect.sh` by removing redundant `systemctl` calls.
+    6.  Removed redundant `mkdir` calls in `12-virt.sh`, `13-ceph-k3s.sh`, and `49-finalize.sh` (already handled by `tmpfiles.d`).
+    7.  Refactored `31-user.sh` to use environment variables for user/password, removing `sed` modifications of the build context in `Containerfile`.
+### [2026-04-22 16:30:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Investigated GitHub Actions build failures. Suspected network race conditions and flaky registry interactions.
+*   **LEARNING:** GitHub runners often struggle with `network: host` in Docker builds. Hybrid Docker/Podman workflows require explicit retries to handle GHCR replication lag.
+*   **ACTION:**
+    1.  Pinned `jlumbroso/free-disk-space` to `v1.3.1` for stability.
+    2.  Removed `network: host` from `docker/build-push-action` to improve reliability on GitHub runners.
+    3.  Wired `BASE_IMAGE` and `VERSION` into `build-args` for cleaner image metadata.
+    4.  Implemented retry loops (5x for pull, 3x for push) in the `rechunk` step to handle GHCR replication lag and transient network errors.
+    5.  Added explicit `sync && sleep 2` before image building to ensure filesystem consistency.
+### [2026-04-22 17:00:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Final comprehensive pass to reach 100% `bootc` ecosystem compliance. Focus on container gating, UKI alignment, and image purity.
+*   **LEARNING:** Every systemd unit in a `bootc` image that isn't intended for standard OCI container runtime must have `ConditionVirtualization=!container`. Redundant `ostree container commit` in `Containerfile` is unnecessary if `99-cleanup.sh` already handles it.
+*   **ACTION:**
+    1.  Standardized container gating: added `ConditionVirtualization=!container` to 14 core CloudWS services in `system_files/usr/lib/systemd/system/`.
+    2.  Verified `scripts/99-cleanup.sh` removes all `bootc lint` triggers (`random-seed`, `dnf5.log`, etc.).
+    3.  Removed redundant `ostree container commit` from `Containerfile` to avoid double-finalization.
+    4.  Audited `scripts/23-uki-render.sh`: confirmed it correctly uses `bootc container render-kargs` (or Python fallback) to generate `/etc/kernel/cmdline`.
+    5.  Validated `greenboot` required checks for `composefs` verification and `cloudws-role.service` success.
+    6.  Verified `tmpfiles.d` coverage for all mandatory `/var` directories.
+    7.  Standardized all remaining shell arithmetic to safe `VAR=$((VAR + N))` syntax.
+### [2026-04-22 17:50:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Investigated the build failure in `scripts/12-virt.sh` (CloudWS v0.1.8).
+*   **LEARNING:** `dkms` conflicts with `kernel-devel-matched` when the base kernel version (from ucore/bootc) doesn't perfectly match the version available in the Fedora 44 Updates repository during the build transaction. Although `12-virt.sh` had comments about excluding `dkms`, it was still present in the mandatory `packages-looking-glass-build` section of `docs/PACKAGES.md`, causing `install_packages_strict` to fail.
+*   **ACTION:**
+    1.  Removed `dkms` from `docs/PACKAGES.md` under the `packages-looking-glass-build` section to resolve the dependency conflict.
+    2.  Hardened `scripts/12-virt.sh` by adding `mkdir -p /usr/share/cloudws/virtio` before the VirtIO-Win ISO download to prevent potential `curl` errors.
+    3.  Verified that other `install_packages_strict` calls in the script have corresponding manifest sections.
+### [2026-04-22 18:10:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Identified redundant Looking Glass build in `12-virt.sh` and `53-bake-lookingglass-client.sh`. `12-virt.sh` was failing due to its own Looking Glass build step, which should have been handled by the later dedicated script.
+*   **LEARNING:** The build log revealed `fontconfig` was missing during the `53-bake-lookingglass-client.sh` step, despite `fontconfig-devel` being present. `12-virt.sh` had its own build logic that was failing silently due to `2>/dev/null || true` but likely causing the script to exit non-zero if a command failed BEFORE the redirection, or if `install_packages_strict` failed.
+*   **ACTION:**
+    1.  Refactored `12-virt.sh`: removed the redundant and failing Looking Glass build section. It now relies on `52-bake-kvmfr.sh` and `53-bake-lookingglass-client.sh`.
+    2.  Added `fontconfig` to `packages-looking-glass-build` in `docs/PACKAGES.md` to resolve dependency issues in the standalone build script.
+    3.  Hardened `12-virt.sh` by ensuring `/usr/share/cloudws/virtio` exists before download.
+    4.  Updated `CHANGELOG.md` with these refactoring fixes.

@@ -1,5 +1,6 @@
 [Unit]
 Description=CloudWS Flatpak First-Boot Installer
+ConditionVirtualization=!container
 After=network-online.target
 Wants=network-online.target
 Before=display-manager.service

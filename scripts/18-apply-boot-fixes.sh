@@ -17,7 +17,8 @@ fi
 # 2. Fix 203/EXEC for custom CloudWS services
 # Log trace: cloudws-role.service & cloudws-cdi-detect.service exited 203/EXEC
 # Global chmod commands in earlier pipelines stripped execution bits.
-find /usr/libexec -name 'cloudws-*' -type f -exec chmod +x {} \; || true
+# Handle both named and legacy role-apply/selinux-init patterns.
+find /usr/libexec -type f \( -name 'cloudws-*' -o -name 'role-apply' -o -name 'selinux-init' \) -exec chmod +x {} \; || true
 find /usr/bin -name 'cloudws-*' -type f -exec chmod +x {} \; || true
 
 if [ -f /etc/libvirt/hooks/qemu ]; then
@@ -33,25 +34,12 @@ fi
 
 # 4. Fix Systemd Ordering Cycle for GPU Passthrough
 # Log trace: sockets.target: Found ordering cycle: docker.socket/start after cloudws-gpu-nvidia.service/start after basic.target
-# Default dependencies tangle the GPU loading logic with standard user-level sockets.
-mkdir -p /etc/systemd/system/cloudws-gpu-nvidia.service.d/
-cat << 'EOF' > /etc/systemd/system/cloudws-gpu-nvidia.service.d/10-cycle-fix.conf
-[Unit]
-DefaultDependencies=no
-Requires=sysinit.target
-After=sysinit.target
-EOF
+# Drop-in handled via overlay.
 
-# 5. WSL2 Compatibility Gating
-# All WSL2 service skips (gdm, firewalld, waydroid-container, nvidia-powerd,
-# crowdsec*, dev-binderfs.mount, ceph-bootstrap, audit*, bootloader-update,
-# coreos-printk-quiet, coreos-populate-lvmdevices, usbguard) are owned by
-# 20-services.sh's WSL_SKIP_SERVICES loop. Drop-ins for dbus-broker / upower
-# ship via the system_files overlay. Nothing more to gate here.
+# 5. OCI Container and WSL2 Service Gating
+# Custom CloudWS services that require hardware access or full system init
+# skip OCI containers and WSL2 via drop-ins in system_files overlay.
+echo "==> Service gating drop-ins active via overlay"
 
-# dbus-daemon-wsl.service is shipped via system_files overlay — enable it here
-# (preset already lists it, but this guards against a preset-all miss).
-systemctl enable dbus-daemon-wsl.service 2>/dev/null || true
+# 6. WSL2 Compatibility Gating (Legacy section kept for unit-specific fallbacks)
 
-# 6. Escape-sequence fix no longer needed here — 36-akmod-guards.sh now writes
-# \\\\ in the heredoc so all 7 service drop-ins have correct \\. from the start.

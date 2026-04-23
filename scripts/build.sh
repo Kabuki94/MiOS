@@ -49,7 +49,7 @@ export container=podman
 # ── Execute numbered scripts ────────────────────────────────────────────────
 # Scripts 18/19/20-fapolicyd/21/22 are called explicitly by the Containerfile
 # AFTER this script completes. Skip them here to prevent double-execution.
-CONTAINERFILE_SCRIPTS="18-apply-boot-fixes.sh 19-k3s-selinux.sh 20-fapolicyd-trust.sh 21-moby-engine.sh 22-freeipa-client.sh 23-uki-render.sh 24-cockpit-config.sh 25-firewall-ports.sh 26-gnome-remote-desktop.sh"
+CONTAINERFILE_SCRIPTS="18-apply-boot-fixes.sh 19-k3s-selinux.sh 20-fapolicyd-trust.sh 21-moby-engine.sh 22-freeipa-client.sh 23-uki-render.sh 25-firewall-ports.sh 26-gnome-remote-desktop.sh"
 
 TOTAL_START=$SECONDS
 SCRIPT_COUNT=0
@@ -86,16 +86,29 @@ for script in "$SCRIPT_DIR"/[0-9][0-9]-*.sh; do
     echo ""
 done
 
-# ── Suppress ucore base bloat (build-up approach — no dnf remove) ──────────
-# Per §3.9: dnf remove is never needed; mask services and add NoDisplay instead.
-# PackageKit: mask the daemon so it never runs
-# gnome-tour / gnome-initial-setup: hide via NoDisplay=true desktop entries
+# ── Bloat Removal (active removal approach) ──────────
+# Per user mandate: remove anything that's bloat.
+# malcontent-libs must remain (gnome-control-center hard dep), but
+# malcontent-control/pam/tools are UI/CLI components we don't need.
+# Leaf apps like gnome-tour and gnome-initial-setup are safe to remove.
 echo ""
-log_ts "==> Suppressing base image bloat (mask/hide, not remove)..."
+log_ts "==> Removing known bloat packages..."
+BLOAT_PACKAGES=$(source "${SCRIPT_DIR}/lib/packages.sh"; get_packages "bloat")
+if [[ -n "$BLOAT_PACKAGES" ]]; then
+    dnf "${DNF_SETOPT[@]}" remove -y $BLOAT_PACKAGES 2>/dev/null || true
+else
+    log_ts "NOTE: No bloat packages defined in manifest."
+fi
+
+# ── Suppress remaining ucore base bloat (mask/hide) ──────────
+# For things that can't be easily removed without cascade, hide them.
+echo ""
+log_ts "==> Suppressing remaining base image bloat (mask/hide)..."
 systemctl mask packagekit.service 2>/dev/null || true
 for app in gnome-tour gnome-initial-setup; do
     desktop="/usr/share/applications/${app}.desktop"
     if [ -f "$desktop" ]; then
+        # Ensure target directory exists for NoDisplay override
         mkdir -p /usr/local/share/applications
         grep -v '^NoDisplay=' "$desktop" > "/usr/local/share/applications/${app}.desktop"
         echo "NoDisplay=true" >> "/usr/local/share/applications/${app}.desktop"
@@ -108,19 +121,21 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 log_ts "Post-build validation"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-CRITICAL_PACKAGES=(
-    gnome-shell gdm podman bootc libvirt kernel firewalld cockpit
-    NetworkManager pipewire tuned chrony openssh-server
-)
+source "${SCRIPT_DIR}/lib/packages.sh"
+CRITICAL_PACKAGES=($(get_packages "critical"))
 VALIDATION_FAIL=0
-for pkg in "${CRITICAL_PACKAGES[@]}"; do
-    if rpm -q "$pkg" > /dev/null 2>&1; then
-        echo "  ✓ $pkg"
-    else
-        echo "  ✗ $pkg MISSING"
-        VALIDATION_FAIL=$((VALIDATION_FAIL + 1))
-    fi
-done
+if [[ ${#CRITICAL_PACKAGES[@]} -eq 0 ]]; then
+    log_ts "WARNING: No critical packages found in manifest validation section!"
+else
+    for pkg in "${CRITICAL_PACKAGES[@]}"; do
+        if rpm -q "$pkg" > /dev/null 2>&1; then
+            echo "  ✓ $pkg"
+        else
+            echo "  ✗ $pkg MISSING"
+            VALIDATION_FAIL=$((VALIDATION_FAIL + 1))
+        fi
+    done
+fi
 
 # Hardware & Driver Verification (Moved from legacy 41-akmods-copy.sh)
 if rpm -qa 'kmod-nvidia*' 2>/dev/null | grep -q . ; then
@@ -153,10 +168,7 @@ if rpm -q gnome-software > /dev/null 2>&1; then
 fi
 
 # Footgun check — these should NOT be present after bloat removal
-FOOTGUN_PACKAGES=(
-    PackageKit gnome-initial-setup gnome-tour
-    malcontent-pam malcontent-tools
-)
+FOOTGUN_PACKAGES=($(get_packages "bloat"))
 for pkg in "${FOOTGUN_PACKAGES[@]}"; do
     if rpm -q "$pkg" > /dev/null 2>&1; then
         echo "  ⚠ FOOTGUN: $pkg is installed (should not be in build-up image)"
@@ -170,10 +182,7 @@ fi
 # ── Cleanup ─────────────────────────────────────────────────────────────────
 
 # Create sysusers.d entry for cloudws user (fixes bootc lint sysusers warning)
-mkdir -p /usr/lib/sysusers.d
-cat > /usr/lib/sysusers.d/cloudws.conf <<'EOF'
-u cloudws - "CloudWS User" /home/cloudws /bin/bash
-EOF
+# Delivered via system_files overlay.
 
 echo ""
 log_ts "Cleaning up..."

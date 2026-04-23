@@ -1,0 +1,21 @@
+#!/bin/bash
+echo "CloudWS v0.1.8 — System Status"
+echo "════════════════════════════════"
+echo ""
+echo "Hostname:  $(hostname)"
+echo "Uptime:    $(uptime -p 2>/dev/null || uptime)"
+echo "Kernel:    $(uname -r)"
+echo "bootc:     $(bootc status 2>/dev/null | head -3 || echo 'N/A')"
+echo ""
+echo "Services:"
+for svc in gdm cockpit.socket sshd libvirtd.socket virtnetworkd.socket virtqemud.socket \
+           firewalld tuned k3s gnome-remote-desktop avahi-daemon; do
+    if systemctl is-active --quiet "$svc" 2>/dev/null; then
+        printf "  ✓ %-30s active\n" "$svc"
+    elif systemctl is-enabled --quiet "$svc" 2>/dev/null; then
+        printf "  ○ %-30s enabled (inactive)\n" "$svc"
+    fi
+done
+echo ""
+echo "Podman:"
+podman system df 2>/dev/null || echo "  Not available"

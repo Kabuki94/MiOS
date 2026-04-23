@@ -1,0 +1,7 @@
+source: journalctl
+journalctl_filter:
+  - "_SYSTEMD_UNIT=sshd.service"
+  - "_SYSTEMD_UNIT=nginx.service"
+  - "_SYSTEMD_UNIT=httpd.service"
+labels:
+  type: syslog

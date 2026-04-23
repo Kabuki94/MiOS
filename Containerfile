@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.9
 # ============================================================================
-# CloudWS-bootc - Unified Image (v2.3.5)
+# CloudWS-bootc - Unified Image (v0.1.8)
 # ============================================================================
 # One image. Every role. Every surface. Every GPU vendor.
 #
@@ -10,7 +10,7 @@
 # AMD:      Mesa + ROCm in-image (PACKAGES.md packages-gpu-amd-compute)
 # Intel:    intel-compute-runtime + intel-media-driver (packages-gpu-intel-compute)
 #
-# v2.3.5 fixes the docs-restructure fallout from commit 0eff8d8:
+# v0.1.8 fixes the docs-restructure fallout from commit 0eff8d8:
 #
 #   1) PACKAGES.md was relocated from the repo root to docs/PACKAGES.md
 #      together with the other long-form docs. The ctx stage still copied
@@ -96,6 +96,10 @@ LABEL org.opencontainers.image.source="https://github.com/Kabuki94/CloudWS-bootc
 LABEL org.opencontainers.image.licenses="Apache-2.0"
 LABEL org.opencontainers.image.version="0.1.8"
 LABEL containers.bootc="1"
+LABEL ostree.bootable="1"
+
+# Set /sbin/init as the default command for bootc compatibility
+CMD ["/sbin/init"]
 
 # Build context mounted read-only
 COPY --from=ctx /ctx /ctx
@@ -109,27 +113,11 @@ COPY --from=ctx /ctx /ctx
 # correctly (previous inline cp -a failed with 'File exists').
 RUN bash /ctx/scripts/08-system-files-overlay.sh
 
-# DNF defaults: no weak deps, no docs, protect running kernel, speed optimizations
-RUN mkdir -p /etc/dnf \
- && printf '%s\n' \
-      '[main]' \
-      'install_weak_deps=False' \
-      'tsflags=nodocs' \
-      'defaultyes=True' \
-      'clean_requirements_on_remove=True' \
-      'protect_running_kernel=True' \
-      'max_parallel_downloads=20' \
-      'fastestmirror=True' \
-    > /etc/dnf/dnf.conf
-
 # Run the full numbered pipeline (orchestrated by scripts/build.sh).
 # CrowdSec sslcacert=  is stripped inside 05-enable-external-repos.sh.
 RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     --mount=type=cache,dst=/var/cache/dnf,sharing=locked     \
     set -e; \
-    # CI fallback: remove INJ_U/INJ_HASH placeholders used by Windows build script
-    sed -i 's/INJ_U/cloudws/g' /ctx/scripts/31-user.sh 2>/dev/null || true; \
-    sed -i '/INJ_HASH/d' /ctx/scripts/31-user.sh 2>/dev/null || true; \
     chmod +x /ctx/scripts/build.sh /ctx/scripts/*.sh 2>/dev/null || true; \
     /ctx/scripts/build.sh && \
     /ctx/scripts/18-apply-boot-fixes.sh && \
@@ -138,10 +126,8 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     /ctx/scripts/21-moby-engine.sh && \
     /ctx/scripts/22-freeipa-client.sh && \
     /ctx/scripts/23-uki-render.sh && \
-    /ctx/scripts/24-cockpit-config.sh && \
     /ctx/scripts/25-firewall-ports.sh && \
     /ctx/scripts/26-gnome-remote-desktop.sh
-
 # Ensure dracut-live + squashfs-tools for the ISO artifact build leg
 RUN dnf install -y dracut-live squashfs-tools \
  && dnf clean all

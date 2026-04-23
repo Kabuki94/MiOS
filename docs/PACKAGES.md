@@ -242,6 +242,7 @@ Full KVM stack with virt-manager GUI and firmware/security tooling.
 ```packages-virt
 qemu-kvm
 libvirt
+libvirt-daemon
 virt-install
 virt-manager
 edk2-ovmf
@@ -292,6 +293,21 @@ containers-common
 toolbox
 kubectl
 helm
+make
+gcc
+gcc-c++
+cmake
+golang
+```
+
+## Self-Building Tools (Experimental/Repository dependent)
+
+Tools needed for the image to rebuild itself. May fail if specialized repos
+are not enabled.
+
+```packages-self-build
+bootc-base-imagectl
+konflux-image-tools
 ```
 
 ## Boot & Update Management
@@ -509,6 +525,7 @@ tree
 jq
 yq
 bc
+patch
 openssl
 distrobox
 just
@@ -545,6 +562,7 @@ make
 binutils
 pkgconf-pkg-config
 libglvnd-devel
+fontconfig
 fontconfig-devel
 spice-protocol
 nettle-devel
@@ -560,7 +578,6 @@ wayland-protocols-devel
 libdecor-devel
 pipewire-devel
 libsamplerate-devel
-dkms
 ```
 
 ## Cockpit Plugin Build Dependencies
@@ -605,4 +622,42 @@ Greenboot provides health-check driven auto-rollback: 3 failed boots triggers
 uupd
 greenboot
 greenboot-default-health-checks
+```
+
+---
+
+## Internal — Critical Validation
+
+These packages MUST be present in the final image. Build scripts use this
+section for post-build verification.
+
+```packages-critical
+gnome-shell
+gdm
+podman
+bootc
+libvirt
+kernel
+firewalld
+cockpit
+NetworkManager
+pipewire
+tuned
+chrony
+openssh-server
+```
+
+## Internal — Bloat Removal
+
+These packages are explicitly removed during the build to keep the image
+lean and free of unwanted UI components.
+
+```packages-bloat
+malcontent-control
+malcontent-pam
+malcontent-tools
+gnome-tour
+gnome-initial-setup
+PackageKit
+PackageKit-command-not-found
 ```

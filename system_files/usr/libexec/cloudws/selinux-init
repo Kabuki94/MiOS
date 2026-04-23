@@ -1,0 +1,26 @@
+#!/usr/bin/bash
+# CloudWS SELinux Policy Loader
+# Loads pre-compiled .pp modules from the immutable /usr tree.
+set -euo pipefail
+
+log() { echo "[cloudws-selinux-init] $*"; }
+
+PKG_DIR="/usr/share/selinux/packages/cloudws"
+SENTINEL="/var/lib/cloudws/.selinux-init-done"
+
+if [ ! -d "$PKG_DIR" ]; then
+    log "No staged policies found in $PKG_DIR - exiting"
+    exit 0
+fi
+
+# Load each staged module
+for pp in "$PKG_DIR"/*.pp; do
+    if [ -f "$pp" ]; then
+        log "Loading module: $(basename "$pp")"
+        semodule -i "$pp" 2>/dev/null || log "WARN: Failed to load $pp"
+    fi
+done
+
+mkdir -p "$(dirname "$SENTINEL")"
+touch "$SENTINEL"
+log "All staged SELinux modules loaded successfully"

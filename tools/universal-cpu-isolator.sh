@@ -70,7 +70,7 @@ detect_cpu_topology() {
     log_info "NUMA nodes: ${CPU_INFO[numa_nodes]}"
     
     # Build NUMA map
-    for ((node=0; node<${CPU_INFO[numa_nodes]}; node++)); do
+    for ((node=0; node<${CPU_INFO[numa_nodes]}; node+=1)); do
         local cpus=$(lscpu | grep "NUMA node${node} CPU(s):" | awk '{print $4}')
         NUMA_MAP[$node]="$cpus"
     done
@@ -175,7 +175,7 @@ display_ccd_layout() {
     local threads_per_ccd=$((${CPU_INFO[threads]} / ${CPU_INFO[ccd_count]}))
     local cores_per_ccd=${CPU_INFO[cores_per_ccd]}
     
-    for ((ccd=0; ccd<${CPU_INFO[ccd_count]}; ccd++)); do
+    for ((ccd=0; ccd<${CPU_INFO[ccd_count]}; ccd+=1)); do
         local start=$((ccd * threads_per_ccd))
         local end=$((start + threads_per_ccd - 1))
         
@@ -186,7 +186,7 @@ display_ccd_layout() {
         fi
         
         echo -n "  Cores: "
-        for ((core=0; core<cores_per_ccd; core++)); do
+        for ((core=0; core<cores_per_ccd; core+=1)); do
             local cpu=$((start + core))
             local sibling=$((start + cores_per_ccd + core))
             
@@ -209,7 +209,7 @@ display_numa_layout() {
     echo -e "${BOLD}CPU Layout by NUMA Node:${NC}"
     echo ""
     
-    for ((node=0; node<${CPU_INFO[numa_nodes]}; node++)); do
+    for ((node=0; node<${CPU_INFO[numa_nodes]}; node+=1)); do
         echo -e "${MAGENTA}NUMA Node ${node}${NC}"
         echo "  CPUs: ${NUMA_MAP[$node]}"
         echo ""
@@ -222,7 +222,7 @@ display_linear_layout() {
     echo ""
     
     local cols=8
-    for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu++)); do
+    for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu+=1)); do
         printf "${CYAN}%3d${NC} " $cpu
         if [[ $(((cpu + 1) % cols)) -eq 0 ]]; then
             echo ""
@@ -334,12 +334,12 @@ preset_x3d_gaming() {
     local threads_per_ccd=$((${CPU_INFO[threads]} / 2))
     
     # Isolate CCD0 (0 to threads_per_ccd-1)
-    for ((cpu=0; cpu<threads_per_ccd; cpu++)); do
+    for ((cpu=0; cpu<threads_per_ccd; cpu+=1)); do
         ISOLATED_CPUS+=($cpu)
     done
     
     # Host gets CCD1
-    for ((cpu=threads_per_ccd; cpu<${CPU_INFO[threads]}; cpu++)); do
+    for ((cpu=threads_per_ccd; cpu<${CPU_INFO[threads]}; cpu+=1)); do
         HOST_CPUS+=($cpu)
     done
     
@@ -354,12 +354,12 @@ preset_x3d_compute() {
     local threads_per_ccd=$((${CPU_INFO[threads]} / 2))
     
     # Host gets CCD0
-    for ((cpu=0; cpu<threads_per_ccd; cpu++)); do
+    for ((cpu=0; cpu<threads_per_ccd; cpu+=1)); do
         HOST_CPUS+=($cpu)
     done
     
     # Isolate CCD1
-    for ((cpu=threads_per_ccd; cpu<${CPU_INFO[threads]}; cpu++)); do
+    for ((cpu=threads_per_ccd; cpu<${CPU_INFO[threads]}; cpu+=1)); do
         ISOLATED_CPUS+=($cpu)
     done
     
@@ -373,11 +373,11 @@ preset_balanced() {
     
     local half=$((${CPU_INFO[threads]} / 2))
     
-    for ((cpu=0; cpu<half; cpu++)); do
+    for ((cpu=0; cpu<half; cpu+=1)); do
         ISOLATED_CPUS+=($cpu)
     done
     
-    for ((cpu=half; cpu<${CPU_INFO[threads]}; cpu++)); do
+    for ((cpu=half; cpu<${CPU_INFO[threads]}; cpu+=1)); do
         HOST_CPUS+=($cpu)
     done
     
@@ -410,7 +410,7 @@ preset_host_priority() {
         fi
         
         # VMs get everything else
-        for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu++)); do
+        for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu+=1)); do
             if [[ ! " ${HOST_CPUS[*]} " =~ " $cpu " ]]; then
                 ISOLATED_CPUS+=($cpu)
             fi
@@ -428,12 +428,12 @@ preset_host_priority() {
         local vm_cores=$((${CPU_INFO[threads]} - 8))
         
         # First threads for host
-        for ((cpu=0; cpu<8; cpu++)); do
+        for ((cpu=0; cpu<8; cpu+=1)); do
             HOST_CPUS+=($cpu)
         done
         
         # Rest for VMs
-        for ((cpu=8; cpu<${CPU_INFO[threads]}; cpu++)); do
+        for ((cpu=8; cpu<${CPU_INFO[threads]}; cpu+=1)); do
             ISOLATED_CPUS+=($cpu)
         done
         
@@ -449,12 +449,12 @@ preset_vm_priority() {
     local host_cores=$((${CPU_INFO[threads]} / 4))
     
     # Host gets 25%
-    for ((cpu=0; cpu<host_cores; cpu++)); do
+    for ((cpu=0; cpu<host_cores; cpu+=1)); do
         HOST_CPUS+=($cpu)
     done
     
     # VMs get 75%
-    for ((cpu=host_cores; cpu<${CPU_INFO[threads]}; cpu++)); do
+    for ((cpu=host_cores; cpu<${CPU_INFO[threads]}; cpu+=1)); do
         ISOLATED_CPUS+=($cpu)
     done
     
@@ -488,27 +488,27 @@ select_by_ccd() {
     
     case $ccd_choice in
         1)
-            for ((cpu=0; cpu<threads_per_ccd; cpu++)); do
+            for ((cpu=0; cpu<threads_per_ccd; cpu+=1)); do
                 ISOLATED_CPUS+=($cpu)
             done
-            for ((cpu=threads_per_ccd; cpu<${CPU_INFO[threads]}; cpu++)); do
+            for ((cpu=threads_per_ccd; cpu<${CPU_INFO[threads]}; cpu+=1)); do
                 HOST_CPUS+=($cpu)
             done
             ;;
         2)
-            for ((cpu=0; cpu<threads_per_ccd; cpu++)); do
+            for ((cpu=0; cpu<threads_per_ccd; cpu+=1)); do
                 HOST_CPUS+=($cpu)
             done
-            for ((cpu=threads_per_ccd; cpu<${CPU_INFO[threads]}; cpu++)); do
+            for ((cpu=threads_per_ccd; cpu<${CPU_INFO[threads]}; cpu+=1)); do
                 ISOLATED_CPUS+=($cpu)
             done
             ;;
         3)
             # Reserve first 4 threads for host, rest isolated
-            for ((cpu=0; cpu<4; cpu++)); do
+            for ((cpu=0; cpu<4; cpu+=1)); do
                 HOST_CPUS+=($cpu)
             done
-            for ((cpu=4; cpu<${CPU_INFO[threads]}; cpu++)); do
+            for ((cpu=4; cpu<${CPU_INFO[threads]}; cpu+=1)); do
                 ISOLATED_CPUS+=($cpu)
             done
             ;;
@@ -534,7 +534,7 @@ select_by_numa() {
     echo "Select NUMA nodes to isolate:"
     echo ""
     
-    for ((node=0; node<${CPU_INFO[numa_nodes]}; node++)); do
+    for ((node=0; node<${CPU_INFO[numa_nodes]}; node+=1)); do
         echo "  NUMA Node $node: ${NUMA_MAP[$node]}"
     done
     
@@ -550,7 +550,7 @@ select_by_numa() {
     done
     
     # Remaining CPUs for host
-    for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu++)); do
+    for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu+=1)); do
         if [[ ! " ${ISOLATED_CPUS[*]} " =~ " $cpu " ]]; then
             HOST_CPUS+=($cpu)
         fi
@@ -581,7 +581,7 @@ select_custom_cores() {
             # Range
             local start="${BASH_REMATCH[1]}"
             local end="${BASH_REMATCH[2]}"
-            for ((cpu=start; cpu<=end; cpu++)); do
+            for ((cpu=start; cpu<=end; cpu+=1)); do
                 ISOLATED_CPUS+=($cpu)
             done
         elif [[ "$token" =~ ^[0-9]+$ ]]; then
@@ -594,7 +594,7 @@ select_custom_cores() {
     ISOLATED_CPUS=($(printf '%s\n' "${ISOLATED_CPUS[@]}" | sort -nu))
     
     # Remaining for host
-    for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu++)); do
+    for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu+=1)); do
         if [[ ! " ${ISOLATED_CPUS[*]} " =~ " $cpu " ]]; then
             HOST_CPUS+=($cpu)
         fi
@@ -660,7 +660,7 @@ select_smt_aware() {
     ISOLATED_CPUS=($(printf '%s\n' "${ISOLATED_CPUS[@]}" | sort -nu))
     
     # Remaining for host
-    for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu++)); do
+    for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu+=1)); do
         if [[ ! " ${ISOLATED_CPUS[*]} " =~ " $cpu " ]]; then
             HOST_CPUS+=($cpu)
         fi
@@ -683,7 +683,7 @@ select_exclude_cores() {
         if [[ "$token" =~ ^([0-9]+)-([0-9]+)$ ]]; then
             local start="${BASH_REMATCH[1]}"
             local end="${BASH_REMATCH[2]}"
-            for ((cpu=start; cpu<=end; cpu++)); do
+            for ((cpu=start; cpu<=end; cpu+=1)); do
                 HOST_CPUS+=($cpu)
             done
         elif [[ "$token" =~ ^[0-9]+$ ]]; then
@@ -694,7 +694,7 @@ select_exclude_cores() {
     HOST_CPUS=($(printf '%s\n' "${HOST_CPUS[@]}" | sort -nu))
     
     # Remaining for VMs
-    for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu++)); do
+    for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu+=1)); do
         if [[ ! " ${HOST_CPUS[*]} " =~ " $cpu " ]]; then
             ISOLATED_CPUS+=($cpu)
         fi
@@ -717,13 +717,13 @@ select_performance_cores() {
     if [[ "$pcore_range" =~ ^([0-9]+)-([0-9]+)$ ]]; then
         local start="${BASH_REMATCH[1]}"
         local end="${BASH_REMATCH[2]}"
-        for ((cpu=start; cpu<=end; cpu++)); do
+        for ((cpu=start; cpu<=end; cpu+=1)); do
             ISOLATED_CPUS+=($cpu)
         done
     fi
     
     # Remaining for host
-    for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu++)); do
+    for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu+=1)); do
         if [[ ! " ${ISOLATED_CPUS[*]} " =~ " $cpu " ]]; then
             HOST_CPUS+=($cpu)
         fi
@@ -754,7 +754,7 @@ select_from_file() {
     ISOLATED_CPUS=($(printf '%s\n' "${ISOLATED_CPUS[@]}" | sort -nu))
     
     # Remaining for host
-    for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu++)); do
+    for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu+=1)); do
         if [[ ! " ${ISOLATED_CPUS[*]} " =~ " $cpu " ]]; then
             HOST_CPUS+=($cpu)
         fi

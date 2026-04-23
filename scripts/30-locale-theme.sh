@@ -21,96 +21,20 @@ echo "  CloudWS v0.1.8 — Universal Dark Theme"
 echo "═══════════════════════════════════════════════════════════════════"
 
 # ═══ SKEL .bashrc (MUST come BEFORE useradd -m) ═══
-echo "[30-locale-theme] Writing /etc/skel/.bashrc..."
-cat >> /etc/skel/.bashrc <<'EOBASH'
-
-# ── CloudWS v0.1.8 ──────────────────────────────────────────────────
-# Show system dashboard on interactive terminal open
-if [[ $- == *i* ]]; then
-    # Fastfetch with services dashboard
-    if command -v fastfetch &>/dev/null; then
-        fastfetch 2>/dev/null || true
-    fi
-    # Show cloudws --help hint on first open
-    if [ ! -f "$HOME/.cloudws-welcomed" ]; then
-        echo ""
-        echo "  Type 'cloudws --help' for available commands."
-        echo ""
-        touch "$HOME/.cloudws-welcomed" 2>/dev/null || true
-    fi
-fi
-EOBASH
+# v2.3.5: Delivered via system_files/etc/skel/.bashrc overlay.
+echo "[30-locale-theme] Using /etc/skel/.bashrc from overlay..."
 
 # ═══ GTK3: adw-gtk3-dark for visual consistency with libadwaita ═══
-echo "[30-locale-theme] Configuring GTK3 theme..."
-mkdir -p /etc/gtk-3.0
-cat > /etc/gtk-3.0/settings.ini <<'EOGTK3'
-[Settings]
-gtk-theme-name=adw-gtk3-dark
-gtk-icon-theme-name=Adwaita
-gtk-cursor-theme-name=Bibata-Modern-Classic
-gtk-cursor-theme-size=24
-gtk-font-name=Geist 11
-gtk-application-prefer-dark-theme=true
-gtk-decoration-layout=:minimize,maximize,close
-EOGTK3
+# v2.3.5: Delivered via system_files/etc/gtk-3.0/settings.ini overlay.
+echo "[30-locale-theme] Using GTK3 theme from overlay..."
 
 # ═══ GTK4: libadwaita reads color-scheme, NOT GTK_THEME ═══
-echo "[30-locale-theme] Configuring GTK4 theme..."
-mkdir -p /etc/gtk-4.0
-cat > /etc/gtk-4.0/settings.ini <<'EOGTK4'
-[Settings]
-gtk-icon-theme-name=Adwaita
-gtk-cursor-theme-name=Bibata-Modern-Classic
-gtk-cursor-theme-size=24
-gtk-font-name=Geist 11
-gtk-decoration-layout=:minimize,maximize,close
-EOGTK4
+# v2.3.5: Delivered via system_files/etc/gtk-4.0/settings.ini overlay.
+echo "[30-locale-theme] Using GTK4 theme from overlay..."
 
 # ═══ System-wide env vars for ALL toolkits ═══
-echo "[30-locale-theme] Writing environment.d for all toolkits..."
-mkdir -p /etc/environment.d
-
-# Primary theme config (cursor, libadwaita, Qt, Electron, Firefox, SDL)
-cat > /etc/environment.d/50-cloudws.conf <<'EOENV'
-# ── Cursor Theme (OS-wide: GDM, GNOME, XWayland, Flatpaks) ─────────────────
-XCURSOR_THEME=Bibata-Modern-Classic
-XCURSOR_SIZE=24
-
-# ── LibAdwaita / GTK4 ────────────────────────────────────────────────────────
-# Do NOT set GTK_THEME here — libadwaita ignores it and reads color-scheme
-# from xdg-desktop-portal-gnome. Setting GTK_THEME=Adwaita:dark breaks
-# libadwaita apps (window chrome renders with GTK3 style).
-ADW_DEBUG_COLOR_SCHEME=prefer-dark
-
-# ── Qt5 / Qt6 → follow Adwaita dark via adwaita-qt ─────────────────────────
-QT_QPA_PLATFORMTHEME=adwaita
-QT_STYLE_OVERRIDE=adwaita-dark
-QT_QPA_PLATFORM=wayland;xcb
-QT_WAYLAND_DECORATION=adwaita
-
-# ── Electron / Chromium apps (VS Code, Discord, etc.) ──────────────────────
-ELECTRON_OZONE_PLATFORM_HINT=auto
-ELECTRON_FORCE_DARK_MODE=1
-
-# ── Firefox / Mozilla ───────────────────────────────────────────────────────
-MOZ_ENABLE_WAYLAND=1
-
-# ── XDG portal color scheme (Flatpak sandbox reads this) ───────────────────
-XDG_CURRENT_DESKTOP=GNOME
-
-# ── SDL / Gaming ────────────────────────────────────────────────────────────
-SDL_VIDEODRIVER=wayland,x11
-
-# ── HDR / VRR (for bare-metal with capable displays) ───────────────────────
-ENABLE_HDR_WSI=1
-EOENV
-
-# GTK3 dark theme env (separate file for clarity)
-cat > /etc/environment.d/70-cloudws-theme.conf <<'EOENV'
-# CloudWS v0.1.8: GTK3 legacy apps — adw-gtk3-dark matches libadwaita
-GTK_THEME=adw-gtk3-dark
-EOENV
+# v2.3.5: Delivered via system_files/etc/environment.d/ overlay.
+echo "[30-locale-theme] Using environment.d from overlay..."
 
 # ═══ Flatpak overrides — dark theme + cursor + fonts ═══
 echo "[30-locale-theme] Applying Flatpak dark theme + filesystem overrides..."
@@ -126,27 +50,10 @@ flatpak override --system --filesystem=/etc/gtk-3.0:ro 2>/dev/null || true
 flatpak override --system --filesystem=/etc/gtk-4.0:ro 2>/dev/null || true
 
 # ═══ Skeleton autostart (Bottles from flathub-beta on first login) ═══
-mkdir -p /etc/skel/.config/autostart
-cat > /etc/skel/.config/autostart/cloudws-user-setup.desktop <<'DESK'
-[Desktop Entry]
-Type=Application
-Name=CloudWS User Setup
-Exec=bash -c "sleep 8 && flatpak install -y flathub-beta com.usebottles.bottles 2>/dev/null; rm -f ~/.config/autostart/cloudws-user-setup.desktop"
-Hidden=false
-X-GNOME-Autostart-enabled=true
-DESK
-
+# v2.3.5: Delivered via system_files/etc/skel/.config/autostart/ overlay.
 
 # Ensure skel GTK3 also uses adw-gtk3-dark (for new user sessions)
-mkdir -p /etc/skel/.config/gtk-3.0
-cat > /etc/skel/.config/gtk-3.0/settings.ini <<'SKELGTK3'
-[Settings]
-gtk-theme-name=adw-gtk3-dark
-gtk-icon-theme-name=Adwaita
-gtk-cursor-theme-name=Bibata-Modern-Classic
-gtk-cursor-theme-size=24
-gtk-application-prefer-dark-theme=1
-SKELGTK3
+# v2.3.5: Delivered via system_files/etc/skel/.config/gtk-3.0/settings.ini overlay.
 # ── Compile GSchema overrides (THE correct way to set GNOME defaults) ──
 if [ -f /usr/share/glib-2.0/schemas/90-cloudws.gschema.override ]; then
     echo "[30-locale-theme] Compiling GSchema overrides..."

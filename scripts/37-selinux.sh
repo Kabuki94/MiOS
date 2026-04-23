@@ -152,12 +152,14 @@ require { type xdm_t; type cache_home_t; class dir { add_name write create read 
 allow xdm_t cache_home_t:dir { add_name write create read open getattr search setattr };
 allow xdm_t cache_home_t:file { create write read open getattr setattr };'
 
+    mkdir -p /usr/share/selinux/packages/cloudws
+
     for name in "${!CLOUDWS_POLICIES[@]}"; do
         echo "${CLOUDWS_POLICIES[$name]}" > "/tmp/cloudws_${name}.te"
         if checkmodule -M -m -o "/tmp/cloudws_${name}.mod" "/tmp/cloudws_${name}.te" 2>/dev/null && \
-           semodule_package -o "/tmp/cloudws_${name}.pp" -m "/tmp/cloudws_${name}.mod" 2>/dev/null && \
-           semodule -i "/tmp/cloudws_${name}.pp" 2>/dev/null; then
-            echo "[37-selinux] cloudws_${name}: OK"
+           semodule_package -o "/tmp/cloudws_${name}.pp" -m "/tmp/cloudws_${name}.mod" 2>/dev/null; then
+            install -m 0644 "/tmp/cloudws_${name}.pp" "/usr/share/selinux/packages/cloudws/cloudws_${name}.pp"
+            echo "[37-selinux] cloudws_${name}: Staged"
             SELINUX_OK=$((SELINUX_OK + 1))
         else
             echo "[37-selinux] cloudws_${name}: SKIPPED (type missing in current policy)"
@@ -166,7 +168,7 @@ allow xdm_t cache_home_t:file { create write read open getattr setattr };'
         rm -f "/tmp/cloudws_${name}".{te,mod,pp}
     done
 
-    echo "[37-selinux] ${SELINUX_OK} policies installed, ${SELINUX_FAIL} skipped"
+    echo "[37-selinux] ${SELINUX_OK} policies staged in /usr/share/selinux/packages/cloudws/, ${SELINUX_FAIL} skipped"
 fi
 
 echo "[37-selinux] SELinux configuration complete."

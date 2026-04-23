@@ -7,8 +7,11 @@ log() { printf '[49-finalize] %s\n' "$*"; }
 # Apply all shipped presets now (so `systemctl is-enabled` reflects intent)
 systemctl preset-all 2>/dev/null || true
 
+# Set a safe build-time default target. Containers will reach this quickly.
+# Bare-metal/VM roles will switch this to graphical.target/etc. at runtime.
+systemctl set-default multi-user.target 2>/dev/null || true
+
 # Ensure role directory exists with example config
-mkdir -p /etc/cloudws
 if [[ ! -f /etc/cloudws/role.conf ]]; then
     cp -a /usr/share/cloudws/role.conf.example /etc/cloudws/role.conf 2>/dev/null || true
 fi
@@ -28,7 +31,7 @@ rm -rf /var/cache/libdnf5 /var/cache/dnf /var/log/dnf5.log* 2>/dev/null || true
 
 # Set image metadata
 CLOUDWS_VERSION=$(cat /ctx/VERSION 2>/dev/null || echo "unknown")
-mkdir -p /etc/cloudws
+echo "${CLOUDWS_VERSION}" > /etc/cloudws-version
 cat > /etc/cloudws/version <<EOF
 CLOUDWS_VERSION=${CLOUDWS_VERSION}
 CLOUDWS_BASE=ucore-hci-stable-nvidia

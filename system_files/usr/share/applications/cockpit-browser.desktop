@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Cockpit (Browser)
+Comment=CloudWS Server Management (opens in browser)
+Exec=xdg-open http://localhost:9090
+Terminal=false
+Icon=cockpit
+Categories=System;
+NoDisplay=true

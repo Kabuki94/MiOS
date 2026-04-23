@@ -1,9 +1,9 @@
 [Desktop Entry]
 Type=Application
 Name=Ceph Dashboard
-Comment=Ceph Storage Cluster Management Dashboard
+Comment=Ceph Storage Dashboard
 Exec=xdg-open https://localhost:8443
-Icon=drive-multidisk
 Terminal=false
-Categories=System;Monitor;
-Keywords=ceph;storage;dashboard;cluster;cephfs;
+Icon=drive-harddisk
+Categories=System;
+Keywords=ceph;storage;

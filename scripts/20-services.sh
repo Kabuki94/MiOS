@@ -26,139 +26,19 @@ for unit_file in \
 done
 echo "[20-services] Fixed systemd unit file permissions"
 
-# ─── Core services (always enabled) ──────────────────────────────────────────
-CORE_SERVICES=(
-    # Desktop
-    gdm
-    NetworkManager
-    # Virtualization
-    libvirtd.socket
-    virtnetworkd.socket
-    virtqemud.socket
-    # Management
-    cockpit.socket
-    sshd
-    # System
-    tuned
-    chronyd
-    firewalld
-    systemd-resolved
-    # Containers
-    podman.socket
-    podman-auto-update.timer
-    # Monitoring (only pmproxy — pmcd/pmlogger are NOT installed)
-    pmproxy
-    # Boot
-    bootloader-update
-)
+# ─── Service Configuration Note ──────────────────────────────────────────────
+# CORE and OPTIONAL services are now primarily managed via:
+# system_files/usr/lib/systemd/system-preset/90-cloudws.preset
+# Role-specific services are managed by cloudws-role.service at runtime.
 
-for svc in "${CORE_SERVICES[@]}"; do
-    systemctl enable "${svc}.service" 2>/dev/null || \
-    systemctl enable "${svc}.socket" 2>/dev/null || \
-    systemctl enable "${svc}.timer" 2>/dev/null || \
-    systemctl enable "${svc}" 2>/dev/null || true
-done
-echo "[20-services] Core services enabled: ${CORE_SERVICES[*]}"
-
-# ─── Optional services (fail-silent — package may not be installed) ──────────
-OPTIONAL_SERVICES=(
-    crowdsec
-    crowdsec-firewall-bouncer
-    fapolicyd
-    usbguard
-    libvirt-guests
-    smb
-    nmb
-    nfs-server
-    rpcbind
-    tailscaled
-    waydroid-container
-    cloud-init
-    cloud-init-local
-    cloud-config
-    cloud-final
-)
-
-for svc in "${OPTIONAL_SERVICES[@]}"; do
-    systemctl enable "${svc}.service" 2>/dev/null || true
-done
-echo "[20-services] Optional services enabled (where available)"
-
-# ─── Bare-metal-only services ────────────────────────────────────────────────
-# These services should NOT run in VMs or containers.
-BARE_METAL_SERVICES=(
-    nfs-server
-    smb
-    nmb
-    pacemaker
-    corosync
-    pcsd
-    cloudws-ha-bootstrap
-    crowdsec
-    crowdsec-firewall-bouncer
-    multipathd
-    osbuild-composer
-    osbuild-worker@1
-)
-
-for svc in "${BARE_METAL_SERVICES[@]}"; do
-    systemctl enable "${svc}.service" 2>/dev/null || true
-    DROPIN_DIR="/usr/lib/systemd/system/${svc}.service.d"
-    mkdir -p "$DROPIN_DIR"
-    cat > "${DROPIN_DIR}/10-bare-metal-only.conf" <<'DROPIN'
-[Unit]
-# CloudWS: Skip this service in VMs/containers — bare metal only
-ConditionVirtualization=no
-DROPIN
-done
-echo "[20-services] Bare-metal-only drop-ins created"
-
-# ─── WSL2-specific service gating ────────────────────────────────────────────
-# These services crash-loop or are useless in WSL2.
-WSL_SKIP_SERVICES=(
-    gdm
-    firewalld
-    waydroid-container
-    nvidia-powerd
-    crowdsec
-    crowdsec-firewall-bouncer
-    fapolicyd
-    dev-binderfs.mount
-    ceph-bootstrap
-    auditd
-    audit-rules
-    bootloader-update
-    coreos-printk-quiet
-    coreos-populate-lvmdevices
-    usbguard
-)
-
-for svc in "${WSL_SKIP_SERVICES[@]}"; do
-    unit="${svc}"
-    [[ "$unit" != *.* ]] && unit="${unit}.service"
-    if [ -f "/usr/lib/systemd/system/${unit}" ] || [ -f "/etc/systemd/system/${unit}" ]; then
-        mkdir -p "/usr/lib/systemd/system/${unit}.d"
-        cat > "/usr/lib/systemd/system/${unit}.d/10-skip-wsl.conf" <<'DROPIN'
-[Unit]
-# CloudWS: Skip in WSL2 — service incompatible with WSL2 environment
-ConditionVirtualization=!wsl
-DROPIN
-    fi
-done
-echo "[20-services] WSL2 skip drop-ins installed"
+# ─── WSL2 & Container Service Gating ─────────────────────────────────────────
+# These services skip OCI/WSL2 via drop-ins in system_files overlay.
+echo "[20-services] WSL2/Container skip drop-ins active via overlay"
 
 # ─── nvidia-powerd: skip in ALL VMs (no physical NVIDIA GPU) ─────────────────
-if [ -f /usr/lib/systemd/system/nvidia-powerd.service ]; then
-    mkdir -p /usr/lib/systemd/system/nvidia-powerd.service.d
-    cat > /usr/lib/systemd/system/nvidia-powerd.service.d/10-bare-metal-only.conf <<'DROPIN'
-[Unit]
-# CloudWS: NVIDIA power daemon only works with physical GPU
-ConditionVirtualization=no
-DROPIN
-fi
-
+# Drop-in handled via overlay.
 
 # ─── TuneD: set throughput-performance profile ──────────────────────────────
 tuned-adm profile throughput-performance 2>/dev/null || true
 
-echo "[20-services] All services enabled and gated. v1.3 complete."
+echo "[20-services] Service configuration baseline complete. v1.4"

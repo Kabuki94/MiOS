@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Cockpit Dashboard
+Comment=CloudWS Server Management
+Exec=cockpit-desktop /
+Terminal=false
+Icon=cockpit
+Categories=System;
+Keywords=server;management;dashboard;

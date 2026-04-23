@@ -1,0 +1,35 @@
+#!/bin/bash
+set -euo pipefail
+echo "CloudWS v0.1.8 — VFIO Passthrough Readiness Check"
+echo "════════════════════════════════════════════════"
+echo ""
+if dmesg 2>/dev/null | grep -qi "IOMMU enabled"; then
+    echo "  ✓ IOMMU: Enabled"
+else
+    echo "  ✗ IOMMU: Not detected (add iommu=pt to kernel args)"
+fi
+for mod in vfio vfio_iommu_type1 vfio_pci; do
+    if modprobe -n "$mod" 2>/dev/null; then
+        echo "  ✓ Module: $mod available"
+    else
+        echo "  ✗ Module: $mod not available"
+    fi
+done
+echo ""
+echo "NVIDIA GPUs detected:"
+lspci -nn 2>/dev/null | grep -i nvidia | while read -r line; do
+    echo "  $line"
+    if echo "$line" | grep -qiE '\[10de:(2900|2901|2903|2904|2905|2b80|2b85)\]'; then
+        echo "    ⚠ WARNING: RTX 50-series — VFIO reset bug!"
+    fi
+done
+echo ""
+echo "IOMMU Groups with NVIDIA:"
+shopt -s nullglob
+for g in /sys/kernel/iommu_groups/*; do
+    for d in "$g"/devices/*; do
+        if lspci -nns "${d##*/}" 2>/dev/null | grep -qi nvidia; then
+            echo "  Group ${g##*/}: $(lspci -nns "${d##*/}")"
+        fi
+    done
+done

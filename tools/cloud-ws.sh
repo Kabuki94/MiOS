@@ -132,7 +132,7 @@ install_packages() {
             echo -e "        ${GRAY}â†» Retry $attempt/$MAX_RETRY...${NC}"
             sleep 2
         fi
-        ((attempt++))
+        attempt=$((attempt + 1))
     done
     
     log_fail "$description"
@@ -163,7 +163,7 @@ install_aur() {
             echo -e "        ${GRAY}â†» Retry $attempt/$MAX_RETRY...${NC}"
             sleep 2
         fi
-        ((attempt++))
+        attempt=$((attempt + 1))
     done
     
     log_fail "$package (AUR)"

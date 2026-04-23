@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=localsearch-writeback-3 Override
+Exec=/usr/bin/true
+Hidden=true
+X-GNOME-Autostart-enabled=false

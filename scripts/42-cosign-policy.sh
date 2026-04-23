@@ -5,7 +5,7 @@
 # Consolidates cosign binary installation, Sigstore trust roots, and policy.json.
 # Supercedes 37-cosign-policy.sh.
 #
-# Note: we pin to v2.4.1 because v3 breaks rpm-ostree bundle format (OCI 1.1).
+# Note: we pin to v2.6.3 because v3 breaks rpm-ostree bundle format (OCI 1.1).
 # ============================================================================
 set -euo pipefail
 
@@ -16,8 +16,8 @@ log "42-cosign-policy: ensuring cosign + trust roots + policy.json"
 
 # 1. Install cosign binary (pinned to v2.x for rpm-ostree compatibility)
 if ! command -v cosign >/dev/null 2>&1; then
-    log "  downloading cosign v2.4.1 static binary..."
-    curl -sL "https://github.com/sigstore/cosign/releases/download/v2.4.1/cosign-linux-amd64" -o /usr/local/bin/cosign
+    log "  downloading cosign v2.6.3 static binary..."
+    curl -sL "https://github.com/sigstore/cosign/releases/download/v2.6.3/cosign-linux-amd64" -o /usr/local/bin/cosign
     chmod +x /usr/local/bin/cosign
 fi
 

@@ -1,5 +1,6 @@
 [Unit]
 Description=CloudWS Root Filesystem Verification
+ConditionVirtualization=!container
 Documentation=file:///usr/share/doc/cloudws/COMPOSEFS-VERIFICATION.md
 DefaultDependencies=no
 Before=greenboot-healthcheck.service basic.target local-fs.target

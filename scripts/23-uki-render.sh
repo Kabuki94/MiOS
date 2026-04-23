@@ -5,6 +5,12 @@ echo "==> Preparing Unified Kernel Image (UKI) configuration..."
 
 # systemd-ukify and binutils are required for this step.
 # Ensure they are declared in docs/PACKAGES.md per the single-source-of-truth rules.
+# The packages-boot section installs ukify via install_packages (--skip-unavailable),
+# so install explicitly here as a safety net to guarantee it ends up in the image.
+if ! rpm -q systemd-ukify >/dev/null 2>&1; then
+    echo "==> systemd-ukify not found via boot-section install; installing explicitly..."
+    dnf install -y systemd-ukify
+fi
 
 # In a bootc Containerfile build, we use `bootc container render-kargs`
 # to flatten all kargs.d/*.toml drop-ins into a single string for the UKI.
