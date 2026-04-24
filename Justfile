@@ -78,6 +78,16 @@ all: build rechunk raw iso vhd wsl push
 lint:
     podman run --rm {{LOCAL}} bootc container lint
 
+# Generate Unified Kernel Image (UKI)
+# Note: requires a running podman and local image.
+ukify:
+    mkdir -p output
+    podman run --rm -it --privileged \
+        -v ./output:/output \
+        {{LOCAL}} \
+        bootc container ukify --rootfs / -- --output /output/cloudws-uki.efi
+    @echo "✓ UKI generated in output/cloudws-uki.efi"
+
 # Run cloudws-test inside the image
 test:
     podman run --rm --privileged {{LOCAL}} /usr/bin/cloudws-test --quick

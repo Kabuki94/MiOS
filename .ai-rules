@@ -1,0 +1,29 @@
+# CloudWS-bootc AI Behavioral Rules
+
+[GLOBAL]
+protocol_version = "2.3.5"
+mandatory_files = [".ai-context/ai-journal.md", "AI.md", "CLAUDE.md"]
+single_source_of_truth = "docs/PACKAGES.md"
+shared_tmp_path = ".ai-context/shared-tmp/"
+
+[BEHAVIOR]
+surgical_edits_only = true
+always_provide_complete_files = true
+no_narrative_preambles = true
+enforce_shellcheck = true
+wsl_gating_required = true
+
+[BOOTC]
+immutable_config_path = "/usr/lib"
+kargs_format = "flat-toml-array"
+lint_required = "bootc container lint"
+
+[COMMUNICATION]
+tone = "professional, direct, high-signal"
+all_caps_response = "acknowledge, fix, redeliver"
+confirm_destructive_actions = true
+
+[JOURNALING]
+required = true
+path = ".ai-context/ai-journal.md"
+format = "dated-entries"

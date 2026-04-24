@@ -17,22 +17,15 @@ log() { printf '[44-podman-machine] %s\n' "$*"; }
 log "Hardware groups are pre-created globally by 31-user.sh"
 
 # Create the 'core' user if missing (Podman machine convention).
-# Passwordless sudo via /etc/sudoers.d/10-cloudws-wheel (shipped by 31-user.sh).
-# Use --groups with only groups that definitely exist; the others are joined
-# defensively via usermod -aG so a single missing group doesn't fail the user
-# creation entirely.
-if ! id -u core >/dev/null 2>&1; then
-    useradd -m -G wheel -s /bin/bash core
-    passwd -l core
-    log "created user 'core' (wheel; key-auth only)"
+# Managed via /usr/lib/sysusers.d/20-podman-machine.conf (declarative).
+# We apply sysusers here to ensure 'core' exists for any subsequent operations.
+systemd-sysusers --root=/ 2>/dev/null || true
 
-    for g in libvirt kvm video render input dialout docker; do
-        if getent group "$g" >/dev/null 2>&1; then
-            usermod -aG "$g" core && log "  added core to $g"
-        else
-            log "  skipped $g (group still missing)"
-        fi
-    done
+if id -u core >/dev/null 2>&1; then
+    passwd -l core 2>/dev/null || true
+    log "user 'core' initialized (declarative; key-auth only)"
+else
+    log "WARN: Failed to initialize 'core' user via sysusers"
 fi
 
 # Enable core services for Podman-machine and cloud-init entry

@@ -118,12 +118,6 @@ install_packages "utils"
 echo "[12-virt] Installing Waydroid..."
 install_packages "android"
 
-# ── xRDP vsock for Hyper-V Enhanced Session ─────────────────────────────────
-echo "[12-virt] Configuring xRDP vsock..."
-if [ -f /etc/xrdp/xrdp.ini ]; then
-    sed -i 's/^port=.*/port=vsock:\/\/-1:3389/' /etc/xrdp/xrdp.ini 2>/dev/null || true
-fi
-
 # ── VirtIO-Win ISO (latest stable) ─────────────────────────────────────────
 echo "[12-virt] Downloading VirtIO-Win ISO..."
 VIRTIO_URL="https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso"

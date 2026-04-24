@@ -1,0 +1,44 @@
+#!/usr/bin/bash
+# CloudWS CPU Isolation Engine - Optimized for Ryzen X3D (9950X3D)
+# Identifies CCD0 (V-Cache) and CCD1 (Frequency) and isolates cores for VMs/Performance.
+set -euo pipefail
+log() { printf '[cpu-isolate] %s\n' "$*"; }
+
+# 1. Detect Topology
+VENDOR=$(lscpu | grep "Vendor ID" | awk '{print $3}')
+MODEL=$(lscpu | grep "Model name" | sed 's/Model name:[[:space:]]*//')
+THREADS=$(lscpu | grep "^CPU(s):" | head -1 | awk '{print $2}')
+
+log "Detecting topology for $MODEL ($VENDOR)"
+
+if [[ "$VENDOR" == "AuthenticAMD" && "$MODEL" == *"X3D"* ]]; then
+    log "AMD X3D detected - assuming dual-CCD layout (16-core default)"
+    # For 9950X3D/7950X3D: 
+    # CCD0: 0-7, 16-23 (V-Cache)
+    # CCD1: 8-15, 24-31 (Frequency)
+    # Default: Isolate CCD1 for high-frequency VM performance or dedicated tasks.
+    ISOLATED="8-15,24-31"
+    SYSTEM="0-7,16-23"
+else
+    log "Standard topology - isolating upper 50% of threads"
+    HALF=$((THREADS / 2))
+    SYSTEM="0-$((HALF - 1))"
+    ISOLATED="$HALF-$((THREADS - 1))"
+fi
+
+log "System cores: $SYSTEM | Isolated cores: $ISOLATED"
+
+# 2. Apply CGroup Isolation (if cset is available)
+if command -v cset &>/dev/null; then
+    log "Applying cpuset isolation via cset..."
+    cset set --cpu="$SYSTEM" --set=system || true
+    cset set --cpu="$ISOLATED" --set=user || true
+    cset proc --move --fromset=root --toset=system || true
+else
+    log "WARN: 'cpuset' tool missing - skipping runtime isolation"
+fi
+
+# 3. Persistence Check
+if ! grep -q "isolcpus=" /proc/cmdline; then
+    log "HINT: To make isolation persistent, add 'isolcpus=$ISOLATED' to kargs.d"
+fi

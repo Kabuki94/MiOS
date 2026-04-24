@@ -47,27 +47,12 @@ fi
 # 3. Polkit rule for colord (prevents "not authorized" errors in RDP sessions)
 # Managed via system_files/etc/polkit-1/rules.d/45-allow-colord.rules
 
-# 4. Hyper-V Enhanced Session service — uses gnome-remote-desktop (NOT xrdp)
+# 4. Hyper-V Enhanced Session service — uses gnome-remote-desktop
 # Managed via system_files/usr/lib/systemd/system/cloudws-hyperv-enhanced.service
 # and system_files/usr/libexec/cloudws-hyperv-enhanced
 systemctl enable cloudws-hyperv-enhanced.service 2>/dev/null || true
 
-# 5. xrdp: configure but do NOT auto-enable globally
-# xrdp stays installed for manual use with non-GNOME sessions (Phosh, XFCE).
-# For GNOME 50, gnome-remote-desktop is the only working RDP path.
-if [ -f /etc/xrdp/xrdp.ini ]; then
-    echo "[38-vm-gating] Configuring xrdp (available, not auto-started)..."
-    cp /etc/xrdp/xrdp.ini /etc/xrdp/xrdp.ini.orig 2>/dev/null || true
-    # Set vsock transport for Hyper-V
-    sed -i 's/^port=.*/port=vsock:\/\/-1:3389/' /etc/xrdp/xrdp.ini
-    sed -i 's/^security_layer=.*/security_layer=rdp/' /etc/xrdp/xrdp.ini
-    sed -i 's/^crypt_level=.*/crypt_level=none/' /etc/xrdp/xrdp.ini
-
-    # Allow any user to start X server (for non-GNOME xorgxrdp sessions)
-    # Managed via system_files/etc/X11/Xwrapper.config
-fi
-
-# 6. GNOME Remote Desktop — first-boot setup script
+# 5. GNOME Remote Desktop — first-boot setup script
 # cloudws-grd-setup is installed via system_files overlay (08-system-files-overlay.sh)
 # into /usr/libexec/cloudws-grd-setup. No copy needed here.
 chmod +x /usr/libexec/cloudws-grd-setup 2>/dev/null || true

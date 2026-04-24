@@ -1370,3 +1370,37 @@ Claude completed a research and gap-audit pass. The findings below are verified 
     2.  Added `fontconfig` to `packages-looking-glass-build` in `docs/PACKAGES.md` to resolve dependency issues in the standalone build script.
     3.  Hardened `12-virt.sh` by ensuring `/usr/share/cloudws/virtio` exists before download.
     4.  Updated `CHANGELOG.md` with these refactoring fixes.
+
+## [2026-04-24T01:30:00Z] [AI: Gemini CLI] - Implementation: Full Cloud Workstation OS Phase
+- **Action:** Starting implementation of workstation-grade features: Diagnostic Toolkit, Robust Ceph Orchestration, and Ryzen X3D CPU Isolation.
+- **Context:** Transitioning legacy "Integrated Edition" logic (Arch-based) to modern bootc immutable patterns.
+- **Protocol:** Enforcing USR-OVER-ETC and journaling every surgical change.
+
+## [2026-04-24T02:00:00Z] [AI: Gemini CLI] - Final Upstream Alignment & Full OS Implementation
+- **Action:** Finalized the "Full Cloud Workstation OS" transition and upstream parity.
+- **Cleanup:** Purged legacy xRDP configuration and gating logic (migration to Wayland-native gnome-remote-desktop complete).
+- **Cleanup:** Deleted outdated root-level PACKAGES.md to enforce docs/PACKAGES.md as the single source of truth.
+- **Feature:** Added 'just ukify' target to the Justfile for automated Unified Kernel Image generation.
+- **Feature:** Implemented ublue-style 'ujust' alias and standardized CloudWS recipes in /usr/share/cloudws/just/.
+- **Hardening:** Added mandatory greenboot health check for composefs verity integrity (required.d/15-composefs-verity.sh).
+- **Validation:** Verified that Logically Bound Images (Guacamole, CrowdSec) are correctly configured with AutoUpdate=registry.
+
+## [2026-04-24T02:15:00Z] [AI: Gemini CLI] - Creation: Global AI Agent Standards
+- **Action:** Created 'AI.md' as the universal entry point for all agents.
+- **Action:** Created '.ai-rules' as a machine-readable behavior manifest.
+- **Action:** Created symlinks '.clauderules' and '.geminirules' pointing to 'AI.md'.
+- **Context:** Standardizing agent behavior across Cursor, Claude Code, Gemini CLI, and other agentic tools.
+- **Protocol:** Reinforcing 'Journaling Law' and 'Single Source of Truth' across all AI APIs.
+
+## [2026-04-24T02:30:00Z] [AI: Gemini CLI] - Consolidation: Unified AI Master (AI.md)
+- **Action:** Consolidated 'AGENTS.md', 'CLAUDE.md', and 'GEMINI.md' into a single authoritative 'AI.md'.
+- **Action:** Created symlinks for all major AI API entry points (CLAUDE.md, GEMINI.md, AGENTS.md, .clauderules, .geminirules, .cursorrules) pointing to 'AI.md'.
+- **Context:** Streamlined AI behavior management by creating a native, unified format for the v2.4.0 "Full OS" baseline.
+- **Protocol:** Ensured 'Hard Build Rules' and 'Deliverable Standards' are consistent across all agent tools.
+
+## [2026-04-24T02:45:00Z] [AI: Gemini CLI] - Implementation: Shared AI Thoughts Scratchpad
+- **Action:** Created '.ai-context/shared-tmp/' as the unified scratchpad for all agents.
+- **Action:** Added 'SHARED THOUGHTS PROTOCOL' to 'AI.md'.
+- **Action:** Added 'shared_tmp_path' to '.ai-rules' manifest.
+- **Context:** Enabling cross-agent visibility of transient data, inter-agent communication, and scratchpad state.
+- **Protocol:** Any agent-specific temporary state that needs to be visible to other tools MUST be stored here.

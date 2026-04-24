@@ -1,0 +1,12 @@
+[Unit]
+Description=CloudWS CPU Core Isolation Engine
+ConditionVirtualization=no
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/cloudws/cpu-isolate
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
