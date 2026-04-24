@@ -7,24 +7,24 @@
             "ghcr.io/kabuki94/cloudws-bootc": [
                 {
                     "type": "sigstoreSigned",
-                    "keyPath": "/etc/pki/containers/cloudws-cosign.pub",
+                    "keyPath": "/usr/share/pki/containers/cloudws-cosign.pub",
                     "signedIdentity": { "type": "matchRepository" }
                 },
                 {
                     "type": "sigstoreSigned",
                     "fulcio": {
-                        "caPath": "/etc/pki/containers/fulcio_v1.crt.pem",
+                        "caPath": "/usr/share/pki/containers/fulcio_v1.crt.pem",
                         "oidcIssuer": "https://token.actions.githubusercontent.com",
                         "subjectEmail": "https://github.com/Kabuki94/CloudWS-bootc/.github/workflows/build.yml@refs/heads/main"
                     },
-                    "rekorPublicKeyPath": "/etc/pki/containers/rekor.pub",
+                    "rekorPublicKeyPath": "/usr/share/pki/containers/rekor.pub",
                     "signedIdentity": { "type": "matchRepository" }
                 }
             ],
             "ghcr.io/ublue-os": [
                 {
                     "type": "sigstoreSigned",
-                    "keyPath": "/etc/pki/containers/ublue-os.pub",
+                    "keyPath": "/usr/share/pki/containers/ublue-os.pub",
                     "signedIdentity": { "type": "matchRepository" }
                 }
             ],

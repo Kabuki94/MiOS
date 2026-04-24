@@ -1,6 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=CloudWS User Setup
-Exec=bash -c "sleep 8 && flatpak install -y flathub-beta com.usebottles.bottles 2>/dev/null; rm -f ~/.config/autostart/cloudws-user-setup.desktop"
-Hidden=false
-X-GNOME-Autostart-enabled=true
