@@ -184,6 +184,7 @@ Mesa 26: ACO is now default shader compiler for RadeonSI.
 mesa-vulkan-drivers
 mesa-dri-drivers
 mesa-va-drivers
+mesa-va-drivers-freeworld
 vulkan-loader
 vulkan-tools
 libva-utils

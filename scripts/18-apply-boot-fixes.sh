@@ -22,25 +22,29 @@ find /usr/libexec/cloudws -type f -exec chmod +x {} \; || true
 find /usr/libexec -type f \( -name 'cloudws-*' -o -name 'role-apply' -o -name 'selinux-init' -o -name 'gpu-detect' -o -name 'grd-init' -o -name 'cpu-isolate' -o -name 'motd' \) -exec chmod +x {} \; || true
 find /usr/bin -name 'cloudws-*' -type f -exec chmod +x {} \; || true
 
-if [ -f /etc/libvirt/hooks/qemu ]; then
-    chmod +x /etc/libvirt/hooks/qemu
-fi
+# 3. Libvirt QEMU Hooks
+# Ensure hooks are executable. We check both /etc and /usr/lib for bootc parity.
+for hook in /etc/libvirt/hooks/qemu /usr/lib/libvirt/hooks/qemu; do
+    if [ -f "$hook" ]; then
+        chmod +x "$hook"
+    fi
+done
 
-# 3. Fix systemd-resolved 217/USER
+# 4. Fix systemd-resolved 217/USER
 # Log trace: systemd-resolved.service exited 217/USER
 # User mapping required at boot time; ensuring it's compiled statically.
 if [ -f /usr/lib/sysusers.d/systemd-resolve.conf ]; then
     systemd-sysusers /usr/lib/sysusers.d/systemd-resolve.conf || true
 fi
 
-# 4. Fix Systemd Ordering Cycle for GPU Passthrough
+# 5. Fix Systemd Ordering Cycle for GPU Passthrough
 # Log trace: sockets.target: Found ordering cycle: docker.socket/start after cloudws-gpu-nvidia.service/start after basic.target
 # Drop-in handled via overlay.
 
-# 5. OCI Container and WSL2 Service Gating
+# 6. OCI Container and WSL2 Service Gating
 # Custom CloudWS services that require hardware access or full system init
 # skip OCI containers and WSL2 via drop-ins in system_files overlay.
 echo "==> Service gating drop-ins active via overlay"
 
-# 6. WSL2 Compatibility Gating (Legacy section kept for unit-specific fallbacks)
+# 7. WSL2 Compatibility Gating (Legacy section kept for unit-specific fallbacks)
 

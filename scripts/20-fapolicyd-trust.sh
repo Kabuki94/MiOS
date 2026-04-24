@@ -9,7 +9,13 @@ source "$(dirname "$0")/lib/common.sh"
 # Configure fapolicyd to use the file trust backend (fs-verity)
 # This allows 0-second boot delays while maintaining rigid application whitelisting
 # in immutable ComposeFS environments.
-sed -i 's/^trust =.*/trust = file,rpmdb/' /etc/fapolicyd/fapolicyd.conf || true
+#
+# v0.1.8: USR-OVER-ETC alignment. Update both /usr/lib and /etc.
+for config in /usr/lib/fapolicyd/fapolicyd.conf /etc/fapolicyd/fapolicyd.conf; do
+    if [[ -f "$config" ]]; then
+        sed -i 's/^trust =.*/trust = file,rpmdb/' "$config" || true
+    fi
+done
 
 # Enable the service
 systemctl enable fapolicyd.service

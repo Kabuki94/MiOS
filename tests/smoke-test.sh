@@ -321,6 +321,7 @@ fi
 
 # NVIDIA (may not be present on CloudWS-1 if akmod didn't build)
 if run_in rpm -q akmod-nvidia >/dev/null 2>&1 || \
+   run_in rpm -q kmod-nvidia >/dev/null 2>&1 || \
    run_in test -d /usr/lib/modules/*/extra/nvidia 2>/dev/null; then
     pass "NVIDIA driver present"
 else
