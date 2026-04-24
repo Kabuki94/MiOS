@@ -289,10 +289,15 @@ jobs:
           tool-cache: true
           swap-storage: true
 
-      - name: Install QEMU
+      - name: Install QEMU and Tools
         run: |
           sudo apt-get update
           sudo apt-get install -y qemu-system-x86 qemu-utils
+          # Install 'just'
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | sudo bash -s -- --to /usr/local/bin
+          # Install 'jc' for JSON parsing of CLI outputs
+          sudo apt-get install -y python3-pip
+          pip install --break-system-packages jc
 
       - name: Run boot-test target
         run: |
