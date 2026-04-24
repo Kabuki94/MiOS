@@ -6,7 +6,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 $RepoUrl = "https://github.com/Kabuki94/CloudWS-bootc"
 
 # Read version from repo VERSION file, fallback to hardcoded
-$Ver = "v0.1.3"
+$Ver = "v0.1.8"
 try { $Ver = "v" + (Invoke-WebRequest -Uri "$RepoUrl/raw/main/VERSION" -UseBasicParsing).Content.Trim() } catch { Write-Verbose "Failed to fetch version: $_" }
 
 Write-Host ""

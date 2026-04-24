@@ -1525,3 +1525,46 @@ Claude completed a research and gap-audit pass. The findings below are verified 
     6.  Updated `docs/RESEARCH_PLAN.md` Kanban to reflect completed status for Hyper-V GPU-PV, Ceph/K3s storage, and utility package integration.
 *   **DISCOVERY:** Manual Cockpit plugin builds from git were causing intermittent `make install` failures in the build pipeline. `cockpit-machines` and `cockpit-podman` are already provided by standard Fedora repos.
 
+
+---
+
+## [2026-04-24T23:30Z] Windows Build Toolchain Audit — Claude Sonnet 4.6
+
+**AGENT:** Claude Sonnet 4.6 | **SESSION:** Windows build audit + fix pass
+
+### THOUGHT
+User requested full audit of the Windows build chain: `cloud-ws.ps1`, `preflight.ps1`, `install.ps1`, `scripts/cloud-ws-builder.ps1`, `Justfile`, `iso.toml`. Goal: verify local Windows pull → menu → build → Hyper-V/WSL/OCI export still works end-to-end.
+
+### DISCOVERY — 8 bugs found
+
+| # | Severity | File | Issue |
+|---|----------|------|-------|
+| 1 | **FATAL** | `cloud-ws.ps1` + `Containerfile` | `cloud-ws.ps1` tried to text-replace `INJ_U`/`INJ_HASH` tokens in `31-user.sh`, but v0.1.8 of `31-user.sh` was refactored to use env vars (`CLOUDWS_USER`, `CLOUDWS_PASSWORD_HASH`). The tokens no longer exist → replacement silently did nothing → all builds deployed as `cloudws`/`cloudws` regardless of menu input. `Containerfile` also missing `ARG` declarations. |
+| 2 | **FATAL** | `cloud-ws.ps1` L383/388 | `bootc-base-imagectl rechunk` called without `containers-storage:` transport prefix. Justfile uses the prefix correctly. Without it rechunk fails. |
+| 3 | HIGH | `cloud-ws.ps1` L634 | `.wslconfig` generator missing `systemd=true` — WSL2 would import the distro but systemd/services would not start. |
+| 4 | HIGH | `preflight.ps1` | No PowerShell 7 check. `cloud-ws-builder.ps1` requires `#Requires -Version 7.1`; PS 5.1 users would get a confusing error after passing preflight. |
+| 5 | MEDIUM | `cloud-ws.ps1` L45-51 | Dead `$SelfBuild` BIB selection block that always took the `else` branch (`$SelfBuild = $false` is constant). Referenced undefined `$RegistryImage` in the never-executed `if` branch. |
+| 6 | LOW | `cloud-ws.ps1` L3, L635 | Stale `.SYNOPSIS` ("v0.1.3") and `.wslconfig` comment ("v0.1.3"). |
+| 7 | LOW | `install.ps1` L9 | Hardcoded fallback `$Ver = "v0.1.3"`. |
+| 8 | LOW | `iso.toml` L1, L34 | Version strings say "v1.3" — should be "v0.1.8". |
+| 9 | LOW | `cloud-ws.ps1` L667 | `podman push` piped to `Out-Null` — errors silently swallowed. |
+
+### ACTION — All 8 bugs fixed
+
+| File | Change |
+|------|--------|
+| `Containerfile` | Added `ARG CLOUDWS_USER=cloudws` and `ARG CLOUDWS_PASSWORD_HASH=` after `CMD ["/sbin/init"]` so `31-user.sh` can receive build-time credentials |
+| `cloud-ws.ps1` | Removed entire `INJ_*` text-injection block (lines 335-366). Build command now passes `--build-arg CLOUDWS_USER="$U" --build-arg CLOUDWS_PASSWORD_HASH="$passHash"` — credentials travel as build args, never written to disk, never in log |
+| `cloud-ws.ps1` | Fixed both rechunk calls: `rechunk $LocalImage $LocalImage` → `rechunk "containers-storage:$LocalImage" "containers-storage:$LocalImage"` |
+| `cloud-ws.ps1` | Added `"systemd=true"` to `.wslconfig` generator array |
+| `cloud-ws.ps1` | Removed dead `$SelfBuild` BIB init block (lines 45-51) |
+| `cloud-ws.ps1` | Fixed stale `.SYNOPSIS` and `.wslconfig` comment to v0.1.8 |
+| `cloud-ws.ps1` | Removed `2>&1 | Out-Null` from `podman push` so errors surface |
+| `preflight.ps1` | Added PowerShell 7 check with `winget install Microsoft.PowerShell` auto-fix |
+| `install.ps1` | Updated fallback `$Ver` from `"v0.1.3"` to `"v0.1.8"` |
+| `iso.toml` | Updated version comment lines from v1.3 to v0.1.8 |
+
+### LEARNING
+- The `31-user.sh` refactor to env-var-based provisioning (v0.1.8) was never reflected in `cloud-ws.ps1` — the two files drifted. When `31-user.sh` dropped INJ_* tokens, the orchestrator should have been updated simultaneously.
+- `ARG` declarations in Containerfile make values available as env vars in subsequent `RUN` steps. `ENV` would bake them into the image layers. `ARG` is the correct mechanism for build-time secrets.
+- `bootc-base-imagectl rechunk` requires the `containers-storage:` transport prefix when referencing images in local Podman storage — bare image names are not resolved.

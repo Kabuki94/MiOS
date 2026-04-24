@@ -1,4 +1,4 @@
-# CloudWS v1.3 — iso.toml
+# CloudWS v0.1.8 — iso.toml
 # Combined BIB + kickstart configuration for Anaconda ISO builds.
 # This is the ONLY config file mounted for ISO builds (/config.toml).
 # bib.json/bib.toml is used for RAW/VHD targets only.
@@ -18,7 +18,7 @@ part / --grow --fstype ext4
 # ostreecontainer directive pulls the OCI image and deploys it
 ostreecontainer --url ghcr.io/kabuki94/cloudws-bootc:latest --no-signature-verification
 
-# Create default user (matches INJ_U from build — securely injected at target generation)
+# Create default user (injected at ISO generation time by cloud-ws.ps1)
 user --name=INJ_U --groups=wheel --iscrypted --password=INJ_HASH
 
 %post --erroronfail --log=/root/anaconda-post.log
@@ -31,7 +31,7 @@ systemctl set-default graphical.target
 # Generate machine-id for unique hostname
 systemd-machine-id-setup 2>/dev/null || true
 
-echo "CloudWS v1.3 — Post-install complete"
+echo "CloudWS v0.1.8 — Post-install complete"
 %end
 
 reboot

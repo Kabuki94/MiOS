@@ -323,21 +323,7 @@ if ($DoPull) {
     }
     Write-OK "Password hashed (SHA-512)"
 
-    # ── Inject into 31-user.sh ──
-    $ovr = Get-Content "scripts/31-user.sh" -Raw
-    $ovr = $ovr.Replace('INJ_U', $U)
-    # Change double quotes to single quotes on chpasswd lines BEFORE inserting hash.
-    # This prevents bash from expanding $6 in the hash as a variable.
-    # After INJ_U replacement, lines look like: echo "cloudws:INJ_HASH" | chpasswd -e
-    $ovr = $ovr.Replace("echo `"${U}:INJ_HASH`" | chpasswd -e", "echo '${U}:INJ_HASH' | chpasswd -e")
-    $ovr = $ovr.Replace('echo "root:INJ_HASH" | chpasswd -e', "echo 'root:INJ_HASH' | chpasswd -e")
-    # Now safe to insert hash — it's inside single quotes, bash won't expand $6
-    $ovr = $ovr.Replace('INJ_HASH', $passHash)
-    $ovr = $ovr.Replace('INJ_P', '__REMOVED__')
-    $ovr | Set-Content "scripts/31-user.sh" -NoNewline -Encoding ascii
-    Write-OK "Credentials injected (hashed — NO plaintext in build log)"
-
-    # ── Inject hostname ──
+    # ── Inject hostname (only if custom; restored via git checkout after build) ──
     if ($HostIn -ne "cloudws") {
         Write-Step "Injecting static hostname: $HostIn ..."
         Set-Content "system_files/etc/hostname" "$HostIn" -Encoding ascii
@@ -345,17 +331,18 @@ if ($DoPull) {
 
     $t0 = Get-Date
     Write-Step "Building OCI image (all $cpu threads, MAKEFLAGS=-j$cpu)..."
-    & podman build --no-cache --build-arg MAKEFLAGS="-j$cpu" --jobs 2 -t $LocalImage .
+    # Credentials passed as --build-arg: hash is available as CLOUDWS_PASSWORD_HASH
+    # env var inside the container build (consumed by 31-user.sh). Plaintext NEVER
+    # written to disk, never appears in the build log or image layer metadata.
+    & podman build --no-cache `
+        --build-arg MAKEFLAGS="-j$cpu" `
+        --build-arg CLOUDWS_USER="$U" `
+        --build-arg CLOUDWS_PASSWORD_HASH="$passHash" `
+        --jobs 2 -t $LocalImage .
     if ($LASTEXITCODE -ne 0) { Write-Fatal "podman build failed" }
 
-    # Restore build-time injection files
-    & git checkout scripts/31-user.sh system_files/etc/hostname 2>$null
-    if ($LASTEXITCODE -ne 0) {
-        $ovr = Get-Content "scripts/31-user.sh" -Raw
-        $ovr = $ovr -replace [regex]::Escape($U), 'INJ_U'
-        $ovr = $ovr -replace [regex]::Escape($passHash), 'INJ_HASH'
-        $ovr | Set-Content "scripts/31-user.sh" -NoNewline -Encoding ascii
-    }
+    # Restore hostname if it was temporarily overridden
+    & git checkout system_files/etc/hostname 2>$null | Out-Null
 
     $buildMin = [math]::Round(((Get-Date) - $t0).TotalMinutes, 1)
     Write-OK "Image built in $buildMin min → $LocalImage"
@@ -372,12 +359,12 @@ if ($DoPull) {
     # Falls back to external RECHUNK_IMAGE if local fails
     & podman run --rm --privileged `
         -v /var/lib/containers/storage:/var/lib/containers/storage `
-        $LocalImage /usr/libexec/bootc-base-imagectl rechunk $LocalImage $LocalImage
+        $LocalImage /usr/libexec/bootc-base-imagectl rechunk "containers-storage:$LocalImage" "containers-storage:$LocalImage"
     if ($LASTEXITCODE -ne 0) {
         Write-Warn "Self-build rechunk failed; falling back to external rechunker"
         & podman run --rm --privileged `
             -v /var/lib/containers/storage:/var/lib/containers/storage `
-            $RechunkImage /usr/libexec/bootc-base-imagectl rechunk $LocalImage $LocalImage
+            $RechunkImage /usr/libexec/bootc-base-imagectl rechunk "containers-storage:$LocalImage" "containers-storage:$LocalImage"
     }
     $ErrorActionPreference = "Stop"
 
@@ -624,14 +611,15 @@ if (Test-Path $TargetWsl) {
         $wslCPUs = [Math]::Max(4, $cpu)
         # Build .wslconfig content without here-string (avoids PS parser edge cases)
         $wslLines = @(
-            "# CloudWS v0.1.3 — WSL2 Configuration",
+            "# CloudWS v0.1.8 — WSL2 Configuration",
             "[wsl2]",
             "memory=${wslRAM}GB",
             "processors=${wslCPUs}",
             "swap=8GB",
             "localhostForwarding=true",
             "nestedVirtualization=true",
-            "vmIdleTimeout=-1"
+            "vmIdleTimeout=-1",
+            "systemd=true"
         )
         $wslConfig = $wslLines -join "`r`n"
         if (Test-Path $wslConfigPath) {
@@ -656,7 +644,7 @@ if ($DoPush -and $RegistryToken) {
     $RegistryToken | & podman login $registryHost --username $RegistryUser --password-stdin 2>&1 | Out-Null
     if ($LASTEXITCODE -ne 0) { Write-Warn "Registry login failed — push may fail" }
 
-    & podman push $GhcrImage 2>&1 | Out-Null
+    & podman push $GhcrImage
     if ($LASTEXITCODE -eq 0) {
         Write-OK "Pushed to $registryHost"
         # Make package public if ghcr.io
