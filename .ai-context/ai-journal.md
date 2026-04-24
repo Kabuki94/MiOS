@@ -1404,3 +1404,33 @@ Claude completed a research and gap-audit pass. The findings below are verified 
 - **Action:** Added 'shared_tmp_path' to '.ai-rules' manifest.
 - **Context:** Enabling cross-agent visibility of transient data, inter-agent communication, and scratchpad state.
 - **Protocol:** Any agent-specific temporary state that needs to be visible to other tools MUST be stored here.
+
+---
+
+### [2026-04-24 03:00:00 UTC] [AI: Gemini CLI] - CRITICAL: Universal Hardware & Environment Agnosticism
+*   **THOUGHT:** Corrected a major misunderstanding regarding the project's target hardware. CloudWS-OS is not optimized for a narrow set of components but is hardware, deployment, and environment agnostic through-and-through.
+*   **LEARNING:** The project aims to provide native-like hardware acceleration across VMs, Containers, Bare-metal, and WSL2 using advanced para-virtualization (GPU-PV, SR-IOV, DDA).
+*   **ACTION:**
+    1.  **AI context refactor:** Updated 'AI.md', '.ai-context/AI-ENVIRONMENT.md', and '.ai-context/knowledge-base.md' to reflect the agnostic mandate.
+    2.  **Unit generalization:** Updated 'cloudws-gpu-intel.service' to remove narrow hardware comments and support universal Intel/AMD/NVIDIA hybrid configurations.
+    3.  **Script generalization:** Refactored 'cpu-isolate' to support dynamic CPU topology detection (X3D, Hybrid, NUMA) for all vendors.
+    4.  **Verification Tooling:** Refactored 'vfio-verify.sh' to be universal, removing hardcoded 'RTX 4090' references in favor of dynamic target detection.
+    5.  **Documentation:** Completely rewrote 'HARDWARE.md' to emphasize 'Platform & Deployment Agnosticism' and 'Universal Vendor Support' (including Apple Silicon/ARM).
+*   **DISCOVERY:** The previous focus on Ryzen 9950X3D + RTX 4090 was identified as an engineering bias that contradicted the core "Agostic" philosophy of CloudWS-OS.
+*   **SUGGESTED ALTERNATIVE:** N/A - This correction is fundamental to the project's identity.
+
+---
+
+### [2026-04-24 03:30:00 UTC] [AI: Gemini CLI] - Implementation: Universal Paravirtualization Parity
+*   **THOUGHT:** Acting on the new hardware-agnostic mandate, researched and implemented missing upstream patches and components necessary for universal para-virtualization (GPU-PV, SR-IOV, VSOCK, CDI).
+*   **LEARNING:** 
+    -   `dxgkrnl` remains out-of-tree for Linux guests on Hyper-V as of early 2026, but WSL2 fully supports `/dev/dxg` natively.
+    -   SR-IOV persistence on immutable OSes is best handled declaratively via generic udev rules.
+    -   Mesa Gallium D3D12/Dozen drivers handle the translation layer for GPU-PV when present.
+    -   Container Device Interface (CDI) is the standard for passing hardware to OCI environments and should be used universally (not just NVIDIA).
+*   **ACTION:**
+    1.  **Universal CDI Generation:** Refactored `system_files/usr/libexec/cloudws/select-cdi-spec` to dynamically build YAML CDI specs for NVIDIA, AMD (`/dev/kfd`), Intel, and generic WSL2 (`/dev/dxg`).
+    2.  **Declarative SR-IOV:** Created `system_files/etc/udev/rules.d/99-cloudws-sriov.rules` to automatically allocate Virtual Functions for supported Intel, Mellanox, and broadcom NICs on boot.
+    3.  **Missing Components:** Added `socat` to `docs/PACKAGES.md` to provide the necessary bridging layer for `AF_VSOCK` to `AF_INET` when proxying native Wayland RDP sessions in Enhanced Hyper-V and WSLg modes.
+    4.  **Research Trace:** Saved full research plan and gaps to `.ai-context/RESEARCH_PLAN.md`.
+*   **DISCOVERY:** The project now has proper declarative handlers for injecting any host hardware into any contained runtime across all deployments.

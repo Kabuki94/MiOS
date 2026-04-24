@@ -1,6 +1,7 @@
 #!/bin/bash
 # vfio-verify.sh
-# Verification script for RTX 4090 VFIO passthrough configuration
+# Universal Verification script for VFIO passthrough configuration
+# CloudWS-OS: Hardware & Environment Agnostic Verification
 
 # Colors for output
 RED='\033[0;31m'
@@ -30,7 +31,7 @@ check_warn() {
 }
 
 echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}RTX 4090 VFIO Configuration Verification${NC}"
+echo -e "${GREEN}CloudWS-OS VFIO Configuration Verification${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
 echo ""
 
@@ -71,34 +72,46 @@ else
     check_fail "Some VFIO modules missing"
 fi
 
-# Test 4: Find RTX 4090
-echo -e "${BLUE}[4/10]${NC} Detecting RTX 4090..."
-RTX4090_PCI=$(lspci -nn | grep -i "RTX 4090" | awk '{print $1}' | head -n1)
-if [[ -n "$RTX4090_PCI" ]]; then
-    check_pass "RTX 4090 found at PCI address: $RTX4090_PCI"
+# Test 4: Find Target GPU (bound to vfio-pci or in kernel ids)
+echo -e "${BLUE}[4/10]${NC} Detecting Target GPU..."
+# Attempt 1: Look for vfio-pci bound devices
+TARGET_GPU_PCI=$(lspci -nnk | grep -B2 "vfio-pci" | grep "VGA" | awk '{print $1}' | head -n1)
+
+# Attempt 2: Look for IDs in cmdline if no driver bound yet
+if [[ -z "$TARGET_GPU_PCI" ]]; then
+    CMDLINE_IDS=$(cat /proc/cmdline | grep -oP 'vfio-pci\.ids=\K[0-9a-f:,]+')
+    if [[ -n "$CMDLINE_IDS" ]]; then
+        FIRST_ID=$(echo "$CMDLINE_IDS" | cut -d, -f1)
+        TARGET_GPU_PCI=$(lspci -nn | grep "$FIRST_ID" | awk '{print $1}' | head -n1)
+    fi
+fi
+
+if [[ -n "$TARGET_GPU_PCI" ]]; then
+    GPU_NAME=$(lspci -s "$TARGET_GPU_PCI" | cut -d: -f3-)
+    check_pass "Target GPU found: $GPU_NAME at $TARGET_GPU_PCI"
     
     # Extract IDs
-    RTX4090_INFO=$(lspci -nn -s "$RTX4090_PCI")
-    GPU_ID=$(echo "$RTX4090_INFO" | grep -oP '\[\K[0-9a-f]{4}:[0-9a-f]{4}(?=\])')
+    TARGET_GPU_INFO=$(lspci -nn -s "$TARGET_GPU_PCI")
+    GPU_ID=$(echo "$TARGET_GPU_INFO" | grep -oP '\[\K[0-9a-f]{4}:[0-9a-f]{4}(?=\])')
     echo "  Device ID: $GPU_ID"
 else
-    check_fail "RTX 4090 not detected"
-    echo "Exiting - cannot continue without GPU"
+    check_fail "Target GPU for passthrough not detected (none bound to vfio-pci)"
+    echo "Exiting - cannot continue without target device"
     exit 1
 fi
 
 # Test 5: Check driver binding
 echo -e "${BLUE}[5/10]${NC} Checking driver binding..."
-DRIVER_INFO=$(lspci -nnk -s "$RTX4090_PCI")
+DRIVER_INFO=$(lspci -nnk -s "$TARGET_GPU_PCI")
 CURRENT_DRIVER=$(echo "$DRIVER_INFO" | grep "Kernel driver in use:" | awk '{print $5}')
 
 if [[ "$CURRENT_DRIVER" == "vfio-pci" ]]; then
-    check_pass "RTX 4090 bound to vfio-pci driver"
+    check_pass "Target GPU bound to vfio-pci driver"
 elif [[ -z "$CURRENT_DRIVER" ]]; then
-    check_warn "No driver bound to RTX 4090"
+    check_warn "No driver bound to Target GPU"
     echo "  This may be intentional if using dynamic binding"
 else
-    check_fail "RTX 4090 bound to wrong driver: $CURRENT_DRIVER (expected vfio-pci)"
+    check_fail "Target GPU bound to wrong driver: $CURRENT_DRIVER (expected vfio-pci)"
     echo ""
     echo "  Possible issues:"
     echo "  - VFIO IDs not in kernel parameters"
@@ -106,23 +119,26 @@ else
     echo "  - Kernel parameters not applied"
 fi
 
-# Test 6: Check audio controller
-echo -e "${BLUE}[6/10]${NC} Checking audio controller..."
-PCI_BUS=$(echo "$RTX4090_PCI" | cut -d: -f1)
-AUDIO_PCI=$(lspci -nn | grep "$PCI_BUS:" | grep -i "audio" | grep -i "nvidia" | awk '{print $1}')
+# Test 6: Check companion devices (Audio/USB/Serial)
+echo -e "${BLUE}[6/10]${NC} Checking companion devices..."
+PCI_BUS=$(echo "$TARGET_GPU_PCI" | cut -d: -f1)
+COMPANIONS=$(lspci -nn | grep "$PCI_BUS:" | grep -v "VGA" | grep -v "3D controller")
 
-if [[ -n "$AUDIO_PCI" ]]; then
-    AUDIO_DRIVER=$(lspci -nnk -s "$AUDIO_PCI" | grep "Kernel driver in use:" | awk '{print $5}')
-    AUDIO_ID=$(lspci -nn -s "$AUDIO_PCI" | grep -oP '\[\K[0-9a-f]{4}:[0-9a-f]{4}(?=\])')
-    
-    if [[ "$AUDIO_DRIVER" == "vfio-pci" ]]; then
-        check_pass "Audio controller ($AUDIO_ID) bound to vfio-pci"
-    else
-        check_fail "Audio controller bound to wrong driver: ${AUDIO_DRIVER:-none}"
-        echo "  Both GPU and audio must use vfio-pci for passthrough"
-    fi
+if [[ -n "$COMPANIONS" ]]; then
+    while read -r line; do
+        COMP_PCI=$(echo "$line" | awk '{print $1}')
+        COMP_ID=$(echo "$line" | grep -oP '\[\K[0-9a-f]{4}:[0-9a-f]{4}(?=\])')
+        COMP_DRIVER=$(lspci -nnk -s "$COMP_PCI" | grep "Kernel driver in use:" | awk '{print $5}')
+        
+        if [[ "$COMP_DRIVER" == "vfio-pci" ]]; then
+            check_pass "Companion $COMP_PCI ($COMP_ID) bound to vfio-pci"
+        else
+            check_warn "Companion $COMP_PCI ($COMP_ID) bound to ${COMP_DRIVER:-none}"
+            echo "  HINT: For full passthrough, all sub-devices on the same bus should use vfio-pci"
+        fi
+    done <<< "$COMPANIONS"
 else
-    check_warn "Audio controller not found or not on same bus"
+    check_pass "No companion devices found on this bus"
 fi
 
 # Test 7: Check VFIO device nodes
@@ -141,8 +157,8 @@ fi
 
 # Test 8: Check IOMMU group
 echo -e "${BLUE}[8/10]${NC} Checking IOMMU group isolation..."
-if [[ -L "/sys/bus/pci/devices/0000:$RTX4090_PCI/iommu_group" ]]; then
-    IOMMU_GROUP=$(basename $(readlink "/sys/bus/pci/devices/0000:$RTX4090_PCI/iommu_group"))
+if [[ -L "/sys/bus/pci/devices/0000:$TARGET_GPU_PCI/iommu_group" ]]; then
+    IOMMU_GROUP=$(basename $(readlink "/sys/bus/pci/devices/0000:$TARGET_GPU_PCI/iommu_group"))
     GROUP_DEVICES=$(ls -1 "/sys/kernel/iommu_groups/$IOMMU_GROUP/devices/" | wc -l)
     
     echo "  IOMMU Group: $IOMMU_GROUP"
@@ -188,19 +204,24 @@ fi
 # Test 10: Check for potential conflicts
 echo -e "${BLUE}[10/10]${NC} Checking for potential conflicts..."
 
-# Check if nvidia module is loaded
+# Check if proprietary drivers are loaded
 if lsmod | grep -q "^nvidia"; then
-    check_warn "NVIDIA driver loaded - may conflict with VFIO"
-    echo "  Consider blacklisting if GPU is dedicated to passthrough"
-else
-    check_pass "No conflicting NVIDIA driver loaded"
+    check_warn "NVIDIA driver loaded - may conflict with VFIO if not multi-GPU"
+fi
+if lsmod | grep -q "^amdgpu"; then
+    # Check if amdgpu is bound to the TARGET GPU
+    if lspci -nnk -s "$TARGET_GPU_PCI" | grep -q "amdgpu"; then
+        check_fail "AMDGPU driver still bound to Target GPU"
+    fi
 fi
 
 # Check if nouveau is loaded
 if lsmod | grep -q "^nouveau"; then
     check_warn "Nouveau driver loaded - may conflict with VFIO"
-else
-    check_pass "No conflicting Nouveau driver loaded"
+fi
+
+if [[ $WARN -eq 0 && $FAIL -eq 0 ]]; then
+    check_pass "No critical driver conflicts detected"
 fi
 
 # Summary
@@ -215,76 +236,16 @@ echo -e "${RED}Failed:  $FAIL${NC}"
 echo ""
 
 if [[ $FAIL -eq 0 ]]; then
-    echo -e "${GREEN}✓ RTX 4090 VFIO configuration is correct!${NC}"
+    echo -e "${GREEN}✓ VFIO configuration is correct for your hardware!${NC}"
     echo ""
-    echo "You can now:"
-    echo "  1. Create a VM in virt-manager"
-    echo "  2. Add PCI devices: $GPU_ID and $AUDIO_ID"
-    echo "  3. Use UEFI firmware (OVMF)"
-    echo "  4. Install guest OS with GPU drivers"
+    echo "Environment: $(systemd-detect-virt)"
     echo ""
 elif [[ $FAIL -le 2 && $PASS -ge 6 ]]; then
     echo -e "${YELLOW}⚠ Configuration mostly correct with minor issues${NC}"
-    echo ""
-    echo "Review the failed checks above and consider:"
-    echo "  - Verifying kernel parameters in boot loader"
-    echo "  - Checking mkinitcpio module order"
-    echo "  - Rebuilding initramfs: sudo mkinitcpio -P"
-    echo ""
 else
     echo -e "${RED}✗ VFIO configuration has significant issues${NC}"
-    echo ""
-    echo "Please review the failed checks and:"
-    echo "  1. Verify kernel parameters in systemd-boot entries"
-    echo "  2. Check /etc/modprobe.d/vfio.conf"
-    echo "  3. Verify MODULES in /etc/mkinitcpio.conf"
-    echo "  4. Rebuild initramfs: sudo mkinitcpio -P"
-    echo "  5. Reboot and run this script again"
-    echo ""
 fi
 
 echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
 echo ""
-
-# Detailed diagnostics option
-read -p "Show detailed diagnostics? (y/N): " SHOW_DIAG
-
-if [[ "$SHOW_DIAG" =~ ^[Yy]$ ]]; then
-    echo ""
-    echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
-    echo -e "${GREEN}Detailed Diagnostics${NC}"
-    echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
-    echo ""
-    
-    echo -e "${YELLOW}Kernel Command Line:${NC}"
-    cat /proc/cmdline
-    echo ""
-    
-    echo -e "${YELLOW}VFIO Kernel Messages:${NC}"
-    dmesg | grep -i vfio | tail -20
-    echo ""
-    
-    echo -e "${YELLOW}RTX 4090 Detailed Info:${NC}"
-    lspci -nnk -s "$RTX4090_PCI"
-    echo ""
-    
-    if [[ -n "$AUDIO_PCI" ]]; then
-        echo -e "${YELLOW}Audio Controller Detailed Info:${NC}"
-        lspci -nnk -s "$AUDIO_PCI"
-        echo ""
-    fi
-    
-    echo -e "${YELLOW}Loaded Modules:${NC}"
-    lsmod | grep -E "(vfio|nvidia|nouveau)" || echo "None found"
-    echo ""
-    
-    echo -e "${YELLOW}Modprobe Configuration:${NC}"
-    if [[ -f /etc/modprobe.d/vfio.conf ]]; then
-        cat /etc/modprobe.d/vfio.conf
-    else
-        echo "No /etc/modprobe.d/vfio.conf found"
-    fi
-    echo ""
-fi
-
 exit $FAIL

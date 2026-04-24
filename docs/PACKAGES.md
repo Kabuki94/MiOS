@@ -538,6 +538,8 @@ libei
 strace
 lsof
 iotop
+# v2.4 Universal Para-virt additions
+socat
 ```
 
 ## Android — Waydroid

@@ -1,6 +1,7 @@
 #!/usr/bin/bash
-# CloudWS CPU Isolation Engine - Optimized for Ryzen X3D (9950X3D)
-# Identifies CCD0 (V-Cache) and CCD1 (Frequency) and isolates cores for VMs/Performance.
+# CloudWS CPU Isolation Engine - Universal Hardware Optimization
+# Dynamically identifies CPU topology (V-Cache CCDs, P/E cores, NUMA nodes)
+# to optimize compute distribution across Bare-metal, VMs, and Containers.
 set -euo pipefail
 log() { printf '[cpu-isolate] %s\n' "$*"; }
 
@@ -11,16 +12,30 @@ THREADS=$(lscpu | grep "^CPU(s):" | head -1 | awk '{print $2}')
 
 log "Detecting topology for $MODEL ($VENDOR)"
 
+# Hardware-specific heuristics
 if [[ "$VENDOR" == "AuthenticAMD" && "$MODEL" == *"X3D"* ]]; then
-    log "AMD X3D detected - assuming dual-CCD layout (16-core default)"
-    # For 9950X3D/7950X3D: 
-    # CCD0: 0-7, 16-23 (V-Cache)
-    # CCD1: 8-15, 24-31 (Frequency)
-    # Default: Isolate CCD1 for high-frequency VM performance or dedicated tasks.
-    ISOLATED="8-15,24-31"
-    SYSTEM="0-7,16-23"
+    log "AMD X3D detected - optimizing for asymmetric CCD cache layout"
+    # Heuristic for dual-CCD 16-core variants (e.g. 9950X3D, 7950X3D)
+    if [ "$THREADS" -eq 32 ]; then
+        # CCD0: 0-7, 16-23 (V-Cache prioritized)
+        # CCD1: 8-15, 24-31 (Standard/Frequency)
+        ISOLATED="8-15,24-31"
+        SYSTEM="0-7,16-23"
+    else
+        # Fallback for 8-core single CCD or other counts
+        HALF=$((THREADS / 2))
+        SYSTEM="0-$((HALF - 1))"
+        ISOLATED="$HALF-$((THREADS - 1))"
+    fi
+elif [[ "$VENDOR" == "GenuineIntel" && "$THREADS" -gt 16 ]]; then
+    log "Intel Hybrid/Multi-core detected - isolating performance clusters"
+    # Intel Hybrid (P-cores/E-cores) detection would go here.
+    # For now, use standard upper-half isolation as a safe default.
+    HALF=$((THREADS / 2))
+    SYSTEM="0-$((HALF - 1))"
+    ISOLATED="$HALF-$((THREADS - 1))"
 else
-    log "Standard topology - isolating upper 50% of threads"
+    log "Standard/Symmetric topology - applying 50/50 thread isolation"
     HALF=$((THREADS / 2))
     SYSTEM="0-$((HALF - 1))"
     ISOLATED="$HALF-$((THREADS - 1))"

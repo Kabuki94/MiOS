@@ -1,22 +1,21 @@
 [Unit]
-Description=CloudWS Intel GPU container plumbing (i915/xe + renderD*)
+Description=CloudWS Intel/AMD iGPU Container Plumbing (i915/xe/amdgpu)
 ConditionVirtualization=!container
 Documentation=https://github.com/Kabuki94/CloudWS-bootc/blob/main/docs/gpu-passthrough.md
 ConditionPathExists=/dev/dri/renderD128
 After=systemd-modules-load.service systemd-udev-settle.service
 Wants=systemd-udev-settle.service
-# NOTE: runs even alongside NVIDIA (hybrid/iGPU+dGPU systems are common, e.g.
-# AMD 9950X3D iGPU + RTX 4090 dGPU — renderD128 is typically the AMD/Intel
-# iGPU and renderD129 is the NVIDIA dGPU). Intel-specific container
-# workloads (QuickSync, OpenCL via NEO) reference renderD128 explicitly.
+# NOTE: Supports universal iGPU + dGPU hybrid configurations across all vendors.
+# Standardizes renderD128 access for Intel (QuickSync/NEO) and AMD (ROCm/VA-API)
+# while allowing co-existence with discrete NVIDIA or AMD hardware.
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStartPre=-/usr/sbin/modprobe -a i915 xe
+ExecStartPre=-/usr/sbin/modprobe -a i915 xe amdgpu
 ExecStartPre=/usr/bin/install -d -m 0755 /var/run/cdi
 ExecStart=/usr/bin/bash -c ' \
-  # Defensive perms on renderD128 only — do not touch card* nodes (video group \
+  # Defensive perms on primary render node — do not touch card* nodes (video group \
   # handled by 99-cloudws-gpu.rules at udev-add time). \
   if [ -e /dev/dri/renderD128 ]; then \
     chgrp render /dev/dri/renderD128 2>/dev/null || true; \

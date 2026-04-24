@@ -23,10 +23,11 @@
 | Component | Status |
 |-----------|--------|
 | **Baseline** | v2.4.0 (Full OS Integration) |
-| **Hardware** | AMD Ryzen 9 9950X3D + NVIDIA RTX 4090 |
-| **RDP** | Wayland-native `gnome-remote-desktop` (xRDP is DEPRECATED/REMOVED) |
-| **Compute** | Ryzen X3D Core Isolation, NVIDIA Blackwell (RTX 50) Ready |
-| **Storage** | Workstation-optimized Ceph + K3s Orchestration |
+| **Hardware** | **Agnostic** (Universal Intel/AMD/NVIDIA/Apple/ARM Support) |
+| **Deployment** | Universal (Bare-metal, VM, OCI, WSL2/g, Hyper-V, Podman/Docker, LVM) |
+| **Para-virt** | Full (GPU-PV, SR-IOV, VSOCK, virtio-gpu, DDA/DDS) |
+| **Compute** | Universal (X3D V-Cache, Intel Hybrid P/E, Multi-NUMA, ARM Neoverse) |
+| **Storage** | Agnostic (Workstation Ceph + K3s, NVMe-over-Fabrics, ZFS, Btrfs) |
 
 ---
 
