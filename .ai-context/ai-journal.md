@@ -1384,3 +1384,10 @@ Claude completed a research and gap-audit pass. The findings below are verified 
 - **Feature:** Implemented ublue-style 'ujust' alias and standardized CloudWS recipes in /usr/share/cloudws/just/.
 - **Hardening:** Added mandatory greenboot health check for composefs verity integrity (required.d/15-composefs-verity.sh).
 - **Validation:** Verified that Logically Bound Images (Guacamole, CrowdSec) are correctly configured with AutoUpdate=registry.
+
+## [2026-04-24T02:15:00Z] [AI: Gemini CLI] - Creation: Global AI Agent Standards
+- **Action:** Created 'AI.md' as the universal entry point for all agents.
+- **Action:** Created '.ai-rules' as a machine-readable behavior manifest.
+- **Action:** Created symlinks '.clauderules' and '.geminirules' pointing to 'AI.md'.
+- **Context:** Standardizing agent behavior across Cursor, Claude Code, Gemini CLI, and other agentic tools.
+- **Protocol:** Reinforcing 'Journaling Law' and 'Single Source of Truth' across all AI APIs.
