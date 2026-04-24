@@ -1,6 +1,6 @@
 ﻿﻿<#
 .SYNOPSIS
-    CloudWS v0.1.3 — Cloud Workstation OS Builder (Windows)
+    CloudWS v0.1.8 — Cloud Workstation OS Builder (Windows)
 
 .DESCRIPTION
     Secure build orchestrator with workflow selection.
@@ -41,14 +41,6 @@ $DefRegistry    = "ghcr.io/kabuki94/cloudws-bootc"
 $BuilderMachine = "cloudws-builder"
 $LocalImage     = "localhost/${ImageName}:${ImageTag}"
 $OutputFolder   = Join-Path $PWD "cloudws-deploy-out"
-# BIB image selection: self-build uses CloudWS, otherwise centos-bootc
-      if ($SelfBuild) {
-          $BibImage = $RegistryImage
-          Write-Host "      ✓ Self-build: Using CloudWS as image builder" -ForegroundColor Green
-      } else {
-          $BibImage = "$BibImage"
-          Write-Host "      » Using centos-bootc BIB (first-build / fallback mode)" -ForegroundColor Yellow
-      }
 $RechunkImage   = "quay.io/centos-bootc/centos-bootc:stream10"
 $Timeout        = 30
 
