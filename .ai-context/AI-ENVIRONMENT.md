@@ -26,6 +26,8 @@
 - **`gcloud` State:** ⚠️ **WARNING:** Using temporary config in `/tmp/tmp.HwF1Lwhwnm`. Credentials will NOT persist across session resets.
 - **Bootc Linter:** `v1.1.6+` — Fatal on `/var` content missing from `tmpfiles.d`.
 - **NVIDIA Strategy:** Default to **Open Kernel Modules** (`nvidia-open`). Blackwell safety enabled.
+- **Philosophy:** **Hardware & Environment Agnostic**. Supports all vendors (Intel/AMD/NVIDIA/ARM) and deployment types (Bare-metal, VM, OCI, WSL2/g).
+- **Para-virt:** Standardized on GPU-PV, SR-IOV, and virtio-gpu for universal hardware acceleration across all environments.
 
 ---
 

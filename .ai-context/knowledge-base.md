@@ -118,27 +118,11 @@ Unified the repository on the v0.1.8 baseline and implemented missing architectu
 #### 6. Logging & Print-out Purity
 - **Action:** system-wide audit and fix of malformed UTF-8 characters (`???`) and box-drawing elements. Standardized build logging with high-visibility STEP markers in `build.sh`.
 
-### April 22, 2026 - Transition to Fully Declarative Build Model
-Refactored the provisioning pipeline to move away from imperative scripts towards a declarative system_files overlay.
+### April 24, 2026 - Correction: Universal Hardware & Environment Agnosticism
+A critical course correction was performed to eliminate the misunderstanding that CloudWS-OS is optimized for narrow hardware targets (like Ryzen 9950X3D + RTX 4090).
 
-#### 1. Manifest as Single Source of Truth
-- **Action:** Established `docs/PACKAGES.md` as the authority for both installation and validation.
-- **Reason:** Previous lists for "bloat" removal and "critical" package validation were hardcoded in `scripts/build.sh`, creating a risk of drift.
-- **Fix:** Added `packages-bloat` and `packages-critical` sections to the manifest. Updated `scripts/build.sh` to dynamically parse these sections using `get_packages`.
-
-#### 2. Declarative Service Enablement (Presets)
-- **Reason:** Multiple scripts (`10-gnome.sh`, `20-services.sh`, `26-gnome-remote-desktop.sh`, `34-gpu-detect.sh`) were using imperative `systemctl enable` calls, which are redundant and harder to audit.
-- **Fix:** Expanded `system_files/usr/lib/systemd/system-preset/90-cloudws.preset` to cover all core, role-gated, and optional services. Simplified scripts by removing the imperative enablement logic.
-
-#### 3. Overlay-driven Configuration (dnf.conf)
-- **Reason:** The `Containerfile` used an imperative `RUN mkdir ... && printf ...` block to create `dnf.conf`.
-- **Fix:** Moved the configuration to `system_files/etc/dnf/dnf.conf`, allowing the overlay script to handle it and reducing `Containerfile` complexity.
-
-#### 4. Robust Provisioning Environment
-- **Action:** Refactored `scripts/31-user.sh` to use environment variables (`CLOUDWS_USER`, `CLOUDWS_PASSWORD_HASH`) with sensible defaults.
-- **Reason:** The previous implementation relied on `sed` modifications of the build context in the `Containerfile`, which was brittle and context-dependent.
-- **Action:** Purged redundant `mkdir` and `install` calls across the pipeline for directories already managed via `tmpfiles.d` in the overlay.
-
-#### 5. Safe Arithmetic Standardization
-- **Action:** System-wide audit and refactoring of `((VAR++))` and `((VAR+=N))` syntax to the safe `VAR=$((VAR + N))` pattern.
-- **Reason:** Standalone `((...))` returns 1 when the result is 0, which triggers `set -e` and causes scripts to exit prematurely.
+- **Core Philosophy:** CloudWS-OS is **hardware, deployment, and environment agnostic** by design.
+- **Universal Deployment:** Supports Bare-metal, VM, OCI Container, Live ISO, Hyper-V, WSL2/g, Podman/Docker, LVM, and more.
+- **Vendor Agnosticism:** Full support for ALL hardware vendors (Intel, AMD, NVIDIA, Apple Silicon, ARM Neoverse) and configurations.
+- **Para-virtualization Standard:** Implements production-grade para-virtualization (GPU-PV, SR-IOV, VSOCK, DDA/DDS) to ensure native-like hardware acceleration across all deployment types (VMs and Containers).
+- **Refactoring:** Audited and generalized all AI context files, scripts, and service units to remove narrow hardware references and reinforce the agnostic mandate.

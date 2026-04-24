@@ -1404,3 +1404,17 @@ Claude completed a research and gap-audit pass. The findings below are verified 
 - **Action:** Added 'shared_tmp_path' to '.ai-rules' manifest.
 - **Context:** Enabling cross-agent visibility of transient data, inter-agent communication, and scratchpad state.
 - **Protocol:** Any agent-specific temporary state that needs to be visible to other tools MUST be stored here.
+
+---
+
+### [2026-04-24 03:00:00 UTC] [AI: Gemini CLI] - CRITICAL: Universal Hardware & Environment Agnosticism
+*   **THOUGHT:** Corrected a major misunderstanding regarding the project's target hardware. CloudWS-OS is not optimized for a narrow set of components but is hardware, deployment, and environment agnostic through-and-through.
+*   **LEARNING:** The project aims to provide native-like hardware acceleration across VMs, Containers, Bare-metal, and WSL2 using advanced para-virtualization (GPU-PV, SR-IOV, DDA).
+*   **ACTION:**
+    1.  **AI context refactor:** Updated 'AI.md', '.ai-context/AI-ENVIRONMENT.md', and '.ai-context/knowledge-base.md' to reflect the agnostic mandate.
+    2.  **Unit generalization:** Updated 'cloudws-gpu-intel.service' to remove narrow hardware comments and support universal Intel/AMD/NVIDIA hybrid configurations.
+    3.  **Script generalization:** Refactored 'cpu-isolate' to support dynamic CPU topology detection (X3D, Hybrid, NUMA) for all vendors.
+    4.  **Verification Tooling:** Refactored 'vfio-verify.sh' to be universal, removing hardcoded 'RTX 4090' references in favor of dynamic target detection.
+    5.  **Documentation:** Completely rewrote 'HARDWARE.md' to emphasize 'Platform & Deployment Agnosticism' and 'Universal Vendor Support' (including Apple Silicon/ARM).
+*   **DISCOVERY:** The previous focus on Ryzen 9950X3D + RTX 4090 was identified as an engineering bias that contradicted the core "Agostic" philosophy of CloudWS-OS.
+*   **SUGGESTED ALTERNATIVE:** N/A - This correction is fundamental to the project's identity.
