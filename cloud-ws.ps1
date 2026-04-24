@@ -1,4 +1,4 @@
-﻿﻿<#
+<#
 .SYNOPSIS
     CloudWS v0.1.8 — Cloud Workstation OS Builder (Windows)
 
