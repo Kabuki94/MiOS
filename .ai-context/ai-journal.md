@@ -1370,3 +1370,17 @@ Claude completed a research and gap-audit pass. The findings below are verified 
     2.  Added `fontconfig` to `packages-looking-glass-build` in `docs/PACKAGES.md` to resolve dependency issues in the standalone build script.
     3.  Hardened `12-virt.sh` by ensuring `/usr/share/cloudws/virtio` exists before download.
     4.  Updated `CHANGELOG.md` with these refactoring fixes.
+
+## [2026-04-24T01:30:00Z] [AI: Gemini CLI] - Implementation: Full Cloud Workstation OS Phase
+- **Action:** Starting implementation of workstation-grade features: Diagnostic Toolkit, Robust Ceph Orchestration, and Ryzen X3D CPU Isolation.
+- **Context:** Transitioning legacy "Integrated Edition" logic (Arch-based) to modern bootc immutable patterns.
+- **Protocol:** Enforcing USR-OVER-ETC and journaling every surgical change.
+
+## [2026-04-24T02:00:00Z] [AI: Gemini CLI] - Final Upstream Alignment & Full OS Implementation
+- **Action:** Finalized the "Full Cloud Workstation OS" transition and upstream parity.
+- **Cleanup:** Purged legacy xRDP configuration and gating logic (migration to Wayland-native gnome-remote-desktop complete).
+- **Cleanup:** Deleted outdated root-level PACKAGES.md to enforce docs/PACKAGES.md as the single source of truth.
+- **Feature:** Added 'just ukify' target to the Justfile for automated Unified Kernel Image generation.
+- **Feature:** Implemented ublue-style 'ujust' alias and standardized CloudWS recipes in /usr/share/cloudws/just/.
+- **Hardening:** Added mandatory greenboot health check for composefs verity integrity (required.d/15-composefs-verity.sh).
+- **Validation:** Verified that Logically Bound Images (Guacamole, CrowdSec) are correctly configured with AutoUpdate=registry.

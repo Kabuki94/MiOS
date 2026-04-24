@@ -1,0 +1,3 @@
+#!/usr/bin/bash
+# Alias for ublue-style just management
+exec just --justfile /usr/share/cloudws/just/main.just --working-directory / "$@"

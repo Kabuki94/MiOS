@@ -6,18 +6,15 @@ echo "[cloudws-hyperv] Configuring Enhanced Session via gnome-remote-desktop..."
 modprobe hv_sock 2>/dev/null || true
 
 # Check if the primary Wayland compositor (GDM) failed to launch.
-# If so, GRD cannot bind to the session. Unmask and fallback to legacy xrdp.
 if systemctl is-failed --quiet gdm.service 2>/dev/null; then
-    echo "[cloudws-hyperv] WARNING: GDM failed to launch. Falling back to legacy xrdp..."
-    systemctl unmask xrdp.service xrdp-sesman.service 2>/dev/null || true
-    systemctl enable xrdp.service 2>/dev/null || true
-    systemctl start --no-block xrdp.service 2>/dev/null || true
-else
-    # Enable gnome-remote-desktop system service (Wayland RDP)
-    # The cloudws-grd-setup.service handles TLS cert generation and credentials.
-    systemctl enable gnome-remote-desktop.service 2>/dev/null || true
-    systemctl start --no-block gnome-remote-desktop.service 2>/dev/null || true
+    echo "[cloudws-hyperv] ERROR: GDM failed to launch. Wayland RDP unavailable."
+    exit 1
 fi
+
+# Enable gnome-remote-desktop system service (Wayland RDP)
+# The cloudws-grd-setup.service handles TLS cert generation and credentials.
+systemctl enable gnome-remote-desktop.service 2>/dev/null || true
+systemctl start --no-block gnome-remote-desktop.service 2>/dev/null || true
 
 # Open firewall for RDP
 if command -v firewall-cmd >/dev/null 2>&1 && firewall-cmd --state >/dev/null 2>&1; then
