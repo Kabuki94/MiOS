@@ -101,6 +101,12 @@ LABEL ostree.bootable="1"
 # Set /sbin/init as the default command for bootc compatibility
 CMD ["/sbin/init"]
 
+# Build-time user provisioning — injected by cloud-ws.ps1 via --build-arg.
+# 31-user.sh reads these as CLOUDWS_USER / CLOUDWS_PASSWORD_HASH env vars.
+# ARG values do NOT persist into the final image (unlike ENV).
+ARG CLOUDWS_USER=cloudws
+ARG CLOUDWS_PASSWORD_HASH=
+
 # Build context mounted read-only
 COPY --from=ctx /ctx /ctx
 
