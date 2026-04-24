@@ -329,6 +329,7 @@ systemd-boot-unsigned
 efibootmgr
 systemd-ukify
 binutils
+efitools
 ```
 
 ## Cockpit Web Management

@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# CloudWS Secure Boot & CA 2023 Auditor
+# Checks system readiness for the 2026 UEFI CA expiration deadline.
+set -euo pipefail
+
+C=$'\033[0;36m'; W=$'\033[1;37m'; G=$'\033[0;32m'; Y=$'\033[0;33m'; R=$'\033[0;31m'; D=$'\033[0;90m'; N=$'\033[0m'
+
+log() { printf "  ${C}SB-AUDIT:${N} %s\n" "$*"; }
+warn() { printf "  ${Y}WARNING:${N} %s\n" "$*"; }
+fail() { printf "  ${R}CRITICAL:${N} %s\n" "$*"; }
+pass() { printf "  ${G}SUCCESS:${N} %s\n" "$*"; }
+
+echo "${W}═══ Secure Boot CA 2023 Readiness Audit ═══${N}"
+
+# 1. Check if Secure Boot is even enabled
+if command -v mokutil &>/dev/null; then
+    SB_STATE=$(mokutil --sb-state 2>/dev/null || echo "Unknown")
+    if echo "$SB_STATE" | grep -q "enabled"; then
+        pass "Secure Boot is ACTIVE"
+    else
+        log "Secure Boot is DISABLED (Audit still relevant for future-proofing)"
+    fi
+else
+    warn "mokutil not found; cannot verify Secure Boot state"
+fi
+
+# 2. Check for Microsoft UEFI CA 2023
+# The 2011 CA expires in mid-2026. Systems MUST have 2023 CA for new updates.
+if command -v efi-readvar &>/dev/null; then
+    if [ "$EUID" -ne 0 ]; then
+        warn "efi-readvar requires root to read UEFI variables. Skipping detailed DB check."
+    else
+        DB_VARS=$(efi-readvar -v db 2>/dev/null || echo "")
+        if echo "$DB_VARS" | grep -qi "Microsoft UEFI CA 2023"; then
+            pass "Microsoft UEFI CA 2023 FOUND in UEFI DB"
+        elif echo "$DB_VARS" | grep -qi "Windows UEFI CA 2023"; then
+            pass "Microsoft Windows PCA 2023 FOUND in UEFI DB"
+        else
+            fail "Microsoft UEFI CA 2023 MISSING from UEFI DB"
+            log "Action: Update firmware via 'fwupdmgr update' or manual BIOS entry."
+            log "Deadline: June 2026 (systems will fail to boot new shims/kernels)"
+        fi
+    fi
+else
+    warn "efitools (efi-readvar) not found; cannot audit UEFI DB"
+fi
+
+# 3. Check Base Image Maturity
+if [ -f /usr/lib/os-release ]; then
+    . /usr/lib/os-release
+    if [[ "$ID" == "fedora" ]]; then
+        if [ "${VERSION_ID:-0}" -ge 42 ]; then
+            pass "Base OS ($PRETTY_NAME) ships 2023-compatible shim"
+        else
+            warn "Base OS ($PRETTY_NAME) may use legacy 2011 signing chain"
+        fi
+    fi
+fi
+
+echo ""

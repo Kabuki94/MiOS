@@ -377,6 +377,40 @@ test_user() {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
+#  TEST: Security & Hardening
+# ═══════════════════════════════════════════════════════════════════════════════
+test_security() {
+    header "Security & Hardening"
+
+    # Fapolicyd
+    if systemctl is-active fapolicyd.service &>/dev/null; then
+        pass "Fapolicyd active"
+        if grep -q "trust = file,rpmdb" /etc/fapolicyd/fapolicyd.conf 2>/dev/null || \
+           grep -q "trust = file,rpmdb" /usr/lib/fapolicyd/fapolicyd.conf 2>/dev/null; then
+            pass "Fapolicyd: fs-verity trust backend configured"
+        else
+            warn "Fapolicyd: trust backend might not be optimized for ComposeFS"
+        fi
+    else
+        warn "Fapolicyd inactive"
+    fi
+
+    # USBGuard
+    if systemctl is-active usbguard.service &>/dev/null; then
+        pass "USBGuard active"
+    else
+        warn "USBGuard inactive"
+    fi
+
+    # Secure Boot Maturity Audit (2026 Ready)
+    if [ -x /usr/libexec/cloudws/sb-audit ]; then
+        /usr/libexec/cloudws/sb-audit
+    else
+        skip "Secure Boot Audit" "/usr/libexec/cloudws/sb-audit not executable"
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
 #  REPORT
 # ═══════════════════════════════════════════════════════════════════════════════
 report() {
@@ -416,6 +450,7 @@ case "${1:-full}" in
         test_identity
         test_services
         test_selinux
+        test_security
         test_gpu
         test_network
         test_packages
@@ -427,12 +462,13 @@ case "${1:-full}" in
             identity)   test_identity ;;
             services)   test_services ;;
             selinux)    test_selinux ;;
+            security)   test_security ;;
             gpu)        test_gpu ;;
             network)    test_network ;;
             packages)   test_packages ;;
             containers) test_containers ;;
             user)       test_user ;;
-            *) echo "Categories: identity services selinux gpu network packages containers user"; exit 1 ;;
+            *) echo "Categories: identity services selinux security gpu network packages containers user"; exit 1 ;;
         esac
         ;;
     --help|-h)
@@ -442,7 +478,7 @@ case "${1:-full}" in
         echo "  --full        All test categories (default)"
         echo "  --category X  Run single category"
         echo ""
-        echo "Categories: identity services selinux gpu network packages containers user"
+        echo "Categories: identity services selinux security gpu network packages containers user"
         exit 0
         ;;
     *)

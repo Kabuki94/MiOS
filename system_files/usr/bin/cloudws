@@ -39,6 +39,7 @@ case "$CMD" in
         echo ""
         echo "  SECURITY"
         echo "    scan-malware    ClamAV container scan of /home"
+        echo "    sb-audit        Secure Boot CA 2023 readiness audit (2026 deadline)"
         echo ""
         echo "  INFO"
         echo "    version         Show CloudWS version"
@@ -69,6 +70,7 @@ case "$CMD" in
         podman run --rm -v /:/scan:ro docker.io/clamav/clamav:latest \
             clamscan -r /scan/home --max-filesize=100M --max-scansize=500M 2>/dev/null
         ;;
+    sb-audit)    exec /usr/libexec/cloudws/sb-audit ;;
     motd)        exec /usr/libexec/cloudws/motd ;;
     *)
         echo "Unknown command: $CMD"
