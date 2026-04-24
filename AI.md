@@ -10,8 +10,9 @@
 2.  **SINGLE SOURCE OF TRUTH (SSOT):**
     -   **Packages:** [`docs/PACKAGES.md`](./docs/PACKAGES.md) is the only manifest.
     -   **Environment:** [`.ai-context/AI-ENVIRONMENT.md`](./.ai-context/AI-ENVIRONMENT.md) tracks the baseline.
-3.  **USR-OVER-ETC (BOOTC IMMUTABILITY):** Align with upstream `bootc`. System-provided configurations go in `/usr/lib/`. `/etc/` is reserved for local overrides and runtime state.
-4.  **REBUILD INTEGRITY:** Never modify or delete files unless they are explicitly targeted for a task.
+3.  **SHARED THOUGHTS PROTOCOL:** Use [`.ai-context/shared-tmp/`](./.ai-context/shared-tmp/) as the universal scratchpad for transient data, inter-agent communication, and cross-session "thoughts." This directory is the unified `TMPDIR` for all AI agents.
+4.  **USR-OVER-ETC (BOOTC IMMUTABILITY):** Align with upstream `bootc`. System-provided configurations go in `/usr/lib/`. `/etc/` is reserved for local overrides and runtime state.
+5.  **REBUILD INTEGRITY:** Never modify or delete files unless they are explicitly targeted for a task.
 
 ---
 
