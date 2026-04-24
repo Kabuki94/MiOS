@@ -34,7 +34,7 @@ This document outlines the comprehensive research and remediation plan for the 1
 
 | Task / Component | Status | Milestone | Deliverables | Upstream References |
 |------------------|--------|-----------|--------------|---------------------|
-| **1. Ceph & K3s Storage** | Done | Remediation | Remove 'planned' tag from docs | N/A |
+| **1. Ceph & K3s Storage** | Done | Remediation | Remove 'planned' tag from scripts | N/A |
 | **2. K3s SELinux** | Done | Remediation | Compile `.pp` policy from source during OCI build | k3s-io/k3s-selinux |
 | **3. Pacemaker HA VM Gating** | Done | Remediation | Deploy PCS remote via Podman Quadlet | Fedora Pacemaker Docs |
 | **4. ComposeFS Verity Bug** | Done | Remediation | Migrate all root mount options to `kargs` | systemd/composefs issues |
@@ -47,8 +47,8 @@ This document outlines the comprehensive research and remediation plan for the 1
 | **11. Utility Packages Addition** | Done | Remediation | Add ntfs-3g, strace, lsof, etc. | PACKAGES-AUDIT.md |
 | **12. NVIDIA Waydroid 3D** | Done | Remediation | Implement SwiftShader systemd drop-in | Waydroid/NVIDIA docs |
 | **13. RTX 50-Series VFIO Bug** | Done | Remediation | Draft libvirt FLR hook / GSP firmware toggle | VFIO / NVIDIA Open kmods |
-| **14. Hyper-V GPU-PV (dxgkrnl)** | Research | Identification | Research upstream status (v4 patch) | Microsoft/LKML |
-| **15. Wayland RDP VSOCK** | Deferred | Identification | Defer until native GRD support | GNOME Upstream |
+| **14. Hyper-V GPU-PV (dxgkrnl)** | Done | Remediation | Implement guest driver copy shim script | Microsoft/LKML |
+| **15. Wayland RDP VSOCK** | In Progress | Remediation | Optimize GRD proxy via systemd drop-ins | GNOME Upstream |
 | **16. SR-IOV Persistence** | Done | Remediation | Implement systemd oneshot service | systemd/bootc |
 | **17. Universal CDI** | Done | Remediation | Implement vendor-agnostic generator | Podman CDI |
 

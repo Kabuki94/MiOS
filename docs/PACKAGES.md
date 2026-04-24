@@ -254,6 +254,7 @@ mdevctl
 libguestfs-tools
 # v2.2 additions
 virt-viewer
+virt-v2v
 qemu-device-display-virtio-gpu
 virt-firmware
 python3-cryptography
