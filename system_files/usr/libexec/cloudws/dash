@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+# CloudWS v0.1.8 - Dynamic Auto-Updating Dashboard
+# Updates until Ctrl-C is pressed.
+
+# Exit cleanly on Ctrl-C
+trap 'clear; exit 0' SIGINT
+
+hide_cursor() { tput civis 2>/dev/null || true; }
+show_cursor() { tput cnorm 2>/dev/null || true; }
+
+trap 'show_cursor; clear; exit 0' SIGINT EXIT
+hide_cursor
+
+C=$'\033[0;36m'
+W=$'\033[1;37m'
+G=$'\033[0;32m'
+Y=$'\033[0;33m'
+R=$'\033[0;31m'
+D=$'\033[0;90m'
+N=$'\033[0m'
+
+_s() {
+    if systemctl is-active --quiet "$1" 2>/dev/null; then
+        printf "  ${G}●${N} %-20s [${G}Active${N}]\n" "$1"
+    else
+        printf "  ${D}○${N} %-20s [${D}Inactive${N}]\n" "$1"
+    fi
+}
+
+while true; do
+    clear
+    if command -v fastfetch &>/dev/null; then
+        fastfetch
+    fi
+    
+    echo ""
+    printf "${C}════════════════════════════════════════════════════════════${N}\n"
+    printf "${W}  CloudWS Dynamic Diagnostic Dashboard${N}  ${D}(Press Ctrl-C to exit)${N}\n"
+    printf "${C}════════════════════════════════════════════════════════════${N}\n"
+    echo ""
+    
+    printf "${W}System Services:${N}\n"
+    _s "sshd"
+    _s "cockpit.socket"
+    _s "firewalld"
+    _s "libvirtd.socket"
+    _s "podman.socket"
+    _s "k3s"
+    
+    echo ""
+    printf "${W}Container Workloads (Podman):${N}\n"
+    if systemctl is-active --quiet podman.socket 2>/dev/null || systemctl is-active --quiet podman.service 2>/dev/null || command -v podman &>/dev/null; then
+        RUNNING=$(podman ps -q 2>/dev/null | wc -l || echo "0")
+        TOTAL=$(podman ps -a -q 2>/dev/null | wc -l || echo "0")
+        printf "  Containers: ${G}%s Running${N} / %s Total\n" "$RUNNING" "$TOTAL"
+    else
+        printf "  ${D}Podman inactive${N}\n"
+    fi
+
+    echo ""
+    printf "${W}Virtualization (KVM/Libvirt):${N}\n"
+    if systemctl is-active --quiet libvirtd.socket 2>/dev/null || systemctl is-active --quiet virtqemud.socket 2>/dev/null; then
+        # virsh list might require sudo or libvirt group
+        if groups | grep -q libvirt || [ "$EUID" -eq 0 ]; then
+            VMS_RUNNING=$(virsh list --state-running --name 2>/dev/null | grep -v '^$' | wc -l || echo "0")
+            VMS_TOTAL=$(virsh list --all --name 2>/dev/null | grep -v '^$' | wc -l || echo "0")
+            printf "  VMs: ${G}%s Running${N} / %s Total\n" "$VMS_RUNNING" "$VMS_TOTAL"
+        else
+            printf "  ${Y}Requires 'libvirt' group or root${N}\n"
+        fi
+    else
+        printf "  ${D}Libvirt inactive${N}\n"
+    fi
+
+    echo ""
+    printf "${W}High Availability & Storage:${N}\n"
+    if systemctl is-active --quiet corosync 2>/dev/null; then
+        printf "  Corosync: ${G}Active${N}\n"
+    else
+        printf "  Corosync: ${D}Inactive${N}\n"
+    fi
+    
+    if systemctl is-active --quiet pacemaker 2>/dev/null; then
+        printf "  Pacemaker: ${G}Active${N}\n"
+    else
+        printf "  Pacemaker: ${D}Inactive${N}\n"
+    fi
+
+    if command -v ceph &>/dev/null && [ -f /etc/ceph/ceph.conf ]; then
+        if [ "$EUID" -eq 0 ] || groups | grep -q ceph; then
+            CEPH_HEALTH=$(ceph health 2>/dev/null || echo "UNKNOWN")
+            printf "  Ceph Health: "
+            case "$CEPH_HEALTH" in
+                HEALTH_OK) printf "${G}%s${N}\n" "$CEPH_HEALTH" ;;
+                HEALTH_WARN) printf "${Y}%s${N}\n" "$CEPH_HEALTH" ;;
+                *) printf "${R}%s${N}\n" "$CEPH_HEALTH" ;;
+            esac
+        else
+            printf "  Ceph: ${Y}Requires root/ceph group for status${N}\n"
+        fi
+    else
+        printf "  Ceph: ${D}Not configured or inactive${N}\n"
+    fi
+
+    echo ""
+    printf "${C}════════════════════════════════════════════════════════════${N}\n"
+    printf "  ${D}Auto-updating every 2 seconds. Press Ctrl-C to enter shell.${N}\n"
+    
+    sleep 2
+done

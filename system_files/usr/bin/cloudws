@@ -24,6 +24,7 @@ case "$CMD" in
         echo ""
         echo "  DESKTOP"
         echo "    toggle-headless Switch between desktop and headless mode"
+        echo "    dash            Dynamic auto-updating diagnostic dashboard"
         echo "    test            Run system health checks"
         echo ""
         echo "  VIRTUALIZATION"
@@ -56,6 +57,7 @@ case "$CMD" in
     status)      exec /usr/bin/cloudws-status "$@" ;;
     assess)      exec /usr/local/bin/cloud-ws-assess.sh "$@" ;;
     toggle-headless) exec /usr/bin/cloudws-toggle-headless "$@" ;;
+    dash)        exec /usr/libexec/cloudws/dash ;;
     test)        exec /usr/bin/cloudws-test "$@" ;;
     vfio-toggle) exec /usr/bin/cloudws-vfio-toggle "$@" ;;
     vfio-check)  exec /usr/bin/cloudws-vfio-check "$@" ;;

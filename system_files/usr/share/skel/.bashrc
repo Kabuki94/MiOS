@@ -12,7 +12,7 @@ alias ls='ls --color=auto'
 alias ll='ls -lha --color=auto'
 alias grep='grep --color=auto'
 
-# Fastfetch on login
-if command -v fastfetch &> /dev/null && [ -z "$VTE_VERSION" ] && [ "$TERM" != "linux" ]; then
-    fastfetch
+# Diagnostic Dashboard on login
+if command -v cloudws &> /dev/null && [ -z "$VTE_VERSION" ] && [ "$TERM" != "linux" ]; then
+    cloudws dash
 fi

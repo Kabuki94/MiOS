@@ -22,10 +22,10 @@ $choice = Read-Host "  Choice [1-3]"
 switch ($choice) {
     "1" {
         try {
-            $tmp = New-TemporaryFile
-            Invoke-WebRequest -Uri "$RepoUrl/raw/main/preflight.ps1" -OutFile $tmp.FullName -UseBasicParsing
-            & $tmp.FullName
-            Remove-Item $tmp.FullName -ErrorAction SilentlyContinue
+            $tmp = "$env:TEMP\cloudws-preflight-$(Get-Random).ps1"
+            Invoke-WebRequest -Uri "$RepoUrl/raw/main/preflight.ps1" -OutFile $tmp -UseBasicParsing
+            & $tmp
+            Remove-Item $tmp -ErrorAction SilentlyContinue
         }
         catch {
             Write-Host "  Preflight failed: $_" -ForegroundColor Red

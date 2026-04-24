@@ -6,7 +6,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 .SYNOPSIS
     CloudWS Preflight -- Check and install prerequisites
 .DESCRIPTION
-    Usage: $tmp = New-TemporaryFile; irm https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/preflight.ps1 | Set-Content $tmp.FullName; & $tmp.FullName; Remove-Item $tmp
+    Usage: $tmp = "$env:TEMP\cloudws-preflight.ps1"; irm https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/preflight.ps1 | Set-Content $tmp; & $tmp; Remove-Item $tmp
 #>
 $ErrorActionPreference = "Continue"
 
@@ -101,7 +101,7 @@ Write-Host "--- Results ---" -ForegroundColor Cyan
 Write-Host "  Passed: $pass  Failed: $fail  Fixed: $fixed" -ForegroundColor White
 if ($fail -eq 0 -or $fail -eq $fixed) {
     Write-Host "  [OK] Ready to build CloudWS!" -ForegroundColor Green
-    Write-Host "    Run: `$tmp = New-TemporaryFile; irm https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/install.ps1 | Set-Content `$tmp.FullName; & `$tmp.FullName; Remove-Item `$tmp" -ForegroundColor Gray
+    Write-Host "    Run: `$tmp = `"`$env:TEMP\cloudws-install.ps1`"; irm https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/install.ps1 | Set-Content `$tmp; & `$tmp; Remove-Item `$tmp" -ForegroundColor Gray
 } else {
     Write-Host "  [WARN] Some prerequisites missing. Fix them and re-run." -ForegroundColor Yellow
 }

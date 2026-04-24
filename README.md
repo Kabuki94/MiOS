@@ -71,7 +71,7 @@ Pre-built images from the registry use these defaults. Custom builds prompt for 
 ### Windows (PowerShell as Administrator)
 
 ```powershell
-$tmp = New-TemporaryFile; irm https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/install.ps1 | Set-Content $tmp.FullName; & $tmp.FullName; Remove-Item $tmp.FullName
+$tmp = "$env:TEMP\cloudws-install.ps1"; irm https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/install.ps1 | Set-Content $tmp; & $tmp; Remove-Item $tmp
 ```
 
 ### Linux
