@@ -23,10 +23,24 @@ C_USER="${CLOUDWS_USER:-cloudws}"
 # Note: CLOUDWS_PASSWORD_HASH should be a SHA-512 crypt-style hash
 C_HASH="${CLOUDWS_PASSWORD_HASH:-}"
 
-echo "[31-user] Creating user ${C_USER}..."
-if ! getent passwd "${C_USER}" >/dev/null; then
-    useradd -m -d "/var/home/${C_USER}" -s /bin/bash "${C_USER}" 2>/dev/null || true
+echo "[31-user] Creating user ${C_USER} via sysusers..."
+if [[ "${C_USER}" != "cloudws" ]]; then
+    # Generate dynamic sysusers for custom username
+    cat <<EOF > /usr/lib/sysusers.d/15-cloudws-custom.conf
+u ${C_USER} - "CloudWS Custom User" /var/home/${C_USER} /bin/bash
+m ${C_USER} wheel
+m ${C_USER} libvirt
+m ${C_USER} kvm
+m ${C_USER} video
+m ${C_USER} render
+m ${C_USER} input
+m ${C_USER} dialout
+m ${C_USER} docker
+EOF
 fi
+
+# Apply sysusers declarative config
+systemd-sysusers --root=/ 2>/dev/null || true
 
 if getent passwd "${C_USER}" >/dev/null; then
     if [[ -n "${C_HASH}" ]]; then
@@ -39,25 +53,8 @@ else
 fi
 
 # — GROUP INJECTION —
-# Pre-create hardware groups with standard Fedora GIDs if missing.
-# This prevents dynamic GID drift that breaks udev device assignments.
-for group_spec in "kvm:36" "video:39" "render:105" "libvirt:" "input:" "dialout:" "docker:"; do
-    name="${group_spec%%:*}"
-    gid="${group_spec##*:}"
-    if ! getent group "$name" >/dev/null 2>&1; then
-        if [ -n "$gid" ]; then
-            groupadd -r -g "$gid" "$name" 2>/dev/null || groupadd -r "$name" || true
-        else
-            groupadd -r "$name" 2>/dev/null || true
-        fi
-    fi
-done
-
-for g in wheel libvirt kvm video render input dialout docker; do
-    if getent group "$g" >/dev/null 2>&1 && getent passwd "${C_USER}" >/dev/null; then
-        usermod -aG "$g" "${C_USER}" 2>/dev/null || true
-    fi
-done
+# Groups are pre-created and memberships injected via /usr/lib/sysusers.d/*.conf
+# and processed by systemd-sysusers above. Imperative calls removed.
 
 # — SUDOERS —
 # Managed via system_files/etc/sudoers.d/10-cloudws-wheel

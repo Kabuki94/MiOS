@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 # 47-hardening.sh - enable hardening services (USBGuard, auditd).
 # Package installs moved to PACKAGES.md (packages-security).
-# sysctl drop-in shipped via system_files/etc/sysctl.d/99-cloudws-hardening.conf.
+# sysctl drop-in shipped via system_files/usr/lib/sysctl.d/99-cloudws-hardening.conf.
 set -euo pipefail
 
 log() { printf '[47-hardening] %s\n' "$*"; }
