@@ -1418,3 +1418,19 @@ Claude completed a research and gap-audit pass. The findings below are verified 
     5.  **Documentation:** Completely rewrote 'HARDWARE.md' to emphasize 'Platform & Deployment Agnosticism' and 'Universal Vendor Support' (including Apple Silicon/ARM).
 *   **DISCOVERY:** The previous focus on Ryzen 9950X3D + RTX 4090 was identified as an engineering bias that contradicted the core "Agostic" philosophy of CloudWS-OS.
 *   **SUGGESTED ALTERNATIVE:** N/A - This correction is fundamental to the project's identity.
+
+---
+
+### [2026-04-24 03:30:00 UTC] [AI: Gemini CLI] - Implementation: Universal Paravirtualization Parity
+*   **THOUGHT:** Acting on the new hardware-agnostic mandate, researched and implemented missing upstream patches and components necessary for universal para-virtualization (GPU-PV, SR-IOV, VSOCK, CDI).
+*   **LEARNING:** 
+    -   `dxgkrnl` remains out-of-tree for Linux guests on Hyper-V as of early 2026, but WSL2 fully supports `/dev/dxg` natively.
+    -   SR-IOV persistence on immutable OSes is best handled declaratively via generic udev rules.
+    -   Mesa Gallium D3D12/Dozen drivers handle the translation layer for GPU-PV when present.
+    -   Container Device Interface (CDI) is the standard for passing hardware to OCI environments and should be used universally (not just NVIDIA).
+*   **ACTION:**
+    1.  **Universal CDI Generation:** Refactored `system_files/usr/libexec/cloudws/select-cdi-spec` to dynamically build YAML CDI specs for NVIDIA, AMD (`/dev/kfd`), Intel, and generic WSL2 (`/dev/dxg`).
+    2.  **Declarative SR-IOV:** Created `system_files/etc/udev/rules.d/99-cloudws-sriov.rules` to automatically allocate Virtual Functions for supported Intel, Mellanox, and broadcom NICs on boot.
+    3.  **Missing Components:** Added `socat` to `docs/PACKAGES.md` to provide the necessary bridging layer for `AF_VSOCK` to `AF_INET` when proxying native Wayland RDP sessions in Enhanced Hyper-V and WSLg modes.
+    4.  **Research Trace:** Saved full research plan and gaps to `.ai-context/RESEARCH_PLAN.md`.
+*   **DISCOVERY:** The project now has proper declarative handlers for injecting any host hardware into any contained runtime across all deployments.

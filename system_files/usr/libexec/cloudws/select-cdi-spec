@@ -1,28 +1,77 @@
 #!/usr/bin/bash
-# Select NVIDIA CDI generation mode: WSL vs bare-metal vs VM
+# Universal CDI (Container Device Interface) Generator
+# CloudWS-OS: Hardware & Environment Agnostic
+# Generates CDI specs for NVIDIA, AMD, Intel, and WSL2 (/dev/dxg)
 set -euo pipefail
 
-CDI_OUT=/var/run/cdi/nvidia.yaml
-mkdir -p "$(dirname "$CDI_OUT")"
+CDI_DIR=/var/run/cdi
+mkdir -p "$CDI_DIR"
 
 log() { printf '[cloudws-cdi] %s\n' "$*"; }
 
-if ! command -v nvidia-ctk >/dev/null 2>&1; then
-    log "nvidia-ctk not present; skipping CDI generation"
-    exit 0
+# 1. NVIDIA CDI Generation
+if command -v nvidia-ctk >/dev/null 2>&1; then
+    if [[ -e /dev/dxg ]]; then
+        log "WSL2 detected (/dev/dxg) - Generating NVIDIA WSL CDI..."
+        nvidia-ctk cdi generate --mode=wsl --output="$CDI_DIR/nvidia.yaml" || log "WARN: NVIDIA WSL CDI failed"
+    elif compgen -G "/dev/nvidia*" >/dev/null; then
+        log "NVIDIA bare-metal detected - Generating native CDI..."
+        nvidia-ctk cdi generate --mode=auto --output="$CDI_DIR/nvidia.yaml" || log "WARN: NVIDIA auto CDI failed"
+    fi
 fi
 
-MODE="auto"
+# 2. AMD CDI Generation (ROCm & Render)
+if compgen -G "/dev/kfd" >/dev/null || compgen -G "/dev/dri/renderD*" >/dev/null; then
+    # Only generate if AMD GPU is present
+    if lspci -nn | grep -qi "VGA compatible controller.*AMD"; then
+        log "AMD GPU detected - Generating universal AMD CDI..."
+        cat <<EOF > "$CDI_DIR/amd.yaml"
+cdiVersion: "0.5.0"
+kind: "amd.com/gpu"
+devices:
+  - name: "all"
+    containerEdits:
+      deviceNodes:
+        - path: "/dev/kfd"
+        - path: "/dev/dri/renderD128"
+EOF
+    fi
+fi
+
+# 3. Intel CDI Generation (QuickSync & OpenCL)
+if lspci -nn | grep -qi "VGA compatible controller.*Intel"; then
+    if compgen -G "/dev/dri/renderD*" >/dev/null; then
+        log "Intel GPU detected - Generating universal Intel CDI..."
+        cat <<EOF > "$CDI_DIR/intel.yaml"
+cdiVersion: "0.5.0"
+kind: "intel.com/gpu"
+devices:
+  - name: "all"
+    containerEdits:
+      deviceNodes:
+        - path: "/dev/dri/renderD128"
+EOF
+    fi
+fi
+
+# 4. Universal WSL2 D3D12/dxg Generation
 if [[ -e /dev/dxg ]]; then
-    MODE="wsl"
-    log "WSL2 detected (/dev/dxg present)"
-elif ! compgen -G "/dev/nvidia*" >/dev/null; then
-    log "no NVIDIA device nodes; no GPU in this environment - skipping CDI"
-    exit 0
+    log "WSL2 /dev/dxg detected - Generating generic WSL CDI..."
+    cat <<EOF > "$CDI_DIR/wsl.yaml"
+cdiVersion: "0.5.0"
+kind: "microsoft.com/wsl"
+devices:
+  - name: "all"
+    containerEdits:
+      deviceNodes:
+        - path: "/dev/dxg"
+      mounts:
+        - hostPath: "/usr/lib/wsl/lib"
+          containerPath: "/usr/lib/wsl/lib"
+          options:
+            - ro
+            - bind
+EOF
 fi
 
-nvidia-ctk cdi generate --mode="$MODE" --output="$CDI_OUT" || {
-    log "WARN: CDI generation failed (mode=$MODE); continuing"
-    exit 0
-}
-log "CDI spec written to $CDI_OUT (mode=$MODE)"
+log "Universal CDI generation complete."

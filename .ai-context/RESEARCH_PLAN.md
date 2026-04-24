@@ -1,47 +1,35 @@
-# 🔬 Codebase Audit & Research Plan — April 2026
+# 🔬 Codebase Audit & Research Plan — Universal Paravirtualization & Agnosticism (April 2026)
 
 ## 1. Executive Summary
-A comprehensive audit of the `CloudWS-bootc` repository was performed to identify gaps in files, implementations, and architectural consistency. While the build process is robust, several areas of technical debt, duplication, and potential runtime conflicts were identified.
+Following the mandate that CloudWS-OS is **hardware, deployment, and environment agnostic**, a new research phase is required to identify missing upstream patches, user-space components, and configuration gaps that prevent native-like hardware acceleration across all supported environments (Bare-metal, VM, OCI, WSL2/g, Hyper-V).
 
-## 2. Identified Gaps & Inconsistencies
+## 2. Identified Gaps & Missing Components
 
-### 2.1 Build Pipeline & Scripting
-- **Double Execution Risk:** `scripts/build.sh` skips scripts 18-26, but `Containerfile` executes them manually. This is brittle. If a new script is added in the 20-series, it might be executed twice unless both files are updated.
-- **Redundant Scripts:**
-  - `scripts/41-akmods-copy.sh`: Marked as removed in `PACKAGES.md` changelog (v2.2) but still present in the repo.
-  - `scripts/37-cosign-policy.sh` vs `scripts/42-cosign-policy.sh`: Duplicated logic for container policy enforcement.
-- **Overlapping Initialization:** `scripts/35-init-service.sh` and `scripts/48-role-system.sh` both handle boot-time configuration. `35-init-service.sh` writes a custom `cloudws-init` binary, while `48-role-system.sh` refers to `cloudws-role.service` (which ships via `system_files`).
+### 2.1 Hyper-V / WSL2 GPU-PV & DDA
+- **Gap:** WSL2 and Hyper-V Enhanced Session rely on GPU Paravirtualization (GPU-PV) via Microsoft's `dxgkrnl` and Mesa's D3D12 (Dozen) driver.
+- **Action:** Verify if `mesa-dri-drivers` and `mesa-vulkan-drivers` in Fedora 44/Rawhide include the `d3d12` Gallium driver.
+- **Action:** Check if `dxgkrnl` module is included in the Fedora kernel or if a custom DKMS/akmod is required for non-WSL2 Hyper-V Linux guests to use GPU-PV.
 
-### 2.2 Configuration & Overlays
-- **`system_files` Shadowing:** Some files in `system_files/` mirror those in `sysusers.d/`, `tmpfiles.d/`, and `kargs.d/` at the repo root.
-- **WSL2 Gating:** Standardized on `ConditionVirtualization=!wsl`, but some legacy checks might remain in extensionless scripts or documentation examples.
+### 2.2 Wayland Native RDP over VSOCK
+- **Gap:** Legacy xRDP supported `AF_VSOCK` for Hyper-V Enhanced Session. We transitioned to `gnome-remote-desktop` (GRD) for GNOME 50 (Wayland-only).
+- **Action:** Research if `gnome-remote-desktop` supports listening on `AF_VSOCK` out-of-the-box, or if a proxy (e.g., `socat` vsock-to-tcp) or upstream patch is required.
 
-### 2.3 Package Manifest (`docs/PACKAGES.md`)
-- **F44 Incompatibilities:** Several packages (`level-zero`, `intel-gpu-tools`, `podman-docker`, `cosign`) were removed due to F44 repo missing/conflicts. Research is needed to find alternative COPRs or build-from-source paths.
-- **Optional Bloat:** The `gnome-core-apps` section is fully commented out. We need to verify if users actually want some of these as defaults or if the "pure build-up" is too aggressive.
+### 2.3 SR-IOV Persistence in Immutable OS
+- **Gap:** SR-IOV Virtual Functions (VFs) are typically created by echoing numbers into `/sys/class/net/eth0/device/sriov_numvfs`. In an immutable/stateless boot environment, this needs declarative persistence.
+- **Action:** Research the standard `systemd-networkd` or `udev` pattern for SR-IOV VF initialization on bootc systems.
 
-## 3. Research Agenda
+### 2.4 Universal CDI (Container Device Interface)
+- **Gap:** We have robust CDI generation for NVIDIA (`cloudws-cdi-detect.service`), but CDI should also map AMD (`/dev/kfd`, `/dev/dri`), Intel, and WSL2 (`/dev/dxg`) for universal container passthrough.
+- **Action:** Implement a universal CDI generator or verify if `nvidia-container-toolkit` handles non-NVIDIA devices, or if `oci-device-hook` / podman native device passing is sufficient for open-source drivers.
 
-### Phase 1: Consolidation & Cleanup (Immediate)
-- **Goal:** Eliminate duplication and clarify script ownership.
-- **Tasks:**
-  - Audit `scripts/37-cosign-policy.sh` and `scripts/42-cosign-policy.sh` and merge into a single `37-cosign-policy.sh`.
-  - Verify if `scripts/41-akmods-copy.sh` is truly dead and remove it.
-  - Refactor `Containerfile` and `build.sh` to use a more dynamic skip list or move all scripts back into the main runner.
+## 3. Research Execution
 
-### Phase 2: Role System Unification
-- **Goal:** Single source of truth for first-boot logic.
-- **Tasks:**
-  - Compare `scripts/35-init-service.sh` (writes `/usr/libexec/cloudws-init`) with the `system_files/usr/libexec/cloudws/role-apply` system.
-  - Research moving all "every-boot" logic into `role-apply` and keeping `init-service` strictly for "once-ever" setup.
+### Phase 1: Upstream Patch Discovery
+- Search for GNOME 50 `gnome-remote-desktop` VSOCK support.
+- Search for Linux 6.14+ `dxgkrnl` upstream status for Hyper-V Linux guests.
+- Search for bootc/systemd patterns for SR-IOV.
 
-### Phase 3: Hardware & Upstream Gaps
-- **Goal:** Resolve F44 package gaps and RTX 50-series stability.
-- **Tasks:**
-  - **Research:** Check `koji.fedoraproject.org` for `level-zero` and `intel-gpu-tools` status in F44.
-  - **Research:** Investigate `cosign` protobuf v3 vs v2 compatibility with `rpm-ostree`.
-  - **Action:** Create a verification script for RTX 50-series VFIO reset bug.
-
-## 4. Execution Log (Tracked in ai-journal.md)
-- [2026-04-20] Audit complete. Research plan drafted.
-- [Next] Consolidation of cosign and akmod scripts.
+### Phase 2: Implementation
+- Edit `docs/PACKAGES.md` to include missing paravirt packages (`socat`, `mesa-d3d12`, etc.).
+- Create/update `system_files/` units for VSOCK proxying and SR-IOV initialization.
+- Update CDI generation script for universal GPU mapping.
