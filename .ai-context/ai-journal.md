@@ -1511,3 +1511,17 @@ Claude completed a research and gap-audit pass. The findings below are verified 
     4.  Expanded `scripts/18-apply-boot-fixes.sh` to recursively fix execution permissions for all scripts in `/usr/libexec/cloudws/`.
     5.  Added `socat` to `docs/PACKAGES.md` as a universal utility.
 *   **SUGGESTED ALTERNATIVE:** A `socat` proxy for VSOCK RDP was considered but rejected to avoid adding fragile networking layers to the base image; waiting for native GNOME support is the more stable path for an immutable OS.
+
+---
+
+### [2026-04-24 17:00:00 UTC] [AI: Gemini Code Assist]
+*   **THOUGHT:** Resolved build failure in `12-virt.sh` and addressed missing `cockpit` package in post-build validation.
+*   **ACTION:**
+    1.  Simplified `scripts/12-virt.sh` by removing manual Cockpit plugin builds (already in manifest) and `bootc-image-builder` native build (moved to manifest).
+    2.  Added `virt-v2v`, `bootc-image-builder`, and `golang` to `docs/PACKAGES.md`.
+    3.  Moved `cockpit` to the top of the `packages-virt` section in `docs/PACKAGES.md` to ensure earlier installation and satisfy strict dependencies.
+    4.  Fixed smoke test failures: `fapolicyd` trust backend configuration, Libvirt QEMU hook permissions, missing `.bashrc` skeleton, and NVIDIA driver detection logic for `ucore-hci` bases.
+    5.  Implemented `scripts/35-gpu-pv-shim.sh` to automate Hyper-V GPU acceleration guest library hooks.
+    6.  Updated `docs/RESEARCH_PLAN.md` Kanban to reflect completed status for Hyper-V GPU-PV, Ceph/K3s storage, and utility package integration.
+*   **DISCOVERY:** Manual Cockpit plugin builds from git were causing intermittent `make install` failures in the build pipeline. `cockpit-machines` and `cockpit-podman` are already provided by standard Fedora repos.
+

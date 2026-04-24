@@ -34,40 +34,6 @@ install_packages_strict "cockpit"
 echo "[12-virt] Installing boot and update management tools..."
 install_packages "boot"
 
-# bootc-image-builder is a critical self-replication tool but often missing from repos.
-# If not installed via packages-containers, build/install it natively.
-if ! command -v bootc-image-builder &>/dev/null; then
-    echo "[12-virt] bootc-image-builder missing from repos; installing via Go..."
-    export GOPATH=/tmp/go
-    # Use subshell to catch failure without killing script if we want to be safe,
-    # but since it's a self-build tool, we want to know if it fails.
-    if ! go install github.com/osbuild/bootc-image-builder/cmd/bootc-image-builder@latest; then
-        echo "[12-virt] WARNING: bootc-image-builder Go installation failed"
-    fi
-    if [ -f /tmp/go/bin/bootc-image-builder ]; then
-        install -m 755 /tmp/go/bin/bootc-image-builder /usr/bin/bootc-image-builder
-        echo "[12-virt] bootc-image-builder installed to /usr/bin/"
-    fi
-    # Cleanup go build cache but KEEP golang if self-building is required
-    rm -rf /tmp/go
-fi
-
-# ── Cockpit plugins from git (machines, podman extended features) ──────────
-# Cloned here if missing, then built.
-echo "[12-virt] Building Cockpit plugins..."
-install_packages "cockpit-plugins-build"
-for plugin in cockpit-machines cockpit-podman; do
-    if [ ! -d "/tmp/$plugin" ]; then
-        git clone --depth=1 "https://github.com/cockpithq/$plugin.git" "/tmp/$plugin" 2>/dev/null || true
-    fi
-    if [ -d "/tmp/$plugin" ]; then
-        if cd "/tmp/$plugin"; then
-            make install 2>/dev/null || true
-            cd /
-        fi
-    fi
-done
-
 # ── CrowdSec IPS (sovereign/offline mode) ───────────────────────────────────
 echo "[12-virt] Installing CrowdSec..."
 install_packages "security"

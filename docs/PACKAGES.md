@@ -241,6 +241,7 @@ nvidia-container-selinux
 Full KVM stack with virt-manager GUI and firmware/security tooling.
 
 ```packages-virt
+cockpit
 qemu-kvm
 libvirt
 libvirt-daemon
@@ -283,6 +284,8 @@ composefs
 container-selinux
 qemu-img
 image-builder
+bootc-image-builder
+golang
 dracut-live
 squashfs-tools
 selinux-policy-devel
