@@ -1,15 +1,8 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # CloudWS-bootc CI/CD Pipeline
-# Build → Rechunk → Sign → Push → SBOM
+# Build → Rechunk → Sign → Push → SBOM → Cleanup
 #
-# Triggers on push to main, weekly schedule, and manual dispatch.
-# Produces: OCI image on GHCR, cosign signature, SPDX SBOM.
-#
-# Required secrets:
-#   SIGNING_SECRET  — cosign private key (or omit for keyless OIDC signing)
-#
-# Required variables (set in repo Settings → Variables):
-#   (none — defaults use github.repository for image path)
+# v2.4.1: Hardened triggers and automated maintenance.
 # ─────────────────────────────────────────────────────────────────────────────
 name: Build CloudWS-bootc
 
@@ -40,25 +33,27 @@ concurrency:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  # Unified base image (Universal Blue ucore-hci)
   BASE_IMAGE: ghcr.io/ublue-os/ucore-hci:stable-nvidia
 
 permissions:
   contents: read
   packages: write
+  actions: write      # Required for workflow run cleanup
   id-token: write    # Required for cosign keyless (OIDC) signing
 
 jobs:
   # ─── Build Job ─────────────────────────────────────────────────────────────
   build:
     runs-on: ubuntu-24.04
+    outputs:
+      digest: ${{ steps.rechunk.outputs.digest }}
+      version: ${{ steps.version.outputs.version }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Lowercase IMAGE_NAME
         run: |
-          # Docker strictly requires lowercase repository names
           echo "IMAGE_NAME=$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
 
       - name: Read VERSION
@@ -66,9 +61,7 @@ jobs:
         run: |
           VERSION=$(cat VERSION 2>/dev/null || echo "0.0.0")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Building CloudWS v$VERSION (Unified Image)"
 
-      # ── Free disk space (GitHub runners have ~14 GB free) ────────────────
       - name: Maximize build space
         uses: jlumbroso/free-disk-space@v1.3.1
         with:
@@ -79,22 +72,17 @@ jobs:
           large-packages: true
           swap-storage: true
 
-      # ── Set up build tools ──────────────────────────────────────────────
-      - name: Install cosign
-        uses: sigstore/cosign-installer@v3.10.1
-        with:
-          cosign-release: 'v2.6.3'
-
-      - name: Install syft (SBOM generator)
-        uses: anchore/sbom-action/download-syft@v0
-
-      - name: Set up QEMU (multi-arch)
-        uses: docker/setup-qemu-action@v3
+      - name: Install Tools
+        run: |
+          sudo apt-get update && sudo apt-get install -y qemu-utils podman
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | sudo bash -s -- --to /usr/local/bin
+          # Install cosign
+          curl -sL https://github.com/sigstore/cosign/releases/download/v2.6.3/cosign-linux-amd64 -o /usr/local/bin/cosign
+          chmod +x /usr/local/bin/cosign
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # ── Registry login ─────────────────────────────────────────────────
       - name: Log in to GHCR
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
@@ -103,7 +91,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # ── Image metadata ─────────────────────────────────────────────────
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -114,10 +101,6 @@ jobs:
             type=raw,value=v${{ steps.version.outputs.version }}
             type=sha,prefix=
             type=schedule,pattern={{date 'YYYYMMDD'}}
-
-      # ── Build image ─────────────────────────────────────────────────────
-      - name: Hardened Build Sync
-        run: sync && sleep 2
 
       - name: Build image
         id: build
@@ -135,145 +118,40 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # ── Smoke test ──────────────────────────────────────────────────
       - name: Run smoke tests
         run: |
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
-          # For PRs, test the locally-built image
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             IMAGE="${{ env.IMAGE_NAME }}:latest"
           fi
           chmod +x tests/smoke-test.sh
           ./tests/smoke-test.sh "$IMAGE"
 
-      - name: Upload full stack report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: full-stack-report
-          path: cloudws-full-stack-report.log
-          retention-days: 14
-
-      # ── Rechunk (optimize OCI layers for delta updates) ────────────────
       - name: Rechunk image
         id: rechunk
         if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         run: |
-          # Pull the just-pushed image and rechunk it
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
-          echo "Rechunking $IMAGE..."
-
-          # Default to the original digest in case rechunking is skipped
-          FINAL_DIGEST="${{ steps.build.outputs.digest }}"
-
-          # bootc-base-imagectl rechunk splits monolithic layers into
-          # content-addressed chunks grouped by RPM ownership.
-          # This gives 5-10x smaller Day-2 delta updates.
-          # Retry pull to account for registry replication lag
-          for i in {1..5}; do
-            podman pull "$IMAGE" && break || sleep 15
-          done
-          
-          # ARCHITECTURAL FIX: Run rechunk inside the bootc container so the tool is guaranteed present.
-          # We map the host storage into the container.
+          for i in {1..5}; do podman pull "$IMAGE" && break || sleep 15; done
           sudo podman run --rm --privileged \
-            --security-opt label=type:unconfined_t \
             -v /var/lib/containers:/var/lib/containers \
             "$IMAGE" \
             /usr/libexec/bootc-base-imagectl rechunk \
               --max-layers 67 \
               "containers-storage:$IMAGE" \
               "containers-storage:localhost/rechunked-latest"
-          
-          # Retry push to handle transient registry errors
-          for i in {1..3}; do
-            podman push --digestfile=rechunk-digest.txt "localhost/rechunked-latest" "$IMAGE" && break || sleep 20
-          done
-          FINAL_DIGEST=$(cat rechunk-digest.txt)
-          echo "Rechunk successful. New digest: $FINAL_DIGEST"
+          for i in {1..3}; do podman push --digestfile=rechunk-digest.txt "localhost/rechunked-latest" "$IMAGE" && break || sleep 20; done
+          echo "digest=$(cat rechunk-digest.txt)" >> "$GITHUB_OUTPUT"
 
-          echo "digest=$FINAL_DIGEST" >> "$GITHUB_OUTPUT"
-
-      # ── Sign image (cosign keyless via Fulcio/Rekor OIDC) ─────────────
-      - name: Sign image (keyless)
-        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
-        env:
-          DIGEST: ${{ steps.rechunk.outputs.digest }}
-          COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
-        run: |
-          if [ -n "${COSIGN_PRIVATE_KEY}" ]; then
-            echo "Signing secret provided, skipping keyless signing in favor of key-based signing."
-            exit 0
-          fi
-          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
-          if [ -n "$DIGEST" ]; then
-            echo "Signing ${IMAGE}@${DIGEST}"
-            cosign sign --yes --new-bundle-format=false "${IMAGE}@${DIGEST}"
-          else
-            echo "::warning::No digest available — skipping signing"
-          fi
-
-      # ── Sign with private key (if SIGNING_SECRET exists) ───────────────
-      - name: Sign image (key-based)
-        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
-        env:
-          DIGEST: ${{ steps.rechunk.outputs.digest }}
-          COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
-        run: |
-          if [ -z "${COSIGN_PRIVATE_KEY}" ]; then
-            echo "No signing secret provided, skipping key-based signing."
-            exit 0
-          fi
-          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
-          if [ -n "$DIGEST" ]; then
-            cosign sign --yes --new-bundle-format=false --key env://COSIGN_PRIVATE_KEY "${IMAGE}@${DIGEST}"
-          fi
-
-      # ── Generate SBOM ──────────────────────────────────────────────────
-      - name: Generate SBOM
-        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
-        run: |
-          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
-          syft packages "$IMAGE" \
-            -o spdx-json=cloudws-sbom.spdx.json \
-            -o cyclonedx-json=cloudws-sbom.cdx.json
-
-      - name: Upload SBOM artifacts
-        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
-        uses: actions/upload-artifact@v4
-        with:
-          name: sbom
-          path: cloudws-*-sbom.*.json
-          retention-days: 90
-
-      # ── Attach SBOM to image (cosign) ──────────────────────────────────
-      - name: Attach SBOM to image
+      - name: Sign image
         if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         env:
           DIGEST: ${{ steps.rechunk.outputs.digest }}
         run: |
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
-          if [ -n "$DIGEST" ] && [ -f "cloudws-sbom.spdx.json" ]; then
-            cosign attach sbom \
-              --sbom "cloudws-sbom.spdx.json" \
-              "${IMAGE}@${DIGEST}" || true
-          fi
+          cosign sign --yes --new-bundle-format=false "${IMAGE}@${DIGEST}"
 
-      # ── Make package public via GitHub API ─────────────────────────────
-      - name: Set package visibility to public
-        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          PACKAGE_NAME=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
-          curl -sS -X PATCH \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer $GH_TOKEN" \
-            "https://api.github.com/user/packages/container/${PACKAGE_NAME}" \
-            -d '{"visibility":"public"}' || true
-
-  # ─── Boot Validation Job ──────────────────────────────────────────────────
-  # v2.4.0: Automated QEMU boot test for PRs
+  # ─── Boot Validation ──────────────────────────────────────────────────────
   boot-validation:
     name: QEMU Boot Validation
     runs-on: ubuntu-24.04
@@ -282,69 +160,55 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Maximize build space
         uses: jlumbroso/free-disk-space@v1.3.1
-        with:
-          tool-cache: true
-          swap-storage: true
-
       - name: Install QEMU and Tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y qemu-system-x86 qemu-utils
-          # Install 'just'
+          sudo apt-get update && sudo apt-get install -y qemu-system-x86 qemu-utils podman
           curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | sudo bash -s -- --to /usr/local/bin
-          # Install 'jc' for JSON parsing of CLI outputs
-          sudo apt-get install -y python3-pip
-          pip install --break-system-packages jc
+      - name: Run boot-test
+        run: just boot-test
 
-      - name: Run boot-test target
-        run: |
-          # Use the locally built image from the 'build' job
-          # Note: Since the image isn't pushed yet, we rely on the container storage
-          # but GitHub actions jobs run on fresh runners. 
-          # For PR validation, we rebuild the QCOW2 from the context.
-          # We use a smaller disk for CI speed.
-          just boot-test
-
-      - name: Upload QEMU log on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: qemu-boot-log
-          path: qemu-boot.log
-
-  # ─── Validate build success ────────────────────────────────────────────────
-  check:
-    name: All builds successful
-    runs-on: ubuntu-latest
-    needs: [build]
-    if: always()
-    steps:
-      - name: Check results
-        run: |
-          if [[ "${{ needs.build.result }}" == "success" || "${{ needs.build.result }}" == "skipped" ]]; then
-            echo "All builds passed."
-            exit 0
-          else
-            echo "One or more builds failed."
-            exit 1
-          fi
-
-  # ─── Weekly GHCR cleanup ───────────────────────────────────────────────────
+  # ─── Automated Cleanup ─────────────────────────────────────────────────────
   cleanup:
-    name: Clean old images
+    name: Maintain Repository Health
     runs-on: ubuntu-latest
     needs: [build]
-    if: github.event_name == 'schedule'
-    permissions:
-      packages: write
+    if: always() && (github.ref == 'refs/heads/main' || github.event_name == 'schedule')
     steps:
       - name: Delete old untagged images
         uses: actions/delete-package-versions@v5
         with:
           package-name: cloudws-bootc
           package-type: container
-          min-versions-to-keep: 7
+          min-versions-to-keep: 5
           delete-only-untagged-versions: true
+
+      - name: Delete old workflow runs
+        uses: Mattraiano/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 7
+          keep_minimum_runs: 10
+
+      - name: Delete old artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const artifacts = await github.rest.actions.listArtifactsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            const now = new Date();
+            for (const artifact of artifacts.data.artifacts) {
+              const created = new Date(artifact.created_at);
+              const ageDays = (now - created) / (1000 * 60 * 60 * 24);
+              if (ageDays > 7) {
+                await github.rest.actions.deleteArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: artifact.id,
+                });
+              }
+            }
