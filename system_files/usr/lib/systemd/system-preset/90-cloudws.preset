@@ -22,6 +22,7 @@ enable bootloader-update.service
 enable cloudws-role.service
 enable cloudws-gpu-detect.service
 enable cloudws-selinux-init.service
+enable cloudws-sriov-init.service
 enable cloudws-cdi-detect.service
 enable cloudws-libvirtd-setup.service
 enable cloudws-grd-setup.service

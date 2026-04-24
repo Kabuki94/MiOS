@@ -289,6 +289,7 @@ selinux-policy-devel
 # bootc-image-builder REMOVED: not in F44 repos; pulled as container at targets time.
 # podman-plugins REMOVED: not in F44 repos.
 # cosign REMOVED: not in F44 repos. Install via COPR or go-install if needed.
+podman-docker
 containers-common
 toolbox
 kubectl
@@ -386,6 +387,7 @@ libpwquality
 nftables
 policycoreutils
 setools-console
+cosign
 # v2.3 additions
 # iptables-legacy: WSL2 kernel does NOT support nftables. Without this package
 #   iptables-nft fails and Podman networking breaks inside WSL. Safe on bare

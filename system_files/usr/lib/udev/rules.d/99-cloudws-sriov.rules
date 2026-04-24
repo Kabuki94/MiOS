@@ -1,6 +1,0 @@
-# CloudWS-OS Universal SR-IOV Initialization
-# Dynamically creates Virtual Functions (VFs) for SR-IOV capable network interfaces.
-# Modify the ATTR{sriov_numvfs} value via drop-in or kernel parameters in production.
-# Defaulting to 0 unless overriden by a specific deployment profile.
-
-ACTION=="add", SUBSYSTEM=="net", ENV{ID_NET_DRIVER}=="ixgbe|igb|i40e|ice|mlx5_core", ATTR{sriov_totalvfs}=="?*", ATTR{sriov_numvfs}="0"

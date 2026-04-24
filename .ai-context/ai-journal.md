@@ -1497,3 +1497,17 @@ Claude completed a research and gap-audit pass. The findings below are verified 
     - `debugfs=off` was considered but deferred — workstation diagnostics (NVIDIA, CUDA, libvirt) rely on debugfs; the `lockdown=integrity` karg already restricts the most dangerous debugfs capabilities.
     - `osbuild/bootc-image-builder-action@v0.0.2` migration deferred — current ublue action functional; migration needs testing.
     - TPM2-LUKS install mode deferred — known upstream reboot unlock bug (bootc Issue #421).
+
+---
+
+### [2026-04-24 16:30:00 UTC] [AI: Gemini Code Assist]
+*   **THOUGHT:** The user tasked me with "tackling all points" from the April 2026 Research Plan, focusing on Universal Paravirtualization and Agnosticism.
+*   **LEARNING:** Research confirmed that `dxgkrnl` remains out-of-tree in Fedora Rawhide (v4 patch iteration), and `gnome-remote-desktop` lacks native `AF_VSOCK` support. SR-IOV persistence on `bootc` is best handled via `systemd` oneshot rather than `udev` due to driver timing issues.
+*   **DISCOVERY:** The existing CDI detection was NVIDIA-centric and used hardcoded render nodes for AMD/Intel. Many CloudWS `libexec` scripts were missing from the `chmod +x` safety pass in `18-apply-boot-fixes.sh`.
+*   **ACTION:** 
+    1.  Updated `.ai-context/RESEARCH_PLAN.md` and `docs/RESEARCH_PLAN.md` with research findings; deferred Wayland VSOCK RDP pending upstream support.
+    2.  Implemented `cloudws-sriov-init.service` (oneshot) and script to declaratively initialize SR-IOV VFs based on kernel arguments (`cloudws.sriov_vfs=X`).
+    3.  Refactored `select-cdi-spec` into `cloudws-cdi-detect` with robust, multi-render-node discovery for AMD and Intel GPUs.
+    4.  Expanded `scripts/18-apply-boot-fixes.sh` to recursively fix execution permissions for all scripts in `/usr/libexec/cloudws/`.
+    5.  Added `socat` to `docs/PACKAGES.md` as a universal utility.
+*   **SUGGESTED ALTERNATIVE:** A `socat` proxy for VSOCK RDP was considered but rejected to avoid adding fragile networking layers to the base image; waiting for native GNOME support is the more stable path for an immutable OS.

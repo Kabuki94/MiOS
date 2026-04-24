@@ -7,7 +7,7 @@ After=local-fs.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/libexec/cloudws/select-cdi-spec
+ExecStart=/usr/libexec/cloudws/cloudws-cdi-detect
 
 [Install]
 WantedBy=multi-user.target

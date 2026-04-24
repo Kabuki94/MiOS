@@ -17,8 +17,9 @@ fi
 # 2. Fix 203/EXEC for custom CloudWS services
 # Log trace: cloudws-role.service & cloudws-cdi-detect.service exited 203/EXEC
 # Global chmod commands in earlier pipelines stripped execution bits.
-# Handle both named and legacy role-apply/selinux-init patterns.
-find /usr/libexec -type f \( -name 'cloudws-*' -o -name 'role-apply' -o -name 'selinux-init' \) -exec chmod +x {} \; || true
+# Handle all scripts in /usr/libexec/cloudws/ and named patterns.
+find /usr/libexec/cloudws -type f -exec chmod +x {} \; || true
+find /usr/libexec -type f \( -name 'cloudws-*' -o -name 'role-apply' -o -name 'selinux-init' -o -name 'gpu-detect' -o -name 'grd-init' -o -name 'cpu-isolate' -o -name 'motd' \) -exec chmod +x {} \; || true
 find /usr/bin -name 'cloudws-*' -type f -exec chmod +x {} \; || true
 
 if [ -f /etc/libvirt/hooks/qemu ]; then

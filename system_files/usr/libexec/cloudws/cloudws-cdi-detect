@@ -21,11 +21,10 @@ if command -v nvidia-ctk >/dev/null 2>&1; then
 fi
 
 # 2. AMD CDI Generation (ROCm & Render)
-if compgen -G "/dev/kfd" >/dev/null || compgen -G "/dev/dri/renderD*" >/dev/null; then
-    # Only generate if AMD GPU is present
-    if lspci -nn | grep -qi "VGA compatible controller.*AMD"; then
-        log "AMD GPU detected - Generating universal AMD CDI..."
-        cat <<EOF > "$CDI_DIR/amd.yaml"
+if lspci -nn | grep -qi "VGA compatible controller.*AMD"; then
+    log "AMD GPU detected - Generating universal AMD CDI..."
+    RENDER_NODES=$(ls /dev/dri/renderD* 2>/dev/null || echo "")
+    cat <<EOF > "$CDI_DIR/amd.yaml"
 cdiVersion: "0.5.0"
 kind: "amd.com/gpu"
 devices:
@@ -33,25 +32,27 @@ devices:
     containerEdits:
       deviceNodes:
         - path: "/dev/kfd"
-        - path: "/dev/dri/renderD128"
 EOF
-    fi
+    for node in $RENDER_NODES; do
+        echo "        - path: \"$node\"" >> "$CDI_DIR/amd.yaml"
+    done
 fi
 
 # 3. Intel CDI Generation (QuickSync & OpenCL)
 if lspci -nn | grep -qi "VGA compatible controller.*Intel"; then
-    if compgen -G "/dev/dri/renderD*" >/dev/null; then
-        log "Intel GPU detected - Generating universal Intel CDI..."
-        cat <<EOF > "$CDI_DIR/intel.yaml"
+    log "Intel GPU detected - Generating universal Intel CDI..."
+    RENDER_NODES=$(ls /dev/dri/renderD* 2>/dev/null || echo "")
+    cat <<EOF > "$CDI_DIR/intel.yaml"
 cdiVersion: "0.5.0"
 kind: "intel.com/gpu"
 devices:
   - name: "all"
     containerEdits:
       deviceNodes:
-        - path: "/dev/dri/renderD128"
 EOF
-    fi
+    for node in $RENDER_NODES; do
+        echo "        - path: \"$node\"" >> "$CDI_DIR/intel.yaml"
+    done
 fi
 
 # 4. Universal WSL2 D3D12/dxg Generation
