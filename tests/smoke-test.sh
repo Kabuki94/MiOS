@@ -200,11 +200,11 @@ else
     warn "/home is not a symlink — may not be standard bootc layout"
 fi
 
-# /etc/skel/.bashrc exists
-if run_in test -f /etc/skel/.bashrc; then
-    pass "/etc/skel/.bashrc exists"
+# /usr/share/skel/.bashrc exists
+if run_in test -f /usr/share/skel/.bashrc; then
+    pass "/usr/share/skel/.bashrc exists"
 else
-    warn "/etc/skel/.bashrc missing — new users won't get fastfetch"
+    warn "/usr/share/skel/.bashrc missing — new users won't get fastfetch"
 fi
 
 # ── 7. Security hardening ─────────────────────────────────────────────────
@@ -228,14 +228,14 @@ fi
 section "CloudWS Custom Scripts & Hardware Hooks"
 
 # Fapolicyd composefs trust integration
-if run_in grep -q "trust = file,rpmdb" /etc/fapolicyd/fapolicyd.conf 2>/dev/null; then
+if run_in grep -q "trust = file,rpmdb" /usr/lib/fapolicyd/fapolicyd.conf 2>/dev/null; then
     pass "Fapolicyd configured for fs-verity ComposeFS trust backend"
 else
     fail "Fapolicyd missing file/fs-verity trust configuration"
 fi
 
 # USBGuard strict permissions (0600)
-USBG_PERMS=$(run_in stat -c "%a" /etc/usbguard/usbguard-daemon.conf 2>/dev/null || echo "000")
+USBG_PERMS=$(run_in stat -c "%a" /usr/lib/usbguard/usbguard-daemon.conf 2>/dev/null || echo "000")
 if [[ "$USBG_PERMS" == "600" ]]; then
     pass "USBGuard config has strict 0600 permissions"
 else
@@ -243,7 +243,7 @@ else
 fi
 
 # Cockpit unencrypted UI
-if run_in grep -q "AllowUnencrypted = true" /etc/cockpit/cockpit.conf 2>/dev/null; then
+if run_in grep -q "AllowUnencrypted = true" /usr/lib/cockpit/cockpit.conf 2>/dev/null; then
     pass "Cockpit allows unencrypted HTTP for local UI"
 else
     warn "Cockpit AllowUnencrypted configuration missing"
@@ -257,14 +257,14 @@ else
 fi
 
 # RTX 50-Series Libvirt QEMU Hook
-if run_in test -x /etc/libvirt/hooks/qemu; then
+if run_in test -x /usr/lib/libvirt/hooks/qemu; then
     pass "RTX 50-Series Blackwell FLR qemu hook present and executable"
 else
     warn "Libvirt qemu hook missing or not executable"
 fi
 
 # UKI Cmdline Rendering Output (conditional — requires bootc render-kargs support)
-if run_in test -f /etc/kernel/cmdline; then
+if run_in test -f /usr/lib/kernel/cmdline 2>/dev/null || run_in test -f /etc/kernel/cmdline 2>/dev/null; then
     pass "Unified Kernel Image (UKI) cmdline successfully rendered"
 else
     warn "UKI cmdline not present (/etc/kernel/cmdline missing — bootc render-kargs may not be supported on this bootc version)"
@@ -357,7 +357,7 @@ pass "Exhaustive stack manifest saved to $REPORT_FILE"
 # ── 13. Version info ─────────────────────────────────────────────────────
 section "System Information"
 
-VERSION=$(run_in cat /etc/cloudws-version 2>/dev/null || echo "not set")
+VERSION=$(run_in cat /etc/cloudws-version 2>/dev/null || run_in cat /usr/lib/cloudws-version 2>/dev/null || echo "not set")
 echo "  CloudWS version: $VERSION"
 
 KERNEL=$(run_in ls /lib/modules/ 2>/dev/null | sort -V | tail -1 || echo "unknown")

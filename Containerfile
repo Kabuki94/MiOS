@@ -132,6 +132,9 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
 RUN dnf install -y dracut-live squashfs-tools \
  && dnf clean all
 
+# Install bootc bash completions so `bootc <TAB>` works on deployed systems
+RUN bootc completion bash > /etc/bash_completion.d/bootc
+
 RUN bootc container lint
 RUN rm -rf /ctx \
  && ostree container commit

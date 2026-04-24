@@ -57,18 +57,18 @@ fi
 # and processed by systemd-sysusers above. Imperative calls removed.
 
 # — SUDOERS —
-# Managed via system_files/etc/sudoers.d/10-cloudws-wheel
-chmod 440 /etc/sudoers.d/10-cloudws-wheel 2>/dev/null || true
+# Managed via system_files/usr/lib/sudoers.d/10-cloudws-wheel
+chmod 440 /usr/lib/sudoers.d/10-cloudws-wheel 2>/dev/null || true
 
 # — LOCALE —
-# Managed via system_files/etc/locale.conf
+# Managed via system_files/usr/lib/locale.conf
 localedef -i en_US -f UTF-8 en_US.UTF-8 2>/dev/null || true
 
 # — CLOUD-INIT —
-# Managed via system_files/etc/cloud/cloud.cfg.d/10-cloudws.cfg
+# Managed via system_files/usr/lib/cloud/cloud.cfg.d/10-cloudws.cfg
 
 # — MULTIPATH —
-# Managed via system_files/etc/multipath.conf
+# Managed via system_files/usr/lib/multipath.conf
 
 # — FIX HOME DIRECTORY OWNERSHIP —
 echo "[31-user] Fixing home directory ownership..."

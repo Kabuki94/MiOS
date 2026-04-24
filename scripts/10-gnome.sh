@@ -33,13 +33,13 @@ install_packages_optional "gnome-core-apps"
 # ═════════════════════════════════════════════════════════════════════════════
 # Localsearch/tracker — disable indexing without removing
 # Removing localsearch breaks Nautilus search + Activities Overview.
-# Hide via autostart overrides in system_files/etc/xdg/autostart/
+# Hide via autostart overrides in system_files/usr/share/xdg/autostart/
 # ═════════════════════════════════════════════════════════════════════════════
 echo "[10-gnome] Disabling localsearch/tracker indexing (keep package, hide autostart)..."
 
 # ═════════════════════════════════════════════════════════════════════════════
 # Qt Adwaita theming — required for Qt apps to match GNOME look
-# Managed via system_files/etc/environment.d/60-cloudws-qt-adwaita.conf
+# Managed via system_files/usr/lib/environment.d/60-cloudws-qt-adwaita.conf
 # ═════════════════════════════════════════════════════════════════════════════
 echo "[10-gnome] Setting Qt Adwaita environment variables (managed via overlay)..."
 
@@ -136,7 +136,7 @@ ln -sf /usr/share/icons/Bibata-Modern-Classic /usr/share/cursors/xorg-x11/Bibata
 chmod -R a+rX "$BIBATA_DIR" 2>/dev/null || true
 
 # 6. Xresources fallback (oldest X11 cursor method)
-# Managed via system_files/etc/X11/Xresources
+# Managed via system_files/usr/lib/X11/Xresources
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

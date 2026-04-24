@@ -6,6 +6,7 @@ Wants=network-online.target
 Image=docker.io/guacamole/guacd:latest
 ContainerName=cloudws-guacd
 Network=host
+HttpProxy=false
 AutoUpdate=registry
 [Service]
 Restart=on-failure

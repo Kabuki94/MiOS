@@ -12,11 +12,17 @@ source "${SCRIPT_DIR}/lib/common.sh"
 
 # ── Global DNF config ───────────────────────────────────────────────────────
 echo "[01-repos] Setting install_weak_deps=False globally..."
-# Ensure this is set, as Containerfile might have removed it or base image might not have it.
-if ! grep -q '^install_weak_deps=False' /etc/dnf/dnf.conf; then
+# v2.4.0: dnf.conf moved to /usr/lib/dnf/dnf.conf as per USR-OVER-ETC.
+DNF_CONF="/usr/lib/dnf/dnf.conf"
+if [ ! -f "$DNF_CONF" ]; then
+    # Fallback if the file didn't exist in overlay
+    DNF_CONF="/etc/dnf/dnf.conf"
+fi
+
+if ! grep -q '^install_weak_deps=False' "$DNF_CONF"; then
     # Remove any existing settings to avoid duplicates
-    sed -i '/^install_weak_deps=/d' /etc/dnf/dnf.conf 2>/dev/null || true
-    echo "install_weak_deps=False" >> /etc/dnf/dnf.conf
+    sed -i '/^install_weak_deps=/d' "$DNF_CONF" 2>/dev/null || true
+    echo "install_weak_deps=False" >> "$DNF_CONF"
 fi
 
 

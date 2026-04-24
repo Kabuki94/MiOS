@@ -6,6 +6,7 @@ ConditionVirtualization=!wsl
 Image=docker.io/postgres:15
 ContainerName=guacamole-postgres
 GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage
+HttpProxy=false
 Network=guacamole.network
 Volume=guacamole-postgres.volume:/var/lib/postgresql/data
 Environment=POSTGRES_PASSWORD=guacamole

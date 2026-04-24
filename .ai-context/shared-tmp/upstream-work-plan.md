@@ -1,0 +1,128 @@
+# CloudWS-bootc Upstream Implementation Work Plan
+# Generated: 2026-04-24 UTC | Agent: Claude Code (Sonnet 4.6)
+
+> Derived from upstream-research-plan.md.
+> All items are concrete file changes ordered by priority tier.
+> Each change is self-contained and reverts cleanly.
+
+---
+
+## TIER 1 — Security hardening gaps (implement now)
+
+### T1.1 — Fix `30-security.toml` missing `match-architectures`
+**File:** `system_files/usr/lib/bootc/kargs.d/30-security.toml`
+**Problem:** All other kargs.d files have `match-architectures = ["x86_64"]`. This file is the only one missing it. On a multi-arch build this would apply these kargs universally.
+**Fix:** Append `match-architectures = ["x86_64"]` below the `kargs` array.
+
+### T1.2 — New hardening kargs in `01-cloudws-hardening.toml`
+**File:** `system_files/usr/lib/bootc/kargs.d/01-cloudws-hardening.toml`
+**Problem:** Three upstream-recommended mitigations missing:
+- `spectre_bhi=on` — Branch History Injection (BHI/Spectre-BHB) mitigation, not covered by `spectre_v2=on`
+- `kvm.nx_huge_pages=force` — Forces KVM to use NX-mapped huge pages, preventing cross-VM data leakage via huge page aliasing
+- `tsx=off` — Disables Intel TSX (TAA/MDS attack surface); no-op on AMD (9950X3D) but correct for Intel deployments of CloudWS
+**Fix:** Add three new karg entries to the existing array.
+
+### T1.3 — Add BPF JIT hardening + sysrq + printk to sysctl
+**File:** `system_files/usr/lib/sysctl.d/99-cloudws-hardening.conf`
+**Problem:** Three Fedora-44-targeted hardening sysctls not yet present:
+- `net.core.bpf_jit_harden = 2` — Hardens BPF JIT against JIT-spray attacks (eBPF is heavily used by CrowdSec, K3s, CNI — this restricts BPF-compiled code to non-mappable memory)
+- `kernel.unprivileged_bpf_disabled = 1` — Prevents unprivileged users from loading BPF programs (rootless Podman/K3s use cgroup BPF as root, unaffected)
+- `kernel.sysrq = 0` — Disables magic SysRq key on production systems (prevents physical console attacks)
+- `kernel.printk = 3 3 3 3` — Suppresses kernel messages from leaking to the console (avoids information disclosure on physical console; journal still gets everything)
+**Fix:** Append four new sysctl entries with comments.
+
+### T1.4 — Create `greenboot.conf` (file completely missing)
+**File:** `system_files/etc/greenboot/greenboot.conf` (NEW)
+**Problem:** The greenboot-rs daemon reads its configuration from `/etc/greenboot/greenboot.conf`. Without it, greenboot uses hardcoded defaults (3 boot attempts is already the default, but watchdog is disabled). Explicit config makes intent auditable.
+**Fix:** Create the file with `GREENBOOT_MAX_BOOT_ATTEMPTS=3` and `GREENBOOT_WATCHDOG_CHECK_ENABLED=true`.
+
+### T1.5 — Create MAC randomization NetworkManager config (file completely missing)
+**File:** `system_files/usr/lib/NetworkManager/conf.d/rand_mac.conf` (NEW)
+**Problem:** No MAC randomization configured. On WiFi, persistent MACs enable passive tracking across networks.
+**Fix:** Create the NM config enabling stable WiFi scan + connection MAC randomization (secureblue pattern). `stable` mode uses a per-connection seed so MACs are consistent within the same network but differ across networks.
+
+---
+
+## TIER 2 — Completeness gaps (implement now)
+
+### T2.1 — Add greenboot network health check
+**File:** `system_files/etc/greenboot/check/required.d/30-network.sh` (NEW)
+**Problem:** No network reachability check in greenboot. If a bad image breaks the network stack, the system should auto-rollback.
+**Fix:** Create a required.d script that waits up to 30s for DNS resolution of `ghcr.io` (the update registry). Failure triggers rollback. Uses `systemd-resolve` (available in ucore).
+
+### T2.2 — Add greenboot K3s health check
+**File:** `system_files/etc/greenboot/check/wanted.d/60-k3s.sh` (NEW — `wanted.d`, not `required.d`)
+**Problem:** K3s may not be enabled on all CloudWS roles (desktop role has it disabled). A `required.d` check would cause desktop-role machines to always fail greenboot. Use `wanted.d` so failure is logged but does not trigger rollback; the `40-role-target.sh` check (already present) handles role-level failures.
+**Fix:** Create `wanted.d/60-k3s.sh` that checks K3s only if it is active/enabled.
+
+### T2.3 — Add `HttpProxy=false` to all Quadlet container files
+**Files:** All `.container` files in `system_files/usr/share/containers/systemd/`
+**Problem:** Without `HttpProxy=false`, Podman forwards the host's `http_proxy`/`https_proxy` env vars into every container. On workstations this leaks potential corporate proxy credentials or proxy config into untrusted containers.
+**Containers to patch:**
+- `crowdsec-dashboard.container` — add `HttpProxy=false`
+- `cloudws-guacamole.container` — add `HttpProxy=false`
+- `cloudws-guacd.container` — add `HttpProxy=false`
+- `guacamole-postgres.container` — add `HttpProxy=false`
+- `guacd.container` — add `HttpProxy=false`
+- `ceph-radosgw.container` — add `HttpProxy=false` (also needs `GlobalArgs` since it's NOT in bound-images.d — actually it should NOT get GlobalArgs since it's not bound; skip GlobalArgs for ceph)
+
+### T2.4 — Add `cockpit.socket.d/10-cloudws.conf` (ordering fix)
+**File:** `system_files/usr/lib/systemd/system/cockpit.socket.d/10-cloudws.conf` (NEW)
+**Problem:** `cockpit.socket` activates before `libvirtd.socket`. When a user opens the Machines page immediately after boot, libvirtd may not be ready, causing "Failed to connect to libvirt" errors. Adding the ordering dependency prevents the race.
+**Fix:** New drop-in with `[Unit] After=libvirtd.socket`.
+
+### T2.5 — Add bootc bash completion to Containerfile
+**File:** `Containerfile`
+**Problem:** `bootc` has no shell completions installed in the image. Users on deployed systems get no tab-completion for `bootc` subcommands.
+**Fix:** Add `RUN bootc completion bash > /etc/bash_completion.d/bootc` as a separate `RUN` layer just before the final `bootc container lint` step. (This is a tiny layer — one file, effectively free.)
+
+---
+
+## TIER 3 — Documentation / coordination
+
+### T3.1 — Append AI journal entry
+**File:** `.ai-context/ai-journal.md`
+**Action:** Append complete session journal entry (THOUGHT, LEARNING, DISCOVERY, ACTION, SUGGESTED ALTERNATIVE) covering all changes made in this session.
+
+### T3.2 — Update AI-ENVIRONMENT.md
+**File:** `.ai-context/AI-ENVIRONMENT.md`
+**Action:** Update `AI_ARCH_BASELINE` to reflect the upstream research integration. Add notes about cosign v3 hold and cayo monitoring.
+
+---
+
+## ITEMS DELIBERATELY DEFERRED (not in this pass)
+
+| Item | Reason deferred |
+|------|----------------|
+| `osbuild/bootc-image-builder-action@v0.0.2` migration | Current `ublue-os` action still works; migration is non-trivial and needs testing |
+| K3s containerd v3 config template | Requires knowing exact K3s install path in image; needs deeper audit of `13-ceph-k3s.sh` |
+| K3s airgap `.cache.json` | Requires knowing which images are pre-pulled; needs separate research pass |
+| `bootc upgrade --download-only` systemd timer | Runtime feature, not build-time; document in DIAGNOSTICS.md separately |
+| `ublue-os/cayo` base migration evaluation | Cayo not yet stable; track in NEXT-RESEARCH.md |
+| TPM2-LUKS `bootc install --block-setup tpm2-luks` | Has known reboot unlock bug (Issue #421); defer until fixed |
+| `[etc] transient = true` in prepare-root.conf | Too aggressive for workstation — breaks NM keyfiles, SSH config |
+| Adding `ceph-radosgw.container` to bound-images.d | Requires separate RADOS gateway architecture decision |
+
+---
+
+## File Change Summary
+
+| File | Operation | Category |
+|------|-----------|----------|
+| `system_files/usr/lib/bootc/kargs.d/30-security.toml` | MODIFY | T1.1 |
+| `system_files/usr/lib/bootc/kargs.d/01-cloudws-hardening.toml` | MODIFY | T1.2 |
+| `system_files/usr/lib/sysctl.d/99-cloudws-hardening.conf` | MODIFY | T1.3 |
+| `system_files/etc/greenboot/greenboot.conf` | CREATE | T1.4 |
+| `system_files/usr/lib/NetworkManager/conf.d/rand_mac.conf` | CREATE | T1.5 |
+| `system_files/etc/greenboot/check/required.d/30-network.sh` | CREATE | T2.1 |
+| `system_files/etc/greenboot/check/wanted.d/60-k3s.sh` | CREATE | T2.2 |
+| `system_files/usr/share/containers/systemd/crowdsec-dashboard.container` | MODIFY | T2.3 |
+| `system_files/usr/share/containers/systemd/cloudws-guacamole.container` | MODIFY | T2.3 |
+| `system_files/usr/share/containers/systemd/cloudws-guacd.container` | MODIFY | T2.3 |
+| `system_files/usr/share/containers/systemd/guacamole-postgres.container` | MODIFY | T2.3 |
+| `system_files/usr/share/containers/systemd/guacd.container` | MODIFY | T2.3 |
+| `system_files/usr/share/containers/systemd/ceph-radosgw.container` | MODIFY | T2.3 |
+| `system_files/usr/lib/systemd/system/cockpit.socket.d/10-cloudws.conf` | CREATE | T2.4 |
+| `Containerfile` | MODIFY | T2.5 |
+| `.ai-context/ai-journal.md` | APPEND | T3.1 |
+| `.ai-context/AI-ENVIRONMENT.md` | MODIFY | T3.2 |

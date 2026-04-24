@@ -74,6 +74,20 @@ push:
 # Build all targets
 all: build rechunk raw iso vhd wsl push
 
+# Automated boot test via QEMU (requires nested virtualization)
+# v2.4.0: Added for architectural validation.
+boot-test: build
+    mkdir -p output/qcow2
+    @echo "Building QCOW2 image for boot validation..."
+    sudo podman run --rm --privileged \
+      --security-opt label=type:unconfined_t \
+      -v ./output/qcow2:/output \
+      -v /var/lib/containers/storage:/var/lib/containers/storage \
+      {{BIB}} build --type qcow2 --rootfs ext4 {{LOCAL}}
+    @echo "Starting QEMU boot validation (waiting for graphical.target)..."
+    chmod +x tests/qemu-boot-check.sh
+    ./tests/qemu-boot-check.sh ./output/qcow2/qcow2/disk.qcow2
+
 # Validate with bootc lint
 lint:
     podman run --rm {{LOCAL}} bootc container lint

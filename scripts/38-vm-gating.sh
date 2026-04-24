@@ -27,8 +27,8 @@ echo "[38-vm-gating] Configuring VM-specific service gating..."
 # Managed via system_files/usr/lib/systemd/system/polkit.service.d/10-cloudws-container.conf
 
 # ═══ Cockpit socket drop-in permissions ═══
-if [ -f /etc/systemd/system/cockpit.socket.d/listen.conf ]; then
-    chmod 644 /etc/systemd/system/cockpit.socket.d/listen.conf
+if [ -f /usr/lib/systemd/system/cockpit.socket.d/listen.conf ]; then
+    chmod 644 /usr/lib/systemd/system/cockpit.socket.d/listen.conf
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -37,15 +37,15 @@ fi
 echo "[38-vm-gating] Configuring Hyper-V Enhanced Session (gnome-remote-desktop)..."
 
 # 1. Blacklist VMware vsock (conflicts with Hyper-V hv_sock)
-# Managed via system_files/etc/modprobe.d/blacklist-vmw_vsock.conf
+# Managed via system_files/usr/lib/modprobe.d/blacklist-vmw_vsock.conf
 
 # 2. Ensure hv_sock loads on boot (required for vsock RDP transport)
-if ! grep -q 'hv_sock' /etc/modules-load.d/cloudws.conf 2>/dev/null; then
-    echo "hv_sock" >> /etc/modules-load.d/cloudws.conf
+if ! grep -q 'hv_sock' /usr/lib/modules-load.d/cloudws.conf 2>/dev/null; then
+    echo "hv_sock" >> /usr/lib/modules-load.d/cloudws.conf
 fi
 
 # 3. Polkit rule for colord (prevents "not authorized" errors in RDP sessions)
-# Managed via system_files/etc/polkit-1/rules.d/45-allow-colord.rules
+# Managed via system_files/usr/share/polkit-1/rules.d/45-allow-colord.rules
 
 # 4. Hyper-V Enhanced Session service — uses gnome-remote-desktop
 # Managed via system_files/usr/lib/systemd/system/cloudws-hyperv-enhanced.service

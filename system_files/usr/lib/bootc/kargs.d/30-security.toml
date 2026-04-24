@@ -7,3 +7,4 @@ kargs = [
   "slab_nomerge",
   "lockdown=integrity",
 ]
+match-architectures = ["x86_64"]

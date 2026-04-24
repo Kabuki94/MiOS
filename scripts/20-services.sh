@@ -17,10 +17,10 @@ echo "════════════════════════�
 # ─── Fix systemd unit file permissions ────────────────────────────────────────
 # Container builds sometimes leave bad perms from COPY operations.
 for unit_file in \
-    /etc/systemd/system/var-home.mount \
-    /etc/systemd/system/var-lib-containers.mount \
-    /etc/systemd/system/ceph-bootstrap.service \
-    /etc/systemd/system/cockpit.socket.d/listen.conf \
+    /usr/lib/systemd/system/var-home.mount \
+    /usr/lib/systemd/system/var-lib-containers.mount \
+    /usr/lib/systemd/system/ceph-bootstrap.service \
+    /usr/lib/systemd/system/cockpit.socket.d/listen.conf \
 ; do
     [ -f "$unit_file" ] && chmod 644 "$unit_file"
 done

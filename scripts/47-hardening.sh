@@ -6,12 +6,14 @@ set -euo pipefail
 
 log() { printf '[47-hardening] %s\n' "$*"; }
 
-chmod 0600 /etc/usbguard/usbguard-daemon.conf 2>/dev/null || true
+# USBGuard config is at /usr/lib/usbguard/usbguard-daemon.conf (managed via overlay).
+chmod 0600 /usr/lib/usbguard/usbguard-daemon.conf 2>/dev/null || true
 systemctl enable usbguard.service 2>/dev/null || log "note: usbguard not installed"
 systemctl enable auditd.service   2>/dev/null || log "note: auditd not installed"
 systemctl enable fapolicyd.service 2>/dev/null || log "note: fapolicyd not installed"
 
 # Pre-generate fapolicyd trust database for bootc systems
+# fapolicyd config is at /usr/lib/fapolicyd/fapolicyd.conf (managed via overlay).
 if command -v fagenrules &>/dev/null; then
     log "Pre-generating fapolicyd trust database..."
     # Ensure correct permissions for the fapolicyd directory

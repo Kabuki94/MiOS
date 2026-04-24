@@ -6,6 +6,7 @@ ConditionVirtualization=!wsl
 Image=docker.io/guacamole/guacd:latest
 ContainerName=guacd
 GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage
+HttpProxy=false
 Network=guacamole.network
 AutoUpdate=registry
 

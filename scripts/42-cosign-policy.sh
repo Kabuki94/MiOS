@@ -22,23 +22,25 @@ if ! command -v cosign >/dev/null 2>&1; then
 fi
 
 SYSFILES="/ctx/system_files"
-install -d -m 0755 /etc/pki/containers
-install -d -m 0755 /etc/containers/registries.d
+# Paths updated to /usr/share/pki and /usr/lib/containers as per USR-OVER-ETC
+install -d -m 0755 /usr/share/pki/containers
+install -d -m 0755 /usr/lib/containers/registries.d
 
 # 2. Install policy.json
-if [[ -f "${SYSFILES}/etc/containers/policy.json" ]]; then
-    install -m 0644 "${SYSFILES}/etc/containers/policy.json" /etc/containers/policy.json
-    log "  installed /etc/containers/policy.json"
+# v2.4.0: Moved from etc/ to usr/lib/ in system_files
+if [[ -f "${SYSFILES}/usr/lib/containers/policy.json" ]]; then
+    install -m 0644 "${SYSFILES}/usr/lib/containers/policy.json" /usr/lib/containers/policy.json
+    log "  installed /usr/lib/containers/policy.json"
 else
     # Fallback to in-image path if ctx is missing (unlikely in build)
-    [[ -f /etc/containers/policy.json ]] || warn "missing policy.json"
+    [[ -f /usr/lib/containers/policy.json ]] || warn "missing policy.json"
 fi
 
 # 3. Install Sigstore TUF roots and public keys
-# These ship via the system_files/etc/pki/containers/ overlay
+# These ship via the system_files/usr/share/pki/containers/ overlay
 for f in fulcio_v1.crt.pem rekor.pub ublue-os.pub ublue-cosign.pub cloudws-cosign.pub; do
-    src="${SYSFILES}/etc/pki/containers/${f}"
-    dst="/etc/pki/containers/${f}"
+    src="${SYSFILES}/usr/share/pki/containers/${f}"
+    dst="/usr/share/pki/containers/${f}"
     if [[ -f "${src}" ]]; then
         install -m 0644 "${src}" "${dst}"
         log "  installed ${dst}"
@@ -46,8 +48,8 @@ for f in fulcio_v1.crt.pem rekor.pub ublue-os.pub ublue-cosign.pub cloudws-cosig
 done
 
 # 4. JSON Sanity Check
-if command -v jq >/dev/null 2>&1 && [[ -f /etc/containers/policy.json ]]; then
-    jq -e . /etc/containers/policy.json >/dev/null || die "policy.json failed jq parse"
+if command -v jq >/dev/null 2>&1 && [[ -f /usr/lib/containers/policy.json ]]; then
+    jq -e . /usr/lib/containers/policy.json >/dev/null || die "policy.json failed jq parse"
     log "  policy.json parses cleanly"
 fi
 

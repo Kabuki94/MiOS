@@ -9,6 +9,7 @@ After=guacd.service guacamole-postgres.service
 Image=docker.io/guacamole/guacamole:latest
 ContainerName=cloudws-guacamole
 GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage
+HttpProxy=false
 Network=guacamole.network
 PublishPort=8080:8080
 Environment=GUACD_HOSTNAME=guacd

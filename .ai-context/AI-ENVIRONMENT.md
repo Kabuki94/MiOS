@@ -15,7 +15,12 @@
 | `AI_WSL_GATING` | `ConditionVirtualization=!wsl` | Standard for all service gating in WSL2. |
 | `AI_OVERLAY_PATH` | `system_files/` | The ONLY directory for persistent system config. |
 | `AI_PKG_SOURCE` | `docs/PACKAGES.md` | Single source of truth for all image packages. |
-| `AI_COSIGN_PIN` | `v2.6.3` (Binary) | Version required for rpm-ostree compatibility. |
+| `AI_COSIGN_PIN` | `v2.6.3` (Binary) | **⚠️ HOLD — DO NOT upgrade to v3.** cosign v3 `--new-bundle-format` (protobuf) breaks rpm-ostree/bootc sig verify (rpm-ostree#5509). Always pass `--new-bundle-format=false`. |
+| `AI_COMPOSEFS_MODE` | OSTree-over-composefs verity | composefs-native backend lacks rollback + `--download-only`. Stay on OSTree backend. |
+| `AI_BOOTC_STABLE` | `v1.15.1` (2026-04-14) | Current upstream bootc. New: `completion bash`, `--download-only`, `usroverlay --readonly`. |
+| `AI_NVIDIA_DRIVER` | `595.58.03` open modules | Current on `stable-nvidia`. Do NOT set `NVreg_UseKernelSuspendNotifiers=1` unconditionally. |
+| `AI_SECUREBOOT_NOTE` | UEFI CA 2011 expires 2026-06-26 | Existing enrollments safe. New shims need 2023 key. Update `edk2-ovmf` on VM hosts. |
+| `AI_WATCH_CAYO` | `ublue-os/cayo` (not yet stable) | composefs-native HCI successor to ucore-hci; evaluate for CloudWS-3 base migration. |
 
 ---
 

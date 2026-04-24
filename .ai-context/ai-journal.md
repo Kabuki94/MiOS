@@ -1434,3 +1434,66 @@ Claude completed a research and gap-audit pass. The findings below are verified 
     3.  **Missing Components:** Added `socat` to `docs/PACKAGES.md` to provide the necessary bridging layer for `AF_VSOCK` to `AF_INET` when proxying native Wayland RDP sessions in Enhanced Hyper-V and WSLg modes.
     4.  **Research Trace:** Saved full research plan and gaps to `.ai-context/RESEARCH_PLAN.md`.
 *   **DISCOVERY:** The project now has proper declarative handlers for injecting any host hardware into any contained runtime across all deployments.
+
+---
+
+### [2026-04-24 UTC] [AI: Claude Code (Sonnet 4.6)] - Upstream Ecosystem Research + Implementation Pass
+
+*   **THOUGHT:** Kabu requested a comprehensive upstream bootc ecosystem research sweep across all components (bootc v1.15.x, ucore-hci, Fedora 43/44, Podman Quadlets v5.7/v5.8, K3s, greenboot-rs, CrowdSec, cosign, Looking Glass, CI patterns, security hardening), followed by a research plan, work plan, and full implementation. Full audit of existing files was performed before any changes to avoid regressions.
+
+*   **LEARNING:**
+    1.  **bootc v1.15.1 is current.** New commands (`--download-only`, `--from-downloaded`, `usroverlay --readonly`, `completion bash`) are available. `bootc rollback` does NOT work on composefs-native backend — CloudWS correctly uses OSTree-over-composefs (verity mode), not the composefs-native backend.
+    2.  **Cosign v3 breaks rpm-ostree/bootc** (rpm-ostree#5509 — `--new-bundle-format` protobuf incompatibility). Universal Blue confirmed: stay on v2.6.x. CloudWS `build.yml` already pins `cosign-release: v2.6.3` and passes `--new-bundle-format=false`. **Do NOT upgrade to cosign v3.**
+    3.  **NVIDIA 595.58.03** is the current driver on `stable-nvidia`. `NVreg_UseKernelSuspendNotifiers=1` should only be set if specific Ada/Blackwell suspend issues appear — do not add unconditionally.
+    4.  **GNOME 50 migration is complete.** X11 session removed in GNOME 50 (F44 default Apr 28, 2026). `gnome-remote-desktop` migration already done. No further action.
+    5.  **Fedora 44 sysctl hardening proposals:** `net.core.bpf_jit_harden=2`, `kernel.unprivileged_bpf_disabled=1`, `kernel.sysrq=0`, `kernel.printk=3 3 3 3` — added ahead of distro rollout.
+    6.  **`spectre_bhi=on`** (Branch History Injection) is a distinct mitigation from `spectre_v2=on` — covers BHB/BHI attack variant not addressed by `spectre_v2`.
+    7.  **Podman v5.7 adds `HttpProxy=false`** — prevents host proxy env vars leaking into containers. Critical for workstations on corporate networks.
+    8.  **greenboot-rs** is the Fedora 43+ default (Rust rewrite, same directories). `greenboot.conf` was completely missing from the CloudWS overlay — added.
+    9.  **Cockpit socket race:** `cockpit.socket` activates before `libvirtd.socket` without explicit ordering. Fixed with a new drop-in.
+    10. **`30-security.toml`** was the only kargs.d file missing `match-architectures = ["x86_64"]` — all others had it. Fixed.
+    11. **MAC randomization** (`/usr/lib/NetworkManager/conf.d/rand_mac.conf`) was completely absent. Added secureblue upstream pattern (stable-per-connection, scan randomization).
+    12. **Microsoft UEFI CA 2011 cert expires June 26, 2026.** Existing enrollments are unaffected. New shim builds require 2023 key. CloudWS users should update `edk2-ovmf` on VM hosts.
+    13. **`ublue-os/cayo`** is the composefs-native HCI successor to ucore-hci — monitor for CloudWS-3 base migration when it reaches stable.
+    14. **K3s v1.34.6**: containerd 2.0 uses `config-v3.toml.tmpl`. NVIDIA auto-detected. Airgap `.cache.json` conditional import available since v1.33.1.
+
+*   **DISCOVERY:**
+    - `system_files/etc/greenboot/greenboot.conf` was MISSING entirely. greenboot-rs was running with defaults (3 retries, watchdog disabled).
+    - `system_files/usr/lib/NetworkManager/conf.d/rand_mac.conf` was MISSING. No MAC randomization policy in the image.
+    - `30-security.toml` was the only kargs.d file without `match-architectures`. On a hypothetical aarch64 build, `lockdown=integrity` would have been applied unconditionally.
+    - All Quadlet `.container` files were missing `HttpProxy=false`. On corporate-proxied workstations this leaks proxy credentials into untrusted containers.
+    - No greenboot health check for network reachability or K3s readiness existed.
+    - `cockpit.socket.d/` had `listen.conf` and `listen-all.conf` but no `libvirtd.socket` ordering file.
+    - Fedora 44 sysctl defaults (`bpf_jit_harden`, `unprivileged_bpf_disabled`, `sysrq`, `printk`) were not yet present in the CloudWS sysctl overlay.
+
+*   **ACTION:**
+    Files MODIFIED:
+    - `system_files/usr/lib/bootc/kargs.d/30-security.toml` — added `match-architectures = ["x86_64"]`
+    - `system_files/usr/lib/bootc/kargs.d/01-cloudws-hardening.toml` — added `spectre_bhi=on`, `tsx=off`, `kvm.nx_huge_pages=force`
+    - `system_files/usr/lib/sysctl.d/99-cloudws-hardening.conf` — added `net.core.bpf_jit_harden=2`, `kernel.unprivileged_bpf_disabled=1`, `kernel.sysrq=0`, `kernel.printk=3 3 3 3`
+    - All 6 Quadlet `.container` files — added `HttpProxy=false`
+    - `Containerfile` — added `RUN bootc completion bash > /etc/bash_completion.d/bootc` before final lint
+
+    Files CREATED:
+    - `system_files/etc/greenboot/greenboot.conf` — `GREENBOOT_MAX_BOOT_ATTEMPTS=3`, `GREENBOOT_WATCHDOG_CHECK_ENABLED=true`, `GREENBOOT_WATCHDOG_GRACE_PERIOD=1`
+    - `system_files/usr/lib/NetworkManager/conf.d/rand_mac.conf` — stable MAC randomization (secureblue pattern)
+    - `system_files/etc/greenboot/check/required.d/30-network.sh` — DNS reachability check for `ghcr.io` (rollback trigger)
+    - `system_files/etc/greenboot/check/wanted.d/60-k3s.sh` — advisory K3s readiness check (role-gated, no rollback)
+    - `system_files/usr/lib/systemd/system/cockpit.socket.d/10-cloudws.conf` — `After=libvirtd.socket` ordering
+    - `.ai-context/shared-tmp/upstream-research-plan.md` — full research plan with upstream-to-CloudWS mapping
+    - `.ai-context/shared-tmp/upstream-work-plan.md` — prioritised implementation work plan
+
+    Items confirmed CORRECT (no change needed):
+    - `prepare-root.conf` (`enabled = verity` + `readonly = true`) ✅
+    - `build.yml` cosign pinning (v2.6.3, `--new-bundle-format=false`) ✅
+    - All bound-images.d Quadlets already had `GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage` ✅
+    - `libvirtd.service.d/10-cloudws.conf` (`After=libvirtd.socket`, `TimeoutStopSec=120`) ✅
+    - `kernel.yama.ptrace_scope = 2` (more restrictive than F44 planned default) ✅
+    - NVIDIA blacklist/bare-metal pattern ✅
+    - BIB `ext4` rootfs (composefs verity compatible) ✅
+
+*   **SUGGESTED ALTERNATIVE:**
+    - `tsx=off` is redundant on AMD (9950X3D has no TSX) but is correct for Intel CloudWS deployments and is a no-op on AMD — keeping it.
+    - `debugfs=off` was considered but deferred — workstation diagnostics (NVIDIA, CUDA, libvirt) rely on debugfs; the `lockdown=integrity` karg already restricts the most dangerous debugfs capabilities.
+    - `osbuild/bootc-image-builder-action@v0.0.2` migration deferred — current ublue action functional; migration needs testing.
+    - TPM2-LUKS install mode deferred — known upstream reboot unlock bug (bootc Issue #421).

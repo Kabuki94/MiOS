@@ -6,6 +6,7 @@ ConditionVirtualization=no
 Image=quay.io/ceph/ceph:latest
 AutoUpdate=registry
 ContainerName=ceph-radosgw
+HttpProxy=false
 PublishPort=8000:8080
 # Bind-mount the persistent /etc/ceph configs so the container can auth with the cluster
 Volume=/etc/ceph:/etc/ceph:ro
