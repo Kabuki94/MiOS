@@ -5,10 +5,17 @@
   "harness_instructions": "This JSON structure provides a parse-able map of all project documentation, logs, and memories. AI agents should use the 'manifests' keys to locate specific data categories. Each manifest contains 'full_content' for direct ingestion.",
   "manifests": {
     "changelogs": "changelogs/manifest.json",
-    "knowledge_base": "docs/knowledge/manifest.json",
+    "knowledge_base": "docs/manifest.json",
     "memories": ".claude/memories/manifest.json",
     "historical_context": ".ai-context/manifest.json",
-    "artifacts": "artifacts/manifest.json"
+    "artifacts": "artifacts/manifest.json",
+    "scripts": "scripts/manifest.json",
+    "tools": "tools/manifest.json",
+    "system_files": "system_files/manifest.json",
+    "tests": "tests/manifest.json",
+    "bib_configs": "bib-configs/manifest.json",
+    "deep_search": "deep-search-6418/manifest.json",
+    "root": "root-manifest.json"
   },
   "standard_formats": {
     "documentation": "Markdown (embedded in JSON)",

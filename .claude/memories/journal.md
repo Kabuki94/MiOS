@@ -2218,3 +2218,12 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 - **Documentation:** [MiOS Knowledge Base](https://github.com/Kabuki94/MiOS/tree/main/docs/knowledge)
 - **Artifact Hub:** [ai-context.json](../../ai-context.json)
 ---
+
+### [AI: Gemini CLI] - 2026-04-25 20:45:00
+- **Objective:** Index all files in the project directory for enhanced AI context retrieval.
+- **Action:**
+    - Upgraded `tools/generate-ai-manifest.py` to support recursive indexing of `scripts/`, `tools/`, `system_files/`, `tests/`, `bib-configs/`, and `deep-search-6418/`.
+    - Added a non-recursive target for root-level files (`root-manifest.json`).
+    - Implemented error handling for broken symlinks and permission errors during the indexing walk.
+    - Updated `ai-context.json` to include the new manifest mappings.
+- **Result:** Comprehensive project-wide indexing completed. The AI Context Hub now provides full-text access to source code and documentation across all core layers.

@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-04-25T20:24:17.500169",
+  "generated_at": "2026-04-25T21:14:04.288661",
   "source_directory": "changelogs",
   "entries": [
     {
       "path": "changelogs/02-v2.1.0-Detailed-Technical-Log.md",
-      "last_modified": "2026-04-25T20:24:17.382018",
+      "last_modified": "2026-04-25T20:59:55.576621",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -18,7 +18,7 @@
     },
     {
       "path": "changelogs/03-Cumulative-Changelog.md",
-      "last_modified": "2026-04-25T20:24:17.383018",
+      "last_modified": "2026-04-25T20:59:55.576621",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -32,7 +32,7 @@
     },
     {
       "path": "changelogs/01-v1.1-Legacy-Profiler.md",
-      "last_modified": "2026-04-25T20:24:17.385018",
+      "last_modified": "2026-04-25T20:59:55.576621",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {

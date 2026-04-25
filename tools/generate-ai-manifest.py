@@ -16,7 +16,10 @@ def parse_markdown_metadata(content):
     
     return title, metadata
 
-def generate_json_manifest(target_dir, output_file):
+def generate_json_manifest(target_dir, output_file, recursive=True, ignore_dirs=None):
+    if ignore_dirs is None:
+        ignore_dirs = {".git", ".venv", "output", "__pycache__", "deep-search-6418"}
+    
     manifest = {
         "generated_at": datetime.now().isoformat(),
         "source_directory": target_dir,
@@ -27,39 +30,64 @@ def generate_json_manifest(target_dir, output_file):
         return
 
     for root, dirs, files in os.walk(target_dir):
+        if not recursive and root != target_dir:
+            continue
+            
+        # Filter out ignored directories
+        dirs[:] = [d for d in dirs if d not in ignore_dirs]
+        
         for file in files:
+            if file == os.path.basename(output_file):
+                continue
+                
             file_path = os.path.join(root, file)
             rel_path = os.path.relpath(file_path, start=os.getcwd())
             
-            entry = {
-                "path": rel_path,
-                "last_modified": datetime.fromtimestamp(os.path.getmtime(file_path)).isoformat()
-            }
+            try:
+                entry = {
+                    "path": rel_path,
+                    "last_modified": datetime.fromtimestamp(os.path.getmtime(file_path)).isoformat()
+                }
 
-            if file.endswith(".md"):
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                title, metadata = parse_markdown_metadata(content)
-                entry.update({
-                    "title": title,
-                    "type": "documentation",
-                    "metadata": metadata,
-                    "content_preview": content[:500] + "..." if len(content) > 500 else content,
-                    "full_content": content
-                })
-                manifest["entries"].append(entry)
-            elif file.endswith(".json") and file != "manifest.json":
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    try:
-                        data = json.load(f)
-                        entry.update({
-                            "title": data.get("artifact_name", file),
-                            "type": "artifact_metadata",
-                            "structured_data": data
-                        })
-                        manifest["entries"].append(entry)
-                    except json.JSONDecodeError:
-                        continue
+                # Handle different file types
+                if file.endswith(".md"):
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    title, metadata = parse_markdown_metadata(content)
+                    entry.update({
+                        "title": title,
+                        "type": "documentation",
+                        "metadata": metadata,
+                        "content_preview": content[:500] + "..." if len(content) > 500 else content,
+                        "full_content": content
+                    })
+                    manifest["entries"].append(entry)
+                elif file.endswith(".json"):
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        try:
+                            data = json.load(f)
+                            entry.update({
+                                "title": data.get("artifact_name", file),
+                                "type": "structured_data",
+                                "structured_data": data
+                            })
+                            manifest["entries"].append(entry)
+                        except json.JSONDecodeError:
+                            continue
+                elif file.endswith((".sh", ".ps1", ".py", ".toml", "Containerfile", "Justfile")):
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        try:
+                            content = f.read()
+                            entry.update({
+                                "title": file,
+                                "type": "source_code",
+                                "full_content": content
+                            })
+                            manifest["entries"].append(entry)
+                        except UnicodeDecodeError:
+                            continue
+            except (FileNotFoundError, PermissionError, OSError):
+                continue
     
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(manifest, f, indent=2)
@@ -68,12 +96,19 @@ def generate_json_manifest(target_dir, output_file):
 if __name__ == "__main__":
     # Categories to manifest
     targets = [
-        ("changelogs", "changelogs/manifest.json"),
-        ("docs/knowledge", "docs/knowledge/manifest.json"),
-        (".claude/memories", ".claude/memories/manifest.json"),
-        (".ai-context", ".ai-context/manifest.json"),
-        ("artifacts", "artifacts/manifest.json")
+        ("changelogs", "changelogs/manifest.json", True),
+        ("docs", "docs/manifest.json", True),
+        (".claude/memories", ".claude/memories/manifest.json", True),
+        (".ai-context", ".ai-context/manifest.json", True),
+        ("artifacts", "artifacts/manifest.json", True),
+        ("scripts", "scripts/manifest.json", True),
+        ("tools", "tools/manifest.json", True),
+        ("system_files", "system_files/manifest.json", True),
+        ("tests", "tests/manifest.json", True),
+        ("bib-configs", "bib-configs/manifest.json", True),
+        ("deep-search-6418", "deep-search-6418/manifest.json", True),
+        (".", "root-manifest.json", False) # Non-recursive for root
     ]
     
-    for target_dir, output_file in targets:
-        generate_json_manifest(target_dir, output_file)
+    for target_dir, output_file, recursive in targets:
+        generate_json_manifest(target_dir, output_file, recursive)
