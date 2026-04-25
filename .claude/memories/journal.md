@@ -2115,3 +2115,13 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   2. **Cleanup Logic:** The new script maintains the same policy: retaining the last 10 runs and any runs newer than 7 days, while providing better logging for deleted runs.
   3. **Verification:** Validated that no other workflows in `.github/workflows/` depend on missing or unstable third-party actions.
 * **RESULT:** CI/CD pipeline health is restored. Repository maintenance tasks (workflow run cleanup) will now execute reliably using official GitHub actions.
+
+---
+
+### [2026-04-25 19:15:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** Commenced the v1.4.0 roadmap by optimizing virtualization performance and stabilizing AI/image dependencies.
+* **ACTION:** 
+  1. **Wayland RDP Optimization:** Updated `system_files/usr/libexec/cloudws-grd-setup` and `system_files/usr/libexec/cloudws-hyperv-enhanced` to explicitly enable `vsock` transport in GNOME Remote Desktop using `grdctl --system rdp set-transport both`. This ensures high-performance Enhanced Session support in Hyper-V.
+  2. **AI Verification:** Validated that `system_files/usr/share/cloudws/aichat/config.yaml` and skeleton configs are correctly mapped to the embedded `deepseek-coder-v2:lite` model and local Ollama instance.
+  3. **Dependency Stabilization:** Populated `image-versions.yml` with the current `ucore-hci` base image digest (`sha256:3f4474648ab2...`) identified from build logs, moving toward a Renovate-managed pinning strategy.
+* **RESULT:** The system is now virtualization-optimized for Hyper-V and has a more robust, traceable dependency chain for base images and AI configurations.

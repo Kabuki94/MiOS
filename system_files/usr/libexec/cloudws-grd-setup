@@ -40,6 +40,9 @@ log "Binding TLS cert/key to GRD system daemon..."
 grdctl --system rdp set-tls-cert "$CERT" >>"$LOG" 2>&1 || log "warn: set-tls-cert failed"
 grdctl --system rdp set-tls-key  "$KEY"  >>"$LOG" 2>&1 || log "warn: set-tls-key failed"
 
+log "Configuring RDP transports (TCP + VSOCK)..."
+grdctl --system rdp set-transport both >>"$LOG" 2>&1 || log "warn: set-transport failed"
+
 # 1. Check for env-var credentials (passed via systemd EnvironmentFile or similar)
 if [[ -n "${CLOUDWS_PASSWORD:-}" ]]; then
     log "Applying RDP credentials from environment..."

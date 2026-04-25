@@ -13,6 +13,10 @@ fi
 
 # Enable gnome-remote-desktop system service (Wayland RDP)
 # The cloudws-grd-setup.service handles TLS cert generation and credentials.
+if command -v grdctl >/dev/null 2>&1; then
+    echo "[cloudws-hyperv] Forcing RDP transport to TCP+VSOCK..."
+    grdctl --system rdp set-transport both 2>/dev/null || true
+fi
 systemctl enable gnome-remote-desktop.service 2>/dev/null || true
 systemctl start --no-block gnome-remote-desktop.service 2>/dev/null || true
 
