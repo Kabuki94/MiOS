@@ -1,0 +1,16 @@
+# _shared.toml
+---
+
+# Shared fragment - include in target-specific configs.
+[[customizations.filesystem]]
+mountpoint = "/"
+minsize = "40 GiB"
+
+[[customizations.filesystem]]
+mountpoint = "/var"
+minsize = "80 GiB"
+
+[[customizations.user]]
+name = "kabu"
+groups = ["wheel", "libvirt", "kvm", "video", "render"]
+# Replace with ssh-ed25519 pubkey at build time via `envsubst` or BIB --arg

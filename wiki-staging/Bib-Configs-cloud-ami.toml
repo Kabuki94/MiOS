@@ -1,0 +1,10 @@
+# cloud-ami.toml
+---
+
+# AWS AMI target
+[customizations.kernel]
+append = "mios.role=headless"
+
+[[customizations.filesystem]]
+mountpoint = "/"
+minsize = "20 GiB"

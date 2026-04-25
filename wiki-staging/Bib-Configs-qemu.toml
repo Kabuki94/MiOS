@@ -1,0 +1,10 @@
+# qemu.toml
+---
+
+# QEMU/libvirt qcow2 target (btrfs - verity-capable)
+[customizations.kernel]
+append = "mios.role=desktop"
+
+[[customizations.filesystem]]
+mountpoint = "/"
+minsize = "40 GiB"

@@ -1,0 +1,65 @@
+name: Sync Wiki
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - 'scripts/**'
+      - 'tools/**'
+      - 'changelogs/**'
+      - '.claude/memories/**'
+      - 'ai-context.json'
+      - 'root-manifest.json'
+  workflow_dispatch:
+
+jobs:
+  sync-wiki:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Regenerate Manifests
+        run: |
+          python3 tools/generate-ai-manifest.py
+
+      - name: Prepare Wiki Staging
+        run: |
+          python3 tools/sync-wiki.py
+
+      - name: Push to Wiki
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          WIKI_URL="https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.wiki.git"
+          
+          # Clone the wiki repository
+          git clone "$WIKI_URL" wiki_repo
+          
+          # Clean existing wiki content (except .git)
+          find wiki_repo -maxdepth 1 -not -name 'wiki_repo' -not -name '.git' -exec rm -rf {} +
+          
+          # Copy new content from staging
+          cp -rv wiki-staging/* wiki_repo/
+          
+          cd wiki_repo
+          
+          # Check if there are changes
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add .
+            git commit -m "docs: auto-sync wiki from ai-context [$(date +%Y-%m-%d)]"
+            git push origin master || git push origin main
+          else
+            echo "No changes to wiki detected."
+          fi

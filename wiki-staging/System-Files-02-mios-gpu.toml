@@ -1,0 +1,9 @@
+# 02-mios-gpu.toml
+---
+
+# MiOS v2.1.0 — Silicon-specific GPU workarounds
+match-architectures = ["x86_64"]
+kargs = [
+    "amdgpu.pplib=0",
+    "i915.enable_guc=3"
+]

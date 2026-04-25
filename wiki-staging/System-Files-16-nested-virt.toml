@@ -1,0 +1,6 @@
+# 16-nested-virt.toml
+---
+
+# Enable Nested Virtualization for KVM (VMs inside VMs / Podman machine inside VMs)
+match-architectures = ["x86_64"]
+kargs = ["kvm_intel.nested=1", "kvm_amd.nested=1"]

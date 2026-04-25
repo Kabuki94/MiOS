@@ -72,6 +72,19 @@ cosign, composefs, etc.) needs contextualizing.
 | 15 | `15-compass-artifact-1.md` | Compass research artifact 1 |
 | 16 | `16-compass-artifact-2.md` | Compass research artifact 2 |
 
+---
+
+## `guides/` — operational / troubleshooting guides
+
+Actionable guides for deploying and managing MiOS across various environments.
+
+| Document | Topic |
+|----------|-------|
+| `WINDOWS-BUILD-WORKFLOW.md` | Building and deploying MiOS from Windows 11 using Podman Desktop |
+| `WSL2-DEPLOYMENT.md` | Deploying MiOS in WSL2 and critical security mitigations |
+| `cpu-isolation-guide.md` | Comprehensive guide to CPU core isolation for virtualization |
+| `vfio-toolkit-readme.md` | Documentation for the MiOS VFIO and GPU passthrough toolkit |
+
 **Reading order for a new collaborator / AI agent onboarding:**
 → 03 (compendium) → 02 (intelligence report) → 13 (audit) → 14 (fixes) → 01 (strategic direction) → topic-specific docs as needed.
 

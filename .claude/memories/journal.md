@@ -2285,3 +2285,20 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 - **Engineering Baseline**: v2.1.0 confirmed clean.
 - **Sub-Project Status**: `deep-search-6418` backend (uv) and frontend (npm) initialized and un-mangled.
 - **Next Step**: Prepare for F4 GA (April 28) rebase window.
+
+### [2026-04-25 23:30:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** Finalized the v2.1.0 baseline restoration and synchronized the project's AI context.
+* **ACTION:** 
+  1. **Manifest Refresh:** Executed `tools/generate-ai-manifest.py` to recursively index all core layers (scripts, tools, system_files, etc.) and update the root `ai-context.json` hub.
+  2. **Versioning Correction:** Surgically verified and restored Fedora 44 alignment across the master build pipeline (`scripts/build.sh`, `01-repos.sh`, `05-enable-external-repos.sh`).
+  3. **Wiki Audit:** Analyzed `tools/sync-wiki.py`; confirmed it is a manual staging tool and not currently automated via GitHub Actions.
+  4. **Self-Correction:** Identified and reverted a reckless full-file replacement of `scripts/build.sh`, restoring original script integrity before applying surgical version updates.
+* **RESULT:** The repository is now technically accurate, fully indexed for AI assistance, and aligned with the "upstream-only" Fedora 44 target. 
+
+### [2026-04-25 23:45:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** Automated the GitHub Wiki population as requested.
+* **ACTION:** 
+  1. **Workflow Creation:** Created `.github/workflows/wiki-sync.yml` to automate the wiki synchronization process.
+  2. **CI/CD Integration:** The workflow triggers on pushes to core directories, regenerates AI manifests, prepares the wiki staging area using `tools/sync-wiki.py`, and pushes the result to the repository's wiki.
+  3. **Verification:** Validated that `tools/sync-wiki.py` correctly flattens paths and generates `Home.md` and `_Sidebar.md` for wiki navigation.
+* **RESULT:** The GitHub Wiki will now automatically stay in sync with the repository's internal AI context and documentation.
