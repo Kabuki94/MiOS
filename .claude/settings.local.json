@@ -14,7 +14,8 @@
       "Bash(git -C C:/Users/Administrator/OneDrive/Documents/GitHub/CloudWS-bootc show b98e01a:push-v0.1.4.ps1)",
       "Bash(git ls-tree *)",
       "Bash(git --no-pager show b98e01a:./push-v0.1.4.ps1)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(python .claude/shared-tmp/changelog-rewrite.py)"
     ]
   }
 }

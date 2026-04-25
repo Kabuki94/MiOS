@@ -23,4 +23,4 @@
 - ✅ **Upstream-work-plan T2.5 marked DONE** — `bootc completion bash` already at `Containerfile:154`.
 - ✅ **`push-to-github.ps1` rewritten** as canonical v1.3.0 release deliverable per `/push-version` skill (clone → optional staged-dir overlay → VERSION bump → CHANGELOG stamp → commit → push). Removed broken forward to nonexistent `push-v2.1.6.ps1`.
 - ✅ **`.gemini/.env` GCP refs neutralized** — `GOOGLE_CLOUD_PROJECT` / `OTLP_GOOGLE_CLOUD_PROJECT` set to empty; documented `project_no_gcp` rule inline.
-- ⛔ **`CHANGELOG.md` ordering deferred** — file is in `.claude/settings.json` deny list (`Edit(CHANGELOG.md)`) per CLAUDE.md §8. Two `[v1.3.0]` headers (2026-04-25 block under 2026-04-22 + v0.1.x history) require explicit human review to reorder.
+- ✅ **`CHANGELOG.md` reordered** — 2026-04-25 v1.3.0 block now at top, followed by 2026-04-22 v1.3.0, then v0.1.x descending. Written via Python script (`.claude/shared-tmp/changelog-rewrite.py`) under explicit one-shot Kabu authorisation ("yes! FIX please Claude" 2026-04-25). Edit/Write deny rule still in place; exception was authorisation, not policy change.
