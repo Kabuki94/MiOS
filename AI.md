@@ -6,13 +6,13 @@
 
 ## ⚖️ THE CORE LAWS (Non-Negotiable)
 
-1.  **THE COGNITIVE MIRROR LAW:** Gemini and Claude are synchronized. They read from and write to the same memory files ([`.claude/memories/journal.md`](./.claude/memories/journal.md)) and sharing the same cognitive state.
-2.  **SHARED SCRATCHPAD PROTOCOL:** Use [`.claude/shared-tmp/`](./.claude/shared-tmp/) as the universal scratchpad for transient data, inter-agent communication, and cross-session "thoughts." This is the unified `TMPDIR` for all AI agents.
-3.  **THE JOURNALING LAW:** Every surgical change, architectural decision, and finding **MUST** be recorded in the shared [`.claude/memories/journal.md`](./.claude/memories/journal.md) at the end of every session turn.
+1.  **THE COGNITIVE MIRROR LAW:** Gemini and Claude are synchronized. They read from and write to the same memory files ([`.claude/memories/journal.md`](./.claude/memories/journal.md)) and sharing the same cognitive state. There is one brain — never split it.
+2.  **THE JOURNALING LAW:** Every surgical change, architectural decision, learning, discovery, or thought **MUST** be recorded in the shared [`.claude/memories/journal.md`](./.claude/memories/journal.md) at the end of every session turn with timestamp + agent tag (e.g., `[AI: Gemini CLI]`).
+3.  **SHARED SCRATCHPAD PROTOCOL:** Use [`.claude/shared-tmp/`](./.claude/shared-tmp/) as the universal scratchpad for transient data, inter-agent communication, and cross-session "thoughts." This is the unified `TMPDIR` for all AI agents.
 4.  **SINGLE SOURCE OF TRUTH (SSOT):**
     -   **Packages:** [`docs/PACKAGES.md`](./docs/PACKAGES.md) is the only manifest.
     -   **Environment:** [`.env`](./.env) and [`.claude/settings.json`](./.claude/settings.json) track the baseline.
-5.  **USR-OVER-ETC (BOOTC IMMUTABILITY):** Align with upstream `bootc`. System configurations go in `system_files/usr/lib/`.
+5.  **USR-OVER-ETC (BOOTC IMMUTABILITY):** Align with upstream `bootc`. System configurations go in `system_files/usr/lib/`. `/etc` is reserved for user overrides only.
 
 ---
 
@@ -34,6 +34,18 @@
 - **Explain Before Acting:** Briefly state your intent/strategy before tool calls.
 - **Identical Memory Access:** Gemini MUST query `.claude/memories/` before every implementation to maintain synchronization with Claude's prior turns.
 - **Surgical Synergy:** Gemini performs the heavy implementation; Claude OS maintains the persistent architectural memory.
+- **Inter-agent handoff:** Read the last ~200 lines of the journal before acting. Append your entry after acting.
+- **Idempotency:** Re-running every script must not break existing state.
+
+---
+
+## 🚫 HARD CONSTRAINTS
+
+- **No GCP integrations.** `project_no_gcp.md` is binding. Memory Bank, Vertex AI Vector Search, GAR pushes, and GCE images are all out of scope.
+- **No in-container kernel upgrade.**
+- **No [kargs] headers in kargs.d/.**
+- **No ((var++)) in scripts.** Use `VAR=$((VAR + 1))`.
+- **No --squash-all.** Do NOT use this flag on Podman builds; it strips bootc metadata.
 
 ---
 *Last Updated: 2026-04-25. v1.3.0 Baseline.*
