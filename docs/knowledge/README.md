@@ -105,7 +105,7 @@ fragments are in [`../changelogs/`](../changelogs/).
 
 | Document | Covers |
 |----------|--------|
-| `CHANGELOG-v2_1_0.md` | v2.1.0 Ecosystem Intelligence Update |
+| `CHANGELOG-v1.3.0.md` | v1.3.0 Ecosystem Intelligence Update |
 | `UPDATE-v1_1-CHANGELOG.txt` | v1.1 legacy changelog |
 | `QUICKSTART-legacy.txt` | Pre-v2 quickstart |
 | `CHAINING-GUIDE-legacy.txt` | Pre-v2 profiler/toolkit chaining guide |

@@ -74,13 +74,14 @@ if [[ -f /usr/lib/wsl.conf ]]; then
 fi
 
 # 2. Standardize /home to /var/home (FCOS/bootc style)
-# This prevents "cannot change directory" errors for users created with standard tools.
+# Ensure the target directory exists so the symlink isn't dangling during linting.
+mkdir -p /var/home
 if [ ! -L /home ] && [ -d /home ] && [ ! "$(ls -A /home)" ]; then
     rm -rf /home
-    ln -sf var/home /home
+    ln -sf /var/home /home
     log "  Path: symlinked /home -> /var/home"
 elif [ ! -e /home ]; then
-    ln -sf var/home /home
+    ln -sf /var/home /home
     log "  Path: created /home -> /var/home symlink"
 fi
 

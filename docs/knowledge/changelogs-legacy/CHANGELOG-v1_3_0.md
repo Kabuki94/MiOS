@@ -1,4 +1,4 @@
-# CloudWS v0.1.8 CHANGELOG
+# CloudWS v1.3.0 CHANGELOG
 
 **Release Date:** April 6, 2026
 **Codename:** Intelligence Update

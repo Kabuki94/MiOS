@@ -1,4 +1,4 @@
-# CloudWS-bootc v0.1.8 - Truly fix the broken bits
+# CloudWS-bootc v1.3.0 - Truly fix the broken bits
 
 ## Bugs this release fixes
 

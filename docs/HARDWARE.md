@@ -1,4 +1,4 @@
-# CloudWS-OS Hardware & Environment Compatibility Matrix (v2.4.0)
+# CloudWS-OS Hardware & Environment Compatibility Matrix (v1.3.0)
 
 CloudWS-OS is **Hardware, Deployment, and Environment Agnostic** by design. It provides a universal, immutable workstation experience across all platforms, from bare-metal workstations to nested containers and virtual machines.
 

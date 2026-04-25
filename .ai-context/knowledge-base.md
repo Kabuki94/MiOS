@@ -58,7 +58,7 @@ Standardized system-wide WSL2 detection to use systemd-native primitives.
 ### April 20, 2026 - Architectural & Versioning Synchronization
 Synchronized the repository baseline to v2.3.5 and unified the Role Engine architecture.
 
-- **Versioning**: Promoted project from v0.1.8 to v2.3.5 across all metadata files (`VERSION`, `Containerfile`, `README.md`, `install.sh`, `cloud-ws.ps1`). Reconciled the engineering stream with public-facing labels.
+- **Versioning**: Promoted project from v1.3.0 to v2.3.5 across all metadata files (`VERSION`, `Containerfile`, `README.md`, `install.sh`, `cloud-ws.ps1`). Reconciled the engineering stream with public-facing labels.
 - **Role Engine**: Consolidated `role-apply` into a single, comprehensive script in `system_files/usr/libexec/cloudws/`. Implemented asynchronous `systemctl start/stop --no-block` to prevent early-boot deadlocks while retaining Phase 1 (System Init) and Phase 2 (Blackwell Detection) features.
 - **Changelog**: Aggregated all fragmented `CHANGELOG-v*.md` files from `docs/changelogs/` into the main `CHANGELOG.md`, providing a complete chronological ledger. Moved fragments to `docs/knowledge/changelogs-legacy/`.
 - **Standards Compliance**: Audited and fixed remaining direct `dnf` calls to use the mandated `${DNF_SETOPT[@]}` array. Confirmed 100% compliance with `VAR=$((VAR + 1))` arithmetic safety rules.
@@ -93,11 +93,11 @@ Promoted image to v2.3.5 engineering baseline and integrated critical stability 
 - **Reason:** NFS status monitoring (`statd`) requires a persistent directory in `/var`. Creating it via script clutters the provisioning logic.
 - **Fix:** Moved NFS state directory management to `tmpfiles.d/cloudws-nfs.conf`.
 
-### April 21, 2026 - v0.1.8 Versioning Standardization & Full Functionality Pass
-Unified the repository on the v0.1.8 baseline and implemented missing architectural components.
+### April 21, 2026 - v1.3.0 Versioning Standardization & Full Functionality Pass
+Unified the repository on the v1.3.0 baseline and implemented missing architectural components.
 
 #### 1. Versioning Precedence (Lower Takes Precedence)
-- **Decision:** Standardized all repository metadata and script headers to the **v0.1.8** stream, reconciling the previous engineering-only v2.x labels.
+- **Decision:** Standardized all repository metadata and script headers to the **v1.3.0** stream, reconciling the previous engineering-only v2.x labels.
 - **Action:** Re-mapped the `CHANGELOG.md` history to align engineering milestones with the v0.1.x chronological ledger.
 
 #### 2. Formal Target Architecture

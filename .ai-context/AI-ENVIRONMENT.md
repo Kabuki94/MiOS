@@ -10,7 +10,7 @@
 
 | VARIABLE | CURRENT VALUE | DESCRIPTION |
 | :--- | :--- | :--- |
-| `AI_ARCH_BASELINE` | **v0.1.8** | Current synchronized engineering baseline. |
+| `AI_ARCH_BASELINE` | **v1.3.0** | Current synchronized engineering baseline. |
 | `AI_DNF_POLICY` | `"${DNF_SETOPT[@]}"` | Mandatory array usage for all package installs. |
 | `AI_WSL_GATING` | `ConditionVirtualization=!wsl` | Standard for all service gating in WSL2. |
 | `AI_OVERLAY_PATH` | `system_files/` | The ONLY directory for persistent system config. |
@@ -39,7 +39,7 @@
 ## 🛰️ COORDINATION LOGS (v0.1.x Stream)
 
 ```version-log
-[v0.1.8] - 2026-04-21: Unified Image v0.1.8; Role Engine; Optimized CI; Upstream Patches.
+[v1.3.0] - 2026-04-21: Unified Image v1.3.0; Role Engine; Optimized CI; Upstream Patches.
 [v0.1.7] - 2026-04-18: NVIDIA 595+ & WSL 2.7.0 stability workarounds.
 [v0.1.6] - 2026-04-16: NVIDIA Open Modules standardization; CDI generation.
 [v0.1.5] - 2026-04-14: GNOME 50 transition; DNF5 build shift.

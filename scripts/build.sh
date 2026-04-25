@@ -182,8 +182,11 @@ fi
 
 # ── Cleanup ─────────────────────────────────────────────────────────────────
 
-# Create sysusers.d entry for cloudws user (fixes bootc lint sysusers warning)
-# Delivered via system_files overlay.
+# Preserve logs in an immutable path for Day-2 diagnostics
+echo ""
+log_ts "Preserving build logs to /usr/lib/cloudws/logs/..."
+mkdir -p /usr/lib/cloudws/logs
+cp -v /var/log/dnf5.log* /var/log/hawkey.log /tmp/cloudws-build.log /usr/lib/cloudws/logs/ 2>/dev/null || true
 
 echo ""
 log_ts "Cleaning up..."
@@ -192,8 +195,8 @@ rm -rf /var/cache/dnf /var/cache/libdnf5 /tmp/geist-font /tmp/*.tar* /tmp/*.rpm 
 rm -rf /usr/share/doc/* /usr/share/man/* /usr/share/info/* 2>/dev/null || true
 rm -rf /usr/share/gnome/help/* /usr/share/help/* 2>/dev/null || true
 
-# Clean bootc lint triggers
-rm -f /var/log/dnf5.log* /var/log/cloudws-build.log 2>/dev/null || true
+# Clean bootc lint triggers (logs now preserved in /usr/lib/cloudws/logs)
+rm -f /var/log/dnf5.log* /var/log/hawkey.log /var/log/cloudws-build.log 2>/dev/null || true
 rm -rf /run/ceph /run/cockpit /run/k3s /tmp/* 2>/dev/null || true
 rm -f /var/lib/systemd/random-seed 2>/dev/null || true
 

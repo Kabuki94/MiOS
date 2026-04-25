@@ -1,4 +1,4 @@
-# GPU Passthrough Architecture (CloudWS-bootc v0.1.8)
+# GPU Passthrough Architecture (CloudWS-bootc v1.3.0)
 
 CloudWS-bootc ships universal container-runtime GPU passthrough plumbing for
 NVIDIA, AMD, and Intel GPUs, designed to work identically across bare metal,
@@ -10,7 +10,7 @@ Hyper-V VHDX, QEMU/libvirt, WSL2, and Cockpit deployments.
 
 ### Architectural Purity: Everything in the Overlay
 
-As of **v0.1.8**, CloudWS has consolidated all system configuration into the
+As of **v1.3.0**, CloudWS has consolidated all system configuration into the
 `system_files/` overlay. Redundant root-level directories for systemd, udev,
 and kargs have been removed. This ensures a **Single Source of Truth** and
 eliminates build failures caused by path desynchronization.
@@ -29,7 +29,7 @@ re-sets it at each boot via `cloudws-gpu-status.service` as a safety net.
 
 ---
 
-## Files delivered by v0.1.8 (System Overlay)
+## Files delivered by v1.3.0 (System Overlay)
 
 All passthrough components are delivered exclusively via the `system_files/`
 overlay.

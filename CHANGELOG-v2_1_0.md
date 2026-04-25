@@ -1,4 +1,4 @@
-# CloudWS v2.1.0 CHANGELOG
+# CloudWS v1.3.0 CHANGELOG
 
 **Release Date:** April 12, 2026
 **Codename:** Ecosystem Intelligence Update
@@ -103,7 +103,7 @@ RHEL Image Mode, TunaOS, Bluefin, bootc-image-builder, image-builder-cli
 | system_files/usr/lib/ostree/prepare-root.conf | Modified | [root] section, composefs docs |
 | image-versions.yml | **Added** | Base image digest pinning for Renovate |
 | renovate.json | **Added** | Renovate Bot configuration |
-| CHANGELOG-v2_1_0.md | **Added** | This file |
+| CHANGELOG-v1.3.0.md | **Added** | This file |
 
 ---
 

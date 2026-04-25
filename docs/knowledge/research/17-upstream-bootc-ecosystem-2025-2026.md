@@ -201,7 +201,7 @@ CloudWS adoptions:
 - `cs-firewall-bouncer` as host RPM (needs nftables).
 - Pin `:v1.7.6`, not `:latest`.
 
-**Flatcar Container Linux (Mar 3 2026)** — `/etc` shipped as systemd-confext in production. Proof that confext is ready for CloudWS v0.1.8.
+**Flatcar Container Linux (Mar 3 2026)** — `/etc` shipped as systemd-confext in production. Proof that confext is ready for CloudWS v1.3.0.
 
 ---
 
@@ -213,7 +213,7 @@ CloudWS adoptions:
 2. **cosign polish** (push-239): `build-sign.yml` (v2.6.x pin, key+keyless, SBOM, GHCR cleanup), `policy.json` (key-based entry + fixed keyless), `45-nvidia-cdi-refresh.sh` (remove OCI hook, pin version, CDI dir)
 3. **Verification + MOK + FreeIPA** (push-240): `verify-root.sh` (3-tier), `cloudws-verify-root.service` (hardened), greenboot wiring, `enroll-mok.sh` (mokutil, idempotent, variant-aware), `generate-mok-key.sh`, `mok-enroll-status`, `50-freeipa-client.sh`, SSSD conf.d, `cloudws-ipa-enroll.service`, `ipa-enroll`, `ipa.conf.example`, expanded `cloudws-freeipa.conf`, `COMPOSEFS-VERIFICATION.md`, `SECUREBOOT.md`
 
-### Next: v2.4.0 targets
+### Next: v1.3.0 targets
 
 4. **xRDP → gnome-remote-desktop migration** — must land before F43/GNOME 50 rebase.
 5. **ublue-os/packages COPR + ujust + uupd** enablement.

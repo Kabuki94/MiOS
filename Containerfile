@@ -141,7 +141,14 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     /ctx/scripts/26-gnome-remote-desktop.sh
 # Ensure dracut-live + squashfs-tools for the ISO artifact build leg
 RUN dnf install -y dracut-live squashfs-tools \
+ && mkdir -p /usr/lib/cloudws/logs \
+ && cp -v /var/log/dnf5.log* /var/log/hawkey.log /usr/lib/cloudws/logs/ 2>/dev/null || true \
  && dnf clean all
+
+# MANDATORY CLEANUP for bootc container lint
+# Purge all logs and temporary files that violate /var immutability rules.
+# (Main logs are preserved in /usr/lib/cloudws/logs)
+RUN rm -rf /var/log/dnf5.log* /var/log/hawkey.log /var/cache/dnf /var/cache/libdnf5 /tmp/*
 
 # Install bootc bash completions so `bootc <TAB>` works on deployed systems
 RUN bootc completion bash > /etc/bash_completion.d/bootc

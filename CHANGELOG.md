@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [v0.1.8] - 2026-04-22
+## [v1.3.0] - 2026-04-22
 
 ### ⚙️ Core OS & Role Engine Consolidation
 * **Unified Role Engine:** Consolidated the asynchronous initialization and role management into the extensionless `system_files/usr/libexec/cloudws/role-apply` script.

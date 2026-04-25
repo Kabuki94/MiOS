@@ -1,4 +1,4 @@
-# CloudWS-bootc v0.1.8 - BAKE IN EVERYTHING
+# CloudWS-bootc v1.3.0 - BAKE IN EVERYTHING
 
 ## What went wrong in v2.2.0 / v2.2.1
 

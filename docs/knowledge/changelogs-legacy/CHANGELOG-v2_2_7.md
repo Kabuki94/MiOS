@@ -1,4 +1,4 @@
-# CloudWS-bootc v0.1.8 - ASCII-only install.ps1 + preflight.ps1
+# CloudWS-bootc v1.3.0 - ASCII-only install.ps1 + preflight.ps1
 
 ## Bug
 

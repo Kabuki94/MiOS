@@ -2,11 +2,23 @@
 
 **Self-replicating, immutable, cloud-native workstation OS built on bootc.**
 
-> Version **v0.1.8** · [ghcr.io/kabuki94/cloudws-bootc:latest](https://ghcr.io/kabuki94/cloudws-bootc)
+> Version **v1.3.0** · [ghcr.io/kabuki94/cloudws-bootc:latest](https://ghcr.io/kabuki94/cloudws-bootc)
 
 GNOME 50 • Gamescope Steam Session • KVM/QEMU/VFIO • Podman/K3s • Pacemaker HA • CrowdSec (Sovereign)
 
 Fully portable — supports **AMD, Intel, and NVIDIA** CPUs and GPUs out of the box. GPU auto-detection at boot adjusts for bare metal, Hyper-V, QEMU, or VMware. One image runs everywhere: bare metal, Hyper-V, QEMU/KVM, VMware, WSL2, and OCI containers.
+
+---
+
+## What's New in v1.3.0 (The Standardized Stack)
+
+The **v1.3.0** release represents a major architectural synchronization across the entire stack:
+
+*   **WSL2-Native Graphical Support**: Automated `wsl.conf` initialization during build. GNOME/Wayland applications now work out-of-the-box in WSL2 without manual configuration.
+*   **Pathing Standardization**: Aligned with Fedora CoreOS/bootc standards by symlinking `/home` to `/var/home`. This ensures all standard Linux tools and user creation scripts work seamlessly within the immutable filesystem.
+*   **DNF5 Prioritized Pipeline**: Accelerated package management by prioritizing `dnf5` in all build scripts, ensuring faster image assembly and future-proof dependency resolution.
+*   **LBI Stability**: Restored and stabilized Logically Bound Image (LBI) support. The `postgres:15` container (for Guacamole) is now pre-pulled during build to ensure `bootc-image-builder` succeeds during disk generation.
+*   **Unified Versioning**: All components—from script headers to container labels—are now strictly aligned to the **v1.3.0** baseline.
 
 ---
 
@@ -31,28 +43,6 @@ When you run a build, the orchestrator:
 3. Builds the next CloudWS image on top of the base image
 4. The result is a new CloudWS image that can build the version after it
 
-**First build (bootstrap):** When no prior CloudWS image exists on GHCR, the build falls back to `centos-bootc` BIB for disk image generation. After the first image is pushed, all subsequent builds are fully self-contained. The build script's **Self-Build Mode** question controls this:
-- **Self-build OFF** (default) — Uses `centos-bootc` BIB. Required for first build.
-- **Self-build ON** — CloudWS IS the image builder. No external images pulled.
-
-```
-┌──────────────────────────────────────────────────────────────┐
-│  CloudWS v(N) image (pulled from GHCR)                      │
-│  ├── osbuild / image-builder  → RAW, ISO, VHDX generation   │
-│  ├── qemu-img                 → VHD → VHDX conversion        │
-│  ├── openssl                  → credential hashing            │
-│  ├── podman / buildah         → OCI container builds          │
-│  └── bootc-base-imagectl      → OCI layer rechunking          │
-│                                                              │
-│  Base image (fedora-bootc:rawhide OR ucore-hci:stable-nvidia)│
-│  └── Containerfile + scripts/ + PACKAGES.md                  │
-│      └── podman build → CloudWS v(N+1) image                 │
-│                                                              │
-│  Self-build ON:  No centos-bootc. No Alpine. No external.    │
-│  Self-build OFF: centos-bootc BIB for first build bootstrap. │
-└──────────────────────────────────────────────────────────────┘
-```
-
 ---
 
 ## Default Credentials
@@ -69,6 +59,9 @@ Pre-built images from the registry use these defaults. Custom builds prompt for 
 ## Quick Start
 
 ### Windows (PowerShell as Administrator)
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/install.ps1'))
+```
 
 ```powershell
 $tmp = "$env:TEMP\cloudws-install.ps1"; irm https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/install.ps1 | Set-Content $tmp; & $tmp; Remove-Item $tmp
@@ -208,7 +201,7 @@ Per-release changelogs prior to the consolidated root `CHANGELOG.md` live in [`d
 
 See [CHANGELOG.md](CHANGELOG.md) for the full release history.
 
-### v0.1.8 (current)
+### v1.3.0 (current)
 
 - **GNOME Remote Desktop for Hyper-V Enhanced Session** — xRDP deprecated (Mutter 50 dropped X11); RDP now delivered via `grdctl --system rdp` + vsock. First-boot TLS cert generation via `/usr/libexec/cloudws-grd-setup`.
 - **FreeIPA enrollment consolidation** — single path through `22-freeipa-client.sh` + `cloudws-freeipa-enroll.service`. Removed the parallel `50-freeipa-client.sh` / `cloudws-ipa-enroll.service` stack that referenced a non-existent service.
