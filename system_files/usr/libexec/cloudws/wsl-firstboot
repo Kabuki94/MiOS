@@ -15,7 +15,7 @@ install -d -m 0755 /var/home /var/lib/cloudws
 # FCOS normally relies on Ignition to create /var/home/<user>, but WSL2 skips
 # Ignition. Without it, systemd-user-session fails with chdir ENOENT at login.
 # /var may also not persist across podman export, so we reseed from /etc/skel.
-for u in core cloudws; do
+awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd | while read -r u; do
     if id "$u" &>/dev/null; then
         U_HOME="$(getent passwd "$u" | cut -d: -f6)"
         if [[ -n "${U_HOME}" && ! -d "${U_HOME}" ]]; then
@@ -23,7 +23,7 @@ for u in core cloudws; do
             cp -aT /etc/skel "${U_HOME}" 2>/dev/null || true
             chown -R "$u":"$u" "${U_HOME}"
             chmod 700 "${U_HOME}"
-            log "created missing home directory ${U_HOME}"
+            log "created missing home directory ${U_HOME} for $u"
         fi
     fi
 done

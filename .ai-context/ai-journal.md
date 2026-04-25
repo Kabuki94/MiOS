@@ -1589,3 +1589,14 @@ User requested full audit of the Windows build chain: `cloud-ws.ps1`, `preflight
 
 #### SUGGESTED ALTERNATIVE
 Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Rejected — `helm` has been in Fedora official repos since F32 and adding a redundant external repo risks introducing a version conflict.
+
+## 2026-04-25: Automated WSL2 Compatibility Fixes
+- **Issue**: Graphical applications failing in WSL2 due to missing /etc/wsl.conf, systemd not enabled by default, and missing home directories in /var/home.
+- **Solution**: Automated WSL2 session and pathing initialization during build.
+- **Changes**:
+    - Modified `scripts/08-system-files-overlay.sh` to:
+        - Symlink `/usr/lib/wsl.conf` to `/etc/wsl.conf` (enabling systemd and default user in WSL2).
+        - Symlink `/home` to `/var/home` for path compatibility across tools.
+    - Modified `system_files/usr/libexec/cloudws/wsl-firstboot` to:
+        - Dynamically create home directories in `/var/home` for ALL users with UID >= 1000.
+        - Ensure `skel` files are copied to new home directories.

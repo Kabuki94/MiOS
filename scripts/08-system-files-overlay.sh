@@ -64,6 +64,26 @@ if [[ -d "${QDIR}" ]]; then
     shopt -u nullglob
 fi
 
+# ═══ WSL2 & Pathing Compatibility ═══
+log "08-overlay: applying WSL2 and pathing compatibility symlinks"
+
+# 1. WSL2 looks for /etc/wsl.conf, but we store it in /usr/lib/wsl.conf for immutability
+if [[ -f /usr/lib/wsl.conf ]]; then
+    ln -sf /usr/lib/wsl.conf /etc/wsl.conf
+    log "  WSL: symlinked /etc/wsl.conf"
+fi
+
+# 2. Standardize /home to /var/home (FCOS/bootc style)
+# This prevents "cannot change directory" errors for users created with standard tools.
+if [ ! -L /home ] && [ -d /home ] && [ ! "$(ls -A /home)" ]; then
+    rm -rf /home
+    ln -sf var/home /home
+    log "  Path: symlinked /home -> /var/home"
+elif [ ! -e /home ]; then
+    ln -sf var/home /home
+    log "  Path: created /home -> /var/home symlink"
+fi
+
 log "08-overlay: relabeling overlaid files"
 restorecon -RFv /usr/ 2>/dev/null || true
 
