@@ -1640,3 +1640,15 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
     - **Build Time**: `scripts/build.sh` and `Containerfile` now preserve build and DNF logs into an immutable path (`/usr/lib/cloudws/logs`) before purging them from `/var/log` for linting.
     - **Boot Time**: `system_files/usr/libexec/cloudws-boot-diag` now automatically collects these preserved logs, along with a fresh `journalctl -b` summary and D-Bus status, into the primary user's home directory (`~/logs`).
 - **Compatibility**: Absolute path symlinks (`/home -> /var/home`) and explicit directory creation ensure `bootc container lint` passes without "os error 2" failures.
+
+---
+
+### [2026-04-25 10:25:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** The user reported issues enabling Cockpit and emphasized the "Streamlined for DNF5" mandate. I audited the environment and the codebase to reconcile the two.
+*   **LEARNING:** Cockpit in the v1.3.0 baseline is strictly socket-activated (`cockpit.socket`). In WSL2 and OCI environments, this requires `systemd` to be PID 1. The DNF5 transition is complete within the image (`DNF_BIN="dnf5"`), but the current build-host shell (Google Cloud Shell) lacks these tools.
+*   **DISCOVERY:** 
+    1) `systemctl enable cockpit` fails by design; the user must target `cockpit.socket`.
+    2) The project correctly uses `90-cloudws.preset` to enable `cockpit.socket` at build time.
+    3) The current shell is a build-harness, not the target OS, explaining the "command not found" errors for `dnf5` and `cloudws`.
+*   **ACTION:** Provided the user with the correct `systemctl enable --now cockpit.socket` command and instructed them on how to enable `systemd` in WSL2 via `/etc/wsl.conf`. Verified the `packages-cockpit` manifest in `docs/PACKAGES.md`.
+
