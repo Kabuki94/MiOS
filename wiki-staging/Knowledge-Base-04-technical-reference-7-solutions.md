@@ -23,7 +23,7 @@ A K3s agent running inside a Podman container or WSL2 instance **can** join a K3
 **Running the agent in Podman** requires rootful mode with `--privileged` — this is non-negotiable because K3s needs cgroup management, iptables control, and kernel module access. Use `--network host` to avoid double-NAT issues with Flannel VXLAN:
 
 ```bash
-HOST_IP="v2.1.0.100"
+HOST_IP="1.1.1.100"
 NODE_TOKEN="$(sudo cat /var/lib/rancher/k3s/server/node-token)"
 
 sudo podman run -d \
@@ -46,7 +46,7 @@ Critical details: always use an **explicit version tag** (`v2.1.0-k3s1` with hyp
 **For WSL2 deployments**, the K3s binary can run directly (no nested container needed). Modern WSL2 kernels include all required modules (`br_netfilter`, `overlay`, `vxlan`). Enable systemd first via `/etc/wsl.conf`, then:
 
 ```bash
-sudo k3s agent --server https://v2.1.0.100:6443 \
+sudo k3s agent --server https://1.1.1.100:6443 \
   --token <TOKEN> --node-name wsl2-agent
 ```
 
@@ -54,8 +54,8 @@ WSL2's NAT layer can cause issues with Flannel VXLAN (UDP 8472). Consider `--fla
 
 ```bash
 firewall-cmd --permanent --add-port=6443/tcp
-firewall-cmd --permanent --zone=trusted --add-source=v2.1.0.0/16
-firewall-cmd --permanent --zone=trusted --add-source=v2.1.0.0/16
+firewall-cmd --permanent --zone=trusted --add-source=0.0.0.0/16
+firewall-cmd --permanent --zone=trusted --add-source=0.0.0.0/16
 firewall-cmd --permanent --add-port=8472/udp
 firewall-cmd --reload
 ```
@@ -64,7 +64,7 @@ Rootless Podman **will not work** for K3s agents. SELinux on Fedora may also req
 
 ---
 
-## 2. Cockpit socket already binds v2.1.0.0 — the real fix is elsewhere
+## 2. Cockpit socket already binds 0.0.0.0 — the real fix is elsewhere
 
 **By default, `cockpit.socket` listens on all interfaces on port 9090**, not just localhost. The base unit file specifies `ListenStream=9090` without an address prefix, which systemd interprets as binding to `[::]` (all IPv6 and IPv4 via dual-stack). So if Cockpit is unreachable from a container or WSL2 instance, the listen address is probably not the problem.
 
@@ -85,7 +85,7 @@ mkdir -p /etc/systemd/system/cockpit.socket.d/
 cat > /etc/systemd/system/cockpit.socket.d/listen.conf << 'EOF'
 [Socket]
 ListenStream=
-ListenStream=v2.1.0.0:9090
+ListenStream=0.0.0.0:9090
 EOF
 systemctl daemon-reload && systemctl restart cockpit.socket
 ```
@@ -95,7 +95,7 @@ One subtle gotcha: **capitalization of `ListenStream` must be exact**. Writing `
 **For WSL2 deployments**, localhost forwarding from WSL2 to Windows works automatically in modern builds — accessing `https://localhost:9090` from the Windows browser should reach Cockpit inside WSL2. If it doesn't, find the WSL2 IP with `hostname -I` and access that directly, or set up port proxying:
 
 ```powershell
-netsh interface portproxy add v4tov4 listenport=9090 listenaddress=v2.1.0.0 connectport=9090 connectaddress=$(wsl hostname -I)
+netsh interface portproxy add v4tov4 listenport=9090 listenaddress=0.0.0.0 connectport=9090 connectaddress=$(wsl hostname -I)
 ```
 
 For the bootc Containerfile, bake in Cockpit enablement and the WSL2 systemd config:

@@ -554,7 +554,7 @@ check_network() {
     
     if getent hosts archlinux.org &>/dev/null || \
        getent hosts google.com &>/dev/null || \
-       ping -c1 -W3 v2.1.0.1 &>/dev/null; then
+       ping -c1 -W3 1.1.1.1 &>/dev/null; then
         msg_success "Network: DNS and connectivity OK"
         SESSION[network_checked]="true"
         return 0
@@ -568,8 +568,8 @@ check_network() {
     echo -e "    ${C_HEADER}â”‚${NC}"
     echo -e "    ${C_HEADER}â”‚${NC}  ${WHITE}Fix DNS before running installation:${NC}"
     echo -e "    ${C_HEADER}â”‚${NC}"
-    echo -e "    ${C_HEADER}â”‚${NC}  ${C_MUTED}sudo bash -c 'echo \"nameserver v2.1.0.1\" > /etc/resolv.conf'${NC}"
-    echo -e "    ${C_HEADER}â”‚${NC}  ${C_MUTED}sudo bash -c 'echo \"nameserver v2.1.0.8\" >> /etc/resolv.conf'${NC}"
+    echo -e "    ${C_HEADER}â”‚${NC}  ${C_MUTED}sudo bash -c 'echo \"nameserver 1.1.1.1\" > /etc/resolv.conf'${NC}"
+    echo -e "    ${C_HEADER}â”‚${NC}  ${C_MUTED}sudo bash -c 'echo \"nameserver 8.8.8.8\" >> /etc/resolv.conf'${NC}"
     echo -e "    ${C_HEADER}â”‚${NC}"
     echo -e "    ${C_HEADER}â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜${NC}"
     echo ""

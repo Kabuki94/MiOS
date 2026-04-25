@@ -1,12 +1,12 @@
 #!/bin/bash
-# MiOS v2.0 — MOTD Dashboard
+# MiOS v2.1.0 — MOTD Dashboard
 # Shows management interfaces, service statuses, and clickable links.
 # Displayed on TTY login and terminal open via profile.d.
 [[ $- != *i* ]] && exit 0
 [[ -n "$MIOS_NO_MOTD" ]] && exit 0
 
-_ip() { ip -4 route get v2.1.0.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}' | head -1; }
-IP=$(_ip); [[ -z "$IP" ]] && IP="v2.1.0.1"
+_ip() { ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}' | head -1; }
+IP=$(_ip); [[ -z "$IP" ]] && IP="1.1.1.1"
 HN=$(hostname -s 2>/dev/null || echo "MiOS")
 _l() { printf '\e]8;;%s\e\\%s\e]8;;\e\\' "$1" "$2"; }
 C='\033[0;36m';W='\033[1;37m';G='\033[0;32m';Y='\033[0;33m';D='\033[0;90m';N='\033[0m'
@@ -14,7 +14,7 @@ _s() { systemctl is-active --quiet "$1" 2>/dev/null && printf "${G}●${N}" || p
 
 echo ""
 printf "${C}════════════════════════════════════════════════════════════${N}\n"
-printf "${W}  MiOS v2.0${N}  ${D}${HN} — ${IP}${N}\n"
+printf "${W}  MiOS v2.1.0${N}  ${D}${HN} — ${IP}${N}\n"
 printf "${C}════════════════════════════════════════════════════════════${N}\n"
 echo ""
 printf "${W}  Management${N}\n"

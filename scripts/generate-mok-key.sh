@@ -3,7 +3,9 @@
 #
 # Generates a 2048-bit RSA key (NOT 4096: shim compatibility) with:
 #   - codeSigning EKU
-#   - v2.1.0.v2.1.0.v2.1.0.6 (MS Kernel Module Code Signing) EKU
+#   - 1.3.6.1.5.5.7.3.3 (Standard Code Signing)
+#   - 1.3.6.1.4.1.311.61.1.1 (MS Kernel Module Code Signing)
+#   - 1.3.6.1.4.1.311.10.3.5 (WHQL Driver Verification)
 #   - 10-year validity
 #
 # Output: /etc/pki/mios/mok.{priv,der,pem,pub.b64,sha256}
@@ -57,7 +59,7 @@ CN = MiOS Module Signing Key
 [v3_ca]
 basicConstraints       = CA:FALSE
 keyUsage               = digitalSignature
-extendedKeyUsage       = codeSigning, v2.1.0.v2.1.0.v2.1.0.6
+extendedKeyUsage       = codeSigning, 1.3.6.1.5.5.7.3.3, 1.3.6.1.4.1.311.61.1.1, 1.3.6.1.4.1.311.10.3.5
 subjectKeyIdentifier   = hash
 authorityKeyIdentifier = keyid:always
 EOF

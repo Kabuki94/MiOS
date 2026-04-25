@@ -8,7 +8,7 @@ log() { echo "[$(date '+%F %T')] $*" | tee -a "$LOG"; }
 log "=== MiOS Ceph Single-Node Bootstrap ==="
 command -v cephadm &>/dev/null || { log "ERROR: cephadm not found"; exit 1; }
 
-PRIMARY_IP=$(ip -4 route get v2.1.0.1 2>/dev/null | awk '{print $7; exit}')
+PRIMARY_IP=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{print $7; exit}')
 [ -z "$PRIMARY_IP" ] && PRIMARY_IP=$(hostname -I | awk '{print $1}')
 log "IP: ${PRIMARY_IP}, Host: $(hostname -s)"
 

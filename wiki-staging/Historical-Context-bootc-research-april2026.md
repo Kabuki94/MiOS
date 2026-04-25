@@ -69,7 +69,7 @@
 **Workarounds integrated (April 2026):**
 - **NVIDIA 595+ Stability:** Injected `NVreg_UseKernelSuspendNotifiers=1` for open modules to resolveAda/Blackwell suspend cycles.
 - **WSL v2.1.0 User Session:** Gated `systemd-networkd-wait-online.service` on `!wsl` to prevent login timeouts.
-- **WSL v2.1.0.0 Permissions:** Enforced 0755 on `wsl-user-generator` via tmpfiles.d to fix security regression breaking user sessions.
+- **WSL 0.0.0.0 Permissions:** Enforced 0755 on `wsl-user-generator` via tmpfiles.d to fix security regression breaking user sessions.
 
 **bootc v2.1.0 notable:** `bootc container lint` expanded — now checks for missing `tmpfiles.d` entries and warns. This is actionable for MiOS: ensure every `/var/lib/<service>` directory that a service needs is declared in `tmpfiles.d/`.
 
@@ -857,7 +857,7 @@ Verified via Cockpit blog + cockpit-podman releases:
 |-------------|-----------|-----------------|-------|
 | WSL 2.3.x | v2.1.0.x | Stable | Legacy; cgroupv1 still present |
 | WSL 2.4.x | v2.1.0.x | Mostly stable | auditd fails; journald audit crash |
-| WSL 2.6.x | 6.6.x | Active issues | User session failures reported after v2.1.0.0 |
+| WSL 2.6.x | 6.6.x | Active issues | User session failures reported after 0.0.0.0 |
 | WSL v2.1.0 | 6.6 LTS point release | Released 2025-12-11 | Masked `systemd-networkd-wait-online.service` during boot; improved VirtioProxy networking + VirtioFS POSIX. |
 | WSL v2.1.0 | 6.6 LTS point release | Released 2026-03-24 | **CVE-2026-26127 .NET runtime fix.** Masked **both** `NetworkManager-wait-online.service` and `systemd-networkd-wait-online.service`. Added IPv6 over virtio networking. Enabled DNS tunneling for VirtioProxy. **wsl-user-generator: statx syscall support, directory-mount support.** |
 | **WSL v2.1.0** (pre-release) | 6.6 LTS point release | **Released 2026-04-25 (today)** | **CVE-2026-32178 .NET SMTP header-injection fix** (System.Net.Mail CRLF). Improved socket/signal handling. 30+ stability changes. Pre-release channel — stable cadence next. |
@@ -904,9 +904,9 @@ systemd detects WSL2 by reading `/proc/sys/kernel/osrelease` and checking for `W
 - CDI spec location in WSL2 mode: `/var/run/cdi/nvidia.yaml` (same as bare metal)
 - The WSL2 CUDA driver is separate from the Linux NVIDIA driver — don't install regular NVIDIA kmods in WSL2
 
-### WSL2 systemd user session failures (WSL v2.1.0.0+)
+### WSL2 systemd user session failures (WSL 0.0.0.0+)
 
-Multiple reports of "Failed to start the systemd user session" after WSL v2.1.0.0 update. Root cause appears to be: `/run/systemd/user-generators/wsl-user-generator` marked world-writable (security regression introduced in v2.1.0.0). Microsoft is tracking in WSL issue tracker. Mitigation: `chmod 755 /run/systemd/user-generators/wsl-user-generator` if user sessions fail on first login.
+Multiple reports of "Failed to start the systemd user session" after WSL 0.0.0.0 update. Root cause appears to be: `/run/systemd/user-generators/wsl-user-generator` marked world-writable (security regression introduced in 0.0.0.0). Microsoft is tracking in WSL issue tracker. Mitigation: `chmod 755 /run/systemd/user-generators/wsl-user-generator` if user sessions fail on first login.
 
 ### Recommended drop-in pattern for WSL2 gating
 

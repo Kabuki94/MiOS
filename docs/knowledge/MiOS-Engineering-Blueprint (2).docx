@@ -170,7 +170,7 @@ Two installation functions handle the CachyOS/Arch package ecosystem. install_pa
 
 ## 3.5 Initialization & DNS Guard (Lines 174–232)
 
-The init() function enforces execution constraints: must be root, must be invoked via sudo (not direct root login), to preserve the SUDO_USER variable needed for AUR operations and user directory ownership. It creates the log directory, initializes tee-based dual output, renders the ASCII art banner, then performs a critical DNS resolution check against archlinux.org and google.com. If DNS fails, the script halts immediately with a styled error box providing exact fix commands (nameserver v2.1.0.1 and v2.1.0.8 in /etc/resolv.conf). This prevents cascading package download failures from producing confusing error messages.
+The init() function enforces execution constraints: must be root, must be invoked via sudo (not direct root login), to preserve the SUDO_USER variable needed for AUR operations and user directory ownership. It creates the log directory, initializes tee-based dual output, renders the ASCII art banner, then performs a critical DNS resolution check against archlinux.org and google.com. If DNS fails, the script halts immediately with a styled error box providing exact fix commands (nameserver 1.1.1.1 and 8.8.8.8 in /etc/resolv.conf). This prevents cascading package download failures from producing confusing error messages.
 
 ## 3.6 Phase 1: Hardware Detection (Lines 234–276)
 

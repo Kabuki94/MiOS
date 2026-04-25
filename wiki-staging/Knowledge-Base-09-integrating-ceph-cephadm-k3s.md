@@ -410,8 +410,8 @@ firewall-cmd --permanent --add-port=8443/tcp       # Dashboard
 firewall-cmd --permanent --add-port=6443/tcp       # API server
 firewall-cmd --permanent --add-port=10250/tcp      # Kubelet
 firewall-cmd --permanent --add-port=8472/udp       # Flannel VXLAN
-firewall-cmd --permanent --zone=trusted --add-source=v2.1.0.0/16  # Pod CIDR
-firewall-cmd --permanent --zone=trusted --add-source=v2.1.0.0/16  # Service CIDR
+firewall-cmd --permanent --zone=trusted --add-source=0.0.0.0/16  # Pod CIDR
+firewall-cmd --permanent --zone=trusted --add-source=0.0.0.0/16  # Service CIDR
 firewall-cmd --reload
 ```
 

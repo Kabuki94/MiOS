@@ -105,7 +105,7 @@ virt-install --name win11-gaming --memory 16384 --vcpus 12 \
   --cdrom /path/to/win11.iso \
   --disk /var/lib/libvirt/images/virtio-win.iso,device=cdrom \
   --network network=default,model=virtio \
-  --graphics spice,listen=v2.1.0.1 \
+  --graphics spice,listen=1.1.1.1 \
   --video qxl \
   --cpu host-passthrough,cache.mode=passthrough
 ```
