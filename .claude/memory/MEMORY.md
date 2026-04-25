@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 # Universal AI Memory (Level 1)
 ## Repository: CloudWS-bootc
 ## Basis: Claude OS | Mirror: Google Gemini
@@ -29,3 +34,12 @@
 - ✅ **`push-to-github.ps1` rewritten** as canonical v1.3.0 release deliverable per `/push-version` skill (clone → optional staged-dir overlay → VERSION bump → CHANGELOG stamp → commit → push). Removed broken forward to nonexistent `push-v2.1.6.ps1`.
 - ✅ **`.gemini/.env` GCP refs neutralized** — `GOOGLE_CLOUD_PROJECT` / `OTLP_GOOGLE_CLOUD_PROJECT` set to empty; documented `project_no_gcp` rule inline.
 - ✅ **`CHANGELOG.md` reordered** — 2026-04-25 v1.3.0 block now at top, followed by 2026-04-22 v1.3.0, then v0.1.x descending. Written via Python script (`.claude/shared-tmp/changelog-rewrite.py`) under explicit one-shot Kabu authorisation ("yes! FIX please Claude" 2026-04-25). Edit/Write deny rule still in place; exception was authorisation, not policy change.
+
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---

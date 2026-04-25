@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 # Minimal GNOME desktop strategy for CloudWS-bootc
 
 **A Fedora Rawhide bootc workstation needs exactly 30–35 core GNOME packages to deliver a fully functional shell, and everything else is removable bloat.** The official Fedora Workstation ostree config pulls in roughly 290 RPM packages across two auto-generated manifests, but the hard dependency chain from `gnome-shell` downward touches fewer than 20 libraries and daemons. The critical finding: **malcontent cannot be dnf-removed**, but `malcontent-control`, `malcontent-pam`, and `malcontent-tools` can be cleanly uninstalled via dnf, while `malcontent-libs` must remain because flatpak dynamically links against `libmalcontent-0.so.0`. This report extracts exact package lists from all four primary sources and delivers a production-ready Containerfile `RUN` block for building a stripped GNOME 50 bootc image.
@@ -261,3 +266,12 @@ RUN set -euo pipefail && \
 ```
 
 This "build up" approach produces a **~180-package GNOME desktop** versus removing from Silverblue's ~1000+ packages. It never encounters the malcontent trap because `malcontent` is pulled in only as a dependency of `gnome-control-center`, and with `install_weakdeps=False`, none of its control/pam/tools subpackages are installed. The base `malcontent` and `malcontent-libs` packages come in as hard deps (unavoidable), but the UI components stay out. This is the pattern Fedora CoreOS's own documentation recommends for derived images and is exactly how the Fedora Magazine's "Building your own Atomic Desktop" guide structures custom bootc images.
+
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---

@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 # Contributing to CloudWS-bootc
 
 Thank you for your interest in contributing to CloudWS-bootc. This document explains the project's conventions and how to submit changes.
@@ -94,3 +99,12 @@ Use the GitHub issue templates:
 ## License
 
 By contributing, you agree that your contributions will be licensed under the same terms as the project (see LICENSE file).
+
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---

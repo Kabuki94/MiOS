@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 # CloudWS-bootc Toolkit Scripts
 
 This directory contains **standalone out-of-image tooling** that runs
@@ -124,3 +129,12 @@ on the modular replacement in `../scripts/` instead.
 *See [`../CLAUDE.md`](../CLAUDE.md) §8 for what Claude Code / other AI
 agents should not do in this directory (summary: don't modernize
 working scripts unprompted, don't rewrite bash into other languages).*
+
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---

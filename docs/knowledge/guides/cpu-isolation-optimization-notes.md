@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 # CPU Isolation Optimization for 9950X3D
 ## Enhanced Host Priority Preset
 
@@ -350,3 +355,12 @@ CCD1 (Cores 8-15, High Freq):
 **Optimized for**: AMD Ryzen 9 9950X3D, 7950X3D, and future dual-CCD X3D processors  
 **Compatible with**: CloudWS-bootc, Fedora Bootc, EndeavourOS, Manjaro  
 **Framework**: Cloud-WS Professional Virtualization Host
+
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---

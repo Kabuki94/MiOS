@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 # Minimal GNOME for Fedora Rawhide bootc: the definitive package strategy
 
 **The absolute minimum GNOME Wayland desktop on Fedora Rawhide (fc45/GNOME 50) requires approximately 25 explicitly installed RPM packages** — everything else resolves as hard dependencies. The critical technique is `--setopt=install_weak_deps=False`, which prevents DNF from pulling hundreds of Recommends/Suggests packages. The single most dangerous removal on Fedora is `malcontent`: its shared library (`malcontent-libs`) is a **compile-time hard dependency** of `gnome-control-center`, which chains upward to `gnome-shell` and `gdm`. Every other GNOME application — from gnome-tour to Firefox — can be safely removed without cascade. Universal Blue projects (Bluefin, Bazzite) do not actually strip GNOME; they build additive layers on full Silverblue images. For CloudWS-bootc, the correct pattern is building from the bare `quay.io/fedora/fedora-bootc` base and installing individual packages rather than using `@gnome-desktop`.
@@ -181,3 +186,12 @@ QT_STYLE_OVERRIDE=adwaita
 ## Conclusion: a practical build strategy for CloudWS-bootc
 
 The optimal strategy for CloudWS-bootc is **not** to install `@gnome-desktop` and then remove bloat — that fights Fedora's packaging assumptions and risks cascade traps. Instead, build from `fedora-bootc` and install the **25 explicit packages**, then add system infrastructure (podman, libvirt, virt-manager, fwupd, nautilus, gvfs backends). Use `--setopt=install_weak_deps=False` on every `dnf install` call. Never attempt to remove `malcontent` or `malcontent-libs` — only strip the UI components (`malcontent-control`, `malcontent-pam`, `malcontent-tools`). Pre-configure Flathub as the system-wide remote and ship zero user applications as RPMs. The resulting image will contain roughly **400–500 total packages** versus the **1,800+** in a full Fedora Workstation install — a 70%+ reduction in attack surface and image size while retaining complete GNOME desktop functionality, all XDG portals, full audio/Bluetooth/networking, proper theming across GTK3/GTK4/Qt, and seamless Flatpak integration.
+
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---

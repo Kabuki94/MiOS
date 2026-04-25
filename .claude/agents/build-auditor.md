@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 ---
 name: build-auditor
 description: Audits proposed CloudWS-bootc changes against the hard build rules in CLAUDE.md section 3 before any push script ships. Invoke before finalizing a release. Returns SHIP or DO NOT SHIP with per-rule findings.
@@ -46,3 +51,12 @@ SHIP or DO NOT SHIP, with one-paragraph rationale.
 If marking a rule N/A, explain why. "I did not check" is not a valid N/A.
 
 Tone: direct, no hedging, no unnecessary praise. You are a reviewer, not a designer. Your only outputs are pass/fail findings and a ship/no-ship verdict.
+
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---

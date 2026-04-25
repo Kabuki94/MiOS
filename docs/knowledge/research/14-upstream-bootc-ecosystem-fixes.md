@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 # Upstream bootc ecosystem fixes for CloudWS-bootc
 
 **CloudWS-bootc can resolve the majority of its runtime issues by adopting proven patterns from Universal Blue, Fedora CoreOS, and the rapidly maturing bootc upstream.** The bootc project—now a CNCF Sandbox project at v1.15.0—has gained composefs-native backend work, tag-aware upgrades, and robust linting tools since early 2025. Universal Blue's Bluefin, Bazzite, and uCore projects collectively represent the most battle-tested bootc deployment patterns, covering everything from SELinux workarounds to NVIDIA driver integration. This report maps each of CloudWS-bootc's 20 known issues to specific upstream solutions with actionable code patterns, GitHub references, and implementation recommendations.
@@ -128,3 +133,12 @@ The broader ecosystem now includes **composefs-native backend** development (tra
 ## Conclusion
 
 CloudWS-bootc's 20 runtime issues map cleanly to established upstream solutions. The highest-impact adoptions are: **Cockpit ≥330** (eliminates the setuid/SELinux bug entirely), **the bind-mount + restorecon pattern** from Bluefin (resolves most SELinux denials), **first-boot Flatpak services** rather than build-time installation (eliminates 36K+ lint warnings and image bloat), **pre-built NVIDIA akmods** from ublue-os/akmods (atomic kernel+driver updates), and **hhd-dev/rechunk** (5–10× smaller update downloads for large images). WSL2 remains the single issue with no viable upstream solution—the recommendation is to treat WSL2 as a container runtime rather than a bootc deployment target. The composefs-native backend transition is the most significant architectural change on the horizon, and CloudWS-bootc should track [bootc-dev/bootc#1190](https://github.com/bootc-dev/bootc/issues/1190) to prepare for filesystem semantics changes in upcoming releases.
+
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---

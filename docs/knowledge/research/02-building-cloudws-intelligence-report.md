@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 # Building CloudWS-bootc: a complete technical intelligence report
 
 **The bootc ecosystem has matured dramatically through 2025-2026, and your CloudWS-bootc project can now leverage battle-tested patterns from Universal Blue, SecureBlue, and the CNCF-sandboxed bootc project itself.** Bootc reached **v1.15.0** (March 2026) with composefs-native storage, tag-aware upgrades, and kernel argument drop-in directories. Fedora Rawhide now ships **kernel 7.0-rc6**, **systemd 260**, **GNOME 50**, and **Mesa 26.0** — all requiring specific adaptations for immutable workstation builds. This report synthesizes findings across mature bootc repositories, security hardening techniques, GPU passthrough ecosystem changes, and container orchestration patterns to inform every layer of the CloudWS-bootc architecture.
@@ -225,3 +230,12 @@ CloudWS-bootc should adopt **five architectural pillars** proven across the Univ
 The composefs-native backend represents bootc's future but remains under active development — use `[composefs] enabled = true` today as the stable path. The RTX 50-series VFIO reset bug is a blocking issue for Blackwell GPU passthrough; target RTX 40-series hardware until NVIDIA ships a fix. systemd 260's removal of cgroup v1 and SysV scripts means CloudWS-bootc must exclusively use cgroup v2 and native systemd units. GNOME 49+'s hard systemd dependency requires full systemd user session support in the bootc image.
 
 The kernel argument drop-in directory (`/usr/lib/bootc/kargs.d/`) is the ideal mechanism for shipping IOMMU, VFIO, and security hardening boot parameters in CloudWS-bootc images, replacing fragile bootloader configuration modifications with declarative, image-versioned files that survive atomic updates cleanly.
+
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---

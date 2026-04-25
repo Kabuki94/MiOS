@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 # Security Hardening Checklist
 
 CloudWS-bootc ships with defense-in-depth security hardening enabled by default, adapted from SecureBlue's audit framework and Fedora's security guidelines. This document details every hardening measure, its rationale, and how to override it if your workload requires it.
@@ -198,3 +203,12 @@ All hardening settings can be overridden by administrators:
 ## Security Reporting
 
 To report a security vulnerability, use GitHub's private vulnerability reporting feature (Security tab → Report a vulnerability) or file a Security issue using the provided template. Do not disclose sensitive vulnerabilities in public issues.
+
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---

@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 # Upstream bootc Ecosystem Research (2025–2026)
 
 This document summarizes the latest architectural shifts in the Fedora bootc ecosystem and Universal Blue (uCore), mapping upstream trajectories to missing implementations in CloudWS-bootc.
@@ -33,3 +38,12 @@ To keep progressing, we must prioritize the following missing implementations:
 1.  **Test the `--composefs-native` flag:** Evaluate building RAW/VHDX targets with `bootc-image-builder` forcing the new backend.
 2.  **UKI Architecture:** Research how to bundle our custom `kargs.d/` and NVIDIA `akmod` kernel modules into a Unified Kernel Image.
 3.  **Monitor systemd-remount-fs:** We currently mask `systemd-remount-fs.service` due to an F42+ interop bug with composefs. We must track upstream `systemd` and `composefs` repositories to unmask this service once the bug is resolved.
+
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---

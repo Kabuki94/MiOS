@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 # **Based on the detailed analysis of the CloudWS-OS architecture, here are suggested improvements focused on addressing current limitations, enhancing long-term maintainability, and extending capabilities:1. Address the `systemd-sysext` Kernel Stacking Depth Limitation**
 
 # 
@@ -242,3 +247,11 @@ Would you like to focus on other areas, such as reviewing specific configuration
   * **Bandwidth Consumption:** The concern over "significantly larger" data payloads from comprehensive OCI image layers and the need to leverage OSTree's native differential updates to mitigate network congestion.  
   * **MOK Enrollment Automation:** The need for a failsafe graphical `zenity` or `plymouth` script to transform the manual Machine Owner Key (MOK) enrollment into a guided, near-automated interactive process.
 
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---

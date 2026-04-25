@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 # CloudWS-bootc technical reference: 7 practical solutions
 
 **This report covers seven distinct technical issues encountered while building CloudWS-bootc**, a Fedora Rawhide bootc immutable workstation. Each section provides tested commands, correct syntax, and configuration snippets ready for use in Containerfiles and deployment scripts. The common thread: making container-native and WSL2 deployments of a bootc image work seamlessly alongside the bare-metal host.
@@ -264,3 +269,12 @@ The math matters: **`StartLimitIntervalSec` should exceed `RestartSec × StartLi
 ## Conclusion
 
 The overarching pattern across these issues is that CloudWS-bootc's multi-target deployment model (bare metal, Podman containers, WSL2 tarballs) requires explicit attention to systemd availability, network namespace boundaries, and privilege escalation. K3s agents and Cockpit both need systemd and privileged container access. WSL2 imports fail on subtle formatting issues rather than fundamental incompatibilities. The Ceph ecosystem has fully moved to cephadm and the built-in Dashboard — the cockpit-ceph plugins are dead ends. Waydroid's OTA system works reliably once the GAPPS flag and channel URLs are explicitly provided. And systemd's [Unit] vs [Service] placement for start-limit directives is a post-2016 change that still catches experienced administrators because older documentation and examples persist across the web.
+
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---

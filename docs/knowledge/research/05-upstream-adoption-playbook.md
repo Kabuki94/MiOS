@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 # CloudWS-bootc upstream adoption playbook
 
 **Bottom line up front.** The single highest-leverage move you can make in the next sprint is to stop hand-rolling plumbing and instead **layer `ghcr.io/ublue-os/akmods-nvidia-open` + `ghcr.io/ublue-os/akmods` into your Containerfile, adopt `uupd` as your updater, enable `composefs.enabled = verity` in `/usr/lib/ostree/prepare-root.conf`, and switch to cosign keyless signing with a GitHub Actions attest-build-provenance step.** Those four changes alone give you signed Secure-Boot-compatible NVIDIA kmods, a working update service with desktop notifications, tamper-evident roots, and verifiable supply chain — all with code already proven in Bluefin/Bazzite/ucore at production scale. Everything else in this report is additive. The second-order priority is Podman-machine-backend compliance (sshd on :22, a `core`/`user` passwordless-sudo account, CDI refresh via `nvidia-cdi-refresh.path`, and a WSL systemd shim), which unlocks `podman machine init --image ghcr.io/kabuki94/cloudws-bootc:latest` as your Windows dev loop. The third-order work — Gamescope session, Looking Glass kvmfr, K3s/Ceph/HA — is genuinely pioneering; you will be writing patterns upstream doesn't have, and the report flags exactly where that boundary lies so you can plan accordingly.
@@ -676,3 +681,12 @@ These are the areas where upstream has no finished pattern; your work here will 
 ## Conclusion: the sequencing plan in one paragraph
 
 Land signed akmod-nvidia-open + uupd + cosign keyless + composefs-verity in the next release — that's the credibility foundation and it's one weekend of work because every piece is `COPY --from=ghcr.io/ublue-os/...` or a one-liner drop-in. The next release after that adds Podman-machine backend compatibility (the 20-line Containerfile stanza above plus cloudws-cdi-detect.service) which gives you a Windows dev loop through `podman machine init --image`. Release three is greenboot-rs health checks + BIB-per-target in CI so users can grab a qcow2, VHDX, WSL tarball, or Anaconda ISO from GitHub Releases. Only then tackle the hard novel work: declarative K3s bootstrap, Ceph-on-bootc with Rook, Pacemaker HA resource agents, Gamescope-on-NVIDIA-Wayland polish. The multi-variant split (CloudWS-1 desktop / CloudWS-2 HA node) should be structural from day one — not a later refactor — because the `ctx` stage + matrix build is fundamentally cheaper than forking repos later. Everything about this plan is that you are borrowing 90% of your code from ublue/bazzite/ucore/secureblue and only writing the 10% that is genuinely CloudWS's — which is the correct ratio for a sole-developer project that aims to ship.
+
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---

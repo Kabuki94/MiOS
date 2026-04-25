@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 # Technical audit of the bootc ecosystem for CloudWS-bootc
 
 CloudWS-bootc has an ambitious multi-role architecture—workstation, hypervisor, K3s node, and Cockpit-managed server in a single immutable image—but **the project's build system, security posture, and CI/CD pipeline lag significantly behind the Universal Blue ecosystem** it draws from. This audit identified 14 critical anti-patterns, 23 missing features compared to Bluefin/Bazzite/uCore/SecureBlue, and 9 imminent upstream changes requiring preparation. The composefs-native backend transition (bootc v1.14–v1.15) is the most consequential ecosystem shift on the horizon, and CloudWS-bootc has zero preparation for it.
@@ -427,3 +432,12 @@ The project's CloudWS-bootc/Arch base adds complexity that Fedora-based Universa
 The composefs-native transition is not optional—it represents bootc's future storage model. CloudWS-bootc should enable composefs now, implement UKI support for Secure Boot, and begin testing with `--composefs-native` installations. The window for gradual adoption is closing as OSTree moves toward deprecation in the bootc context.
 
 SecureBlue's sudoless design (`run0` replacing `sudo`), SUID stripping, and hardened_malloc integration represent a security standard that any production bootc image should aspire to. The 4,500-line `cloudws-full.sh` management script should be decomposed into idempotent systemd units and declarative configuration—imperative shell scripts are the antithesis of the immutable OS model CloudWS-bootc claims to implement.
+
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---

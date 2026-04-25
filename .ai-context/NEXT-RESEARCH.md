@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 # NEXT-RESEARCH — agenda for 2026-04-26 (and beyond)
 
 > Prepared by `scheduled-research-daily` at the end of the 2026-04-25 pass.
@@ -109,3 +114,12 @@ Order reflects decreasing urgency.
 5. **Waydroid** is genuinely stalled; monthly cadence is fine.
 6. **CrowdSec** 12-month silence on a major version means it's no longer "imminent"; demote to monthly check.
 7. **Renovate cleanup** is purely housekeeping; do it whenever someone touches `renovate.json` next.
+
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---

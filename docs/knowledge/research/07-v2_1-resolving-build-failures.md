@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 # CloudWS-bootc v1.3.0: resolving every build and boot failure
 
 **The Hyper-V Gen2 boot hang is almost certainly caused by GNOME 50's complete removal of the X11 backend colliding with xorgxrdp Enhanced Session Mode**, creating a GDM crash loop that prevents the system from ever reaching a login prompt. This single architectural incompatibility — Mutter 50 is Wayland-only, xorgxrdp requires X11 — explains why the kernel boots fine but the system never reaches userspace. Secondary contributing factors include potentially missing Hyper-V dracut modules in the initramfs and possible plymouth-masking dependency deadlocks. The remaining issues (lint warnings, service ordering, BIB GPG failures, memory alignment) are all solvable with targeted fixes documented below.
@@ -144,3 +149,12 @@ Set-VM -Name $VMName -MemoryStartupBytes ($AlignedMemoryMB * 1MB)
 ## Conclusion
 
 The boot hang has a clear primary cause (**Mutter 50's X11 removal killing xorgxrdp**) with two reinforcing factors (missing Hyper-V dracut modules and plymouth dependency deadlocks). The fix strategy is: replace xorgxrdp with `gnome-remote-desktop` for Wayland-native RDP, add explicit Hyper-V drivers to the initramfs via dracut drop-ins with `hostonly="no"`, and use kernel-parameter plymouth disabling instead of service masking. The BIB GPG failure is a known upstream bug solvable by disabling Terra repos *inside* the container image, not on the host. The lint warnings require moving versioned content from `/var` to `/usr` and adding a build-time cleanup step. The Flatpak service ordering is fixed by restructuring the Containerfile to COPY unit files before enabling them, following Bluefin's multi-stage bind-mount pattern. Together, these changes should produce a CloudWS image that boots reliably across all five target surfaces.
+
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---

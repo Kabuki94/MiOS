@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 # AI Research & Action Journal
 ## Repository: CloudWS-bootc
 
@@ -1968,3 +1973,24 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
     3. Created `.claude/memory/gemini-bootstrap.md` as a project-type memory documenting the option-1 choice with **Why:** (preserves Cognitive Mirror Law without parallel infra; option 3 forbidden by no-gcp; option 2 reserved as fallback) and **How to apply:** (`/memory add` routes to `.claude/memories/`, never split the brain).
     4. Updated `.claude/memory/MEMORY.md` Level-1 manifest to add an "Active Protocols" line about the Gemini bootstrap and a "Project memories" index pointing at `project_no_gcp.md` + `gemini-bootstrap.md`.
 *   **SUGGESTED ALTERNATIVE:** Could have left `GEMINI.md` as a redirector and put all the bootstrap content in `AI.md`, with Gemini-specific deltas in `.gemini/settings.json`'s `instructions`. Rejected — Gemini CLI's hierarchical engine specifically loads `GEMINI.md` (and walks its `@`-imports). A redirector stub gives the CLI no context until something else nudges it. The whole point of option 1 is to use the native context loader, which means `GEMINI.md` must contain real content (or imports). The new file is mostly imports + Gemini-specific operational rules; `AI.md` and `protocols.md` remain the canonical law definitions.
+
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---
+
+---
+
+### [2026-04-25 14:15:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** The user requested project-wide documentation updates to include standardized headers and footers, list Bootc resources, and redact personal information. 
+* **ACTION:** 
+  1. Identified all Bootc-related sources and projects (containers/bootc, Fedora Bootc, uupd, rechunk, etc.).
+  2. Formulated a project-wide header and footer template identifying 'Kabu.ki' as the sole proprietor of the self-building infrastructure and marking it as personal property.
+  3. Used the 'generalist' sub-agent to batch-apply these headers/footers to all 81 markdown files in the repository.
+  4. Redacted personal names ('Corey', 'Taylor') from prose in all .md files, replacing them with 'Kabu.ki'.
+  5. Verified that system paths (e.g., /home/corey_dl_taylor/) were preserved to maintain build/script integrity.
+* **RESULT:** Documentation is now synchronized with the proprietorship requirements and ecosystem references. Personal information has been scrubbed from visible documentation.

@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 # 📜 AI Execution Protocols & System Law (AI-PROTOCOLS.md)
 
 > **REDIRECTION:** All agents must first read **[`.ai-context/AI-README.md`](./AI-README.md)** for the unified entry point and core laws.
@@ -45,3 +50,12 @@ This `.ai-context/` directory contains the persistent memory of the AI collectiv
 - `knowledge-base.md`: Accumulated system knowledge and bug resolutions.
 
 **VIOLATION OF THESE DIRECTIVES WILL RESULT IN IMMEDIATE REJECTION OF YOUR OUTPUT.**
+
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---

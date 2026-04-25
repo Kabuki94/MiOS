@@ -1,3 +1,8 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
 # Linux VFIO GPU passthrough tools remain mostly unpackaged in 2025
 
 **No single, polished application exists in Fedora's official repositories for dynamically managing GPU passthrough.** The ecosystem relies overwhelmingly on community shell scripts, libvirt hooks, and a handful of COPR-packaged tools. The most notable exception is **`driverctl`**, a Red Hat-developed utility available via `dnf install driverctl` that manages persistent driver overrides through udev and systemd. For dynamic, on-the-fly GPU switching with a proper D-Bus daemon, **`supergfxctl`** (available via Fedora COPR) is the closest thing to a turnkey solution, offering a dedicated VFIO mode that unbinds your GPU from nvidia/amdgpu and binds it to vfio-pci. Everything else — from libvirt hook scripts to GUI wrappers — lives on GitHub and must be manually installed.
@@ -83,3 +88,12 @@ For Fedora's dracut-based initramfs, VFIO module early loading requires creating
 ## Conclusion
 
 The VFIO GPU passthrough tooling landscape on Fedora remains fragmented. **`driverctl`** is the hidden gem — it's the only official-repo tool purpose-built for driver binding management and integrates cleanly with Fedora's systemd/udev stack, though it handles persistent (not session-dynamic) binding. **`supergfxctl`** via COPR is the best option for dynamic runtime switching with proper D-Bus integration and desktop GUI extensions. For per-VM automatic GPU detach/attach, **libvirt hooks** from community projects like PassthroughPOST/VFIO-Tools remain the universal standard despite being unpackaged shell scripts. The gap between what Proxmox offers as an integrated passthrough UI and what Fedora desktop users must manually configure remains wide — there is no Cockpit plugin, no GNOME application, and no Fedora-native tool that handles the full VFIO lifecycle from IOMMU configuration through dynamic GPU switching to VM device assignment in a single interface.
+
+---
+### 📚 Bootc Ecosystem & Resources
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
+- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Sole Proprietor:** Kabu.ki
+---
