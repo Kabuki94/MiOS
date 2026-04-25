@@ -2342,3 +2342,17 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   3. **Workflow Streamlining:** Replaced `tools/sync-wiki.py` with a direct push from `docs/` in the `.github/workflows/wiki-sync.yml` CI pipeline.
   4. **Context Hub Update:** Reconfigured `ai-context.json` and `tools/generate-ai-manifest.py` to reflect the new unified flat structure.
 * **RESULT:** The GitHub Wiki and the repository's `docs/` folder are now "one and the same." Any change to a Markdown file in `docs/` is automatically reflected in the Wiki, ensuring a single, consistent source for all project intelligence.
+
+---
+
+### [2026-04-25 23:51:00 UTC] [AI: Claude Code]
+* **TYPE:** ACTION / INITIALIZATION
+* **THOUGHT:** Initialized Claude Code session for MiOS v2.1.0. Read CLAUDE.md, AI.md, memory files, journal tail, and git log to synchronize with Gemini's recent work.
+* **SUMMARY OF STATE:**
+  - Project rebranded from CloudWS-bootc → MiOS at v2.1.0 (today, by Gemini CLI)
+  - Repo relocated from `~/CloudWS-bootc` → `~/MiOS`
+  - Major Gemini activity today: rebranding, technical data corruption + recovery, build hardening (99-postcheck.sh), wiki automation, deep-search-6418 sub-project restoration
+  - `podman` and `just` currently absent from Cloud Shell path — container builds require remote execution
+  - `deep-search-6418` sub-project backend (uv) + frontend (npm) now initialized and clean
+  - Last git commit: `3d45091` "Wiki consolidating."
+* **BASELINE CONFIRMED:** v2.1.0 journal synchronized. Ready for new instructions.
