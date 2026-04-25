@@ -1,0 +1,44 @@
+{
+  "generated_at": "2026-04-25T19:19:26.679810",
+  "source_directory": "artifacts",
+  "entries": [
+    {
+      "path": "artifacts/sboms.json",
+      "last_modified": "2026-04-25T19:18:47.131834",
+      "title": "Software Bill of Materials",
+      "type": "artifact_metadata",
+      "structured_data": {
+        "artifact_name": "Software Bill of Materials",
+        "formats": [
+          "SPDX",
+          "CycloneDX"
+        ],
+        "location": "Attached to OCI image via cosign / GitHub Actions artifacts",
+        "path_mapping": {
+          "spdx": "mios-sbom.spdx.json",
+          "cyclonedx": "mios-sbom.cyclonedx.json"
+        }
+      }
+    },
+    {
+      "path": "artifacts/oci-image.json",
+      "last_modified": "2026-04-25T19:18:47.129834",
+      "title": "mios",
+      "type": "artifact_metadata",
+      "structured_data": {
+        "artifact_name": "mios",
+        "type": "OCI Image",
+        "registry": "ghcr.io/kabuki94/mios",
+        "tags": [
+          "latest",
+          "v2.1.0"
+        ],
+        "labels": {
+          "org.opencontainers.image.title": "MiOS",
+          "org.opencontainers.image.version": "2.1.0"
+        },
+        "digest_path": "artifacts/digest.txt"
+      }
+    }
+  ]
+}

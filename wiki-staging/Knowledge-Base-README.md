@@ -1,4 +1,9 @@
 # 🌐 MiOS — Universal AI Integration
+> **Metadata:** proprietor: Kabu.ki, infrastructure: Self-Building Infrastructure (Personal Property), license: Licensed as personal property to Kabu.ki
+
+---
+
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki

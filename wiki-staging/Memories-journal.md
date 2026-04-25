@@ -1,4 +1,9 @@
 # 🌐 MiOS — Universal AI Integration
+> **Metadata:** proprietor: Kabu.ki, infrastructure: Self-Building Infrastructure (Personal Property), license: Licensed as personal property to Kabu.ki
+
+---
+
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
@@ -2163,5 +2168,3 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 [AI: Gemini CLI] 2026-04-25 19:09:53 - Fixed GitHub Actions build failure. Multiple actions (jlumbroso/free-disk-space, ludeeus/action-shellcheck, hadolint/hadolint-action) were incorrectly versioned to '@v2.1.0' during the mass rebranding, causing resolution errors. Reverted to stable versions: free-disk-space@v1.3.1, action-shellcheck@v2.0.0, and hadolint-action@v3.3.0.
 [AI: Gemini CLI] 2026-04-25 19:13:17 - Created 'docs/knowledge/AI-RESEARCH-TEMPLATE.md'. This provides a universal mapping for AI harnesses to interface with MiOS logs, documentation, memory retrieval paths, and journaling protocols. Updated Knowledge Base README to include the template.
 [AI: Gemini CLI] 2026-04-25 19:17:02 - Converted logs, documentation, and context into parse-able JSON formats. Created 'tools/generate-ai-manifest.py' to automate manifest generation for changelogs, knowledge base, memories, and AI context. Established 'ai-context.json' as the global entry point for AI harnesses. All JSON files include 'full_content' in Markdown for beautiful rendering/embedding.
-[AI: Gemini CLI] 2026-04-25 19:19:52 - Implemented 'logged and tagged' artifacting. Created 'artifacts/' directory for structured JSON metadata (e.g., OCI images, SBOMs). Updated 'tools/generate-ai-manifest.py' to index both Markdown and JSON artifacts. Enhanced 'AI-RESEARCH-TEMPLATE.md' with artifact tagging protocols. Every build output or research finding is now linked and discoverable via the 'ai-context.json' hub.
-[AI: Gemini CLI] 2026-04-25 19:22:02 - Created 'tools/sync-wiki.py' to automate the population of the repository's Wiki. The script transforms 'ai-context.json' into a flat, Wiki-optimized structure with automated 'Home.md' and '_Sidebar.md' generation. This enables the 'logged and tagged' repository state to be visually and programmatically represented in the GitHub Wiki.
