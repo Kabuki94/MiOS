@@ -1568,3 +1568,24 @@ User requested full audit of the Windows build chain: `cloud-ws.ps1`, `preflight
 - The `31-user.sh` refactor to env-var-based provisioning (v0.1.8) was never reflected in `cloud-ws.ps1` — the two files drifted. When `31-user.sh` dropped INJ_* tokens, the orchestrator should have been updated simultaneously.
 - `ARG` declarations in Containerfile make values available as env vars in subsequent `RUN` steps. `ENV` would bake them into the image layers. `ARG` is the correct mechanism for build-time secrets.
 - `bootc-base-imagectl rechunk` requires the `containers-storage:` transport prefix when referencing images in local Podman storage — bare image names are not resolved.
+
+---
+
+### [2026-04-25] [AI: Claude Code (Sonnet 4.6)]
+
+#### THOUGHT
+`43-uupd-installer.sh` has a comment on line 12 stating "COPR already enabled by 05-enable-external-repos.sh" but no such COPR was present. `kubectl` is not shipped in Fedora's official repos — packages-containers lists it but the build would silently skip it (DNF5 `--skip-unavailable`) because no Kubernetes repo existed. Both gaps needed closing.
+
+#### LEARNING
+- `kubectl` (and `kubeadm`/`kubelet`) are not in any standard Fedora repo. Only the Kubernetes project's own RPM repo at `pkgs.k8s.io` provides them. Excluding `kubelet kubeadm cri-tools kubernetes-cni` from that repo file prevents polluting the image with kubeadm-managed node components — CloudWS uses k3s for the cluster runtime.
+- `helm` IS in standard Fedora repos since ~F32 — no extra repo needed.
+- `uupd` and `greenboot` ship from the ublue-os/packages COPR on copr.fedorainfracloud.org. Without this repo enabled before `install_packages "updater"` runs, both packages are silently skipped by `--skip-unavailable` and `uupd.timer` enable fails.
+- `cosign`, `bootc-image-builder`, `osbuild-composer`, `composer-cli`, `image-builder`, `podman-plugins` are all in standard F44 repos. `cosign` v2.6.3 binary is also installed by `42-cosign-policy.sh` if the DNF version is absent/wrong — belt-and-suspenders.
+
+#### ACTION
+- Added section 7 to `scripts/05-enable-external-repos.sh`: Kubernetes stable v1.32 RPM repo (`pkgs.k8s.io`). Excludes kubelet/kubeadm/cri-tools/kubernetes-cni to keep the image focused on kubectl client only.
+- Added section 8: ublue-os/packages COPR for Fedora 44 (`copr.fedorainfracloud.org`). Sets priority=75 so Fedora base wins on conflicts.
+- Updated script changelog header to v2.3.
+
+#### SUGGESTED ALTERNATIVE
+Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Rejected — `helm` has been in Fedora official repos since F32 and adding a redundant external repo risks introducing a version conflict.
