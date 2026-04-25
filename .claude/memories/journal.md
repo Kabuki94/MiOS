@@ -1763,6 +1763,13 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 
 ---
 
+## 2026-04-25: Mandatory Reversion: CachyOS Removal
+- **CachyOS Rejection**: Immediately **halted and reverted** all CachyOS-related integrations (kernel, repositories, and tuning) based on a direct architectural override. The project remains 100% focused on **Fedora Rawhide / Native Upstream**.
+- **Sysext Tooling**: Wired the monolithic system extension compiler (\`cloudws-sysext-pack.sh\`) into the \`Justfile\` via the \`just sysext\` recipe. This provides a native solution for hardware accelerator consolidation without external repositories.
+- **Cognitive Mirror Sync**: Updated all AI rules and settings to ensure no future agent attempts to introduce CachyOS components.
+
+---
+
 ### [2026-04-25 ~session-init] [AI: Claude Code (Opus 4.7)]
 *   **THOUGHT:** Kabu issued `attempt to read all project files and try initializing Claude OS here`. Per AI.md and `.claude/protocols.md`, "initializing Claude OS" means (1) loading the Cognitive-Mirror architecture into working context, (2) verifying the foundation (`.claude/memories/`, `.claude/shared-tmp/`, `.claude/memory/MEMORY.md`, `.gemini/settings.json`), (3) honouring the JOURNALING LAW by writing a session-open entry, and (4) reporting findings + any drift that blocks symmetric Claude/Gemini operation.
 *   **LEARNING:** The repo is at `v1.3.0` baseline (VERSION = `1.3.0`, Containerfile `LABEL ... version="1.3.0"`, `.env AI_ARCH_BASELINE=v1.3.0`). Cognitive-Mirror plumbing is already provisioned: `.claude/memories/journal.md` (this file), `.claude/shared-tmp/README.md`, `.claude/memory/MEMORY.md` (Level 1 manifest), `.gemini/settings.json` hardwired with `MEMORY_PATH=.claude/memories/` + `SCRATCHPAD_PATH=.claude/shared-tmp/` + `AI_ROLE="Cognitive Mirror of Claude OS"`. NEXT-RESEARCH agenda for 2026-04-26 is staged in `.ai-context/NEXT-RESEARCH.md` with three flagged ACTION REQUIRED items (Cockpit CVE-2026-4631, WSL CVE-2026-32178, F44 rebase on April 28). T1/T2 work plan is staged in `.claude/memories/upstream-work-plan.md` (17 file changes across hardening kargs, sysctl, greenboot, Quadlet `HttpProxy=false`, cockpit.socket ordering, bootc bash completion).

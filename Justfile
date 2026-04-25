@@ -111,6 +111,13 @@ switch:
     @echo "Run this ON the deployed CloudWS system to fix update origin:"
     @echo "  sudo bootc switch {{IMAGE_NAME}}:latest"
 
+# Compile monolithic system extension (Consolidates NVIDIA/CUDA/Runtimes)
+# Fixes 'overlayfs: maximum fs stacking depth exceeded'
+sysext:
+    chmod +x tools/cloudws-sysext-pack.sh
+    sudo ./tools/cloudws-sysext-pack.sh /usr/lib/extensions/source/*
+    @echo "✓ Monolithic sysext generated in /usr/lib/extensions/cloudws-accelerator.raw"
+
 # Enable PXE Hub (netboot.xyz)
 pxe-on:
     @echo "FEATURES=\"pxe-hub\"" | sudo tee -a /etc/cloudws/role.conf
