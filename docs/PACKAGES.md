@@ -533,6 +533,7 @@ fuse
 fuse3
 7zip-standalone
 unzip
+zstd
 rsync
 tree
 jq

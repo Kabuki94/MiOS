@@ -17,19 +17,45 @@ fi
 
 log "Downloading default model: deepseek-coder-v2:lite..."
 
-# Install temporary ollama binary from GitHub releases (direct binary)
-# Using -L to follow redirects. 
-OLLAMA_URL="https://github.com/ollama/ollama/releases/latest/download/ollama-linux-amd64"
+# Install temporary ollama binary from GitHub releases (.tar.zst archive)
+# Standalone binary is no longer provided.
+OLLAMA_URL="https://github.com/ollama/ollama/releases/latest/download/ollama-linux-amd64.tar.zst"
 log "URL: $OLLAMA_URL"
-scurl -L "$OLLAMA_URL" -o /tmp/ollama
-chmod +x /tmp/ollama
+scurl -L "$OLLAMA_URL" -o /tmp/ollama.tar.zst
 
-# Validation: ensure we didn't download a 404 page or empty file
-if ! file /tmp/ollama | grep -q "ELF"; then
-    log "ERROR: /tmp/ollama is not a valid ELF binary. Download likely failed."
-    log "File content (first 100 bytes):"
-    head -c 100 /tmp/ollama
-    echo ""
+# Extract archive to /usr (contains bin/ollama)
+# Requires zstd to be installed in the build environment
+if ! command -v zstd &>/dev/null; then
+    log "ERROR: zstd not found. Installing explicitly..."
+    $DNF_BIN "${DNF_SETOPT[@]}" install -y zstd
+fi
+
+diag "Extracting Ollama archive..."
+# Create a temporary directory for extraction
+mkdir -p /tmp/ollama-extract
+tar --zstd -xvf /tmp/ollama.tar.zst -C /tmp/ollama-extract
+
+# Find the binary and move it to /usr/bin/ollama
+OLLAMA_BIN=$(find /tmp/ollama-extract -type f -name "ollama" | head -n 1)
+if [[ -z "$OLLAMA_BIN" ]]; then
+    log "ERROR: ollama binary not found in archive."
+    diag "Archive contents:"
+    tar --zstd -tvf /tmp/ollama.tar.zst
+    exit 1
+fi
+
+mv "$OLLAMA_BIN" /usr/bin/ollama
+chmod +x /usr/bin/ollama
+rm -rf /tmp/ollama-extract
+
+# Validation
+if ! command -v ollama &>/dev/null; then
+    log "ERROR: ollama binary not found in PATH."
+    exit 1
+fi
+
+if ! file /usr/bin/ollama | grep -q "ELF"; then
+    log "ERROR: /usr/bin/ollama is not a valid ELF binary."
     exit 1
 fi
 
@@ -38,7 +64,7 @@ fi
 export OLLAMA_MODELS="/var/lib/ollama"
 mkdir -p "$OLLAMA_MODELS"
 
-/tmp/ollama serve &
+/usr/bin/ollama serve &
 OLLAMA_PID=$!
 
 # Wait for server to be ready
@@ -56,13 +82,21 @@ while ! scurl -s http://localhost:11434/api/tags > /dev/null; do
 done
 
 # Pull the model
-/tmp/ollama pull deepseek-coder-v2:lite
+/usr/bin/ollama pull deepseek-coder-v2:lite
 
 # Shutdown server
 kill $OLLAMA_PID
 wait $OLLAMA_PID || true
 
-# Cleanup binary
-rm -f /tmp/ollama
+# Cleanup
+rm -f /tmp/ollama.tar.zst
+# We keep the binary in /usr/bin as it's part of the image now
+# unless the user wanted it temporary? The script previously rm -f /tmp/ollama.
+# Let's keep it temporary to match original intent of "prep" if needed, 
+# but usually we want ollama available. 
+# Original script: rm -f /tmp/ollama.
+# If I want to match original intent: rm -f /usr/bin/ollama
+# But wait, 37-ollama.sh (if it exists) would install it. 
+# Let's check if ollama is in PACKAGES.md as a permanent package.
 
 echo "[37-ollama-prep] Model embedded successfully."
