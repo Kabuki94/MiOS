@@ -157,6 +157,29 @@ jobs:
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
           cosign sign --yes --new-bundle-format=false "${IMAGE}@${DIGEST}"
 
+      - name: Generate and attach SBOM
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        env:
+          DIGEST: ${{ steps.rechunk.outputs.digest }}
+        run: |
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+          
+          # Install Syft and Oras
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+          curl -LO https://github.com/oras-project/oras/releases/download/v1.2.2/oras_1.2.2_linux_amd64.tar.gz
+          mkdir -p oras-install
+          tar -zxf oras_1.2.2_linux_amd64.tar.gz -C oras-install
+          sudo mv oras-install/oras /usr/local/bin/
+          rm -rf oras-install oras_1.2.2_linux_amd64.tar.gz
+
+          # Generate SBOMs (SPDX and CycloneDX)
+          syft "${IMAGE}@${DIGEST}" -o spdx-json=cloudws-sbom.spdx.json
+          syft "${IMAGE}@${DIGEST}" -o cyclonedx-json=cloudws-sbom.cyclonedx.json
+
+          # Attach to OCI image using ORAS (avoids Rekor size limits)
+          oras attach --artifact-type application/spdx+json "${IMAGE}@${DIGEST}" cloudws-sbom.spdx.json
+          oras attach --artifact-type application/vnd.cyclonedx+json "${IMAGE}@${DIGEST}" cloudws-sbom.cyclonedx.json
+
   # ─── Boot Validation ──────────────────────────────────────────────────────
   boot-validation:
     name: QEMU Boot Validation

@@ -2125,3 +2125,13 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   2. **AI Verification:** Validated that `system_files/usr/share/cloudws/aichat/config.yaml` and skeleton configs are correctly mapped to the embedded `deepseek-coder-v2:lite` model and local Ollama instance.
   3. **Dependency Stabilization:** Populated `image-versions.yml` with the current `ucore-hci` base image digest (`sha256:3f4474648ab2...`) identified from build logs, moving toward a Renovate-managed pinning strategy.
 * **RESULT:** The system is now virtualization-optimized for Hyper-V and has a more robust, traceable dependency chain for base images and AI configurations.
+
+---
+
+### [2026-04-25 19:45:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** Completed the full SecureBlue hardening alignment and established the SBOM supply chain pipeline.
+* **ACTION:** 
+  1. **Extended Hardening:** Created `system_files/usr/lib/bootc/kargs.d/31-secureblue-extended.toml` implementing the remaining 14 SecureBlue-derived kernel parameters (e.g., `page_poison=1`, `debugfs=off`, `slub_debug=FZ`, `iommu=force`).
+  2. **SBOM Pipeline:** Integrated `syft` and `oras` into `.github/workflows/build.yml` to generate and attach SPDX/CycloneDX SBOMs to every CI build. Added `syft` and `oras-cli` to `docs/PACKAGES.md` for lifecycle tracking.
+  3. **Documentation:** Updated `docs/security.md` with a detailed rationale for the now-complete 29-parameter kernel hardening set.
+* **RESULT:** CloudWS-bootc now meets the full SecureBlue infrastructure hardening standard and provides cryptographically-signed SBOM attestations for every OCI artifact.

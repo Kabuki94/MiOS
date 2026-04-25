@@ -67,6 +67,25 @@ Firewalld is configured for maximum isolation.
 
 ---
 
+## 🛠️ Infrastructure Hardening
+
+### 🧠 Kernel Hardening
+CloudWS-OS implements the **SecureBlue 29-parameter kernel hardening** standard.
+
+| Parameter | Rationale |
+| :--- | :--- |
+| `slab_nomerge` | Prevents heap layout manipulation. |
+| `init_on_alloc=1` | Zeroes memory on allocation. |
+| `init_on_free=1` | Zeroes memory on free. |
+| `page_alloc.shuffle=1` | Randomizes page allocator freelists. |
+| `randomize_kstack_offset=on` | Randomizes kernel stack offsets per syscall. |
+| `lockdown=integrity` | Protects kernel integrity while allowing MOK-signed kmods. |
+| `debugfs=off` | Disables debugfs to prevent information leaks. |
+| `oops=panic` | Prevents system exploitation after a kernel oops. |
+| `iommu=force` | Forces hardware-level DMA isolation. |
+
+---
+
 ---
 ### 📚 Bootc Ecosystem & Resources
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)

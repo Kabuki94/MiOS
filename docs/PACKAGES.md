@@ -555,6 +555,8 @@ lsof
 iotop
 # v2.4 Universal Para-virt additions
 socat
+syft
+oras-cli
 ```
 
 ## Android — Waydroid
