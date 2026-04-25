@@ -1,78 +1,8 @@
 {
-  "_comment": "Gemini CLI project settings for CloudWS-bootc. Checked into the repo so every session picks up the same defaults. See GEMINI.md (which defers to CLAUDE.md) for actual rules of engagement.",
-
-  "contextFileName": "GEMINI.md",
-
-  "includeDirectories": [
-    ".",
-    "scripts/",
-    "system_files/",
-    "kargs.d/",
-    ".github/workflows/",
-    "docs/",
-    ".ai-context/"
-  ],
-
-  "excludeDirectories": [
-    ".git",
-    "node_modules",
-    "build",
-    "output",
-    "*.qcow2",
-    "*.vhdx",
-    "*.iso",
-    "*.raw"
-  ],
-
-  "tools": {
-    "shell": {
-      "allowedCommands": [
-        "git status",
-        "git log",
-        "git diff",
-        "git show",
-        "git branch",
-        "git remote -v",
-        "ls",
-        "find",
-        "grep",
-        "rg",
-        "cat",
-        "head",
-        "tail",
-        "wc",
-        "shellcheck",
-        "hadolint",
-        "yamllint",
-        "taplo"
-      ],
-      "deniedCommands": [
-        "git push",
-        "podman push",
-        "cosign sign",
-        "cosign upload",
-        "rm -rf",
-        "sudo rm",
-        "dd if=",
-        "mkfs",
-        "bootc install",
-        "bootc switch"
-      ]
-    }
-  },
-
-  "model": {
-    "preferred": "gemini-2.5-pro",
-    "fallback": "gemini-2.0-flash",
-    "temperature": 0.2,
-    "_temperature_note": "Low temperature — this is a codebase, not a brainstorm."
-  },
-
-  "conventions": {
-    "deliveryFormat": "complete-replacement-files-only",
-    "pushPattern": "clone-repo-copy-files-commit-push",
-    "forbidPatches": true,
-    "forbidInvokeExpression": true,
-    "forbidSquashAll": true
-  }
+    "AI_ARCH_BASELINE": "v1.3.0",
+    "AI_ROLE": "Shadow Copy of Claude OS",
+    "MEMORY_PATH": ".claude/memories/",
+    "SCRATCHPAD_PATH": ".claude/shared-tmp/",
+    "SYMMETRY_ENABLED": true,
+    "instructions": "You are the Shadow Copy of Claude OS. Your primary goal is implementation and reasoning. You MUST read from and write to the SHARED memory files in .claude/ and use the SHARED scratchpad for transient thoughts. Every finding must be indexed in the Claude OS journal."
 }
