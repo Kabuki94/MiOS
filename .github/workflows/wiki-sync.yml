@@ -5,11 +5,8 @@ on:
     branches:
       - main
     paths:
-      - 'docs/**'
-      - 'scripts/**'
-      - 'tools/**'
-      - 'changelogs/**'
-      - '.claude/memories/**'
+      - 'docs/*.md'
+      - '.claude/memories/*.md'
       - 'ai-context.json'
       - 'root-manifest.json'
   workflow_dispatch:
@@ -32,10 +29,6 @@ jobs:
         run: |
           python3 tools/generate-ai-manifest.py
 
-      - name: Prepare Wiki Staging
-        run: |
-          python3 tools/sync-wiki.py
-
       - name: Push to Wiki
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -48,8 +41,9 @@ jobs:
           # Clean existing wiki content (except .git)
           find wiki_repo -maxdepth 1 -not -name 'wiki_repo' -not -name '.git' -exec rm -rf {} +
           
-          # Copy new content from staging
-          cp -rv wiki-staging/* wiki_repo/
+          # Copy Markdown files from docs/ (flat source of truth)
+          # We only copy root .md files to keep wiki flat as required by GitHub
+          cp -v docs/*.md wiki_repo/
           
           cd wiki_repo
           
@@ -58,7 +52,7 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add .
-            git commit -m "docs: auto-sync wiki from ai-context [$(date +%Y-%m-%d)]"
+            git commit -m "docs: auto-sync wiki from docs/ [$(date +%Y-%m-%d)]"
             git push origin master || git push origin main
           else
             echo "No changes to wiki detected."

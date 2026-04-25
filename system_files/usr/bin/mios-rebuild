@@ -3,7 +3,7 @@ set -euo pipefail
 DIR="${MIOS_DIR:-$HOME/MiOS}"
 echo "MiOS — Rebuilding from source..."
 if [ ! -d "$DIR" ]; then
-    git clone https://github.com/Kabuki94/MiOS.git "$DIR"
+    git clone https://github.com/Kabuki94/mios.git "$DIR"
 else
     cd "$DIR" && git pull
 fi

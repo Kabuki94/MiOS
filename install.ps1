@@ -7,12 +7,12 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
         Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Path)`"" -Verb RunAs
     } else {
         # Handle irm | iex scenario by relaunching the command
-        $command = "irm https://raw.githubusercontent.com/Kabuki94/MiOS/main/install.ps1 | iex"
+        $command = "irm https://raw.githubusercontent.com/Kabuki94/mios/main/install.ps1 | iex"
         Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"$command`"" -Verb RunAs
     }
     return
 }
-$RepoUrl = "https://github.com/Kabuki94/MiOS"
+$RepoUrl = "https://github.com/Kabuki94/mios"
 
 # --- Credential Handling ---
 if (-not $env:GHCR_TOKEN) {

@@ -16,7 +16,7 @@ deliverable contract defined in `CLAUDE.md` §4.
 The script must:
 
 1. **Clone the existing repo** to a temp directory —
-   `github.com/Kabuki94/MiOS`. Never `git init`, never
+   `github.com/Kabuki94/mios`. Never `git init`, never
    create a new repo.
 2. **Copy every file** from the staged companion directory into the repo,
    preserving layout relative to the repo root. Complete replacement files only.
@@ -54,6 +54,6 @@ push anything on the user's behalf — the script is the deliverable; humans run
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
+- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
 - **Sole Proprietor:** Kabu.ki
 ---

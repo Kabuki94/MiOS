@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
-    "MIOS_REPO": "github.com/Kabuki94/MiOS",
+    "MIOS_REPO": "github.com/Kabuki94/mios",
     "MIOS_IMAGE": "ghcr.io/kabuki94/mios:latest",
     "MIOS_BASE_PRIMARY": "ghcr.io/ublue-os/ucore-hci:stable-nvidia",
     "MIOS_BASE_SECONDARY": "quay.io/fedora/fedora-bootc:rawhide",

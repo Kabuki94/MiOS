@@ -4,10 +4,8 @@
   "description": "Universal AI Integration Context Hub",
   "harness_instructions": "This JSON structure provides a parse-able map of all project documentation, logs, and memories. AI agents should use the 'manifests' keys to locate specific data categories. Each manifest contains 'full_content' for direct ingestion.",
   "manifests": {
-    "changelogs": "changelogs/manifest.json",
-    "knowledge_base": "docs/manifest.json",
+    "documentation": "docs/manifest.json",
     "memories": ".claude/memories/manifest.json",
-    "historical_context": ".ai-context/manifest.json",
     "artifacts": "artifacts/manifest.json",
     "scripts": "scripts/manifest.json",
     "tools": "tools/manifest.json",

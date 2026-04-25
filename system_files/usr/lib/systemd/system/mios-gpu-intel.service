@@ -1,7 +1,7 @@
 [Unit]
 Description=MiOS Intel/AMD iGPU Container Plumbing (i915/xe/amdgpu)
 ConditionVirtualization=!container
-Documentation=https://github.com/Kabuki94/MiOS/blob/main/docs/gpu-passthrough.md
+Documentation=https://github.com/Kabuki94/mios/blob/main/docs/gpu-passthrough.md
 ConditionPathExists=/dev/dri/renderD128
 After=systemd-modules-load.service systemd-udev-settle.service
 Wants=systemd-udev-settle.service

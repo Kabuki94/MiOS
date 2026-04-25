@@ -33,13 +33,13 @@ Depending on your environment, use one of the following primary entry points to 
 ### 🐧 Linux / WSL2 (One-Liner)
 Bootstraps the environment, clones the latest repository, and initiates the build process.
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Kabuki94/MiOS/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Kabuki94/mios/main/install.sh | bash
 ```
 
 ### 🪟 Windows 11 (One-Liner)
 One-click repository fetch and max-resource environment setup. **Run as Administrator.**
 ```powershell
-irm https://raw.githubusercontent.com/Kabuki94/MiOS/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/Kabuki94/mios/main/install.ps1 | iex
 ```
 
 ### 🐚 [Justfile](Justfile) (Unified Runner)
@@ -97,6 +97,6 @@ just test
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
+- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
 - **Sole Proprietor:** Kabu.ki
 ---

@@ -12,8 +12,8 @@ FOOTER = """---
 ### ⚖️ Legal & Source Reference
 - **Copyright:** (c) 2026 Kabu.ki
 - **Status:** Personal Property / Private Infrastructure
-- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
-- **Documentation:** [MiOS Knowledge Base](https://github.com/Kabuki94/MiOS/tree/main/docs/knowledge)
+- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
+- **Documentation:** [MiOS Knowledge Base](https://github.com/Kabuki94/mios/tree/main/docs/knowledge)
 - **Artifact Hub:** [ai-context.json](../../ai-context.json)
 ---"""
 

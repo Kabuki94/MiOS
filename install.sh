@@ -1,9 +1,9 @@
 #!/bin/bash
 # MiOS — One-line installer for Linux
-# Usage: curl -fsSL https://raw.githubusercontent.com/Kabuki94/MiOS/main/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/Kabuki94/mios/main/install.sh | bash
 set -euo pipefail
 
-REPO="https://github.com/Kabuki94/MiOS.git"
+REPO="https://github.com/Kabuki94/mios.git"
 DIR="${MIOS_DIR:-$HOME/MiOS}"
 
 # Read version from repo VERSION file, fallback to hardcoded
@@ -29,7 +29,7 @@ if [[ -n "${GHCR_TOKEN:-}" ]]; then
     echo "  [OK] Credentials provided; using authenticated requests."
 fi
 
-_remote_ver=$(scurl "https://raw.githubusercontent.com/Kabuki94/MiOS/main/VERSION" 2>/dev/null || true)
+_remote_ver=$(scurl "https://raw.githubusercontent.com/Kabuki94/mios/main/VERSION" 2>/dev/null || true)
 [[ -n "$_remote_ver" ]] && VER="v${_remote_ver}"
 
 echo "╔══════════════════════════════════════════════════════════════╗"
@@ -86,7 +86,7 @@ case "$choice" in
     echo ""
     if [ "$(id -u)" -ne 0 ]; then
         echo "✗ Must run as root."
-        echo "  sudo bash -c '\$(curl -fsSL https://raw.githubusercontent.com/Kabuki94/MiOS/main/install.sh)'"
+        echo "  sudo bash -c '\$(curl -fsSL https://raw.githubusercontent.com/Kabuki94/mios/main/install.sh)'"
         exit 1
     fi
     echo "Available disks:"

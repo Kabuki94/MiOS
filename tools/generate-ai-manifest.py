@@ -99,11 +99,9 @@ def generate_json_manifest(target_dir, output_file, recursive=True, ignore_dirs=
 if __name__ == "__main__":
     # Categories to manifest
     targets = [
-        ("changelogs", "changelogs/manifest.json", True),
-        ("docs", "docs/manifest.json", True),
-        (".claude/memories", ".claude/memories/manifest.json", True),
-        (".ai-context", ".ai-context/manifest.json", True),
-        ("artifacts", "artifacts/manifest.json", True),
+        ("docs", "docs/manifest.json", False), # Non-recursive for flat docs (Wiki)
+        (".claude/memories", ".claude/memories/manifest.json", False),
+        ("artifacts", "artifacts/manifest.json", False),
         ("scripts", "scripts/manifest.json", True),
         ("tools", "tools/manifest.json", True),
         ("system_files", "system_files/manifest.json", True),

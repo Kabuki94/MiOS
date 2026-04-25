@@ -84,7 +84,7 @@ Boot into a running MiOS system and build from source:
 
 ```bash
 # Clone the repo
-git clone https://github.com/Kabuki94/MiOS.git
+git clone https://github.com/Kabuki94/mios.git
 cd MiOS
 
 # Build the OCI image (rootful Podman required)
@@ -148,6 +148,6 @@ The build process downloads ~2-4 GB of RPM packages from Fedora repos, RPM Fusio
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
+- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
 - **Sole Proprietor:** Kabu.ki
 ---

@@ -1,8 +1,0 @@
-# 15-rootflags.toml
----
-
-# MiOS v2.1.0 — Root filesystem mount flags
-match-architectures = ["x86_64"]
-kargs = [
-    "rootflags=discard=async,noatime"
-]
