@@ -1,8 +1,18 @@
 {
+    "$schema": "https://gemini-cli.dev/schemas/settings.schema.json",
+    "contextFileName": "GEMINI.md",
+    "_comment": "Gemini CLI runtime config. GEMINI.md (project root) is the hierarchical bootstrap entry point and imports the Claude OS state. Do not duplicate memory paths here — GEMINI.md owns them.",
+
     "AI_ARCH_BASELINE": "v1.3.0",
     "AI_ROLE": "Cognitive Mirror of Claude OS",
+    "AI_BOOTSTRAP_FILE": "GEMINI.md",
+    "AI_ENGINE": "Claude OS (main)",
+    "AI_MIRROR": "Gemini Code Assist (bootstrapped)",
+
     "MEMORY_PATH": ".claude/memories/",
     "SCRATCHPAD_PATH": ".claude/shared-tmp/",
+    "SEMANTIC_MEMORY_PATH": ".claude/memory/",
     "SYMMETRY_ENABLED": true,
-    "instructions": "You are the Cognitive Mirror of Claude OS. Your primary goal is implementation and reasoning. You MUST read from and write to the SHARED memory files in .claude/ and use the SHARED scratchpad for transient thoughts. Every finding must be indexed in the Claude OS journal."
+
+    "instructions": "You are the Cognitive Mirror of Claude OS. Read GEMINI.md (project root) before any action — it is the hierarchical bootstrap and imports the Claude OS state. Every action, finding, or decision MUST be appended to .claude/memories/journal.md with timestamp + agent tag [AI: Gemini Code Assist]. Use .claude/shared-tmp/ for transient artefacts. Never create a Gemini-only memory store; the Cognitive Mirror Law forbids splitting the brain. No GCP integrations (project_no_gcp). Respect deny-listed files (CHANGELOG.md, VERSION, docs/PACKAGES.md, signing workflows)."
 }

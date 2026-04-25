@@ -12,6 +12,11 @@
 - **Journaling**: Both agents write to [`.claude/memories/journal.md`](../memories/journal.md).
 - **Communication**: Inter-agent data exchange via `.claude/shared-tmp/`.
 - **Implementation**: Gemini executes; Claude remembers; both synchronize.
+- **Gemini bootstrap**: Hierarchical context via [`GEMINI.md`](../../GEMINI.md) (option 1 — see [gemini-bootstrap.md](gemini-bootstrap.md)). Gemini reads the same `.claude/` paths; no parallel store.
+
+### Project memories
+- [No GCP](project_no_gcp.md) — CloudWS does not target Google Cloud Platform.
+- [Gemini bootstrap](gemini-bootstrap.md) — Cognitive Mirror via GEMINI.md hierarchical context engine (option 1).
 
 ### Architecture Update Complete (2026-04-25)
 - Shared scratchpad provisioned.

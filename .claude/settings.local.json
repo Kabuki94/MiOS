@@ -15,7 +15,8 @@
       "Bash(git ls-tree *)",
       "Bash(git --no-pager show b98e01a:./push-v0.1.4.ps1)",
       "Read(//tmp/**)",
-      "Bash(python .claude/shared-tmp/changelog-rewrite.py)"
+      "Bash(python .claude/shared-tmp/changelog-rewrite.py)",
+      "Bash(git add *)"
     ]
   }
 }
