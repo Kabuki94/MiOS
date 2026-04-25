@@ -17,7 +17,7 @@ log "42-cosign-policy: ensuring cosign + trust roots + policy.json"
 # 1. Install cosign binary (pinned to v2.x for rpm-ostree compatibility)
 if ! command -v cosign >/dev/null 2>&1; then
     log "  downloading cosign v2.6.3 static binary..."
-    curl -sL "https://github.com/sigstore/cosign/releases/download/v2.6.3/cosign-linux-amd64" -o /usr/local/bin/cosign
+    scurl "https://github.com/sigstore/cosign/releases/download/v2.6.3/cosign-linux-amd64" -o /usr/local/bin/cosign
     chmod +x /usr/local/bin/cosign
 fi
 

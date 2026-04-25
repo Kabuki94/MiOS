@@ -6,6 +6,9 @@
 # Safe to source multiple times (idempotent).
 # ============================================================================
 
+# shellcheck source=lib/masking.sh
+source "$(dirname "${BASH_SOURCE[0]}")/masking.sh"
+
 # --- Logging ----------------------------------------------------------------
 log() { printf '==> %s\n' "$*"; }
 warn(){ printf 'WARN: %s\n' "$*" >&2; }

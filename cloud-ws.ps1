@@ -190,7 +190,7 @@ $RegistryToken = ""
 if ($DoPush -or $DoPull) {
     # Try environment variables first (CI/CD friendly)
     $RegistryUser  = $env:CLOUDWS_GHCR_USER
-    $RegistryToken = $env:CLOUDWS_GHCR_TOKEN
+    $RegistryToken = if ($env:CLOUDWS_GHCR_TOKEN) { $env:CLOUDWS_GHCR_TOKEN } else { $env:GHCR_TOKEN }
 
     if (-not $RegistryUser) {
         $RegistryUser = Read-Timed "Registry username:" "kabuki94"

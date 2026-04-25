@@ -9,6 +9,8 @@
 #     This fixes bootc lint: /var content must use tmpfiles.d entries
 #   - systemctl enables moved to Containerfile STEP D (unit files in system_files/)
 set -euo pipefail
+# shellcheck source=lib/common.sh
+source "$(dirname "$0")/lib/common.sh"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
 
@@ -27,7 +29,7 @@ echo "[13-ceph-k3s] Resolving latest K3s release tag..."
 # Retry 3 times for flaky networks
 K3S_TAG=""
 for i in 1 2 3; do
-    K3S_TAG=$(curl -sL -o /dev/null -w "%{url_effective}" https://github.com/k3s-io/k3s/releases/latest | grep -oE '[^/]+$' || true)
+    K3S_TAG=$(scurl -sL -o /dev/null -w "%{url_effective}" https://github.com/k3s-io/k3s/releases/latest | grep -oE '[^/]+$' || true)
     if [[ -n "$K3S_TAG" && "$K3S_TAG" != "latest" ]]; then break; fi
     sleep 2
 done
@@ -46,9 +48,9 @@ if [[ -n "$K3S_TAG" ]]; then
     K3S_INSTALL_URL="https://raw.githubusercontent.com/k3s-io/k3s/${K3S_TAG}/install.sh"
 
     mkdir -p /tmp/k3s-dl
-    if curl -sfL "$K3S_URL" -o /tmp/k3s-dl/k3s && \
-       curl -sfL "$K3S_SUM_URL" -o /tmp/k3s-dl/sha256sum.txt && \
-       curl -sfL "$K3S_INSTALL_URL" -o /tmp/k3s-dl/k3s-install.sh; then
+    if scurl -sfL "$K3S_URL" -o /tmp/k3s-dl/k3s && \
+       scurl -sfL "$K3S_SUM_URL" -o /tmp/k3s-dl/sha256sum.txt && \
+       scurl -sfL "$K3S_INSTALL_URL" -o /tmp/k3s-dl/k3s-install.sh; then
         cd /tmp/k3s-dl
         if grep -E "  k3s$" sha256sum.txt | sha256sum -c - >/dev/null 2>&1; then
             echo "[13-ceph-k3s] ✓ K3s SHA256 checksum verified"

@@ -3,19 +3,22 @@
 # 37-ollama-prep: Embed default LLM models during build
 set -euo pipefail
 
+# shellcheck source=lib/common.sh
+source "$(dirname "$0")/lib/common.sh"
+
 # This script is intended for local builds to "bake in" the default coding model.
 # It installs a temporary ollama binary, pulls the model, and cleans up.
 
 # Only run if not already present (idempotency)
 if [ -d "/var/lib/ollama/models" ] && [ "$(ls -A /var/lib/ollama/models)" ]; then
-    echo "[37-ollama-prep] Default models already present, skipping."
+    log "Default models already present, skipping."
     exit 0
 fi
 
-echo "[37-ollama-prep] Downloading default model: deepseek-coder-v2:lite..."
+log "Downloading default model: deepseek-coder-v2:lite..."
 
 # Install temporary ollama binary
-curl -L https://ollama.com/download/ollama-linux-amd64 -o /tmp/ollama
+scurl -L https://ollama.com/download/ollama-linux-amd64 -o /tmp/ollama
 chmod +x /tmp/ollama
 
 # Start ollama serve in background
@@ -27,14 +30,14 @@ mkdir -p "$OLLAMA_MODELS"
 OLLAMA_PID=$!
 
 # Wait for server to be ready
-echo "Waiting for Ollama server to start..."
+log "Waiting for Ollama server to start..."
 MAX_RETRIES=15
 COUNT=0
-while ! curl -s http://localhost:11434/api/tags > /dev/null; do
+while ! scurl -s http://localhost:11434/api/tags > /dev/null; do
     sleep 2
     COUNT=$((COUNT + 1))
     if [ $COUNT -ge $MAX_RETRIES ]; then
-        echo "ERROR: Ollama server failed to start."
+        log "ERROR: Ollama server failed to start."
         kill $OLLAMA_PID
         exit 1
     fi

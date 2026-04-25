@@ -5,9 +5,25 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 }
 $RepoUrl = "https://github.com/Kabuki94/CloudWS-bootc"
 
+# --- Credential Handling ---
+if (-not $env:GHCR_TOKEN) {
+    $token = Read-Host "  GitHub Container Registry Token (optional, press enter to skip)"
+    if ($token) { $env:GHCR_TOKEN = $token }
+}
+
+function Invoke-SecureWebRequest {
+    param([string]$Uri, [string]$OutFile)
+    $params = @{ Uri = $Uri; UseBasicParsing = $true }
+    if ($env:GHCR_TOKEN -and ($Uri -match "github\.com" -or $Uri -match "ghcr\.io")) {
+        $params.Headers = @{ Authorization = "Bearer $($env:GHCR_TOKEN)" }
+    }
+    if ($OutFile) { $params.OutFile = $OutFile }
+    return Invoke-WebRequest @params
+}
+
 # Read version from repo VERSION file, fallback to hardcoded
 $Ver = "v1.3.0"
-try { $Ver = "v" + (Invoke-WebRequest -Uri "$RepoUrl/raw/main/VERSION" -UseBasicParsing).Content.Trim() } catch { Write-Verbose "Failed to fetch version: $_" }
+try { $Ver = "v" + (Invoke-SecureWebRequest -Uri "$RepoUrl/raw/main/VERSION").Content.Trim() } catch { Write-Verbose "Failed to fetch version: $_" }
 
 Write-Host ""
 Write-Host "  +==============================================================+" -ForegroundColor Cyan
@@ -23,7 +39,7 @@ switch ($choice) {
     "1" {
         try {
             $tmp = "$env:TEMP\cloudws-preflight-$(Get-Random).ps1"
-            Invoke-WebRequest -Uri "$RepoUrl/raw/main/preflight.ps1" -OutFile $tmp -UseBasicParsing
+            Invoke-SecureWebRequest -Uri "$RepoUrl/raw/main/preflight.ps1" -OutFile $tmp
             & $tmp
             Remove-Item $tmp -ErrorAction SilentlyContinue
         }
@@ -55,7 +71,7 @@ switch ($choice) {
         Pop-Location
     }
     "3" {
-        Invoke-WebRequest -Uri "$RepoUrl/raw/main/cloud-ws.ps1" -OutFile "cloud-ws.ps1"
+        Invoke-SecureWebRequest -Uri "$RepoUrl/raw/main/cloud-ws.ps1" -OutFile "cloud-ws.ps1"
         Write-Host "  [OK] Saved. Run: .\cloud-ws.ps1" -ForegroundColor Green
     }
     default {

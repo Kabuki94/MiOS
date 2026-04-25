@@ -18,6 +18,8 @@
 #   - Flatpak: 7 apps (added Flatseal + LocalSend)
 #   - adw-gtk3 theme for GTK3 visual consistency
 set -euo pipefail
+# shellcheck source=lib/common.sh
+source "$(dirname "$0")/lib/common.sh"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
 
@@ -71,7 +73,7 @@ BIBATA_VER=""
 BIBATA_FALLBACK="2.0.7"
 
 # Try GitHub API for latest release tag (strips leading 'v')
-BIBATA_VER=$(curl -sL -H "Accept: application/vnd.github+json" "https://api.github.com/repos/ful1e5/Bibata_Cursor/releases/latest" \
+BIBATA_VER=$(scurl -sL -H "Accept: application/vnd.github+json" "https://api.github.com/repos/ful1e5/Bibata_Cursor/releases/latest" \
     | grep -m1 '"tag_name"' | sed 's/.*"v\?\([^"]*\)".*/\1/' 2>/dev/null || true)
 
 # Fallback if API fails (rate limit, network issue)
@@ -94,7 +96,7 @@ mkdir -p /usr/share/icons
 BIBATA_OK=0
 for attempt in 1 2 3; do
     echo "[10-gnome]   Download attempt $attempt/3..."
-    if curl -fSL --retry 3 --retry-delay 5 "$BIBATA_URL" -o /tmp/bibata.tar.xz; then
+    if scurl -fSL --retry 3 --retry-delay 5 "$BIBATA_URL" -o /tmp/bibata.tar.xz; then
         if tar -xf /tmp/bibata.tar.xz -C /usr/share/icons/; then
             rm -f /tmp/bibata.tar.xz
             BIBATA_OK=1

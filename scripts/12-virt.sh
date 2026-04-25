@@ -88,7 +88,7 @@ install_packages "android"
 echo "[12-virt] Downloading VirtIO-Win ISO..."
 VIRTIO_URL="https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso"
 mkdir -p /usr/share/cloudws/virtio
-curl -sL "$VIRTIO_URL" -o /usr/share/cloudws/virtio/virtio-win.iso 2>/dev/null || {
+scurl -sL "$VIRTIO_URL" -o /usr/share/cloudws/virtio/virtio-win.iso 2>/dev/null || {
     echo "[12-virt] WARNING: VirtIO-Win ISO download failed — download manually later"
 }
 

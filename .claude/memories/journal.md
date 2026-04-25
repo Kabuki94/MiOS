@@ -2135,3 +2135,15 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   2. **SBOM Pipeline:** Integrated `syft` and `oras` into `.github/workflows/build.yml` to generate and attach SPDX/CycloneDX SBOMs to every CI build. Added `syft` and `oras-cli` to `docs/PACKAGES.md` for lifecycle tracking.
   3. **Documentation:** Updated `docs/security.md` with a detailed rationale for the now-complete 29-parameter kernel hardening set.
 * **RESULT:** CloudWS-bootc now meets the full SecureBlue infrastructure hardening standard and provides cryptographically-signed SBOM attestations for every OCI artifact.
+
+---
+
+### [2026-04-25 19:45:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** Implemented secure build-time logging with credential masking and established authenticated artifact retrieval pathways.
+* **ACTION:** 
+  1. **Masking Library:** Created `scripts/lib/masking.sh` providing `mask_filter` (stream-based secret scrubbing), `add_mask`, and `register_common_masks`.
+  2. **Global Logging Protection:** Integrated `mask_filter` into `scripts/build.sh` via global `exec` redirection. All build output, including `dnf` and `podman` logs, is now automatically scrubbed of sensitive environment variables.
+  3. **Authenticated Retrieval:** Implemented `scurl` wrapper in Bash and `Invoke-SecureWebRequest` in PowerShell. These helpers automatically inject `Authorization: Bearer` headers when targeting GitHub/GHCR if `GHCR_TOKEN` is present.
+  4. **Credential Inheritance:** Updated `install.sh` and `install.ps1` to prompt for optional credentials if missing from the environment, enabling seamless local builds of private forks.
+  5. **Standardization:** Refactored all scripts (`10-gnome.sh`, `13-ceph-k3s.sh`, `37-aichat.sh`, etc.) to source `common.sh` and use the `scurl` helper for all external downloads.
+* **RESULT:** Build logs are now safe for public sharing/auditing, and the local build experience is enhanced with secure credential handling and authenticated upstream access.

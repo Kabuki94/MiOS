@@ -29,7 +29,7 @@ REPO_DIR=/etc/yum.repos.d
 # Patched WINE/Mesa/miscellaneous packages missing from Fedora + RPM Fusion.
 if [[ ! -f "${REPO_DIR}/terra.repo" ]]; then
     log "enabling Terra repo (fyralabs)"
-    curl -fsSL \
+    scurl -fsSL \
         https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo \
         -o "${REPO_DIR}/terra.repo"
 else
@@ -39,7 +39,7 @@ fi
 # --- 2. Visual Studio Code (Microsoft) --------------------------------------
 if [[ ! -f "${REPO_DIR}/vscode.repo" ]]; then
     log "enabling VS Code repo (Microsoft)"
-    curl -fsSL https://packages.microsoft.com/keys/microsoft.asc -o /tmp/vscode.asc
+    scurl -fsSL https://packages.microsoft.com/keys/microsoft.asc -o /tmp/vscode.asc
     rpm --import /tmp/vscode.asc && rm -f /tmp/vscode.asc
     cat > "${REPO_DIR}/vscode.repo" <<'EOF'
 [code]
@@ -58,7 +58,7 @@ fi
 # --- 3. 1Password -----------------------------------------------------------
 if [[ ! -f "${REPO_DIR}/1password.repo" ]]; then
     log "enabling 1Password repo"
-    curl -fsSL https://downloads.1password.com/linux/keys/1password.asc -o /tmp/1password.asc
+    scurl -fsSL https://downloads.1password.com/linux/keys/1password.asc -o /tmp/1password.asc
     rpm --import /tmp/1password.asc && rm -f /tmp/1password.asc
     cat > "${REPO_DIR}/1password.repo" <<'EOF'
 [1password]
@@ -95,7 +95,7 @@ fi
 # --- 6. Google Chrome -------------------------------------------------------
 if [[ ! -f "${REPO_DIR}/google-chrome.repo" ]]; then
     log "enabling Google Chrome repo"
-    curl -fsSL https://dl.google.com/linux/linux_signing_key.pub -o /tmp/chrome.pub
+    scurl -fsSL https://dl.google.com/linux/linux_signing_key.pub -o /tmp/chrome.pub
     rpm --import /tmp/chrome.pub && rm -f /tmp/chrome.pub
     cat > "${REPO_DIR}/google-chrome.repo" <<'EOF'
 [google-chrome]
@@ -136,7 +136,7 @@ fi
 # Using Fedora 44 repo endpoint; COPR auto-publishes new packages as they land.
 if [[ ! -f "${REPO_DIR}/ublue-os-packages.repo" ]]; then
     log "enabling ublue-os/packages COPR (uupd + greenboot)"
-    curl -fsSL \
+    scurl -fsSL \
         "https://copr.fedorainfracloud.org/coprs/ublue-os/packages/repo/fedora-44/ublue-os-packages-fedora-44.repo" \
         -o "${REPO_DIR}/ublue-os-packages.repo"
     # Lower priority than Fedora base so Fedora wins on conflicting packages.

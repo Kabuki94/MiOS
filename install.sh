@@ -8,7 +8,28 @@ DIR="${CLOUDWS_DIR:-$HOME/CloudWS-bootc}"
 
 # Read version from repo VERSION file, fallback to hardcoded
 VER="v1.3.0"
-_remote_ver=$(curl -fsSL "https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/VERSION" 2>/dev/null || true)
+
+# --- Credential Handling ---
+echo "Checking for credentials..."
+if [[ -z "${GHCR_TOKEN:-}" ]]; then
+    read -rp "GitHub Container Registry Token (optional, press enter to skip): " GHCR_TOKEN
+    [[ -n "$GHCR_TOKEN" ]] && export GHCR_TOKEN
+fi
+
+# Secure curl helper
+scurl() {
+    local args=("-fsSL")
+    if [[ -n "${GHCR_TOKEN:-}" && ("$1" =~ github\.com || "$1" =~ ghcr\.io) ]]; then
+        args+=("-H" "Authorization: Bearer $GHCR_TOKEN")
+    fi
+    curl "${args[@]}" "$@"
+}
+
+if [[ -n "${GHCR_TOKEN:-}" ]]; then
+    echo "  [OK] Credentials provided; using authenticated requests."
+fi
+
+_remote_ver=$(scurl "https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/VERSION" 2>/dev/null || true)
 [[ -n "$_remote_ver" ]] && VER="v${_remote_ver}"
 
 echo "╔══════════════════════════════════════════════════════════════╗"

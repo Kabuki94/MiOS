@@ -17,10 +17,11 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
+register_common_masks
 export PACKAGES_MD="${PACKAGES_MD:-/ctx/PACKAGES.md}"
 BUILD_LOG="/tmp/cloudws-build.log"
 
-exec > >(tee -a "$BUILD_LOG") 2>&1
+exec > >(mask_filter | tee -a "$BUILD_LOG") 2>&1
 
 log_ts() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
