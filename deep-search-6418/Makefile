@@ -1,5 +1,5 @@
 install:
-	@command -v uv >/dev/null 2>&1 || { echo "uv is not installed. Installing uv..."; curl -LsSf https://astral.sh/uv/v2.1.0/install.sh | sh; source $HOME/.local/bin/env; }
+	@command -v uv >/dev/null 2>&1 || { echo "uv is not installed. Installing uv..."; curl -LsSf https://astral.sh/uv/install.sh | sh; source $HOME/.local/bin/env; }
 	uv sync && npm --prefix frontend install
 
 dev:
@@ -58,7 +58,7 @@ eval-all:
 	@echo "✅ All evalsets completed"
 
 register-gemini-enterprise:
-	@uvx agent-starter-pack@v2.1.0 register-gemini-enterprise
+	@uvx agent-starter-pack@0.1.0 register-gemini-enterprise
 
 test:
 	uv sync --dev

@@ -1,6 +1,6 @@
 [project]
 name = "deep-search"
-version = "v2.1.0"
+version = "0.1.0"
 description = "A production-ready fullstack research agent that uses Gemini to strategize, research, and synthesize comprehensive reports with human-in-the-loop collaboration"
 authors = [
     {name = "Amit Dutta", email = "amitdutta@google.com"},
