@@ -9,7 +9,6 @@ ConditionVirtualization=!wsl
 [Container]
 Image=docker.io/crowdsecurity/metabase:latest
 ContainerName=crowdsec-dashboard
-GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage
 HttpProxy=false
 PublishPort=3000:3000
 Volume=crowdsec-data.volume:/metabase-data
