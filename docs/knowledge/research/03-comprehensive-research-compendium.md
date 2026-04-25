@@ -26,7 +26,7 @@ The **Mesa D3D12 Gallium driver** (upstreamed by Microsoft/Collabora in Mesa 21.
 
 **NVIDIA support in WSL2 is comprehensive**: CUDA, DirectML, OpenGL (via Mesa d3d12), Vulkan, and VAAPI video acceleration all work, with `nvidia-smi` available through the mounted libraries. **AMD support is more limited** — OpenGL works via Mesa d3d12, but there is no native ROCm in WSL2; compute must use DirectML instead. Intel GPUs work via the same d3d12 pathway.
 
-For **Hyper-V Gen2 Linux VMs**, GPU-PV is NOT officially supported by Microsoft for Linux guests — it's a community-driven effort. The dxgkrnl module must be compiled from source using the WSL2-Linux-Kernel source tree, available as DKMS packages from projects like `staralt/dxgkrnl-dkms`. GPU driver files must be manually copied from the Windows host (`C:\Windows\System32\DriverStore\FileRepository\` and `C:\Windows\System32\lxss\lib`) into the guest at `/usr/lib/wsl/lib/` and `/usr/lib/wsl/drivers/`. Community testing confirms working setups on Debian 12/13, Ubuntu 24.04, Fedora 41, and Arch Linux. Microsoft has posted dxgkrnl v2 patches (~24 patches, 16.5k lines) for potential mainlining into the upstream Linux kernel, but this remains under review.
+For **Hyper-V Gen2 Linux VMs**, GPU-PV is NOT officially supported by Microsoft for Linux guests — it's a community-driven effort. The dxgkrnl module must be compiled from source using the WSL2-Linux-Kernel source tree, available as DKMS packages from projects like `staralt/dxgkrnl-dkms`. GPU driver files must be manually copied from the Windows host (`C:\Windows\System32\DriverStore\FileRepository\` and `C:\Windows\System32\lxss\lib`) into the guest at `/usr/lib/wsl/lib/` and `/usr/lib/wsl/drivers/`. Community testing confirms working setups on Debian 12/13, Ubuntu 24.04, Fedora 41, and Fedora Bootc. Microsoft has posted dxgkrnl v2 patches (~24 patches, 16.5k lines) for potential mainlining into the upstream Linux kernel, but this remains under review.
 
 ---
 
@@ -106,7 +106,7 @@ RUN dnf install -y python3-dnf-plugins-extras-versionlock && \
     dnf clean all
 ```
 
-**Option B — COPR alternative kernels** provide dedicated stable/LTS options. Bazzite uses `sentry/kernel-fsync` (futex/fsync patches for gaming) with explicit version gating logic to avoid regressions. The CachyOS COPR (`bieszczaders/kernel-cachyos`) offers LTS, RT, and server variants with BORE scheduler and AMD optimizations. The `kwizart/kernel-longterm` COPR provides true LTS kernel branches (6.1, 6.6, etc.). The official `@kernel-vanilla/stable` COPRs won't provide older kernels than Rawhide's default, making them less useful for this purpose.
+**Option B — COPR alternative kernels** provide dedicated stable/LTS options. Bazzite uses `sentry/kernel-fsync` (futex/fsync patches for gaming) with explicit version gating logic to avoid regressions. The CloudWS-bootc COPR (`bieszczaders/kernel-cachyos`) offers LTS, RT, and server variants with BORE scheduler and AMD optimizations. The `kwizart/kernel-longterm` COPR provides true LTS kernel branches (6.1, 6.6, etc.). The official `@kernel-vanilla/stable` COPRs won't provide older kernels than Rawhide's default, making them less useful for this purpose.
 
 **Option C — Install from a stable Fedora release repo**: `dnf -y --releasever=42 --repo=fedora,updates install kernel kernel-core kernel-modules kernel-modules-core` then versionlock. This gives a true stable kernel but risks ABI mismatches with Rawhide userspace packages.
 

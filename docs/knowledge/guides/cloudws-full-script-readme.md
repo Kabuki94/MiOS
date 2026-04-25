@@ -274,7 +274,7 @@ Creates comprehensive report at:
 
 ## Requirements
 
-- **OS**: CachyOS, Arch Linux, or Arch-based distributions
+- **OS**: CloudWS-bootc, Fedora Bootc, or Fedora-based distributions
 - **Permissions**: Root (sudo)
 - **Hardware**: 
   - CPU with virtualization extensions (AMD-V or Intel VT-x)

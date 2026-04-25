@@ -361,7 +361,7 @@ Core tools (usually pre-installed):
   lscpu lspci lsusb lsblk dmidecode free ip uname grep
 
 Recommended (install for full functionality):
-  # Arch/CachyOS/EndeavourOS:
+  # Arch/CloudWS-bootc/EndeavourOS:
   $ sudo pacman -S lshw hwinfo inxi smartmontools lm_sensors \
                    ethtool neofetch pciutils usbutils
 

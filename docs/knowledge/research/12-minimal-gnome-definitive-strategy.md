@@ -77,7 +77,7 @@ gnome-shell-50.0-1.fc45
 gdm
 ```
 
-Running `dnf remove malcontent` cascades to removing **27+ packages** including `gdm`, `gnome-shell`, `gnome-control-center`, `gnome-session`, and every shell extension. This exists because Fedora's `gnome-control-center.spec` uses `%bcond malcontent %[!0%{?rhel}]` — malcontent is enabled on Fedora and disabled on RHEL. The Users panel links against `libmalcontent-0.so` at compile time, creating an unbreakable runtime dependency. Arch Linux made this optional in gnome-control-center 42.3-2; **Fedora has not followed suit**.
+Running `dnf remove malcontent` cascades to removing **27+ packages** including `gdm`, `gnome-shell`, `gnome-control-center`, `gnome-session`, and every shell extension. This exists because Fedora's `gnome-control-center.spec` uses `%bcond malcontent %[!0%{?rhel}]` — malcontent is enabled on Fedora and disabled on RHEL. The Users panel links against `libmalcontent-0.so` at compile time, creating an unbreakable runtime dependency. Fedora Bootc made this optional in gnome-control-center 42.3-2; **Fedora has not followed suit**.
 
 **Safe workaround**: Remove only the user-facing malcontent components while keeping the library:
 ```bash

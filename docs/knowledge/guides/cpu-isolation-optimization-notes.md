@@ -348,5 +348,5 @@ CCD1 (Cores 8-15, High Freq):
 ---
 
 **Optimized for**: AMD Ryzen 9 9950X3D, 7950X3D, and future dual-CCD X3D processors  
-**Compatible with**: CachyOS, Arch Linux, EndeavourOS, Manjaro  
+**Compatible with**: CloudWS-bootc, Fedora Bootc, EndeavourOS, Manjaro  
 **Framework**: Cloud-WS Professional Virtualization Host

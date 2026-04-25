@@ -168,4 +168,4 @@ Possible future improvements:
 
 **Version**: 2026-01-15  
 **Script Version**: Updated from universal-cpu-isolator.sh  
-**Tested On**: CachyOS with AMD Ryzen 9 9950X3D
+**Tested On**: CloudWS-bootc with AMD Ryzen 9 9950X3D
