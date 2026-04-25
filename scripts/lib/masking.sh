@@ -75,11 +75,14 @@ scurl() {
     local args=()
     local use_creds=false
     local url=""
+    local is_binary=false
     
-    # Simple parser to find the URL and check for credential needs
+    # Simple parser to find the URL and check for binary download flags
     for arg in "$@"; do
         if [[ "$arg" =~ ^https?:// ]]; then
             url="$arg"
+        elif [[ "$arg" == "-o" || "$arg" == "-O" || "$arg" == "--output" ]]; then
+            is_binary=true
         fi
     done
 
@@ -93,5 +96,9 @@ scurl() {
         fi
     fi
 
-    curl "${args[@]}" "$@" | mask_filter
+    if [[ "$is_binary" == "true" ]]; then
+        curl "${args[@]}" "$@"
+    else
+        curl "${args[@]}" "$@" | mask_filter
+    fi
 }

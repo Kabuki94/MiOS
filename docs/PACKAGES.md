@@ -655,15 +655,6 @@ sssd-tools
 libsss_nss_idmap
 ```
 
-## Google Cloud Platform (GCP)
-Linux Guest Environment for hyperscale GCE deployments.
-
-```packages-gcp
-google-guest-agent
-google-compute-engine
-google-osconfig-agent
-```
-
 ## AI Tools
 Rust-based LLM CLI assistants and shell integrations.
 
