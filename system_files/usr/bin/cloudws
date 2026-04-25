@@ -40,8 +40,12 @@ case "$CMD" in
         echo "  SECURITY"
         echo "    scan-malware    ClamAV container scan of /home"
         echo "    sb-audit        Secure Boot CA 2023 readiness audit (2026 deadline)"
+        echo "    sb-keygen       Generate Machine Owner Key (MOK) for signing"
+        echo "    tpm-enroll      Enroll TPM 2.0 for passwordless LUKS boot"
         echo ""
-        echo "  INFO"
+        echo "  SYSTEM"
+        echo "    sysext          Manage systemd-sysext extensions"
+        echo "    role            Manage system roles"
         echo "    version         Show CloudWS version"
         echo "    motd            Show management dashboard"
         echo "    help            Show this help"
@@ -71,6 +75,9 @@ case "$CMD" in
             clamscan -r /scan/home --max-filesize=100M --max-scansize=500M 2>/dev/null
         ;;
     sb-audit)    exec /usr/libexec/cloudws/sb-audit ;;
+    sb-keygen)   exec /usr/libexec/cloudws/sb-keygen ;;
+    tpm-enroll)  exec /usr/libexec/cloudws/tpm-enroll ;;
+    sysext)      exec systemd-sysext "$@" ;;
     motd)        exec /usr/libexec/cloudws/motd ;;
     *)
         echo "Unknown command: $CMD"

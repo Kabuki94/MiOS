@@ -26,6 +26,8 @@ enable cloudws-sriov-init.service
 enable cloudws-cdi-detect.service
 enable cloudws-libvirtd-setup.service
 enable cloudws-grd-setup.service
+enable systemd-sysext.service
+enable systemd-confext.service
 enable gnome-remote-desktop.service
 enable cloudws-firstboot.target
 enable greenboot-healthcheck.service

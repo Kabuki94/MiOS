@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# CloudWS Secure Boot Key Generator
+# Creates a Machine Owner Key (MOK) for signing custom UKIs and modules.
+# Compatible with enrollment alongside Microsoft UEFI CA 2023.
+set -euo pipefail
+
+KEY_DIR="/var/lib/cloudws/secureboot"
+mkdir -p "$KEY_DIR"
+chmod 700 "$KEY_DIR"
+
+C=$'\033[0;36m'; W=$'\033[1;37m'; G=$'\033[0;32m'; Y=$'\033[0;33m'; R=$'\033[0;31m'; N=$'\033[0m'
+
+log() { printf "  ${C}SB-KEYGEN:${N} %s\n" "$*"; }
+
+if [[ -f "$KEY_DIR/cloudws-mok.key" ]]; then
+    log "Keys already exist in $KEY_DIR"
+    echo "  To regenerate, manually delete the existing keys first."
+    exit 0
+fi
+
+echo "${W}═══ CloudWS Secure Boot Key Generation ═══${N}"
+
+log "Generating 2048-bit RSA Machine Owner Key (MOK)..."
+openssl req -new -x509 -newkey rsa:2048 -nodes \
+    -keyout "$KEY_DIR/cloudws-mok.key" \
+    -out "$KEY_DIR/cloudws-mok.crt" \
+    -days 3650 \
+    -subj "/CN=CloudWS Machine Owner Key/" \
+    -sha256 2>/dev/null
+
+log "Converting certificate to DER format for UEFI enrollment..."
+openssl x509 -in "$KEY_DIR/cloudws-mok.crt" -out "$KEY_DIR/cloudws-mok.cer" -outform DER
+
+chmod 600 "$KEY_DIR/cloudws-mok.key"
+chmod 644 "$KEY_DIR/cloudws-mok.crt" "$KEY_DIR/cloudws-mok.cer"
+
+echo ""
+printf "  ${G}SUCCESS:${N} Keys generated in ${W}$KEY_DIR${N}\n"
+echo ""
+echo "  ${W}Next Steps:${N}"
+echo "  1. Enroll the key into your system firmware:"
+echo "     ${C}sudo mokutil --import $KEY_DIR/cloudws-mok.cer${N}"
+echo "  2. Reboot and follow the 'Enroll MOK' blue screen instructions."
+echo "  3. Use these keys with 'ukify' or 'sbsign' to secure your OS."
+echo ""

@@ -326,6 +326,8 @@ efibootmgr
 systemd-ukify
 binutils
 efitools
+sbsigntools
+tpm2-tss
 ```
 
 ## Cockpit Web Management
