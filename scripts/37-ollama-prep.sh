@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 # 37-ollama-prep: Embed default LLM models during build
 set -euo pipefail
 

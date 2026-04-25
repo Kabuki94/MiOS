@@ -1,14 +1,14 @@
 #!/bin/bash
-# CloudWS v1.3.0 — 33-firewall: Firewall configuration script
+# MiOS v2.1.0 — 33-firewall: Firewall configuration script
 set -euo pipefail
 
 echo "[33-firewall] Installing firewall init script..."
 
-cat > /usr/libexec/cloudws-firewall-init <<'EOFW'
+cat > /usr/libexec/mios-firewall-init <<'EOFW'
 #!/bin/bash
 set -euo pipefail
 if ! systemctl is-active --quiet firewalld 2>/dev/null; then
-    echo "[cloudws-firewall] firewalld not active — skipping"
+    echo "[mios-firewall] firewalld not active — skipping"
     exit 0
 fi
 # Default zone: drop (deny all inbound by default)
@@ -45,8 +45,8 @@ for zone in public libvirt trusted; do
     firewall-cmd --permanent --zone="$zone" --add-port=9090/tcp 2>/dev/null || true
 done
 firewall-cmd --reload 2>/dev/null || true
-echo "[cloudws-firewall] Firewall configured"
+echo "[mios-firewall] Firewall configured"
 EOFW
-chmod +x /usr/libexec/cloudws-firewall-init
+chmod +x /usr/libexec/mios-firewall-init
 
 echo "[33-firewall] Firewall init script installed."

@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 # 37-aichat: Install AIChat and AIChat-NG Rust CLI tools
 set -euo pipefail
 # shellcheck source=lib/common.sh

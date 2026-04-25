@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS — Ceph Cluster Bootstrap (runs ONCE on first bare-metal boot)
+# MiOS — Ceph Cluster Bootstrap (runs ONCE on first bare-metal boot)
 set -euo pipefail
 
 log() { echo "[ceph-bootstrap] $(date '+%H:%M:%S') $*"; }
@@ -62,14 +62,14 @@ cephadm shell -- ceph osd pool set cephfs.cephfs.data size 1 --yes-i-really-mean
 cephadm shell -- ceph fs subvolumegroup create cephfs csi 2>/dev/null || true
 
 log "Creating mount credentials..."
-cephadm shell -- ceph fs authorize cephfs client.cloudws / rw 2>/dev/null || true
-cephadm shell -- ceph auth get-key client.cloudws > /etc/ceph/cloudws.secret 2>/dev/null || true
-chmod 600 /etc/ceph/cloudws.secret 2>/dev/null || true
-cephadm shell -- ceph auth get client.cloudws -o /etc/ceph/ceph.client.cloudws.keyring 2>/dev/null || true
+cephadm shell -- ceph fs authorize cephfs client.mios / rw 2>/dev/null || true
+cephadm shell -- ceph auth get-key client.mios > /etc/ceph/mios.secret 2>/dev/null || true
+chmod 600 /etc/ceph/mios.secret 2>/dev/null || true
+cephadm shell -- ceph auth get client.mios -o /etc/ceph/ceph.client.mios.keyring 2>/dev/null || true
 
 log "Creating CephFS directories..."
 TMPMNT=$(mktemp -d)
-if mount -t ceph "cloudws@.cephfs=/" "$TMPMNT" -o "secretfile=/etc/ceph/cloudws.secret" 2>/dev/null; then
+if mount -t ceph "mios@.cephfs=/" "$TMPMNT" -o "secretfile=/etc/ceph/mios.secret" 2>/dev/null; then
     mkdir -p "$TMPMNT/home" "$TMPMNT/containers"
     umount "$TMPMNT"
 fi

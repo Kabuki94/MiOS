@@ -1,3 +1,3 @@
-summary: Verify critical CloudWS services are active
-test: /usr/bin/cloudws-status
+summary: Verify critical MiOS services are active
+test: /usr/bin/mios-status
 duration: 5m

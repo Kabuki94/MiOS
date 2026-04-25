@@ -1,0 +1,54 @@
+#!/bin/bash
+set -euo pipefail
+SENTINEL="/var/lib/ceph/.mios-bootstrapped"
+LOG="/var/log/mios-ceph-bootstrap.log"
+log() { echo "[$(date '+%F %T')] $*" | tee -a "$LOG"; }
+[ -f "$SENTINEL" ] && { log "Already bootstrapped"; exit 0; }
+
+log "=== MiOS Ceph Single-Node Bootstrap ==="
+command -v cephadm &>/dev/null || { log "ERROR: cephadm not found"; exit 1; }
+
+PRIMARY_IP=$(ip -4 route get v2.1.0.1 2>/dev/null | awk '{print $7; exit}')
+[ -z "$PRIMARY_IP" ] && PRIMARY_IP=$(hostname -I | awk '{print $1}')
+log "IP: ${PRIMARY_IP}, Host: $(hostname -s)"
+
+# Ensure /etc/ceph (others handled by tmpfiles.d)
+mkdir -p /etc/ceph
+
+log "Running cephadm bootstrap..."
+cephadm bootstrap \
+    --mon-ip "${PRIMARY_IP}" \
+    --initial-dashboard-user mios \
+    --initial-dashboard-password mios \
+    --dashboard-password-noupdate \
+    --allow-fqdn-hostname \
+    --single-host-defaults \
+    --skip-firewalld \
+    --skip-monitoring-stack \
+    --cleanup-on-failure 2>&1 | tee -a "$LOG"
+
+sleep 5
+cephadm shell -- ceph config set global osd_pool_default_size 1 2>/dev/null || true
+cephadm shell -- ceph config set global osd_pool_default_min_size 1 2>/dev/null || true
+cephadm shell -- ceph config set global mon_allow_pool_size_one true 2>/dev/null || true
+
+log "Creating CephFS + RBD pools..."
+cephadm shell -- ceph fs volume create mios-fs 2>/dev/null || true
+cephadm shell -- ceph osd pool create mios-rbd 32 2>/dev/null || true
+cephadm shell -- ceph osd pool application enable mios-rbd rbd 2>/dev/null || true
+cephadm shell -- rbd pool init mios-rbd 2>/dev/null || true
+cephadm shell -- ceph osd pool create mios-backup 16 2>/dev/null || true
+cephadm shell -- ceph osd pool application enable mios-backup rbd 2>/dev/null || true
+
+for port in 6789/tcp 6800-7300/tcp 8443/tcp 3300/tcp 8080/tcp; do
+    firewall-cmd --permanent --add-port=$port 2>/dev/null || true
+done
+firewall-cmd --reload 2>/dev/null || true
+
+FSID=$(cephadm shell -- ceph fsid 2>/dev/null || echo "unknown")
+cat > /etc/ceph/mios-join-info.json <<EOF
+{"master_ip":"${PRIMARY_IP}","fsid":"${FSID}","dashboard":"https://${PRIMARY_IP}:8443","cephfs":"mios-fs","rbd":"mios-rbd","backup":"mios-backup"}
+EOF
+
+touch "$SENTINEL"
+log "=== Complete. Dashboard: https://${PRIMARY_IP}:8443 ==="

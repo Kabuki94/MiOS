@@ -1,0 +1,39 @@
+#!/bin/bash
+set -euo pipefail
+echo "[mios-hyperv] Configuring Enhanced Session via gnome-remote-desktop..."
+
+# Load hv_sock module for vsock transport
+modprobe hv_sock 2>/dev/null || true
+
+# Check if the primary Wayland compositor (GDM) failed to launch.
+if systemctl is-failed --quiet gdm.service 2>/dev/null; then
+    echo "[mios-hyperv] ERROR: GDM failed to launch. Wayland RDP unavailable."
+    exit 1
+fi
+
+# Enable gnome-remote-desktop system service (Wayland RDP)
+# The mios-grd-setup.service handles TLS cert generation and credentials.
+if command -v grdctl >/dev/null 2>&1; then
+    echo "[mios-hyperv] Forcing RDP transport to TCP+VSOCK..."
+    grdctl --system rdp set-transport both 2>/dev/null || true
+fi
+systemctl enable gnome-remote-desktop.service 2>/dev/null || true
+systemctl start --no-block gnome-remote-desktop.service 2>/dev/null || true
+
+# Open firewall for RDP
+if command -v firewall-cmd >/dev/null 2>&1 && firewall-cmd --state >/dev/null 2>&1; then
+    # Apply to runtime and permanent independently to avoid --reload flushing nftables
+    firewall-cmd --add-port=3389/tcp 2>/dev/null || true
+    firewall-cmd --permanent --add-port=3389/tcp 2>/dev/null || true
+fi
+
+# Ensure NVIDIA modules don't probe in Hyper-V (no physical GPU)
+# This prevents module load delays and error messages
+if [ ! -d /sys/bus/pci/drivers/nvidia ]; then
+    echo "blacklist nvidia" > /etc/modprobe.d/mios-hyperv-nvidia.conf 2>/dev/null || true
+    echo "blacklist nvidia_drm" >> /etc/modprobe.d/mios-hyperv-nvidia.conf 2>/dev/null || true
+    echo "blacklist nvidia_modeset" >> /etc/modprobe.d/mios-hyperv-nvidia.conf 2>/dev/null || true
+    echo "blacklist nvidia_uvm" >> /etc/modprobe.d/mios-hyperv-nvidia.conf 2>/dev/null || true
+fi
+
+echo "[mios-hyperv] Enhanced Session ready (Wayland RDP via gnome-remote-desktop)"

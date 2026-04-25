@@ -1,0 +1,8 @@
+# MiOS v2.1.0 — First-boot Flatpak install list
+org.gnome.Epiphany
+org.gnome.Logs
+com.mattjakeman.ExtensionManager
+com.github.tchx84.Flatseal
+page.tesk.Refine
+org.localsend.localsend_app
+io.podman_desktop.PodmanDesktop

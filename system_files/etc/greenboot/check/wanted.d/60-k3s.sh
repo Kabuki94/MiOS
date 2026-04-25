@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 # Greenboot health check: K3s status (optional)
 
 # Check if k3s is enabled

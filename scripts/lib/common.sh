@@ -2,7 +2,7 @@
 # ============================================================================
 # scripts/lib/common.sh
 # ----------------------------------------------------------------------------
-# Shared helpers for CloudWS-bootc build scripts.
+# Shared helpers for MiOS build scripts.
 # Safe to source multiple times (idempotent).
 # ============================================================================
 

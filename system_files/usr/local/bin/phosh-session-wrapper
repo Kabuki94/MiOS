@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS — Phosh session wrapper
+# MiOS — Phosh session wrapper
 # Launches Phosh, then restores GNOME window controls on exit
 # so switching back to GNOME doesn't lose close/min/max buttons
 

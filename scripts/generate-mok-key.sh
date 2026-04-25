@@ -1,19 +1,19 @@
 #!/usr/bin/bash
-# generate-mok-key.sh — one-shot CloudWS MOK key generator.
+# generate-mok-key.sh — one-shot MiOS MOK key generator.
 #
 # Generates a 2048-bit RSA key (NOT 4096: shim compatibility) with:
 #   - codeSigning EKU
-#   - 1.3.6.1.4.1.311.10.3.6 (MS Kernel Module Code Signing) EKU
+#   - v2.1.0.v2.1.0.v2.1.0.6 (MS Kernel Module Code Signing) EKU
 #   - 10-year validity
 #
-# Output: /etc/pki/cloudws/mok.{priv,der,pem,pub.b64,sha256}
+# Output: /etc/pki/mios/mok.{priv,der,pem,pub.b64,sha256}
 # Refuses to overwrite an existing key.
 #
-# Store the encrypted private key in GitHub secret CLOUDWS_MOK_KEY_B64
-# and the passphrase in CLOUDWS_MOK_KEY_PASSWORD. Never regenerate per-build.
+# Store the encrypted private key in GitHub secret MIOS_MOK_KEY_B64
+# and the passphrase in MIOS_MOK_KEY_PASSWORD. Never regenerate per-build.
 set -euo pipefail
 
-KEY_DIR=/etc/pki/cloudws
+KEY_DIR=/etc/pki/mios
 PRIV_KEY="${KEY_DIR}/mok.priv"
 DER_CERT="${KEY_DIR}/mok.der"
 PEM_CERT="${KEY_DIR}/mok.pem"
@@ -34,11 +34,11 @@ fi
 
 install -d -m 0700 "$KEY_DIR"
 
-echo "=== CloudWS MOK Key Generation ==="
+echo "=== MiOS MOK Key Generation ==="
 echo ""
 echo "Generating 2048-bit RSA key (shim-compatible) with 10-year validity..."
 echo "You will be prompted for an encryption passphrase for the private key."
-echo "Store this passphrase in GitHub secret CLOUDWS_MOK_KEY_PASSWORD."
+echo "Store this passphrase in GitHub secret MIOS_MOK_KEY_PASSWORD."
 echo ""
 
 # Create EKU extension config
@@ -52,12 +52,12 @@ x509_extensions    = v3_ca
 prompt             = no
 
 [dn]
-CN = CloudWS Module Signing Key
+CN = MiOS Module Signing Key
 
 [v3_ca]
 basicConstraints       = CA:FALSE
 keyUsage               = digitalSignature
-extendedKeyUsage       = codeSigning, 1.3.6.1.4.1.311.10.3.6
+extendedKeyUsage       = codeSigning, v2.1.0.v2.1.0.v2.1.0.6
 subjectKeyIdentifier   = hash
 authorityKeyIdentifier = keyid:always
 EOF
@@ -109,13 +109,13 @@ echo "Fingerprint: $FINGERPRINT"
 echo ""
 echo "GitHub secrets to set:"
 echo "  COSIGN_PRIVATE_KEY  — for cosign key-based signing (separate cosign keypair)"
-echo "  CLOUDWS_MOK_KEY_B64 — content of $B64_PRIV"
-echo "  CLOUDWS_MOK_KEY_PASSWORD — your passphrase"
+echo "  MIOS_MOK_KEY_B64 — content of $B64_PRIV"
+echo "  MIOS_MOK_KEY_PASSWORD — your passphrase"
 echo ""
 echo "Commit the DER cert to the repo:"
-echo "  cp $DER_CERT system_files/etc/pki/cloudws/mok.der"
-echo "  git add system_files/etc/pki/cloudws/mok.der"
+echo "  cp $DER_CERT system_files/etc/pki/mios/mok.der"
+echo "  git add system_files/etc/pki/mios/mok.der"
 echo ""
 echo "Never commit the private key. Add to .gitignore:"
-echo "  /etc/pki/cloudws/mok.priv"
+echo "  /etc/pki/mios/mok.priv"
 echo "═══════════════════════════════════════════════════════════════"

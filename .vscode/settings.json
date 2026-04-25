@@ -1,5 +1,5 @@
 {
-  "_comment": "VSCodium / VSCode workspace settings for CloudWS-bootc. WSL terminal profile removed — having it defined at all causes VSCodium to prefer it when extensions request 'a shell,' and Windows routes bare `bash` through WSL which spawns external popups. On a Windows 11 host, everything runs through PowerShell. Run shell tasks inside WSL manually with `wsl` if needed.",
+  "_comment": "VSCodium / VSCode workspace settings for MiOS. WSL terminal profile removed — having it defined at all causes VSCodium to prefer it when extensions request 'a shell,' and Windows routes bare `bash` through WSL which spawns external popups. On a Windows 11 host, everything runs through PowerShell. Run shell tasks inside WSL manually with `wsl` if needed.",
 
   "files.associations": {
     "Containerfile": "dockerfile",
@@ -8,10 +8,10 @@
     "kargs.d/*": "toml",
     "*.ps1": "powershell",
     "Justfile": "makefile",
-    "scripts/cloudws-*": "shellscript",
-    "system_files/usr/libexec/cloudws/*": "shellscript",
+    "scripts/mios-*": "shellscript",
+    "system_files/usr/libexec/mios/*": "shellscript",
     "system_files/usr/bin/gamescope-session-steam": "shellscript",
-    "system_files/usr/local/bin/cloudws-ceph": "shellscript",
+    "system_files/usr/local/bin/mios-ceph": "shellscript",
     "system_files/etc/greenboot/check/wanted.d/*": "shellscript"
   },
 
@@ -94,7 +94,7 @@
     "clamav",
     "clamscan",
     "cloud-init",
-    "cloudws",
+    "mios",
     "cmdline",
     "coldplug",
     "coldplugging",
@@ -628,27 +628,27 @@
     { "file": ".github/copilot-instructions.md" }
   ],
 
-  "geminicodeassist.project": "cloudws-os",
+  "geminicodeassist.project": "mios-os",
   "geminicodeassist.inlineSuggestions.enableAuto": true,
   "geminicodeassist.enableTelemetry": false,
 
   "terminal.integrated.env.linux": {
-    "AI_ARCH_BASELINE": "v1.3.0",
+    "AI_ARCH_BASELINE": "v2.1.0",
     "AI_DNF_POLICY": "--setopt=install_weak_deps=False",
     "AI_WSL_GATING": "ConditionVirtualization=!wsl",
     "AI_OVERLAY_PATH": "system_files/",
     "AI_PKG_SOURCE": "docs/PACKAGES.md",
-    "AI_COSIGN_PIN": "v2.6.3",
+    "AI_COSIGN_PIN": "v2.1.0",
     "AI_WORKSPACE_TYPE": "bootable-container",
     "AI_JOURNALING_LAW": "MANDATORY"
   },
   "terminal.integrated.env.windows": {
-    "AI_ARCH_BASELINE": "v1.3.0",
+    "AI_ARCH_BASELINE": "v2.1.0",
     "AI_DNF_POLICY": "--setopt=install_weak_deps=False",
     "AI_WSL_GATING": "ConditionVirtualization=!wsl",
     "AI_OVERLAY_PATH": "system_files/",
     "AI_PKG_SOURCE": "docs/PACKAGES.md",
-    "AI_COSIGN_PIN": "v2.6.3",
+    "AI_COSIGN_PIN": "v2.1.0",
     "AI_WORKSPACE_TYPE": "bootable-container",
     "AI_JOURNALING_LAW": "MANDATORY"
   }

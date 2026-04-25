@@ -11,7 +11,7 @@ HttpProxy=false
 # Expose Ollama to the host and other containers
 PublishPort=11434:11434
 # Ensure Ollama binds to all interfaces inside the container
-Environment=OLLAMA_HOST=0.0.0.0
+Environment=OLLAMA_HOST=v2.1.0.0
 # Persist models in /var/lib/ollama
 Volume=/var/lib/ollama:/root/.ollama
 # GPU support (NVIDIA)

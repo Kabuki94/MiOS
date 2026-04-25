@@ -1,6 +1,6 @@
 # AWS AMI target
 [customizations.kernel]
-append = "cloudws.role=headless"
+append = "mios.role=headless"
 
 [[customizations.filesystem]]
 mountpoint = "/"

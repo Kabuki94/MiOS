@@ -1,15 +1,15 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# Contributing to CloudWS-bootc
+# Contributing to MiOS
 
-Thank you for your interest in contributing to CloudWS-bootc. This document explains the project's conventions and how to submit changes.
+Thank you for your interest in contributing to MiOS. This document explains the project's conventions and how to submit changes.
 
 ## Project Philosophy
 
-CloudWS-bootc is an immutable, cloud-native workstation OS built on Fedora Rawhide bootc. Every decision follows these principles:
+MiOS is an immutable, cloud-native workstation OS built on Fedora Rawhide bootc. Every decision follows these principles:
 
 - **Architectural Purity (Single Source of Truth):** ALL system configuration files, units, rules, and kargs MUST reside in the `system_files/` overlay. Top-level configuration directories are forbidden to prevent build-time path desynchronization.
 - **Declarative State (No Mkdir in Var):** In the bootc model, `/var` is a persistent volume. Any new directory or configuration required in `/var` MUST be declared in a `tmpfiles.d` file within the overlay. Manual `mkdir -p /var/...` calls in provisioning scripts are strictly forbidden.
@@ -105,6 +105,6 @@ By contributing, you agree that your contributions will be licensed under the sa
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

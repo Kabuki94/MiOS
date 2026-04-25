@@ -7,12 +7,12 @@ fi
 
 # User specific environment and startup programs
 
-# CloudWS-bootc aliases
+# MiOS aliases
 alias ls='ls --color=auto'
 alias ll='ls -lha --color=auto'
 alias grep='grep --color=auto'
 
 # Diagnostic Dashboard on login
-if command -v cloudws &> /dev/null && [ -z "$VTE_VERSION" ] && [ "$TERM" != "linux" ]; then
-    cloudws dash
+if command -v mios &> /dev/null && [ -z "$VTE_VERSION" ] && [ "$TERM" != "linux" ]; then
+    mios dash
 fi

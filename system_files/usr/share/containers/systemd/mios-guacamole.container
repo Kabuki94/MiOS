@@ -1,0 +1,28 @@
+[Unit]
+Description=MiOS Guacamole Web App
+ConditionVirtualization=!wsl
+# Ensure both the database and proxy daemon are running before the webapp starts
+Requires=guacd.service guacamole-postgres.service
+After=guacd.service guacamole-postgres.service
+
+[Container]
+GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage
+Image=docker.io/guacamole/guacamole:latest
+ContainerName=mios-guacamole
+HttpProxy=false
+Network=guacamole.network
+PublishPort=8080:8080
+Environment=GUACD_HOSTNAME=guacd
+Environment=GUACD_PORT=4822
+Environment=POSTGRES_HOSTNAME=guacamole-postgres
+Environment=POSTGRES_PORT=5432
+Environment=POSTGRES_DATABASE=guacamole
+Environment=POSTGRES_USER=guacamole
+Environment=POSTGRES_PASSWORD=guacamole
+AutoUpdate=registry
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

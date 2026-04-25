@@ -3,7 +3,7 @@
     "contextFileName": "GEMINI.md",
     "_comment": "Gemini CLI runtime config. GEMINI.md (project root) is the hierarchical bootstrap entry point and imports the Claude OS state. Do not duplicate memory paths here — GEMINI.md owns them.",
 
-    "AI_ARCH_BASELINE": "v1.3.0",
+    "AI_ARCH_BASELINE": "v2.1.0",
     "AI_ROLE": "Cognitive Mirror of Claude OS",
     "AI_BOOTSTRAP_FILE": "GEMINI.md",
     "AI_ENGINE": "Claude OS (main)",

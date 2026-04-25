@@ -1,5 +1,5 @@
 {
-  "_comment": "Extensions recommended when opening CloudWS-bootc in VSCodium or VSCode. Prompts on workspace open. All are available on Open VSX (VSCodium's default marketplace) and the VS Marketplace.",
+  "_comment": "Extensions recommended when opening MiOS in VSCodium or VSCode. Prompts on workspace open. All are available on Open VSX (VSCodium's default marketplace) and the VS Marketplace.",
 
   "recommendations": [
     "anthropic.claude-code",

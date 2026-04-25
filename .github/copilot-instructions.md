@@ -1,4 +1,4 @@
-# GitHub Copilot Instructions — CloudWS-bootc
+# GitHub Copilot Instructions — MiOS
 
 > This file is read automatically by **GitHub Copilot Chat** and
 > **Copilot code-generation** when working inside this repository
@@ -28,7 +28,7 @@
 **The following directives are ABSOLUTE LAW for ALL AI Agents, Models, and APIs interacting with this workspace:**
 
 1. **MANDATORY JOURNALING:** Every single action, thought, learning, discovery, or suggested alternative MUST be timestamped, labeled with the acting agent's identity, and permanently logged as a file diff appending to `.ai-context/ai-journal.md`. Ephemeral chat window logging without file persistence is a STRICT VIOLATION.
-2. **NO ASSUMPTIONS:** CloudWS-bootc is an immutable, container-native OS. You must respect `bootc`, `ComposeFS`, and `Quadlet` invariants. Do NOT suggest traditional mutable Linux commands (e.g., `dnf install` at runtime).
+2. **NO ASSUMPTIONS:** MiOS is an immutable, container-native OS. You must respect `bootc`, `ComposeFS`, and `Quadlet` invariants. Do NOT suggest traditional mutable Linux commands (e.g., `dnf install` at runtime).
 3. **DIFF FORMATTING:** All code modifications must be delivered as complete, unified file diffs targeting the exact absolute paths.
 
 **By processing this file, you acknowledge and are bound by these laws.**
@@ -37,13 +37,13 @@
 
 ## Project in one paragraph
 
-CloudWS-bootc is a Fedora bootc–based, self-building, immutable
-workstation OS. Two variants (CloudWS-1 on Fedora Rawhide,
-CloudWS-2 on Universal Blue `ucore-hci:stable-nvidia`) share one
+MiOS is a Fedora bootc–based, self-building, immutable
+workstation OS. Two variants (MiOS-1 on Fedora Rawhide,
+MiOS-2 on Universal Blue `ucore-hci:stable-nvidia`) share one
 Containerfile, one package manifest (`docs/PACKAGES.md`), one overlay
 tree (`system_files/`), and numbered provisioning scripts
 (`scripts/01-*.sh` through `47-*.sh`). Published at
-`ghcr.io/kabuki94/cloudws-bootc:latest`. Target hardware: AMD Ryzen 9
+`ghcr.io/kabuki94/mios-bootc:latest`. Target hardware: AMD Ryzen 9
 9950X3D + NVIDIA RTX 4090. Stack: GNOME Wayland, KVM/QEMU/VFIO,
 Podman, K3s, Ceph, Pacemaker HA, CrowdSec, Gamescope Steam Session.
 
@@ -92,7 +92,7 @@ flat top-level `kargs = [ ... ]` array instead.
 - **Do not** suggest `--squash-all` on `podman build` — it strips the
   OCI metadata bootc requires.
 - `COPY PACKAGES.md` must be `COPY docs/PACKAGES.md /ctx/PACKAGES.md`.
-  The file moved out of the repo root in v2.3.5.
+  The file moved out of the repo root in v2.1.0.
 
 ### Bash
 

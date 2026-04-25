@@ -1,14 +1,14 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# CloudWS-bootc v1.3.0 - Consolidate into PACKAGES.md
+# MiOS v2.1.0 - Consolidate into PACKAGES.md
 
 ## What went wrong
 
-v2.2.0 shipped `PACKAGES-UNIFIED-EXTRAS.md` as a separate file alongside
-`PACKAGES.md`. v2.2.2 added `scripts/51-install-unified-packages.sh` as a
+v2.1.0 shipped `PACKAGES-UNIFIED-EXTRAS.md` as a separate file alongside
+`PACKAGES.md`. v2.1.0 added `scripts/51-install-unified-packages.sh` as a
 parallel installer. Both violated the project's own principle:
 
 > **PACKAGES.md is the single source of truth for all packages, parsed via
@@ -26,9 +26,9 @@ One file. One installer. Re-running this script is idempotent.
   between idempotent markers:
 
   ```
-  <!-- CLOUDWS_V2_ADDITIONS_BEGIN -->
+  <!-- MIOS_V2_ADDITIONS_BEGIN -->
   ... (all v2.2+ additions as fenced blocks) ...
-  <!-- CLOUDWS_V2_ADDITIONS_END -->
+  <!-- MIOS_V2_ADDITIONS_END -->
   ```
 
 - **Delete** `PACKAGES-UNIFIED-EXTRAS.md` (content now in PACKAGES.md).
@@ -53,7 +53,7 @@ One file. One installer. Re-running this script is idempotent.
 
 - `scripts/52-bake-kvmfr.sh` - builds kvmfr.ko against the ucore-hci kernel
 - `scripts/53-bake-lookingglass-client.sh` - compiles Looking Glass B7 client
-- All v2.2.0 system_files, Containerfile, bib-configs, .github/workflows
+- All v2.1.0 system_files, Containerfile, bib-configs, .github/workflows
 
 These are BUILD STEPS (compile/bake), not package installs - they belong in
 `scripts/` as numbered steps, not in `PACKAGES.md`.
@@ -62,7 +62,7 @@ These are BUILD STEPS (compile/bake), not package installs - they belong in
 
 Running this script multiple times is safe:
 
-1. PACKAGES.md: any existing `CLOUDWS_V2_ADDITIONS_BEGIN/END` block is
+1. PACKAGES.md: any existing `MIOS_V2_ADDITIONS_BEGIN/END` block is
    stripped before the fresh one is appended.
 2. File deletes: `git rm -f` silently succeeds on already-gone files.
 3. File renames: guarded with `Test-Path` - only renamed if old exists
@@ -93,6 +93,6 @@ One source. One installer. Everything baked in.
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

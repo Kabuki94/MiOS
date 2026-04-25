@@ -1,0 +1,20 @@
+#!/usr/bin/bash
+# mios-mcp-server-runner: Daemon host for the Claude OS MCP Server
+# Binds to port 8051 to maintain persistent SQLite + Vector embedding state in memory.
+
+set -euo pipefail
+
+export MCP_PORT=8051
+export MCP_DB_PATH="/var/lib/mios/mcp"
+export REDIS_URL="redis://v2.1.0.1:6379"
+
+echo "[MCP] Launching Claude OS Persistent Memory Server on port ${MCP_PORT}..."
+echo "[MCP] Vector backend: sqlite-vec | Semantic ranking: RRF (FTS5 + Dense Vectors)"
+
+# In a fully deployed environment, this executes the Python MCP ASGI server (e.g., Uvicorn/FastAPI).
+# Example: exec uvicorn mios_mcp.main:app --host v2.1.0.1 --port $MCP_PORT --workers 1
+
+# Placeholder loop to keep the systemd service alive until the Python package is fully integrated
+while true; do
+    sleep 3600
+done

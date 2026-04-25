@@ -1,26 +1,26 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
 # Self-Build Mode Guide
 
-CloudWS-bootc is a self-replicating OS — the published image can be used as the builder for the next generation. This document explains the self-build architecture and when to use each mode.
+MiOS is a self-replicating OS — the published image can be used as the builder for the next generation. This document explains the self-build architecture and when to use each mode.
 
 ## How Self-Build Works
 
-CloudWS ships all the tools needed to rebuild itself: Podman, Buildah, bootc, and bootc-image-builder (BIB) are all baked into the image. This means you can boot a running CloudWS system and use it to build the next version, without needing a separate build environment.
+MiOS ships all the tools needed to rebuild itself: Podman, Buildah, bootc, and bootc-image-builder (BIB) are all baked into the image. This means you can boot a running MiOS system and use it to build the next version, without needing a separate build environment.
 
 The build chain is:
 
 ```
-CloudWS v1.3.0 (running) → builds → CloudWS v1.3.0 (OCI image)
+MiOS v2.1.0 (running) → builds → MiOS v2.1.0 (OCI image)
                                         ↓
                                   Rechunk → Sign → Push to GHCR
                                         ↓
-                              CloudWS v1.3.0 (running via bootc upgrade)
+                              MiOS v2.1.0 (running via bootc upgrade)
                                         ↓
-                                  builds → CloudWS v1.3.0 ...
+                                  builds → MiOS v2.1.0 ...
 ```
 
 ## Build Modes
@@ -45,10 +45,10 @@ For local development and testing on Windows with Podman Desktop:
 .\cloud-ws.ps1
 ```
 
-This creates a dedicated `cloudws-builder` Podman machine, builds the OCI image, rechunks it, generates disk images (RAW, VHDX, WSL, ISO), and optionally pushes to GHCR. Phase by phase:
+This creates a dedicated `mios-builder` Podman machine, builds the OCI image, rechunks it, generates disk images (RAW, VHDX, WSL, ISO), and optionally pushes to GHCR. Phase by phase:
 
 1. **Phase 0**: Prompts for username, password, LUKS passphrase, registry credentials
-2. **Phase 1**: Creates the `cloudws-builder` Podman machine (rootful, all cores, all RAM, 250 GB disk)
+2. **Phase 1**: Creates the `mios-builder` Podman machine (rootful, all cores, all RAM, 250 GB disk)
 3. **Phase 2**: Injects credentials into `99-overrides.sh`, runs `podman build`, rechunks, restores placeholders
 4. **Phase 3**: Generates disk images via BIB (RAW → VHDX, WSL tarball, Anaconda ISO)
 5. **Phase 4**: Pushes to GHCR, sets package public
@@ -56,7 +56,7 @@ This creates a dedicated `cloudws-builder` Podman machine, builds the OCI image,
 
 ### Mode 3: Linux Local Build (Justfile)
 
-For local development on a Linux system (including a running CloudWS):
+For local development on a Linux system (including a running MiOS):
 
 ```bash
 # Full build
@@ -78,44 +78,44 @@ just lint      # Run bootc container lint
 just clean     # Clean build artifacts
 ```
 
-### Mode 4: Self-Build (running CloudWS builds next CloudWS)
+### Mode 4: Self-Build (running MiOS builds next MiOS)
 
-Boot into a running CloudWS system and build from source:
+Boot into a running MiOS system and build from source:
 
 ```bash
 # Clone the repo
-git clone https://github.com/Kabuki94/CloudWS-bootc.git
-cd CloudWS-bootc
+git clone https://github.com/Kabuki94/MiOS.git
+cd MiOS
 
 # Build the OCI image (rootful Podman required)
-sudo podman build --no-cache -t localhost/cloudws-bootc:dev .
+sudo podman build --no-cache -t localhost/mios:dev .
 
 # Validate
-sudo podman run --rm localhost/cloudws-bootc:dev bootc container lint
+sudo podman run --rm localhost/mios:dev bootc container lint
 
 # Rechunk for optimal delta updates
 sudo bootc-base-imagectl rechunk --max-layers 67 \
-  localhost/cloudws-bootc:dev \
-  localhost/cloudws-bootc:rechunked
+  localhost/mios:dev \
+  localhost/mios:rechunked
 
 # Test locally: switch to the locally-built image
-sudo bootc switch --transport containers-storage localhost/cloudws-bootc:rechunked
+sudo bootc switch --transport containers-storage localhost/mios:rechunked
 sudo systemctl reboot
 ```
 
 ## Bootstrapping the First Image
 
-If you're starting from scratch (no existing CloudWS image):
+If you're starting from scratch (no existing MiOS image):
 
 1. Install Podman on any Linux system (Fedora, Ubuntu, etc.) or use Podman Desktop on Windows
 2. Clone the repo and run `podman build` (or `cloud-ws.ps1` on Windows)
-3. The Containerfile pulls `ghcr.io/ublue-os/ucore-hci:stable-nvidia` (CloudWS-2 primary, pre-signed NVIDIA kmods) or `quay.io/fedora/fedora-bootc:rawhide` (CloudWS-1, akmod-built drivers) as the base — no prior CloudWS image needed
+3. The Containerfile pulls `ghcr.io/ublue-os/ucore-hci:stable-nvidia` (MiOS-2 primary, pre-signed NVIDIA kmods) or `quay.io/fedora/fedora-bootc:rawhide` (MiOS-1, akmod-built drivers) as the base — no prior MiOS image needed
 4. Deploy the resulting image to your target (bare metal via ISO, Hyper-V via VHDX, etc.)
-5. Subsequent builds can use the running CloudWS itself (self-build mode)
+5. Subsequent builds can use the running MiOS itself (self-build mode)
 
 ## Verifying Self-Build Capability
 
-To confirm that a running CloudWS image can build the next generation:
+To confirm that a running MiOS image can build the next generation:
 
 ```bash
 # Check required tools are present
@@ -148,6 +148,6 @@ The build process downloads ~2-4 GB of RPM packages from Fedora repos, RPM Fusio
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

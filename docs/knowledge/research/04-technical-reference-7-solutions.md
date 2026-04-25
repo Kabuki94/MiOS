@@ -1,22 +1,22 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# CloudWS-bootc technical reference: 7 practical solutions
+# MiOS technical reference: 7 practical solutions
 
-**This report covers seven distinct technical issues encountered while building CloudWS-bootc**, a Fedora Rawhide bootc immutable workstation. Each section provides tested commands, correct syntax, and configuration snippets ready for use in Containerfiles and deployment scripts. The common thread: making container-native and WSL2 deployments of a bootc image work seamlessly alongside the bare-metal host.
+**This report covers seven distinct technical issues encountered while building MiOS**, a Fedora Rawhide bootc immutable workstation. Each section provides tested commands, correct syntax, and configuration snippets ready for use in Containerfiles and deployment scripts. The common thread: making container-native and WSL2 deployments of a bootc image work seamlessly alongside the bare-metal host.
 
 ---
 
 ## 1. K3s agents can join from containers and WSL2 — but need privileges
 
-A K3s agent running inside a Podman container or WSL2 instance **can** join a K3s cluster on the bare-metal CloudWS host. The agent connects outbound to the server on **port 6443 TCP** using a reverse WebSocket tunnel, meaning the agent container needs no inbound ports opened. The server's node token (at `/var/lib/rancher/k3s/server/node-token`) authenticates the join.
+A K3s agent running inside a Podman container or WSL2 instance **can** join a K3s cluster on the bare-metal MiOS host. The agent connects outbound to the server on **port 6443 TCP** using a reverse WebSocket tunnel, meaning the agent container needs no inbound ports opened. The server's node token (at `/var/lib/rancher/k3s/server/node-token`) authenticates the join.
 
 **Running the agent in Podman** requires rootful mode with `--privileged` — this is non-negotiable because K3s needs cgroup management, iptables control, and kernel module access. Use `--network host` to avoid double-NAT issues with Flannel VXLAN:
 
 ```bash
-HOST_IP="192.168.1.100"
+HOST_IP="v2.1.0.100"
 NODE_TOKEN="$(sudo cat /var/lib/rancher/k3s/server/node-token)"
 
 sudo podman run -d \
@@ -31,15 +31,15 @@ sudo podman run -d \
   -v k3s-agent-data:/var/lib/rancher/k3s \
   --ulimit nproc=65535 \
   --ulimit nofile=65535:65535 \
-  rancher/k3s:v1.31.6-k3s1 agent
+  rancher/k3s:v2.1.0-k3s1 agent
 ```
 
-Critical details: always use an **explicit version tag** (`v1.31.6-k3s1` with hyphens, not plus signs) because the `latest` tag is unmaintained. Use **K3s v1.28+** on Fedora Rawhide for proper cgroup v2 support — older versions fail with cgroupv2 errors. The persistent volume on `/var/lib/rancher/k3s` preserves agent state across restarts, and `--node-name` prevents hostname collisions.
+Critical details: always use an **explicit version tag** (`v2.1.0-k3s1` with hyphens, not plus signs) because the `latest` tag is unmaintained. Use **K3s v1.28+** on Fedora Rawhide for proper cgroup v2 support — older versions fail with cgroupv2 errors. The persistent volume on `/var/lib/rancher/k3s` preserves agent state across restarts, and `--node-name` prevents hostname collisions.
 
 **For WSL2 deployments**, the K3s binary can run directly (no nested container needed). Modern WSL2 kernels include all required modules (`br_netfilter`, `overlay`, `vxlan`). Enable systemd first via `/etc/wsl.conf`, then:
 
 ```bash
-sudo k3s agent --server https://192.168.1.100:6443 \
+sudo k3s agent --server https://v2.1.0.100:6443 \
   --token <TOKEN> --node-name wsl2-agent
 ```
 
@@ -47,8 +47,8 @@ WSL2's NAT layer can cause issues with Flannel VXLAN (UDP 8472). Consider `--fla
 
 ```bash
 firewall-cmd --permanent --add-port=6443/tcp
-firewall-cmd --permanent --zone=trusted --add-source=10.42.0.0/16
-firewall-cmd --permanent --zone=trusted --add-source=10.43.0.0/16
+firewall-cmd --permanent --zone=trusted --add-source=v2.1.0.0/16
+firewall-cmd --permanent --zone=trusted --add-source=v2.1.0.0/16
 firewall-cmd --permanent --add-port=8472/udp
 firewall-cmd --reload
 ```
@@ -57,18 +57,18 @@ Rootless Podman **will not work** for K3s agents. SELinux on Fedora may also req
 
 ---
 
-## 2. Cockpit socket already binds 0.0.0.0 — the real fix is elsewhere
+## 2. Cockpit socket already binds v2.1.0.0 — the real fix is elsewhere
 
 **By default, `cockpit.socket` listens on all interfaces on port 9090**, not just localhost. The base unit file specifies `ListenStream=9090` without an address prefix, which systemd interprets as binding to `[::]` (all IPv6 and IPv4 via dual-stack). So if Cockpit is unreachable from a container or WSL2 instance, the listen address is probably not the problem.
 
 The actual issues in containerized/WSL2 deployments are typically: missing systemd (Cockpit requires socket activation), missing D-Bus, or missing port mapping. For Podman containers, **`--systemd=true`** is mandatory — Cockpit cannot function without systemd as PID 1:
 
 ```bash
-podman run -d --name cloudws \
+podman run -d --name mios \
   -p 9090:9090 \
   --systemd=true \
   --privileged \
-  your-registry/cloudws-bootc:latest
+  your-registry/mios:latest
 ```
 
 If you do need to override the listen address explicitly (e.g., to force IPv4-only), create a drop-in file. The **first empty `ListenStream=` line is mandatory** to reset the inherited value — without it, you get two listening sockets:
@@ -78,7 +78,7 @@ mkdir -p /etc/systemd/system/cockpit.socket.d/
 cat > /etc/systemd/system/cockpit.socket.d/listen.conf << 'EOF'
 [Socket]
 ListenStream=
-ListenStream=0.0.0.0:9090
+ListenStream=v2.1.0.0:9090
 EOF
 systemctl daemon-reload && systemctl restart cockpit.socket
 ```
@@ -88,7 +88,7 @@ One subtle gotcha: **capitalization of `ListenStream` must be exact**. Writing `
 **For WSL2 deployments**, localhost forwarding from WSL2 to Windows works automatically in modern builds — accessing `https://localhost:9090` from the Windows browser should reach Cockpit inside WSL2. If it doesn't, find the WSL2 IP with `hostname -I` and access that directly, or set up port proxying:
 
 ```powershell
-netsh interface portproxy add v4tov4 listenport=9090 listenaddress=0.0.0.0 connectport=9090 connectaddress=$(wsl hostname -I)
+netsh interface portproxy add v4tov4 listenport=9090 listenaddress=v2.1.0.0 connectport=9090 connectaddress=$(wsl hostname -I)
 ```
 
 For the bootc Containerfile, bake in Cockpit enablement and the WSL2 systemd config:
@@ -107,7 +107,7 @@ The `wsl --import` command requires **exactly three positional arguments**: dist
 
 **Correct syntax:**
 ```powershell
-wsl --import CloudWS C:\WSL\CloudWS C:\path\to\cloudws.tar.gz --version 2
+wsl --import MiOS C:\WSL\MiOS C:\path\to\mios.tar.gz --version 2
 ```
 
 The `--version 2` flag is necessary if your system's default WSL version is set to 1 (check with `wsl --status`). The install location directory will be created automatically — it must not already contain an `ext4.vhdx` from a previous import.
@@ -115,14 +115,14 @@ The `--version 2` flag is necessary if your system's default WSL version is set 
 **Supported tarball formats** are `.tar` and `.tar.gz` only. `.tar.xz` is **not supported** (open feature request since 2020). The tarball root must contain the filesystem directly (`/bin`, `/etc`, `/usr` at top level), not nested inside a subdirectory. Create tarballs with:
 
 ```bash
-podman export <container-id> -o cloudws.tar
+podman export <container-id> -o mios.tar
 # Or for gzip compression:
-podman export <container-id> | gzip > cloudws.tar.gz
+podman export <container-id> | gzip > mios.tar.gz
 ```
 
 **Complete E_INVALIDARG troubleshooting checklist:**
 
-- **No spaces in distribution name** — use `CloudWS` not `"Cloud WS"` (confirmed bug in GitHub issue #9859)
+- **No spaces in distribution name** — use `MiOS` not `"Cloud WS"` (confirmed bug in GitHub issue #9859)
 - **Type dashes manually** — copy-pasting `--import` from formatted documents can silently substitute en-dashes (`–`) for double-hyphens (`--`)
 - **Quote paths with spaces** — `"C:\My Path\file.tar"` but never quote the distro name
 - **Don't use .tar.xz** — only .tar and .tar.gz are supported
@@ -130,7 +130,7 @@ podman export <container-id> | gzip > cloudws.tar.gz
 - **Ensure virtualization** is enabled in BIOS and "Virtual Machine Platform" is enabled in Windows Features
 - **Fresh install directory** — if the path already has an `ext4.vhdx`, you get error 0x80070050
 
-The newer **`wsl --install --from-file <path.wsl>`** syntax (WSL 2.4.4+, November 2024) takes only one argument and reads the distro name from `/etc/wsl-distribution.conf` inside the tarball. It also runs the OOBE first-run setup. This requires renaming the tarball to `.wsl` extension and embedding a config file — a different workflow from `--import`.
+The newer **`wsl --install --from-file <path.wsl>`** syntax (WSL v2.1.0+, November 2024) takes only one argument and reads the distro name from `/etc/wsl-distribution.conf` inside the tarball. It also runs the OOBE first-run setup. This requires renaming the tarball to `.wsl` extension and embedding a config file — a different workflow from `--import`.
 
 ---
 
@@ -138,7 +138,7 @@ The newer **`wsl --install --from-file <path.wsl>`** syntax (WSL 2.4.4+, Novembe
 
 **`cockpit-ceph-installer` is not in Fedora repos and never was.** It was a Red Hat Ceph Storage 4 product component, distributed only through Red Hat subscription channels. Red Hat **officially deprecated it in RHCS 5**, stating that cephadm replaces it. The GitHub repo at `red-hat-storage/cockpit-ceph-installer` targets Ceph Nautilus-era ceph-ansible and is effectively abandoned — it is incompatible with modern Ceph versions (Pacific, Quincy, Reef) which use cephadm instead.
 
-**45Drives' `cockpit-ceph-deploy`** is a separate project but also unavailable in Fedora. It builds RPMs only for EL8, with the last release (v1.0.6) from mid-2023. It similarly depends on ceph-ansible (45Drives' fork) and is designed specifically for their storage hardware. Installing it on Fedora Rawhide would require manual RPM adaptation.
+**45Drives' `cockpit-ceph-deploy`** is a separate project but also unavailable in Fedora. It builds RPMs only for EL8, with the last release (v2.1.0) from mid-2023. It similarly depends on ceph-ansible (45Drives' fork) and is designed specifically for their storage hardware. Installing it on Fedora Rawhide would require manual RPM adaptation.
 
 **The recommended alternative is the Ceph Dashboard**, a ceph-mgr module that ships with Ceph itself and is available in Fedora Rawhide:
 
@@ -268,13 +268,13 @@ The math matters: **`StartLimitIntervalSec` should exceed `RestartSec × StartLi
 
 ## Conclusion
 
-The overarching pattern across these issues is that CloudWS-bootc's multi-target deployment model (bare metal, Podman containers, WSL2 tarballs) requires explicit attention to systemd availability, network namespace boundaries, and privilege escalation. K3s agents and Cockpit both need systemd and privileged container access. WSL2 imports fail on subtle formatting issues rather than fundamental incompatibilities. The Ceph ecosystem has fully moved to cephadm and the built-in Dashboard — the cockpit-ceph plugins are dead ends. Waydroid's OTA system works reliably once the GAPPS flag and channel URLs are explicitly provided. And systemd's [Unit] vs [Service] placement for start-limit directives is a post-2016 change that still catches experienced administrators because older documentation and examples persist across the web.
+The overarching pattern across these issues is that MiOS's multi-target deployment model (bare metal, Podman containers, WSL2 tarballs) requires explicit attention to systemd availability, network namespace boundaries, and privilege escalation. K3s agents and Cockpit both need systemd and privileged container access. WSL2 imports fail on subtle formatting issues rather than fundamental incompatibilities. The Ceph ecosystem has fully moved to cephadm and the built-in Dashboard — the cockpit-ceph plugins are dead ends. Waydroid's OTA system works reliably once the GAPPS flag and channel URLs are explicitly provided. And systemd's [Unit] vs [Service] placement for start-limit directives is a post-2016 change that still catches experienced administrators because older documentation and examples persist across the web.
 
 ---
 ### 📚 Bootc Ecosystem & Resources
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

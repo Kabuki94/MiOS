@@ -1,14 +1,14 @@
 #!/bin/bash
 # ─────────────────────────────────────────────────────────────────────────────
-# CloudWS-bootc CI Smoke Test
+# MiOS CI Smoke Test
 #
-# Validates that a built CloudWS image meets minimum requirements.
+# Validates that a built MiOS image meets minimum requirements.
 # Run this in CI after `podman build` and before pushing to GHCR.
 #
 # Usage:
 #   ./tests/smoke-test.sh [IMAGE]
-#   ./tests/smoke-test.sh ghcr.io/kabuki94/cloudws-bootc:latest
-#   ./tests/smoke-test.sh localhost/cloudws-bootc:dev
+#   ./tests/smoke-test.sh ghcr.io/kabuki94/mios:latest
+#   ./tests/smoke-test.sh localhost/mios:dev
 #
 # Exit codes:
 #   0 — all tests passed
@@ -16,11 +16,11 @@
 # ─────────────────────────────────────────────────────────────────────────────
 set -uo pipefail
 
-IMAGE="${1:-localhost/cloudws-bootc:dev}"
+IMAGE="${1:-localhost/mios:dev}"
 PASS=0
 FAIL=0
 WARN=0
-REPORT_FILE="cloudws-full-stack-report.log"
+REPORT_FILE="mios-full-stack-report.log"
 
 # Pull the image so podman inspect and all run_in calls use a local copy.
 # Without this, podman inspect on a remote image returns no output, causing
@@ -43,12 +43,12 @@ warn() { echo -e "  ${YELLOW}⚠ WARN${NC}: $1"; WARN=$((WARN + 1)); }
 section() { echo -e "\n${CYAN}═══ $1 ═══${NC}"; }
 
 echo "=====================================================================" > "$REPORT_FILE"
-echo " CloudWS-bootc Full Stack Report - $(date)" >> "$REPORT_FILE"
+echo " MiOS Full Stack Report - $(date)" >> "$REPORT_FILE"
 echo " Image: $IMAGE" >> "$REPORT_FILE"
 echo "=====================================================================" >> "$REPORT_FILE"
 
 echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║  CloudWS-bootc Smoke Test                                   ║"
+echo "║  MiOS Smoke Test                                   ║"
 echo "║  Image: ${IMAGE}$(printf '%*s' $((38 - ${#IMAGE})) '')║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 
@@ -161,7 +161,7 @@ EXPECTED_SERVICES=(
     libvirtd.socket
     docker.socket
     fapolicyd.service
-    cloudws-freeipa-enroll.service
+    mios-freeipa-enroll.service
 )
 
 for svc in "${EXPECTED_SERVICES[@]}"; do
@@ -211,21 +211,21 @@ fi
 section "Security Hardening"
 
 # Sysctl hardening file
-if run_in test -f /usr/lib/sysctl.d/99-cloudws-hardening.conf; then
+if run_in test -f /usr/lib/sysctl.d/99-mios-hardening.conf; then
     pass "Sysctl hardening config present"
 else
-    fail "Sysctl hardening config MISSING at /usr/lib/sysctl.d/99-cloudws-hardening.conf"
+    fail "Sysctl hardening config MISSING at /usr/lib/sysctl.d/99-mios-hardening.conf"
 fi
 
 # bootc kargs.d
-if run_in test -f /usr/lib/bootc/kargs.d/00-cloudws.toml; then
+if run_in test -f /usr/lib/bootc/kargs.d/00-mios.toml; then
     pass "bootc kargs.d hardening config present"
 else
-    fail "bootc kargs.d config MISSING at /usr/lib/bootc/kargs.d/00-cloudws.toml"
+    fail "bootc kargs.d config MISSING at /usr/lib/bootc/kargs.d/00-mios.toml"
 fi
 
-# ── 8. CloudWS Phase 3 Fixes & Hardware Hooks ─────────────────────────────
-section "CloudWS Custom Scripts & Hardware Hooks"
+# ── 8. MiOS Phase 3 Fixes & Hardware Hooks ─────────────────────────────
+section "MiOS Custom Scripts & Hardware Hooks"
 
 # Fapolicyd composefs trust integration
 if run_in grep -q "trust = file,rpmdb" /usr/lib/fapolicyd/fapolicyd.conf 2>/dev/null; then
@@ -250,7 +250,7 @@ else
 fi
 
 # Waydroid NVIDIA hardware fallback script
-if run_in test -x /usr/libexec/cloudws/cloudws-waydroid-fallback.sh; then
+if run_in test -x /usr/libexec/mios/mios-waydroid-fallback.sh; then
     pass "Waydroid NVIDIA SwiftShader fallback script is present and executable"
 else
     warn "Waydroid NVIDIA fallback script missing or not executable"
@@ -270,7 +270,7 @@ else
     warn "UKI cmdline not present (/etc/kernel/cmdline missing — bootc render-kargs may not be supported on this bootc version)"
 fi
 
-# ── 9. CloudWS Kernel Arguments (kargs.d) ─────────────────────────────────
+# ── 9. MiOS Kernel Arguments (kargs.d) ─────────────────────────────────
 section "Kernel Arguments (kargs.d)"
 
 KARG_FILES=(
@@ -319,13 +319,13 @@ else
     warn "Mesa VA-API drivers missing"
 fi
 
-# NVIDIA (may not be present on CloudWS-1 if akmod didn't build)
+# NVIDIA (may not be present on MiOS-1 if akmod didn't build)
 if run_in rpm -q akmod-nvidia >/dev/null 2>&1 || \
    run_in rpm -q kmod-nvidia >/dev/null 2>&1 || \
    run_in test -d /usr/lib/modules/*/extra/nvidia 2>/dev/null; then
     pass "NVIDIA driver present"
 else
-    warn "NVIDIA driver not detected (expected on CloudWS-2 / may need akmod rebuild on CloudWS-1)"
+    warn "NVIDIA driver not detected (expected on MiOS-2 / may need akmod rebuild on MiOS-1)"
 fi
 
 # ── 11. Flatpak remotes ──────────────────────────────────────────────────
@@ -358,8 +358,8 @@ pass "Exhaustive stack manifest saved to $REPORT_FILE"
 # ── 13. Version info ─────────────────────────────────────────────────────
 section "System Information"
 
-VERSION=$(run_in cat /etc/cloudws-version 2>/dev/null || run_in cat /usr/lib/cloudws-version 2>/dev/null || echo "not set")
-echo "  CloudWS version: $VERSION"
+VERSION=$(run_in cat /etc/mios-version 2>/dev/null || run_in cat /usr/lib/mios-version 2>/dev/null || echo "not set")
+echo "  MiOS version: $VERSION"
 
 KERNEL=$(run_in ls /lib/modules/ 2>/dev/null | sort -V | tail -1 || echo "unknown")
 echo "  Kernel: $KERNEL"

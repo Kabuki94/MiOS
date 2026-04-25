@@ -1,4 +1,4 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
@@ -6,7 +6,7 @@
 # Package Audit: Suggested Additions vs Current State
 
 This audit cross-references the suggested "missing packages for portability" against
-what CloudWS-bootc v2.1 PACKAGES.md already includes. Most suggestions are duplicates
+what MiOS v2.1 PACKAGES.md already includes. Most suggestions are duplicates
 of packages that are already present or pulled as dependencies.
 
 ---
@@ -40,15 +40,15 @@ of packages that are already present or pulled as dependencies.
 | `open-vm-tools` | Explicit | `packages-guests` |
 | `spice-vdagent` | Explicit | `packages-guests` |
 
-## REJECTED — Wrong for CloudWS
+## REJECTED — Wrong for MiOS
 
 | Suggested Package | Reason to Reject |
 |-------------------|-----------------|
-| `xorg-x11-server-Xorg` | CloudWS is Wayland-only. Fedora 43+ dropped X11 from GNOME repos. GNOME 50 removes X11 upstream. Adding X11 contradicts the project architecture. |
+| `xorg-x11-server-Xorg` | MiOS is Wayland-only. Fedora 43+ dropped X11 from GNOME repos. GNOME 50 removes X11 upstream. Adding X11 contradicts the project architecture. |
 | `htop` | Explicitly removed in v2.0 changelog — replaced with `btop` (already in utils). |
-| `dracut-live` | Only needed for PXE `pxe-tar-xz` image type. CloudWS deploys via RAW/VHDX/WSL/ISO/OCI — none require dracut-live. |
+| `dracut-live` | Only needed for PXE `pxe-tar-xz` image type. MiOS deploys via RAW/VHDX/WSL/ISO/OCI — none require dracut-live. |
 | `shim-signed` | Fedora names this `shim-x64`. It's part of the base bootc image's boot infrastructure and handled by `bootc install`. Not an in-image RPM to add. |
-| `wslg` | WSLg is a Microsoft component running in the host WSL2 infrastructure, not a package inside Linux distros. CloudWS WSL2 support works via WSLg socket mounts automatically. |
+| `wslg` | WSLg is a Microsoft component running in the host WSL2 infrastructure, not a package inside Linux distros. MiOS WSL2 support works via WSLg socket mounts automatically. |
 
 ## LEGITIMATE ADDITIONS — Consider for next release
 
@@ -61,16 +61,16 @@ of packages that are already present or pulled as dependencies.
 | `iotop` | I/O monitoring. Useful for diagnosing slow storage and identifying I/O-heavy processes. Lightweight. | `packages-utils` |
 | `efibootmgr` | EFI boot entry management. While `bootc install` handles initial setup, admins may need to reorder boot entries or remove stale ones post-install. | `packages-boot` |
 | `nm-connection-editor` | GUI for advanced NetworkManager connection editing (bonding, bridging, VLANs). GNOME Settings covers basic Wi-Fi/Ethernet but not advanced cases. | `packages-gnome` (optional) |
-| `cosign` | On-system image verification. Lets users verify CloudWS images and their own container images without needing a separate workstation. | `packages-security` |
+| `cosign` | On-system image verification. Lets users verify MiOS images and their own container images without needing a separate workstation. | `packages-security` |
 
 ## SUMMARY
 
 - **24 packages** already present — no changes needed
-- **5 packages** rejected — wrong for CloudWS architecture
+- **5 packages** rejected — wrong for MiOS architecture
 - **8 packages** are legitimate additions worth evaluating
 - Net delta: ~8 new packages across 4 sections
 
-The audit confirms that CloudWS-bootc PACKAGES.md is already comprehensive for its
+The audit confirms that MiOS PACKAGES.md is already comprehensive for its
 deployment targets. The "missing packages" list was largely written without reading
 the existing manifest.
 
@@ -79,6 +79,6 @@ the existing manifest.
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

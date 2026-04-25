@@ -1,16 +1,16 @@
 #Requires -Version 7.1
 <#
 .SYNOPSIS
-  CloudWS-bootc builder - idempotent Podman machine provisioner for Windows.
+  MiOS builder - idempotent Podman machine provisioner for Windows.
 
 .DESCRIPTION
-  Creates or reconfigures a rootful Podman machine named 'cloudws-builder'
+  Creates or reconfigures a rootful Podman machine named 'mios-builder'
   with 100% of host CPU/RAM and GPU passthrough provisioning. Safe to re-run.
 
   - Detects host CPU/RAM via WMI and allocates maximum resources.
   - Filters out fake video adapters (Hyper-V, Parsec, DisplayLink) in GPU
     detection so WSL2 on Windows doesn't trip on Basic Render Driver.
-  - If a machine named 'cloudws-builder' already exists AND is rootful AND
+  - If a machine named 'mios-builder' already exists AND is rootful AND
     has >= desired CPUs/RAM, it is left alone (pure idempotent no-op).
   - If misconfigured, tries `podman machine set` first (non-destructive).
   - Only resorts to destroy+recreate when `-Force` is passed or when
@@ -19,7 +19,7 @@
     the CDI spec at /var/run/cdi/nvidia.yaml (WSL mode auto-detected).
 
 .PARAMETER MachineName
-  Podman machine name (default: cloudws-builder).
+  Podman machine name (default: mios-builder).
 
 .PARAMETER MinMemReserveMiB
   RAM in MiB to leave for the Windows host (default: 4096).
@@ -34,7 +34,7 @@
 #>
 [CmdletBinding()]
 param(
-  [string]$MachineName    = 'cloudws-builder',
+  [string]$MachineName    = 'mios-builder',
   [int]   $MinMemReserveMiB = 4096,
   [switch]$Force
 )
@@ -217,7 +217,7 @@ $meta = [ordered]@{
   provisioned = (Get-Date).ToString('o')
 } | ConvertTo-Json
 
-$metaDir = Join-Path $env:LOCALAPPDATA 'CloudWS-bootc'
+$metaDir = Join-Path $env:LOCALAPPDATA 'MiOS'
 New-Item -ItemType Directory -Force -Path $metaDir | Out-Null
 # Write without BOM
 [System.IO.File]::WriteAllText(
@@ -228,9 +228,9 @@ New-Item -ItemType Directory -Force -Path $metaDir | Out-Null
 
 Log ""
 Log "Builder ready. Example usage:"
-Log "  podman --connection ${MachineName}-root build -t cloudws-bootc:latest ."
+Log "  podman --connection ${MachineName}-root build -t mios:latest ."
 Log "  podman --connection ${MachineName}-root run --rm --device nvidia.com/gpu=all \\"
-Log "       docker.io/nvidia/cuda:12.4.0-base-ubi9 nvidia-smi"
+Log "       docker.io/nvidia/cuda:v2.1.0-base-ubi9 nvidia-smi"
 
 # Explicit exit 0 — non-fatal warnings (NVIDIA CDI, AMD/Intel) leave
 # $LASTEXITCODE non-zero; without this the caller sees a failure.

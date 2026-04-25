@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v1.3.0 — 02-kernel: Kernel extras + development headers
+# MiOS v2.1.0 — 02-kernel: Kernel extras + development headers
 # The base fedora-bootc:rawhide image ships the newest kernel with a working
 # initramfs. We NEVER upgrade the base kernel packages inside the container —
 # doing so triggers dracut under the tmpfs mount, which fails with
@@ -11,7 +11,7 @@
 #   - kernel-modules-extra (VFIO, USB, storage modules not in base)
 #   - kernel-tools (cpupower, turbostat, perf)
 #
-# CHANGELOG v1.3.1:
+# CHANGELOG v2.1.0:
 #   - REMOVED kernel/kernel-core/kernel-modules/kernel-modules-core
 #     (base image already has them — upgrading broke dracut)
 #   - kernel-modules-extra ensures VFIO/USB/storage modules are present
@@ -27,7 +27,7 @@ install_packages_strict "kernel"
 KVER=$(find /usr/lib/modules/ -mindepth 1 -maxdepth 1 -printf "%f\n" | sort -V | tail -1) # Explicitly use /usr
 export KVER
 echo "[02-kernel] Kernel version: $KVER"
-echo "$KVER" > /tmp/cloudws-kver
+echo "$KVER" > /tmp/mios-kver
 
 # Verify kernel modules directory exists (akmod build will fail without it)
 if [[ ! -d "/usr/lib/modules/$KVER" ]]; then # Explicitly check /usr

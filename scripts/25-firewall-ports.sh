@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "==> Configuring firewalld ports for CloudWS services..."
+echo "==> Configuring firewalld ports for MiOS services..."
 
 # During an OCI container build, the firewalld daemon is not running.
 # We MUST use firewall-offline-cmd to write directly to the XML policy files.
@@ -13,4 +13,4 @@ firewall-offline-cmd --zone=public --add-port=6443/tcp # K3s API
 firewall-offline-cmd --zone=public --add-port=3389/tcp # RDP
 firewall-offline-cmd --zone=public --add-service=ssh
 firewall-offline-cmd --zone=public --add-service=cockpit
-firewall-offline-cmd --zone=public --add-service=cloudws-pxe
+firewall-offline-cmd --zone=public --add-service=mios-pxe

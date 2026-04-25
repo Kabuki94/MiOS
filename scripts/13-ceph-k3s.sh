@@ -1,10 +1,10 @@
 #!/bin/bash
-# CloudWS v1.3.0 — 13-ceph-k3s: Ceph distributed storage + K3s Kubernetes
+# MiOS v2.1.0 — 13-ceph-k3s: Ceph distributed storage + K3s Kubernetes
 # Cephadm runs ALL server daemons as Podman containers.
 # Only client tools + orchestrator binary are baked into the image.
 #
-# v2.1.1 FIXES:
-#   - K3s manifests stored in /usr/share/cloudws/k3s-manifests/ (not /var)
+# v2.1.0 FIXES:
+#   - K3s manifests stored in /usr/share/mios/k3s-manifests/ (not /var)
 #     First-boot service copies them to /var/lib/rancher/k3s/server/manifests/
 #     This fixes bootc lint: /var content must use tmpfiles.d entries
 #   - systemctl enables moved to Containerfile STEP D (unit files in system_files/)
@@ -80,7 +80,7 @@ fi
 chmod 755 /usr/local/bin/ceph-bootstrap.sh 2>/dev/null || true
 
 # ─── NOTE: Service enables are in Containerfile STEP D ───────────────────────
-# k3s.service, cloudws-ceph-bootstrap.service, var-home.mount,
+# k3s.service, mios-ceph-bootstrap.service, var-home.mount,
 # var-lib-containers.mount all live in system_files/ and are enabled
 # AFTER the COPY step in the Containerfile.
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 ###############################################################################
 # Cloud-WS Professional Virtualization Host
-# Version: 5.0.0
+# Version: v2.1.0
 # Target: CachyOS (Minimal or Full Install)
 #
 # Features:
@@ -23,7 +23,7 @@ set -o pipefail
 #==============================================================================
 # CONFIGURATION
 #==============================================================================
-SCRIPT_VERSION="5.0.0"
+SCRIPT_VERSION="v2.1.0"
 LOG_DIR="/var/log/cloud-ws"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 LOGFILE="$LOG_DIR/install-$TIMESTAMP.log"
@@ -220,8 +220,8 @@ init() {
         echo -e "    ${TEAL}â”‚${NC}                                                                 ${TEAL}â”‚${NC}"
         echo -e "    ${TEAL}â”‚${NC}  ${WHITE}Fix DNS before running this script:${NC}                            ${TEAL}â”‚${NC}"
         echo -e "    ${TEAL}â”‚${NC}                                                                 ${TEAL}â”‚${NC}"
-        echo -e "    ${TEAL}â”‚${NC}  ${GRAY}sudo bash -c 'echo \"nameserver 1.1.1.1\" > /etc/resolv.conf'${NC}    ${TEAL}â”‚${NC}"
-        echo -e "    ${TEAL}â”‚${NC}  ${GRAY}sudo bash -c 'echo \"nameserver 8.8.8.8\" >> /etc/resolv.conf'${NC}   ${TEAL}â”‚${NC}"
+        echo -e "    ${TEAL}â”‚${NC}  ${GRAY}sudo bash -c 'echo \"nameserver v2.1.0.1\" > /etc/resolv.conf'${NC}    ${TEAL}â”‚${NC}"
+        echo -e "    ${TEAL}â”‚${NC}  ${GRAY}sudo bash -c 'echo \"nameserver v2.1.0.8\" >> /etc/resolv.conf'${NC}   ${TEAL}â”‚${NC}"
         echo -e "    ${TEAL}â”‚${NC}                                                                 ${TEAL}â”‚${NC}"
         echo -e "    ${TEAL}â”‚${NC}  Then run this script again.                                    ${TEAL}â”‚${NC}"
         echo -e "    ${TEAL}â”‚${NC}                                                                 ${TEAL}â”‚${NC}"

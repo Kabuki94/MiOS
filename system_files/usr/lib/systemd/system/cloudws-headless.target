@@ -1,8 +1,0 @@
-[Unit]
-Description=CloudWS Headless Role
-Requires=multi-user.target
-After=multi-user.target
-Conflicts=cloudws-desktop.target cloudws-k3s-master.target cloudws-ha-node.target
-AllowIsolate=yes
-[Install]
-WantedBy=multi-user.target

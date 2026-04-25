@@ -1,4 +1,4 @@
-# CloudWS v1.3.0 — iso.toml
+# MiOS v2.1.0 — iso.toml
 # Combined BIB + kickstart configuration for Anaconda ISO builds.
 # This is the ONLY config file mounted for ISO builds (/config.toml).
 # bib.json/bib.toml is used for RAW/VHD targets only.
@@ -10,20 +10,20 @@ minsize = "80 GiB"
 [customizations.installer.kickstart]
 contents = """
 text
-network --bootproto=dhcp --device=link --activate --hostname=CloudWS
+network --bootproto=dhcp --device=link --activate --hostname=MiOS
 clearpart --all --initlabel --disklabel=gpt
 reqpart --add-boot
 part / --grow --fstype ext4
 
 # ostreecontainer directive pulls the OCI image and deploys it
-ostreecontainer --url ghcr.io/kabuki94/cloudws-bootc:latest --no-signature-verification
+ostreecontainer --url ghcr.io/kabuki94/mios:latest --no-signature-verification
 
 # Create default user (injected at ISO generation time by cloud-ws.ps1)
 user --name=INJ_U --groups=wheel --iscrypted --password=INJ_HASH
 
 %post --erroronfail --log=/root/anaconda-post.log
 # Ensure update origin points to GHCR (not localhost from BIB build)
-bootc switch --mutate-in-place --transport registry ghcr.io/kabuki94/cloudws-bootc:latest 2>/dev/null || true
+bootc switch --mutate-in-place --transport registry ghcr.io/kabuki94/mios:latest 2>/dev/null || true
 
 # Set graphical target
 systemctl set-default graphical.target
@@ -31,7 +31,7 @@ systemctl set-default graphical.target
 # Generate machine-id for unique hostname
 systemd-machine-id-setup 2>/dev/null || true
 
-echo "CloudWS v1.3.0 — Post-install complete"
+echo "MiOS v2.1.0 — Post-install complete"
 %end
 
 reboot

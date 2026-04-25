@@ -1,17 +1,17 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# Integrating Ceph, Cephadm, and K3s into CloudWS-bootc
+# Integrating Ceph, Cephadm, and K3s into MiOS
 
-**Ceph's entire state model aligns perfectly with bootc's immutable filesystem** — every writable path cephadm needs (`/var/lib/ceph`, `/etc/ceph`, `/var/log/ceph`) falls within the mutable `/var` and `/etc` partitions. Fedora Rawhide ships **Ceph 20.2.0 (Tentacle)** with `cephadm`, `ceph-common`, and all required packages in the standard repos, requiring zero upstream repo configuration. The practical challenge is not compatibility but orchestration: designing a systemd dependency chain that gracefully handles first boot (no Ceph cluster yet), steady-state operation (CephFS mounts for `/var/home` and container storage), and multi-node expansion via the Ceph Dashboard. This report provides every configuration file, systemd unit, Containerfile snippet, and command needed to build this integration into the existing CloudWS-bootc modular build system.
+**Ceph's entire state model aligns perfectly with bootc's immutable filesystem** — every writable path cephadm needs (`/var/lib/ceph`, `/etc/ceph`, `/var/log/ceph`) falls within the mutable `/var` and `/etc` partitions. Fedora Rawhide ships **Ceph v2.1.0 (Tentacle)** with `cephadm`, `ceph-common`, and all required packages in the standard repos, requiring zero upstream repo configuration. The practical challenge is not compatibility but orchestration: designing a systemd dependency chain that gracefully handles first boot (no Ceph cluster yet), steady-state operation (CephFS mounts for `/var/home` and container storage), and multi-node expansion via the Ceph Dashboard. This report provides every configuration file, systemd unit, Containerfile snippet, and command needed to build this integration into the existing MiOS modular build system.
 
 ---
 
-## Fedora Rawhide delivers Ceph 20.2.0 with complete packaging
+## Fedora Rawhide delivers Ceph v2.1.0 with complete packaging
 
-Fedora Rawhide (fc45) provides **Ceph 20.2.0-10 (Tentacle)** as a native package set. The critical packages for the bootc base image are minimal because cephadm runs all server daemons as Podman containers:
+Fedora Rawhide (fc45) provides **Ceph v2.1.0-10 (Tentacle)** as a native package set. The critical packages for the bootc base image are minimal because cephadm runs all server daemons as Podman containers:
 
 - **`ceph-common`** — Provides `/usr/bin/mount.ceph`, `ceph` CLI, `rbd`, `rados`, `ceph-authtool`, `ceph-conf`. This is the essential client package.
 - **`cephadm`** — The bootstrap and orchestration binary. Deploys MON, MGR, OSD, and MDS as Podman containers managed by systemd.
@@ -96,14 +96,14 @@ Systemd's mount requirements categorize `/var/` as "category 2/early" (must be w
 Description=CephFS mount for user home directories
 Documentation=man:mount.ceph(8)
 ConditionPathExists=/etc/ceph/ceph.conf
-ConditionPathExists=/etc/ceph/cloudws.secret
+ConditionPathExists=/etc/ceph/mios.secret
 After=ceph.target
 
 [Mount]
-What=cloudws@.cephfs=/home
+What=mios@.cephfs=/home
 Where=/var/home
 Type=ceph
-Options=secretfile=/etc/ceph/cloudws.secret,noatime,_netdev,nofail,x-systemd.device-timeout=30,x-systemd.mount-timeout=30
+Options=secretfile=/etc/ceph/mios.secret,noatime,_netdev,nofail,x-systemd.device-timeout=30,x-systemd.mount-timeout=30
 
 [Install]
 WantedBy=remote-fs.target
@@ -120,15 +120,15 @@ When CephFS isn't mounted, `/var/home` remains the local directory on the root f
 [Unit]
 Description=CephFS mount for Podman container storage
 ConditionPathExists=/etc/ceph/ceph.conf
-ConditionPathExists=/etc/ceph/cloudws.secret
+ConditionPathExists=/etc/ceph/mios.secret
 After=ceph.target
 RequiresMountsFor=/var/lib
 
 [Mount]
-What=cloudws@.cephfs=/containers
+What=mios@.cephfs=/containers
 Where=/var/lib/containers
 Type=ceph
-Options=secretfile=/etc/ceph/cloudws.secret,noatime,_netdev,nofail,x-systemd.device-timeout=30,x-systemd.mount-timeout=30
+Options=secretfile=/etc/ceph/mios.secret,noatime,_netdev,nofail,x-systemd.device-timeout=30,x-systemd.mount-timeout=30
 
 [Install]
 WantedBy=remote-fs.target
@@ -232,21 +232,21 @@ cephadm shell -- ceph osd pool set cephfs.cephfs.meta size 1 --yes-i-really-mean
 cephadm shell -- ceph osd pool set cephfs.cephfs.data size 1 --yes-i-really-mean-it
 
 # Create mount client and extract secret
-cephadm shell -- ceph fs authorize cephfs client.cloudws / rw \
-  -o /etc/ceph/ceph.client.cloudws.keyring
-cephadm shell -- ceph auth get-key client.cloudws > /etc/ceph/cloudws.secret
-chmod 600 /etc/ceph/cloudws.secret
+cephadm shell -- ceph fs authorize cephfs client.mios / rw \
+  -o /etc/ceph/ceph.client.mios.keyring
+cephadm shell -- ceph auth get-key client.mios > /etc/ceph/mios.secret
+chmod 600 /etc/ceph/mios.secret
 
 # Create CephFS subdirectories for mount targets
 mkdir -p /tmp/ceph-init
-mount -t ceph cloudws@.cephfs=/ /tmp/ceph-init -o secretfile=/etc/ceph/cloudws.secret
+mount -t ceph mios@.cephfs=/ /tmp/ceph-init -o secretfile=/etc/ceph/mios.secret
 mkdir -p /tmp/ceph-init/home /tmp/ceph-init/containers
 umount /tmp/ceph-init
 
 cephadm shell -- ceph health mute POOL_NO_REDUNDANCY
 ```
 
-The **`ConditionPathExists=!/var/lib/ceph/.bootstrapped`** sentinel file ensures this service is completely skipped on subsequent boots. After bootstrap completes and credentials are written, the CephFS mount units (which check for `ConditionPathExists=/etc/ceph/cloudws.secret`) will succeed on the next reboot or when manually started.
+The **`ConditionPathExists=!/var/lib/ceph/.bootstrapped`** sentinel file ensures this service is completely skipped on subsequent boots. After bootstrap completes and credentials are written, the CephFS mount units (which check for `ConditionPathExists=/etc/ceph/mios.secret`) will succeed on the next reboot or when manually started.
 
 ---
 
@@ -376,7 +376,7 @@ Setting `mgr/cephadm/autotune_memory_target_ratio` to **0.2** caps total Ceph me
 The `ceph-selinux` package defines the `ceph_t` process domain and file contexts: `ceph_var_lib_t` for `/var/lib/ceph`, `ceph_log_t` for `/var/log/ceph`, and `ceph_exec_t` for Ceph binaries. For CephFS-mounted directories, the `context=` mount option sets SELinux labels at mount time:
 
 ```
-Options=secretfile=/etc/ceph/cloudws.secret,context="system_u:object_r:user_home_dir_t:s0",noatime,_netdev,nofail
+Options=secretfile=/etc/ceph/mios.secret,context="system_u:object_r:user_home_dir_t:s0",noatime,_netdev,nofail
 ```
 
 K3s requires the **`k3s-selinux`** RPM from Rancher (`https://rpm.rancher.io/k3s/stable/common/`). The RPM defines `k3s_data_t` and transitions for the K3s binary. On Rawhide, compatibility may require installing from the latest EL9 build or building from the [k3s-selinux source](https://github.com/k3s-io/k3s-selinux).
@@ -386,9 +386,9 @@ K3s requires the **`k3s-selinux`** RPM from Rancher (`https://rpm.rancher.io/k3s
 Msgr2 (port **3300**) supports full AES-128-GCM encryption with `ms_client_mode = secure`. The mount client uses a restricted CephX identity:
 
 ```bash
-ceph fs authorize cephfs client.cloudws / rw -o /etc/ceph/ceph.client.cloudws.keyring
-ceph auth get-key client.cloudws > /etc/ceph/cloudws.secret
-chmod 600 /etc/ceph/cloudws.secret
+ceph fs authorize cephfs client.mios / rw -o /etc/ceph/ceph.client.mios.keyring
+ceph auth get-key client.mios > /etc/ceph/mios.secret
+chmod 600 /etc/ceph/mios.secret
 ```
 
 ### Combined firewalld rules
@@ -403,8 +403,8 @@ firewall-cmd --permanent --add-port=8443/tcp       # Dashboard
 firewall-cmd --permanent --add-port=6443/tcp       # API server
 firewall-cmd --permanent --add-port=10250/tcp      # Kubelet
 firewall-cmd --permanent --add-port=8472/udp       # Flannel VXLAN
-firewall-cmd --permanent --zone=trusted --add-source=10.42.0.0/16  # Pod CIDR
-firewall-cmd --permanent --zone=trusted --add-source=10.43.0.0/16  # Service CIDR
+firewall-cmd --permanent --zone=trusted --add-source=v2.1.0.0/16  # Pod CIDR
+firewall-cmd --permanent --zone=trusted --add-source=v2.1.0.0/16  # Service CIDR
 firewall-cmd --reload
 ```
 
@@ -435,7 +435,7 @@ RUN dnf -y install \
     && dnf clean all
 
 # === K3s BINARY ===
-ARG K3S_VERSION=v1.31.4+k3s1
+ARG K3S_VERSION=v2.1.0+k3s1
 ADD https://github.com/k3s-io/k3s/releases/download/${K3S_VERSION}/k3s \
     /usr/local/bin/k3s
 RUN chmod 755 /usr/local/bin/k3s && \
@@ -507,6 +507,6 @@ The integration architecture resolves every major constraint. Cephadm's containe
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

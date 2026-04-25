@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # ============================================================================
-# CloudWS-bootc v1.3.0 - 35-gpu-passthrough.sh
+# MiOS v2.1.0 - 35-gpu-passthrough.sh
 # ----------------------------------------------------------------------------
 # Manages systemd unit enablement and SELinux for GPU passthrough.
 #
-# v2.3.5: ARCHITECTURAL PURITY FIX. All files (systemd units, udev rules,
+# v2.1.0: ARCHITECTURAL PURITY FIX. All files (systemd units, udev rules,
 #         sysusers, kargs.d) are now delivered via the system_files overlay.
 #         This script no longer performs 'install' commands; it only handles
 #         symlinking and SELinux booleans.
@@ -25,7 +25,7 @@ WANTS=/usr/lib/systemd/system/multi-user.target.wants
 install -d -m 0755 "${WANTS}"
 
 # These files are already installed in /usr/lib/systemd/system/ via overlay
-for svc in cloudws-gpu-status.service cloudws-gpu-nvidia.service cloudws-gpu-amd.service cloudws-gpu-intel.service; do
+for svc in mios-gpu-status.service mios-gpu-nvidia.service mios-gpu-amd.service mios-gpu-intel.service; do
   if [[ -f "/usr/lib/systemd/system/${svc}" ]]; then
     ln -sf "../${svc}" "${WANTS}/${svc}"
     log "Enabled ${svc}"

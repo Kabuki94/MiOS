@@ -9,7 +9,7 @@ Network=host
 Privileged=true
 Volume=/etc/corosync:/etc/corosync:Z
 Volume=/etc/pacemaker:/etc/pacemaker:Z
-Label=org.cloudws.ha.role=pcs-remote
+Label=org.mios.ha.role=pcs-remote
 
 [Install]
 WantedBy=multi-user.target

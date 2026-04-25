@@ -1,10 +1,10 @@
 #!/bin/bash
-# CloudWS v1.3.0 — 99-cleanup: Final image cleanup (mirrors ucore/cleanup.sh)
+# MiOS v2.1.0 — 99-cleanup: Final image cleanup (mirrors ucore/cleanup.sh)
 #
 # MANDATORY for bootc images. Every ublue-os image runs this pattern.
 # Without it, BIB deployment fails or the booted system has broken /var state.
 #
-# v2.1.1: Added targeted lint cleanup for dnf5.log, ldconfig aux-cache,
+# v2.1.0: Added targeted lint cleanup for dnf5.log, ldconfig aux-cache,
 # and any stray files in /var that trigger bootc container lint warnings.
 #
 # Reference: https://github.com/ublue-os/ucore/blob/main/cleanup.sh

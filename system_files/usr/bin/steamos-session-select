@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS — SteamOS session selector stub
+# MiOS — SteamOS session selector stub
 case "${1:-}" in
     desktop|plasma|gnome)
         pkill -f gamescope-session-steam 2>/dev/null

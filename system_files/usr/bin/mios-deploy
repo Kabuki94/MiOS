@@ -1,0 +1,10 @@
+#!/bin/bash
+set -euo pipefail
+IMAGE="${1:-ghcr.io/kabuki94/mios:latest}"
+echo "MiOS — Deploying $IMAGE to bare metal..."
+echo "WARNING: This will overwrite the current system!"
+read -rp "Continue? [y/N]: " confirm
+if [[ "$confirm" =~ ^[Yy] ]]; then
+    sudo bootc switch "$IMAGE"
+    echo "Deploy staged. Reboot to apply: sudo reboot"
+fi

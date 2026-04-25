@@ -1,24 +1,24 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# Cloud-WS v5.1.0 - Looking Glass Integration
+# Cloud-WS v2.1.0 - Looking Glass Integration
 
 ## What's New
 
-The Cloud-WS installation script has been updated to version **5.1.0** with full Looking Glass support for ultra-low latency GPU passthrough to Windows VMs!
+The Cloud-WS installation script has been updated to version **v2.1.0** with full Looking Glass support for ultra-low latency GPU passthrough to Windows VMs!
 
 ### Key Changes
 
 #### 1. **Upstream VirtIO ISO Integration**
 - **Previous**: Used standard virtio-win ISO without IVSHMEM driver
-- **New**: Downloads upstream virtio-win ISO (`v0.1.262`) that includes:
+- **New**: Downloads upstream virtio-win ISO (`v2.1.0`) that includes:
   - All standard VirtIO drivers for Windows 11
   - **IVSHMEM driver** required for Looking Glass shared memory
   - Latest Windows 11 24H2 driver support
 
-**URL**: `https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/upstream-virtio/virtio-win-0.1.262.iso`  
+**URL**: `https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/upstream-virtio/virtio-win-v2.1.0.iso`  
 **Location**: `/var/lib/libvirt/images/virtio-win.iso`
 
 #### 2. **Looking Glass Installation (Phase 15)**
@@ -98,7 +98,7 @@ virt-install --name win11-gaming --memory 16384 --vcpus 12 \
   --cdrom /path/to/win11.iso \
   --disk /var/lib/libvirt/images/virtio-win.iso,device=cdrom \
   --network network=default,model=virtio \
-  --graphics spice,listen=127.0.0.1 \
+  --graphics spice,listen=v2.1.0.1 \
   --video qxl \
   --cpu host-passthrough,cache.mode=passthrough
 ```
@@ -328,7 +328,7 @@ looking-glass-start VM_NAME
 
 ## Version History
 
-**v5.1.0** (2025-01-18)
+**v2.1.0** (2025-01-18)
 - âœ“ Added Looking Glass B7 installation
 - âœ“ Integrated upstream VirtIO ISO with IVSHMEM driver
 - âœ“ Created looking-glass-start helper script
@@ -336,7 +336,7 @@ looking-glass-start VM_NAME
 - âœ“ Added IVSHMEM device configuration
 - âœ“ Automated shared memory permissions setup
 
-**v5.0.0** (Previous)
+**v2.1.0** (Previous)
 - Initial Cloud-WS release
 - Basic QEMU/KVM setup
 - Cockpit integration
@@ -351,6 +351,6 @@ looking-glass-start VM_NAME
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

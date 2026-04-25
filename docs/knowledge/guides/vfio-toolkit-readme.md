@@ -1,11 +1,11 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
 # Universal VFIO PCIe Device Isolation Toolkit
 
-A complete, production-ready toolkit for configuring **any PCIe device** for VFIO passthrough on Linux. Originally designed for RTX 4090 on CloudWS-bootc/systemd-boot, now expanded to support any GPU vendor, any bootloader, and any Linux distribution.
+A complete, production-ready toolkit for configuring **any PCIe device** for VFIO passthrough on Linux. Originally designed for RTX 4090 on MiOS/systemd-boot, now expanded to support any GPU vendor, any bootloader, and any Linux distribution.
 
 ## ðŸš€ Quick Start
 
@@ -36,7 +36,7 @@ That's it! The script will guide you through device selection and configuration.
 - **Any PCIe device**: Network cards, storage controllers, etc.
 
 ### Multi-Bootloader Support
-- **systemd-boot** (CloudWS-bootc, Arch, EndeavourOS)
+- **systemd-boot** (MiOS, Arch, EndeavourOS)
 - **GRUB / GRUB2** (Most distributions)
 - **rEFInd** (Multi-boot systems)
 - **Manual configuration** (Instructions provided)
@@ -320,7 +320,7 @@ fi
 ## ðŸ“š Resources
 
 - [Arch Wiki - PCI Passthrough](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF)
-- [CloudWS-bootc Wiki - QEMU Setup](https://wiki.cachyos.org/virtualization/qemu_and_vmm_setup/)
+- [MiOS Wiki - QEMU Setup](https://wiki.cachyos.org/virtualization/qemu_and_vmm_setup/)
 - [VFIO Subreddit](https://www.reddit.com/r/VFIO/)
 - [Level1Techs VFIO Forum](https://forum.level1techs.com/c/software/vfio/11)
 
@@ -351,13 +351,13 @@ The authors are not responsible for any system instability, data loss, or hardwa
 
 **Made with â¤ï¸ for the VFIO community**
 
-*Compatible with CloudWS-bootc, Fedora Bootc, EndeavourOS, Manjaro, and any systemd-boot/GRUB-based distribution*
+*Compatible with MiOS, Fedora Bootc, EndeavourOS, Manjaro, and any systemd-boot/GRUB-based distribution*
 
 ---
 ### 📚 Bootc Ecosystem & Resources
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

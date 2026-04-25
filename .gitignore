@@ -1,5 +1,5 @@
 # Build outputs
-cloudws-deploy-out/
+mios-deploy-out/
 output/
 *.raw
 *.vhdx

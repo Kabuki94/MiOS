@@ -1,15 +1,15 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
 ---
 name: no-gcp-support
-description: CloudWS-bootc does not implement Google Cloud Platform support
+description: MiOS does not implement Google Cloud Platform support
 type: project
 ---
 
-CloudWS-bootc does not target GCP. No GCE images, no Cloud Workstations, no GAR push, no GKE — none of it. Confirmed by Kabu April 2026.
+MiOS does not target GCP. No GCE images, no Cloud Workstations, no GAR push, no GKE — none of it. Confirmed by Kabu April 2026.
 
 **Why:** Not a target platform for this project.
 **How to apply:** Reject or flag any GCP-specific deliverables (bib-configs/gcp.toml, gar-auth-refresh, Terraform for GCP, push-gar.yml, etc.) before implementing them.
@@ -19,6 +19,6 @@ CloudWS-bootc does not target GCP. No GCE images, no Cloud Workstations, no GAR 
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

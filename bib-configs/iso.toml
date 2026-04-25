@@ -1,10 +1,10 @@
-# bib-configs/iso.toml - CloudWS-bootc v2.1.6
+# bib-configs/iso.toml - MiOS v2.1.0
 # Target: Anaconda unattended installer ISO for bare-metal install.
 #
 # NOTE: BIB #528 - [customizations.user] is ignored when kickstart is present.
 #       User is defined IN the kickstart below.
 # NOTE: Source container image MUST include dracut-live + squashfs-tools, or
-#       this build leg will fail. Containerfile installs these in v2.1.6.
+#       this build leg will fail. Containerfile installs these in v2.1.0.
 
 [customizations.kernel]
 append = "rd.driver.blacklist=nouveau modprobe.blacklist=nouveau iommu=pt"
@@ -31,8 +31,8 @@ reqpart --add-boot
 part / --grow --fstype ext4
 
 # Replace the crypted password and ssh key below before publishing ISO.
-user --name=cloudws --groups=wheel,render,video --iscrypted --password=$6$REPLACEME_WITH_SHA512_HASH$REPLACEME
-sshkey --username=cloudws "ssh-ed25519 AAAA_REPLACE_WITH_REAL_PUBKEY cloudws@operator"
+user --name=mios --groups=wheel,render,video --iscrypted --password=$6$REPLACEME_WITH_SHA512_HASH$REPLACEME
+sshkey --username=mios "ssh-ed25519 AAAA_REPLACE_WITH_REAL_PUBKEY mios@operator"
 
 reboot --eject
 """

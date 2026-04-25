@@ -1,0 +1,4 @@
+#!/bin/bash
+set -euo pipefail
+echo "MiOS — Local build..."
+podman build --no-cache --build-arg MAKEFLAGS="-j$(nproc)" -t localhost/mios:latest .

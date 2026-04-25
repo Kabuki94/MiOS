@@ -1,9 +1,9 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# Minimal GNOME desktop strategy for CloudWS-bootc
+# Minimal GNOME desktop strategy for MiOS
 
 **A Fedora Rawhide bootc workstation needs exactly 30–35 core GNOME packages to deliver a fully functional shell, and everything else is removable bloat.** The official Fedora Workstation ostree config pulls in roughly 290 RPM packages across two auto-generated manifests, but the hard dependency chain from `gnome-shell` downward touches fewer than 20 libraries and daemons. The critical finding: **malcontent cannot be dnf-removed**, but `malcontent-control`, `malcontent-pam`, and `malcontent-tools` can be cleanly uninstalled via dnf, while `malcontent-libs` must remain because flatpak dynamically links against `libmalcontent-0.so.0`. This report extracts exact package lists from all four primary sources and delivers a production-ready Containerfile `RUN` block for building a stripped GNOME 50 bootc image.
 
@@ -41,9 +41,9 @@ Bluefin's Containerfile executes a single `RUN` directive that calls `/ctx/build
 
 The build pipeline executes in strict numerical order: `00-image-info.sh` → `03-install-kernel-akmods.sh` → **`04-packages.sh`** (primary package management) → `05-override-install.sh` → `build-gnome-extensions.sh` → `08-firmware.sh` → **`17-cleanup.sh`** (service configuration and removal) → `18-workarounds.sh` → **`20-tests.sh`** (validation). Phase 1 of `build.sh` removes conflicting packages using `rpm -e --nodeps` before copying system files: specifically `ublue-os-just`, `ublue-os-signing`, and `fedora-logos` are force-removed to prevent conflicts with Bluefin's own replacements.
 
-The `20-tests.sh` validation script enforces two arrays. **IMPORTANT_PACKAGES** (must be present, build fails if missing): `distrobox`, `fish`, `flatpak`, `mutter`, `pipewire`, `gnome-shell`, `ptyxis`, `gdm`, `systemd`, `tailscale`, `uupd`, `wireplumber`, `zsh`. **UNWANTED_PACKAGES** (must be absent, build fails if found) — the exact list could not be retrieved from the raw source, but the enforcement pattern is clear: `rpm -q "${package}"` success for an unwanted package aborts the build. Bluefin is actively transitioning from rpm-ostree to dnf5 for build scripts (tracked in issue #1946), and the broader ublue-os/main project completed this switch with v2.3.0.
+The `20-tests.sh` validation script enforces two arrays. **IMPORTANT_PACKAGES** (must be present, build fails if missing): `distrobox`, `fish`, `flatpak`, `mutter`, `pipewire`, `gnome-shell`, `ptyxis`, `gdm`, `systemd`, `tailscale`, `uupd`, `wireplumber`, `zsh`. **UNWANTED_PACKAGES** (must be absent, build fails if found) — the exact list could not be retrieved from the raw source, but the enforcement pattern is clear: `rpm -q "${package}"` success for an unwanted package aborts the build. Bluefin is actively transitioning from rpm-ostree to dnf5 for build scripts (tracked in issue #1946), and the broader ublue-os/main project completed this switch with v2.1.0.
 
-**Bluefin's malcontent strategy is coexistence, not removal.** Release changelogs show malcontent being routinely updated alongside other packages (e.g., `malcontent 0.13.0-2 → 0.13.0-3`). Instead of fighting the dependency chain, Bluefin neutralizes unwanted behavior through GSettings schema overrides (e.g., `welcome-dialog-last-shown-version='4294967295'` to suppress the welcome dialog), desktop file overlays from `projectbluefin/common`, and replacing GNOME Software entirely with Bazaar as the application storefront.
+**Bluefin's malcontent strategy is coexistence, not removal.** Release changelogs show malcontent being routinely updated alongside other packages (e.g., `malcontent v2.1.0-2 → v2.1.0-3`). Instead of fighting the dependency chain, Bluefin neutralizes unwanted behavior through GSettings schema overrides (e.g., `welcome-dialog-last-shown-version='4294967295'` to suppress the welcome dialog), desktop file overlays from `projectbluefin/common`, and replacing GNOME Software entirely with Bazaar as the application storefront.
 
 ## The malcontent dependency trap and its precise solution
 
@@ -228,7 +228,7 @@ RUN set -euo pipefail && \
 
 ## Architectural recommendations beyond package removal
 
-The removal script handles the immediate bloat problem, but three architectural patterns from the sources deserve emphasis. First, **always pass `--setopt=install_weak_deps=False` when installing packages** in the Containerfile. The official Fedora Silverblue config ships with `install_weak_deps: true`, which is why every GNOME app drags in optional dependencies. Bluefin and the broader ublue-os ecosystem use this flag consistently. For CloudWS-bootc, set it globally in `/etc/dnf/dnf.conf` as `install_weakdeps=False` early in the build, before any `dnf install` operations.
+The removal script handles the immediate bloat problem, but three architectural patterns from the sources deserve emphasis. First, **always pass `--setopt=install_weak_deps=False` when installing packages** in the Containerfile. The official Fedora Silverblue config ships with `install_weak_deps: true`, which is why every GNOME app drags in optional dependencies. Bluefin and the broader ublue-os ecosystem use this flag consistently. For MiOS, set it globally in `/etc/dnf/dnf.conf` as `install_weakdeps=False` early in the build, before any `dnf install` operations.
 
 Second, **prefer the "build from minimal base + add" approach over "start full + remove."** Fedora CoreOS's derivation model — start from `quay.io/fedora/fedora-bootc:rawhide`, then `dnf install` only the packages you need — produces a cleaner, more predictable image than starting from a Silverblue base and stripping. The minimal GNOME desktop install (`dnf install gnome-shell gnome-console nautilus xdg-user-dirs xdg-user-dirs-gtk flatpak`) pulls in ~180–200 packages versus Workstation's 1000+, and avoids the malcontent trap entirely because gnome-control-center comes in as a dependency with only the libraries it actually needs at runtime.
 
@@ -236,7 +236,7 @@ Third, the **NoDisplay override pattern is more robust than removal for edge cas
 
 ## The "build up" alternative eliminates most removal complexity
 
-Rather than the removal script above (which is the right approach when starting from Silverblue), the cleanest CloudWS-bootc architecture starts from `fedora-bootc:rawhide` and installs only what's needed:
+Rather than the removal script above (which is the right approach when starting from Silverblue), the cleanest MiOS architecture starts from `fedora-bootc:rawhide` and installs only what's needed:
 
 ```bash
 FROM quay.io/fedora/fedora-bootc:rawhide
@@ -272,6 +272,6 @@ This "build up" approach produces a **~180-package GNOME desktop** versus removi
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

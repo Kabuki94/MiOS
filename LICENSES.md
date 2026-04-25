@@ -1,19 +1,19 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
 # Component Licenses
 
-CloudWS-bootc includes software under various open-source and proprietary licenses. By using CloudWS-bootc, you acknowledge and accept the license terms of all included components.
+MiOS includes software under various open-source and proprietary licenses. By using MiOS, you acknowledge and accept the license terms of all included components.
 
 ## Proprietary Components
 
-These components are included in the CloudWS-bootc image and are governed by their respective proprietary licenses. By booting and using CloudWS-bootc, you agree to these terms.
+These components are included in the MiOS image and are governed by their respective proprietary licenses. By booting and using MiOS, you agree to these terms.
 
 | Component | License | Notes |
 |-----------|---------|-------|
-| NVIDIA GPU Driver (590+) | [NVIDIA Software License](https://www.nvidia.com/en-us/drivers/nvidia-license/) | Installed via akmod-nvidia (CloudWS-1) or pre-signed by ublue (CloudWS-2). Required for NVIDIA GPUs. |
+| NVIDIA GPU Driver (590+) | [NVIDIA Software License](https://www.nvidia.com/en-us/drivers/nvidia-license/) | Installed via akmod-nvidia (MiOS-1) or pre-signed by ublue (MiOS-2). Required for NVIDIA GPUs. |
 | NVIDIA Container Toolkit | [Apache 2.0](https://github.com/NVIDIA/nvidia-container-toolkit/blob/main/LICENSE) | Open source. CDI specs for Podman GPU access. |
 | NVIDIA Persistenced | [NVIDIA License](https://www.nvidia.com/en-us/drivers/nvidia-license/) | Keeps GPU initialized for low-latency access. |
 | Steam | [Steam Subscriber Agreement](https://store.steampowered.com/subscriber_agreement/) | User must accept SSA on first launch. |
@@ -53,7 +53,7 @@ These components are included in the CloudWS-bootc image and are governed by the
 - **Steam**: You must create a Steam account and accept the Steam Subscriber Agreement to use Steam.
 - **NVIDIA**: The NVIDIA driver is included for hardware compatibility. No additional acceptance is required beyond using the system.
 - **Flatpak apps**: Applications installed via Flatpak have their own licenses. Check each app's metadata on Flathub.
-- **VM guests**: Windows VMs require valid Windows licenses. CloudWS provides the virtualization infrastructure only.
+- **VM guests**: Windows VMs require valid Windows licenses. MiOS provides the virtualization infrastructure only.
 
 ## SBOM
 
@@ -64,6 +64,6 @@ Each CI build generates an SPDX and CycloneDX Software Bill of Materials listing
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

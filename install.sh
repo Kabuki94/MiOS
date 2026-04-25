@@ -1,13 +1,13 @@
 #!/bin/bash
-# CloudWS — One-line installer for Linux
-# Usage: curl -fsSL https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/install.sh | bash
+# MiOS — One-line installer for Linux
+# Usage: curl -fsSL https://raw.githubusercontent.com/Kabuki94/MiOS/main/install.sh | bash
 set -euo pipefail
 
-REPO="https://github.com/Kabuki94/CloudWS-bootc.git"
-DIR="${CLOUDWS_DIR:-$HOME/CloudWS-bootc}"
+REPO="https://github.com/Kabuki94/MiOS.git"
+DIR="${MIOS_DIR:-$HOME/MiOS}"
 
 # Read version from repo VERSION file, fallback to hardcoded
-VER="v1.3.0"
+VER="v2.1.0"
 
 # --- Credential Handling ---
 echo "Checking for credentials..."
@@ -29,11 +29,11 @@ if [[ -n "${GHCR_TOKEN:-}" ]]; then
     echo "  [OK] Credentials provided; using authenticated requests."
 fi
 
-_remote_ver=$(scurl "https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/VERSION" 2>/dev/null || true)
+_remote_ver=$(scurl "https://raw.githubusercontent.com/Kabuki94/MiOS/main/VERSION" 2>/dev/null || true)
 [[ -n "$_remote_ver" ]] && VER="v${_remote_ver}"
 
 echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║  CloudWS $VER — Cloud Workstation OS                       ║"
+echo "║  MiOS $VER — MiOS                       ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -55,17 +55,17 @@ case "$choice" in
     echo ""
     echo "Building OCI image..."
     if command -v podman &>/dev/null; then
-        podman build --no-cache -t localhost/cloudws:latest .
+        podman build --no-cache -t localhost/mios:latest .
         echo ""
-        echo "✓ Image built: localhost/cloudws:latest"
+        echo "✓ Image built: localhost/mios:latest"
         echo ""
         echo "Deploy options:"
-        echo "  Bare metal:  sudo podman run --rm -it --privileged --pid=host localhost/cloudws:latest bootc install to-disk /dev/sdX"
-        echo "  Switch live: sudo bootc switch --transport containers-storage localhost/cloudws:latest"
-        echo "  Run locally: podman run -d --name cloudws-local -p 9090:9090 --systemd=true --privileged localhost/cloudws:latest"
+        echo "  Bare metal:  sudo podman run --rm -it --privileged --pid=host localhost/mios:latest bootc install to-disk /dev/sdX"
+        echo "  Switch live: sudo bootc switch --transport containers-storage localhost/mios:latest"
+        echo "  Run locally: podman run -d --name mios-local -p 9090:9090 --systemd=true --privileged localhost/mios:latest"
     elif command -v docker &>/dev/null; then
-        docker build --no-cache -t localhost/cloudws:latest .
-        echo "✓ Image built: localhost/cloudws:latest"
+        docker build --no-cache -t localhost/mios:latest .
+        echo "✓ Image built: localhost/mios:latest"
     else
         echo "✗ Neither podman nor docker found."
         exit 1
@@ -79,14 +79,14 @@ case "$choice" in
     echo "✓ Repository cloned to $DIR"
     echo ""
     echo "  Inspect:   cd $DIR && ls -la"
-    echo "  Build:     podman build --no-cache -t cloudws:latest ."
+    echo "  Build:     podman build --no-cache -t mios:latest ."
     echo "  Windows:   Open PowerShell as Admin → .\\cloud-ws.ps1"
     ;;
   3)
     echo ""
     if [ "$(id -u)" -ne 0 ]; then
         echo "✗ Must run as root."
-        echo "  sudo bash -c '\$(curl -fsSL https://raw.githubusercontent.com/Kabuki94/CloudWS-bootc/main/install.sh)'"
+        echo "  sudo bash -c '\$(curl -fsSL https://raw.githubusercontent.com/Kabuki94/MiOS/main/install.sh)'"
         exit 1
     fi
     echo "Available disks:"
@@ -106,16 +106,16 @@ case "$choice" in
     read -rp "⚠ ALL DATA ON /dev/$disk WILL BE DESTROYED. Type 'yes' to continue: " confirm
     if [ "$confirm" = "yes" ]; then
         echo "Building image..."
-        git clone "$REPO" /tmp/cloudws-build 2>/dev/null || true
-        cd /tmp/cloudws-build
-        podman build --no-cache -t localhost/cloudws:latest .
+        git clone "$REPO" /tmp/mios-build 2>/dev/null || true
+        cd /tmp/mios-build
+        podman build --no-cache -t localhost/mios:latest .
         echo "Installing to /dev/$disk ..."
         podman run --rm -it --privileged --pid=host \
             -v /var/lib/containers:/var/lib/containers \
             -v /dev:/dev \
-            localhost/cloudws:latest bootc install to-disk $luks_flag "/dev/$disk"
+            localhost/mios:latest bootc install to-disk $luks_flag "/dev/$disk"
         echo ""
-        echo "✓ CloudWS installed to /dev/$disk. Reboot to start."
+        echo "✓ MiOS installed to /dev/$disk. Reboot to start."
     else
         echo "Aborted."
     fi
@@ -127,10 +127,10 @@ case "$choice" in
 esac
 
 echo ""
-echo "CloudWS Commands (after deploy):"
-echo "  cloudws --help        — Quick reference for all commands"
-echo "  cloudws-update        — Pull latest updates from registry"
+echo "MiOS Commands (after deploy):"
+echo "  mios --help        — Quick reference for all commands"
+echo "  mios-update        — Pull latest updates from registry"
 echo "  sudo bootc rollback   — Roll back to previous deployment"
-echo "  cloudws-rebuild       — Clone from GitHub, build, push"
-echo "  cloudws-backup        — Backup volumes, K3s state, VMs"
-echo "  cloudws-vfio-toggle   — GPU passthrough management"
+echo "  mios-rebuild       — Clone from GitHub, build, push"
+echo "  mios-backup        — Backup volumes, K3s state, VMs"
+echo "  mios-vfio-toggle   — GPU passthrough management"

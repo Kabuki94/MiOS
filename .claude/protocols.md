@@ -1,4 +1,4 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
@@ -9,7 +9,7 @@
 
 ---
 
-**TARGET AUDIENCE:** ALL AI Agents, LLMs, Copilots, and APIs (Gemini, Claude, GPT, Copilot, etc.) interacting with the `CloudWS-bootc` repository.
+**TARGET AUDIENCE:** ALL AI Agents, LLMs, Copilots, and APIs (Gemini, Claude, GPT, Copilot, etc.) interacting with the `MiOS` repository.
 
 **STATUS:** MANDATORY / ABSOLUTE LAW.
 
@@ -32,7 +32,7 @@ This is an **immutable, container-native workstation** built on `bootc` and `Com
 All agents MUST strictly enforce these patterns to prevent state drift and technical debt:
 1.  **USR-OVER-ETC:** NEVER write static system configs to `/etc` at build time. Always use `/usr/lib/<component>.d/`. `/etc` is for user overrides only.
 2.  **NO-MKDIR-IN-VAR:** NEVER use `mkdir` in a build script to create `/var` state directories. Use `tmpfiles.d` (d or C directives). This ensures existing deployments receive structure updates during `bootc upgrade`.
-3.  **MANAGED-SELINUX:** NEVER install SELinux modules at build-time with `semodule -i`. Stage them in `/usr/share/selinux/packages/` and load them asynchronously via `cloudws-selinux-init.service`.
+3.  **MANAGED-SELINUX:** NEVER install SELinux modules at build-time with `semodule -i`. Stage them in `/usr/share/selinux/packages/` and load them asynchronously via `mios-selinux-init.service`.
 4.  **BOUND-IMAGES:** ALL primary sidecar containers (Quadlets) MUST be symlinked into `/usr/lib/bootc/bound-images.d/` to ensure atomic updates via `bootc upgrade`.
 5.  **BOOT-SHIELDING:** ALL `dnf` operations during build MUST use `excludepkgs="shim-*,kernel*"` to prevent bootloader regressions.
 
@@ -56,6 +56,6 @@ This `.ai-context/` directory contains the persistent memory of the AI collectiv
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

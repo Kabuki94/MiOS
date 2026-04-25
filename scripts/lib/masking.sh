@@ -27,8 +27,8 @@ register_common_masks() {
         GHCR_TOKEN
         GH_TOKEN
         GITHUB_TOKEN
-        CLOUDWS_PASSWORD
-        CLOUDWS_PASSWORD_HASH
+        MIOS_PASSWORD
+        MIOS_PASSWORD_HASH
         SIGNING_SECRET
         COSIGN_PASSWORD
     )

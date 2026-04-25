@@ -14,13 +14,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: ShellCheck (scripts/)
-        uses: ludeeus/action-shellcheck@2.0.0
+        uses: ludeeus/action-shellcheck@v2.1.0
         with:
           scandir: scripts/
           severity: warning
 
       - name: Hadolint (Containerfile)
-        uses: hadolint/hadolint-action@v3.1.0
+        uses: hadolint/hadolint-action@v2.1.0
         with:
           dockerfile: Containerfile
           failure-threshold: error

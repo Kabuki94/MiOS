@@ -1,9 +1,9 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# CloudWS-bootc v1.3.0: resolving every build and boot failure
+# MiOS v2.1.0: resolving every build and boot failure
 
 **The Hyper-V Gen2 boot hang is almost certainly caused by GNOME 50's complete removal of the X11 backend colliding with xorgxrdp Enhanced Session Mode**, creating a GDM crash loop that prevents the system from ever reaching a login prompt. This single architectural incompatibility — Mutter 50 is Wayland-only, xorgxrdp requires X11 — explains why the kernel boots fine but the system never reaches userspace. Secondary contributing factors include potentially missing Hyper-V dracut modules in the initramfs and possible plymouth-masking dependency deadlocks. The remaining issues (lint warnings, service ordering, BIB GPG failures, memory alignment) are all solvable with targeted fixes documented below.
 
@@ -30,7 +30,7 @@ This diagnosis is reinforced by community reports confirming that **"any distro 
 
 ## Missing dracut modules and plymouth masking are secondary hang causes
 
-Even if the GDM/xorgxrdp issue is resolved, two other problems can cause Hyper-V boot hangs. **First, the initramfs may lack critical Hyper-V kernel modules.** A confirmed Fedora 43 Hyper-V boot failure was traced to `hv_storvsc` (synthetic SCSI controller) being absent from the initramfs — without it, the VM cannot detect its virtual disk and hangs indefinitely. Since CloudWS builds from `ucore-hci:stable-nvidia`, the base image's dracut configuration may not include Hyper-V modules unless explicitly configured.
+Even if the GDM/xorgxrdp issue is resolved, two other problems can cause Hyper-V boot hangs. **First, the initramfs may lack critical Hyper-V kernel modules.** A confirmed Fedora 43 Hyper-V boot failure was traced to `hv_storvsc` (synthetic SCSI controller) being absent from the initramfs — without it, the VM cannot detect its virtual disk and hangs indefinitely. Since MiOS builds from `ucore-hci:stable-nvidia`, the base image's dracut configuration may not include Hyper-V modules unless explicitly configured.
 
 Add this to the Containerfile to guarantee multi-surface boot support:
 
@@ -88,7 +88,7 @@ EOF
 
 ## The Flatpak service enable fails because of Containerfile ordering
 
-The `10-gnome.sh` script calling `systemctl enable cloudws-flatpak-install.service` fails because the unit file lives in `system_files/` which gets `COPY`'d in a later Containerfile step. **`systemctl enable` only creates symlinks — it requires the unit file to exist at that moment.** This is a classic ordering bug with three clean fixes:
+The `10-gnome.sh` script calling `systemctl enable mios-flatpak-install.service` fails because the unit file lives in `system_files/` which gets `COPY`'d in a later Containerfile step. **`systemctl enable` only creates symlinks — it requires the unit file to exist at that moment.** This is a classic ordering bug with three clean fixes:
 
 **Option A (simplest):** Move `COPY system_files/ /` before the `RUN scripts/` step so unit files exist when `systemctl enable` runs.
 
@@ -107,7 +107,7 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
 ```dockerfile
 RUN scripts/10-gnome.sh
 COPY system_files/ /
-RUN systemctl enable cloudws-flatpak-install.service
+RUN systemctl enable mios-flatpak-install.service
 ```
 
 For the Flatpak installation itself, **every major Universal Blue project uses first-boot systemd services, never build-time embedding.** Bazzite uses `bazzite-flatpak-manager.service` with version tracking for idempotency. Bluefin uses `brew-setup.service` with lists in `/etc/preinstall.d/`. None embed Flatpaks at container build time because Flatpak data installs to `/var/lib/flatpak`, which has the same Docker VOLUME semantics — updates would never propagate.
@@ -148,13 +148,13 @@ Set-VM -Name $VMName -MemoryStartupBytes ($AlignedMemoryMB * 1MB)
 
 ## Conclusion
 
-The boot hang has a clear primary cause (**Mutter 50's X11 removal killing xorgxrdp**) with two reinforcing factors (missing Hyper-V dracut modules and plymouth dependency deadlocks). The fix strategy is: replace xorgxrdp with `gnome-remote-desktop` for Wayland-native RDP, add explicit Hyper-V drivers to the initramfs via dracut drop-ins with `hostonly="no"`, and use kernel-parameter plymouth disabling instead of service masking. The BIB GPG failure is a known upstream bug solvable by disabling Terra repos *inside* the container image, not on the host. The lint warnings require moving versioned content from `/var` to `/usr` and adding a build-time cleanup step. The Flatpak service ordering is fixed by restructuring the Containerfile to COPY unit files before enabling them, following Bluefin's multi-stage bind-mount pattern. Together, these changes should produce a CloudWS image that boots reliably across all five target surfaces.
+The boot hang has a clear primary cause (**Mutter 50's X11 removal killing xorgxrdp**) with two reinforcing factors (missing Hyper-V dracut modules and plymouth dependency deadlocks). The fix strategy is: replace xorgxrdp with `gnome-remote-desktop` for Wayland-native RDP, add explicit Hyper-V drivers to the initramfs via dracut drop-ins with `hostonly="no"`, and use kernel-parameter plymouth disabling instead of service masking. The BIB GPG failure is a known upstream bug solvable by disabling Terra repos *inside* the container image, not on the host. The lint warnings require moving versioned content from `/var` to `/usr` and adding a build-time cleanup step. The Flatpak service ordering is fixed by restructuring the Containerfile to COPY unit files before enabling them, following Bluefin's multi-stage bind-mount pattern. Together, these changes should produce a MiOS image that boots reliably across all five target surfaces.
 
 ---
 ### 📚 Bootc Ecosystem & Resources
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

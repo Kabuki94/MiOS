@@ -1,13 +1,13 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# CloudWS-bootc v1.3.0 - Restore UTF-8 BOM on .ps1 files
+# MiOS v2.1.0 - Restore UTF-8 BOM on .ps1 files
 
 ## What went wrong
 
-v2.2.5 patched cloud-ws.ps1 to fix the Read-Host -MaskInput token leak.
+v2.1.0 patched cloud-ws.ps1 to fix the Read-Host -MaskInput token leak.
 My Write-Utf8NoBom helper wrote the file back WITHOUT a BOM. But
 cloud-ws.ps1 is full of box-drawing (U+2500, U+2550), check-mark
 (U+2713), em-dash (U+2014), and arrow (U+2192) characters used in
@@ -39,7 +39,7 @@ BOM, PS 5.1 parses the file as UTF-8 and the box-drawing characters
 render correctly.
 
 No content changes - just the 3-byte `EF BB BF` prefix restored
-on files that had it before my v2.2.5 overwrite stripped it.
+on files that had it before my v2.1.0 overwrite stripped it.
 
 ## Detection logic
 
@@ -69,6 +69,6 @@ is less invasive.
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

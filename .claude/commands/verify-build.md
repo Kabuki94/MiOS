@@ -1,14 +1,14 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
 ---
-description: Dry-run the CloudWS-bootc hard-rules audit against the working tree or a proposed change — PowerShell-native, no WSL popups
+description: Dry-run the MiOS hard-rules audit against the working tree or a proposed change — PowerShell-native, no WSL popups
 argument-hint: [file-or-directory]
 ---
 
-Run the CloudWS-bootc hard-rules audit defined in `CLAUDE.md` §3
+Run the MiOS hard-rules audit defined in `CLAUDE.md` §3
 against `$1` (or the whole working tree if no argument given). Report
 violations by rule number so they trace back to the CLAUDE.md section.
 
@@ -73,14 +73,14 @@ Select-String -Path docs/PACKAGES.md -Pattern '^\s*xorgxrdp\b(?!-glamor)'
 ### §3.5 — NVIDIA / VM gating
 
 ```powershell
-Test-Path system_files/etc/modprobe.d/cloudws-nvidia-blacklist.conf
+Test-Path system_files/etc/modprobe.d/mios-nvidia-blacklist.conf
 Test-Path scripts/34-gpu-detect.sh
 
 Get-ChildItem -Recurse -Filter '*.toml' kargs.d,bib-configs,system_files/usr/lib/bootc/kargs.d |
   Select-String -Pattern 'nvidia-drm\.(modeset|fbdev)='
 
 Get-ChildItem -Recurse -Filter '*.service' system_files,systemd |
-  Where-Object { (Get-Content $_ -Raw) -match 'cloudws-ceph' } |
+  Where-Object { (Get-Content $_ -Raw) -match 'mios-ceph' } |
   Select-String -Pattern 'ConditionVirtualization='
 ```
 
@@ -142,6 +142,6 @@ If any FAIL: **DO NOT SHIP.**
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.9
 # ============================================================================
-# CloudWS-bootc - Unified Image (v1.3.0)
+# MiOS - Unified Image (v2.1.0)
 # ============================================================================
 # One image. Every role. Every surface. Every GPU vendor.
 #
@@ -10,7 +10,7 @@
 # AMD:      Mesa + ROCm in-image (PACKAGES.md packages-gpu-amd-compute)
 # Intel:    intel-compute-runtime + intel-media-driver (packages-gpu-intel-compute)
 #
-# v1.3.0 fixes the docs-restructure fallout from commit 0eff8d8:
+# v2.1.0 fixes the docs-restructure fallout from commit 0eff8d8:
 #
 #   1) PACKAGES.md was relocated from the repo root to docs/PACKAGES.md
 #      together with the other long-form docs. The ctx stage still copied
@@ -29,11 +29,11 @@
 #      no longer performs manual 'install' calls. This eliminates the
 #      "cannot stat" failures caused by path desynchronization.
 #
-# v2.3.4 fixed v2.3.3's three runtime failures:
+# v2.1.0 fixed v2.1.0's three runtime failures:
 #
-#   1) bootc container lint REJECTED 01-cloudws-vm-boot.toml with
+#   1) bootc container lint REJECTED 01-mios-vm-boot.toml with
 #        Linting: Unexpected runtime error running lint bootc-kargs:
-#        Parsing 01-cloudws-vm-boot.toml
+#        Parsing 01-mios-vm-boot.toml
 #      The file used the Copilot-flavoured
 #          [kargs]
 #          delete = [...]
@@ -41,30 +41,30 @@
 #      layout. bootc kargs.d only accepts a flat root-level
 #          kargs = [ ... ]
 #      array; there is NO delete mechanism and NO [kargs] table header.
-#      All content was already provided by 00-cloudws.toml and
-#      10-cloudws-verbose.toml (systemd.show-status=true, serial console,
+#      All content was already provided by 00-mios.toml and
+#      10-mios-verbose.toml (systemd.show-status=true, serial console,
 #      plymouth.enable=0), so the file is deleted outright. The
 #      "strip quiet/rhgb" intent remains achievable because plymouth is
 #      disabled and systemd.show-status=true forces status output
 #      regardless of quiet/rhgb surviving in the base image cmdline.
 #
 #   2) 35-gpu-passthrough.sh FAILED:
-#        install: cannot stat '/ctx/systemd/cloudws-gpu-detect.service'
+#        install: cannot stat '/ctx/systemd/mios-gpu-detect.service'
 #      The ctx stage copied scripts/, system_files/, PACKAGES.md, VERSION,
 #      and bib-configs/, but NOT the top-level passthrough overlay dirs
 #      (systemd/, udev/, tmpfiles.d/, sysusers.d/, kargs.d/). Those are
 #      now included below.
 #
 #   3) Name collision between 34-gpu-detect.sh (heredoc-writes
-#      cloudws-gpu-detect.service with VM NVIDIA-blacklist + hardware-
+#      mios-gpu-detect.service with VM NVIDIA-blacklist + hardware-
 #      renderer + RTX 50-series detection logic) and
-#      systemd/cloudws-gpu-detect.service (v2.1.5 passthrough-umbrella
+#      systemd/mios-gpu-detect.service (v2.1.0 passthrough-umbrella
 #      status dumper). Both targeted /usr/lib/systemd/system/
-#      cloudws-gpu-detect.service. Renamed the umbrella to
-#      cloudws-gpu-status.service so both coexist; 35-gpu-passthrough.sh
+#      mios-gpu-detect.service. Renamed the umbrella to
+#      mios-gpu-status.service so both coexist; 35-gpu-passthrough.sh
 #      updated to match.
 #
-# v2.3.3 fixed overlay failure at STEP 9/13 (/usr/local symlink) - kept.
+# v2.1.0 fixed overlay failure at STEP 9/13 (/usr/local symlink) - kept.
 # ============================================================================
 
 # Renovate's customManager regex (renovate.json) rewrites this line to
@@ -79,7 +79,7 @@ ARG BASE_IMAGE=ghcr.io/ublue-os/ucore-hci:stable-nvidia
 FROM scratch AS ctx
 COPY scripts/           /ctx/scripts/
 COPY system_files/      /ctx/system_files/
-# v2.3.5: PACKAGES.md moved to docs/ during the docs consolidation; re-path
+# v2.1.0: PACKAGES.md moved to docs/ during the docs consolidation; re-path
 # the COPY so /ctx/PACKAGES.md (the path packages.sh reads) stays stable.
 COPY docs/PACKAGES.md   /ctx/PACKAGES.md
 COPY VERSION            /ctx/VERSION
@@ -90,11 +90,11 @@ COPY bib-configs/       /ctx/bib-configs/
 # ----------------------------------------------------------------------------
 FROM ${BASE_IMAGE}
 
-LABEL org.opencontainers.image.title="CloudWS-bootc"
+LABEL org.opencontainers.image.title="MiOS"
 LABEL org.opencontainers.image.description="Unified immutable cloud-native workstation OS (desktop/k3s/ha/hybrid)"
-LABEL org.opencontainers.image.source="https://github.com/Kabuki94/CloudWS-bootc"
+LABEL org.opencontainers.image.source="https://github.com/Kabuki94/MiOS"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
-LABEL org.opencontainers.image.version="1.3.0"
+LABEL org.opencontainers.image.version="v2.1.0"
 LABEL containers.bootc="1"
 LABEL ostree.bootable="1"
 
@@ -102,10 +102,10 @@ LABEL ostree.bootable="1"
 CMD ["/sbin/init"]
 
 # Build-time user provisioning — injected by cloud-ws.ps1 via --build-arg.
-# 31-user.sh reads these as CLOUDWS_USER / CLOUDWS_PASSWORD_HASH env vars.
+# 31-user.sh reads these as MIOS_USER / MIOS_PASSWORD_HASH env vars.
 # ARG values do NOT persist into the final image (unlike ENV).
-ARG CLOUDWS_USER=cloudws
-ARG CLOUDWS_PASSWORD_HASH=
+ARG MIOS_USER=mios
+ARG MIOS_PASSWORD_HASH=
 
 # Build context mounted read-only
 COPY --from=ctx /ctx /ctx
@@ -123,7 +123,7 @@ RUN podman pull docker.io/postgres:15 || true \
 # Overlay system_files/ onto the rootfs. Two-stage to handle the
 # /usr/local -> /var/usrlocal symlink on ucore/FCOS bases.
 # ---------------------------------------------------------------------------
-# CloudWS v2.1.6: delegate system_files overlay to the script so the
+# MiOS v2.1.0: delegate system_files overlay to the script so the
 # /usr/local -> /var/usrlocal symlink on ucore/bootc bases is handled
 # correctly (previous inline cp -a failed with 'File exists').
 RUN bash /ctx/scripts/08-system-files-overlay.sh
@@ -146,13 +146,13 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     /ctx/scripts/37-ollama-prep.sh
 # Ensure dracut-live + squashfs-tools for the ISO artifact build leg
 RUN dnf install -y dracut-live squashfs-tools \
- && mkdir -p /usr/lib/cloudws/logs \
- && cp -v /var/log/dnf5.log* /var/log/hawkey.log /usr/lib/cloudws/logs/ 2>/dev/null || true \
+ && mkdir -p /usr/lib/mios/logs \
+ && cp -v /var/log/dnf5.log* /var/log/hawkey.log /usr/lib/mios/logs/ 2>/dev/null || true \
  && dnf clean all
 
 # MANDATORY CLEANUP for bootc container lint
 # Purge all logs and temporary files that violate /var immutability rules.
-# (Main logs are preserved in /usr/lib/cloudws/logs)
+# (Main logs are preserved in /usr/lib/mios/logs)
 RUN rm -rf /var/log/dnf5.log* /var/log/hawkey.log /var/cache/dnf /var/cache/libdnf5 /tmp/*
 
 # Install bootc bash completions so `bootc <TAB>` works on deployed systems
@@ -162,8 +162,8 @@ RUN bootc completion bash > /etc/bash_completion.d/bootc
 # Squash granular extensions into a monolithic accelerator image to prevent
 # 'overlayfs: maximum fs stacking depth exceeded' errors.
 RUN mkdir -p /usr/lib/extensions/source \
- && chmod +x /ctx/tools/cloudws-sysext-pack.sh \
- && /ctx/tools/cloudws-sysext-pack.sh /usr/lib/extensions/source || true
+ && chmod +x /ctx/tools/mios-sysext-pack.sh \
+ && /ctx/tools/mios-sysext-pack.sh /usr/lib/extensions/source || true
 
 RUN bootc container lint
 RUN rm -rf /ctx \

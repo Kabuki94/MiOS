@@ -1,15 +1,15 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
 # Security Hardening Checklist
 
-CloudWS-bootc ships with defense-in-depth security hardening enabled by default, adapted from SecureBlue's audit framework and Fedora's security guidelines. This document details every hardening measure, its rationale, and how to override it if your workload requires it.
+MiOS ships with defense-in-depth security hardening enabled by default, adapted from SecureBlue's audit framework and Fedora's security guidelines. This document details every hardening measure, its rationale, and how to override it if your workload requires it.
 
 ## Kernel Boot Parameters
 
-Shipped via `/usr/lib/bootc/kargs.d/00-cloudws.toml` — no bootloader modification needed. These are applied by bootc at boot time.
+Shipped via `/usr/lib/bootc/kargs.d/00-mios.toml` — no bootloader modification needed. These are applied by bootc at boot time.
 
 | Parameter | Purpose | Override |
 |-----------|---------|----------|
@@ -31,7 +31,7 @@ Shipped via `/usr/lib/bootc/kargs.d/00-cloudws.toml` — no bootloader modificat
 
 ## Kernel Sysctl Hardening
 
-Shipped via `/usr/lib/sysctl.d/99-cloudws-hardening.conf`. Admin overrides go in `/etc/sysctl.d/`.
+Shipped via `/usr/lib/sysctl.d/99-mios-hardening.conf`. Admin overrides go in `/etc/sysctl.d/`.
 
 ### Kernel pointer and debug restrictions
 
@@ -74,13 +74,13 @@ IPv6 equivalents are also set for `accept_redirects` and `accept_source_route`.
 
 ## SELinux
 
-CloudWS runs SELinux in **enforcing** mode. Custom policies are split into per-rule individual `.te` modules:
+MiOS runs SELinux in **enforcing** mode. Custom policies are split into per-rule individual `.te` modules:
 
-- `cloudws_portabled` — systemd-portabled D-Bus for sysext/confext (systemd 258+)
-- `cloudws_kvmfr` — Looking Glass shared memory device access for VMs
-- `cloudws_cdi` — NVIDIA CDI spec generation fcontext (v2.1+)
-- `cloudws_quadlet` — Podman quadlet container management (v2.1+)
-- `cloudws_sysext` — systemd-sysext extension activation (v2.1+)
+- `mios_portabled` — systemd-portabled D-Bus for sysext/confext (systemd 258+)
+- `mios_kvmfr` — Looking Glass shared memory device access for VMs
+- `mios_cdi` — NVIDIA CDI spec generation fcontext (v2.1+)
+- `mios_quadlet` — Podman quadlet container management (v2.1+)
+- `mios_sysext` — systemd-sysext extension activation (v2.1+)
 
 Additional booleans enabled:
 
@@ -100,13 +100,13 @@ getenforce
 # Recent denials
 ausearch -m AVC -ts recent
 
-# All CloudWS custom policies
-semodule -l | grep cloudws
+# All MiOS custom policies
+semodule -l | grep mios
 ```
 
 ## Firewall
 
-CloudWS uses `firewalld` with a default-deny posture:
+MiOS uses `firewalld` with a default-deny posture:
 
 - Default zone: `drop` (all incoming traffic dropped unless explicitly allowed)
 - Cockpit (9090/tcp) — allowed for web management
@@ -162,7 +162,7 @@ sudo usbguard allow-device <id>
 
 ## Composefs (Verified Boot Filesystem)
 
-CloudWS enables composefs via `/usr/lib/ostree/prepare-root.conf`:
+MiOS enables composefs via `/usr/lib/ostree/prepare-root.conf`:
 
 ```toml
 [composefs]
@@ -179,13 +179,13 @@ Composefs provides content-addressed deduplication and verified boot — the fil
 
 ## Image Signing
 
-CloudWS images are signed with cosign via GitHub Actions OIDC (keyless signing). Verify any image before deploying:
+MiOS images are signed with cosign via GitHub Actions OIDC (keyless signing). Verify any image before deploying:
 
 ```bash
 cosign verify \
-  --certificate-identity-regexp="https://github.com/Kabuki94/CloudWS-bootc" \
+  --certificate-identity-regexp="https://github.com/Kabuki94/MiOS" \
   --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
-  ghcr.io/kabuki94/cloudws-bootc:latest
+  ghcr.io/kabuki94/mios:latest
 ```
 
 ## Overriding Hardening
@@ -209,6 +209,6 @@ To report a security vulnerability, use GitHub's private vulnerability reporting
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

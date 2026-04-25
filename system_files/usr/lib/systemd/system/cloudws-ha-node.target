@@ -1,8 +1,0 @@
-[Unit]
-Description=CloudWS HA Cluster Node Role
-Requires=multi-user.target corosync.service pacemaker.service
-After=multi-user.target
-Conflicts=cloudws-desktop.target cloudws-headless.target cloudws-k3s-master.target
-AllowIsolate=yes
-[Install]
-WantedBy=multi-user.target

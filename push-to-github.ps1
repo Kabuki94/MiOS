@@ -1,12 +1,12 @@
 # ============================================================================
-# push-to-github.ps1 — CloudWS-bootc release deliverable (v1.3.0 baseline)
+# push-to-github.ps1 — MiOS release deliverable (v2.1.0 baseline)
 # ----------------------------------------------------------------------------
 # Single source of truth for the release pipeline. Per CLAUDE.md §4 + the
 # /push-version skill, this script is rewritten per release and never split
 # into push-vX.Y.Z.ps1 siblings.
 #
 # Behaviour:
-#   1. Clone github.com/Kabuki94/CloudWS-bootc into a temp directory.
+#   1. Clone github.com/Kabuki94/MiOS into a temp directory.
 #   2. Optionally overlay a staged companion directory (-StagedDir) onto the
 #      working tree, preserving layout relative to repo root. Files-only —
 #      directories are walked and replaced file by file. Nothing is deleted.
@@ -24,7 +24,7 @@ param(
     [string]$Version,
     [string]$Message = 'release sync',
     [string]$StagedDir,
-    [string]$Repo = 'github.com/Kabuki94/CloudWS-bootc',
+    [string]$Repo = 'github.com/Kabuki94/MiOS',
     [string]$Branch = 'main',
     [switch]$DryRun
 )
@@ -60,7 +60,7 @@ if (-not $token) {
     Write-Warn 'No GH_TOKEN/GITHUB_TOKEN in environment; relying on git credential helper.'
 }
 
-$workDir = Join-Path ([System.IO.Path]::GetTempPath()) ("cloudws-push-" + [guid]::NewGuid().ToString('N').Substring(0,8))
+$workDir = Join-Path ([System.IO.Path]::GetTempPath()) ("mios-push-" + [guid]::NewGuid().ToString('N').Substring(0,8))
 Write-Step "Working directory: $workDir"
 New-Item -ItemType Directory -Force -Path $workDir | Out-Null
 
@@ -136,7 +136,7 @@ try {
             return
         }
 
-        git -c user.name='CloudWS bot' -c user.email='cloudws@users.noreply.github.com' `
+        git -c user.name='MiOS bot' -c user.email='mios@users.noreply.github.com' `
             commit -m $commitMsg 2>&1 | ForEach-Object { Write-Verbose $_ }
         if ($LASTEXITCODE -ne 0) { throw "git commit failed (exit $LASTEXITCODE)." }
 
@@ -146,7 +146,7 @@ try {
         if ($LASTEXITCODE -ne 0) { throw "git push failed (exit $LASTEXITCODE)." }
 
         Write-Ok "Commit: $sha"
-        Write-Ok "GHCR tag (built by CI): ghcr.io/kabuki94/cloudws-bootc:$Version"
+        Write-Ok "GHCR tag (built by CI): ghcr.io/kabuki94/mios:$Version"
     }
     finally {
         Pop-Location

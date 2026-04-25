@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-# CloudWS-bootc: Systemd execution analysis & WSL2 Boot Loop fixes
+# MiOS: Systemd execution analysis & WSL2 Boot Loop fixes
 # Resolves ordering cycles, executable stripping, and hardware-dependent
 # failure cascades detected during F44 boots on varied hardware/hypervisors.
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
-echo "==> Applying CloudWS-bootc system service fixes..."
+echo "==> Applying MiOS system service fixes..."
 
 # 1. Fix USBGuard Permissions
 # Log trace: Permissions for /etc/usbguard/usbguard-daemon.conf should be 0600
@@ -14,13 +14,13 @@ if [ -f /etc/usbguard/usbguard-daemon.conf ]; then
     chmod 0600 /etc/usbguard/usbguard-daemon.conf
 fi
 
-# 2. Fix 203/EXEC for custom CloudWS services
-# Log trace: cloudws-role.service & cloudws-cdi-detect.service exited 203/EXEC
+# 2. Fix 203/EXEC for custom MiOS services
+# Log trace: mios-role.service & mios-cdi-detect.service exited 203/EXEC
 # Global chmod commands in earlier pipelines stripped execution bits.
-# Handle all scripts in /usr/libexec/cloudws/ and named patterns.
-find /usr/libexec/cloudws -type f -exec chmod +x {} \; || true
-find /usr/libexec -type f \( -name 'cloudws-*' -o -name 'role-apply' -o -name 'selinux-init' -o -name 'gpu-detect' -o -name 'cpu-isolate' -o -name 'motd' -o -name 'dash' -o -name 'sb-audit' -o -name 'wsl-init' -o -name 'wsl-firstboot' -o -name 'sb-keygen' -o -name 'tpm-enroll' \) -exec chmod +x {} \; || true
-find /usr/bin -name 'cloudws-*' -type f -exec chmod +x {} \; || true
+# Handle all scripts in /usr/libexec/mios/ and named patterns.
+find /usr/libexec/mios -type f -exec chmod +x {} \; || true
+find /usr/libexec -type f \( -name 'mios-*' -o -name 'role-apply' -o -name 'selinux-init' -o -name 'gpu-detect' -o -name 'cpu-isolate' -o -name 'motd' -o -name 'dash' -o -name 'sb-audit' -o -name 'wsl-init' -o -name 'wsl-firstboot' -o -name 'sb-keygen' -o -name 'tpm-enroll' \) -exec chmod +x {} \; || true
+find /usr/bin -name 'mios-*' -type f -exec chmod +x {} \; || true
 
 # 3. Libvirt QEMU Hooks
 # Ensure hooks are executable. We check both /etc and /usr/lib for bootc parity.
@@ -38,11 +38,11 @@ if [ -f /usr/lib/sysusers.d/systemd-resolve.conf ]; then
 fi
 
 # 5. Fix Systemd Ordering Cycle for GPU Passthrough
-# Log trace: sockets.target: Found ordering cycle: docker.socket/start after cloudws-gpu-nvidia.service/start after basic.target
+# Log trace: sockets.target: Found ordering cycle: docker.socket/start after mios-gpu-nvidia.service/start after basic.target
 # Drop-in handled via overlay.
 
 # 6. OCI Container and WSL2 Service Gating
-# Custom CloudWS services that require hardware access or full system init
+# Custom MiOS services that require hardware access or full system init
 # skip OCI containers and WSL2 via drop-ins in system_files overlay.
 echo "==> Service gating drop-ins active via overlay"
 

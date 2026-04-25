@@ -29,13 +29,13 @@ This project was developed with assistance from local and cloud-based AI tools
 by human maintainers. AI-generated portions may not be independently
 copyrightable under current U.S. copyright law (Thaler v. Perlmutter, 2023).
 
-CloudWS includes pre-configured infrastructure for rapid deployment of AI
+MiOS includes pre-configured infrastructure for rapid deployment of AI
 workloads, including GPU passthrough, container orchestration (K3s/Podman),
 and NVIDIA CUDA/ROCm compute stacks.
 
 FORKING & CONTRIBUTIONS
 
-CloudWS-bootc is explicitly designed to be cloned, forked, and modified.
+MiOS is explicitly designed to be cloned, forked, and modified.
 The modular script architecture and PACKAGES.md manifest make it
 straightforward to create derivative workstation images. Contributions,
 forks, and derivative projects are warmly encouraged.

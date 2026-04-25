@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# CloudWS-bootc: QEMU Boot Validation
+# MiOS: QEMU Boot Validation
 # Validates that a disk image boots successfully and reaches graphical.target.
 set -euo pipefail
 

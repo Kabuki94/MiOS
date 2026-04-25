@@ -1,0 +1,78 @@
+#!/usr/bin/bash
+# Universal CDI (Container Device Interface) Generator
+# MiOS-OS: Hardware & Environment Agnostic
+# Generates CDI specs for NVIDIA, AMD, Intel, and WSL2 (/dev/dxg)
+set -euo pipefail
+
+CDI_DIR=/var/run/cdi
+mkdir -p "$CDI_DIR"
+
+log() { printf '[mios-cdi] %s\n' "$*"; }
+
+# 1. NVIDIA CDI Generation
+if command -v nvidia-ctk >/dev/null 2>&1; then
+    if [[ -e /dev/dxg ]]; then
+        log "WSL2 detected (/dev/dxg) - Generating NVIDIA WSL CDI..."
+        nvidia-ctk cdi generate --mode=wsl --output="$CDI_DIR/nvidia.yaml" || log "WARN: NVIDIA WSL CDI failed"
+    elif compgen -G "/dev/nvidia*" >/dev/null; then
+        log "NVIDIA bare-metal detected - Generating native CDI..."
+        nvidia-ctk cdi generate --mode=auto --output="$CDI_DIR/nvidia.yaml" || log "WARN: NVIDIA auto CDI failed"
+    fi
+fi
+
+# 2. AMD CDI Generation (ROCm & Render)
+if lspci -nn | grep -qi "VGA compatible controller.*AMD"; then
+    log "AMD GPU detected - Generating universal AMD CDI..."
+    RENDER_NODES=$(ls /dev/dri/renderD* 2>/dev/null || echo "")
+    cat <<EOF > "$CDI_DIR/amd.yaml"
+cdiVersion: "v2.1.0"
+kind: "amd.com/gpu"
+devices:
+  - name: "all"
+    containerEdits:
+      deviceNodes:
+        - path: "/dev/kfd"
+EOF
+    for node in $RENDER_NODES; do
+        echo "        - path: \"$node\"" >> "$CDI_DIR/amd.yaml"
+    done
+fi
+
+# 3. Intel CDI Generation (QuickSync & OpenCL)
+if lspci -nn | grep -qi "VGA compatible controller.*Intel"; then
+    log "Intel GPU detected - Generating universal Intel CDI..."
+    RENDER_NODES=$(ls /dev/dri/renderD* 2>/dev/null || echo "")
+    cat <<EOF > "$CDI_DIR/intel.yaml"
+cdiVersion: "v2.1.0"
+kind: "intel.com/gpu"
+devices:
+  - name: "all"
+    containerEdits:
+      deviceNodes:
+EOF
+    for node in $RENDER_NODES; do
+        echo "        - path: \"$node\"" >> "$CDI_DIR/intel.yaml"
+    done
+fi
+
+# 4. Universal WSL2 D3D12/dxg Generation
+if [[ -e /dev/dxg ]]; then
+    log "WSL2 /dev/dxg detected - Generating generic WSL CDI..."
+    cat <<EOF > "$CDI_DIR/wsl.yaml"
+cdiVersion: "v2.1.0"
+kind: "microsoft.com/wsl"
+devices:
+  - name: "all"
+    containerEdits:
+      deviceNodes:
+        - path: "/dev/dxg"
+      mounts:
+        - hostPath: "/usr/lib/wsl/lib"
+          containerPath: "/usr/lib/wsl/lib"
+          options:
+            - ro
+            - bind
+EOF
+fi
+
+log "Universal CDI generation complete."

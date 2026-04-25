@@ -1,14 +1,14 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
 ---
-description: Scaffold a new numbered scripts/NN-*.sh provisioning script following CloudWS conventions
+description: Scaffold a new numbered scripts/NN-*.sh provisioning script following MiOS conventions
 argument-hint: <number> <short-name-kebab-case>
 ---
 
-Create `scripts/$1-$2.sh` following the CloudWS-bootc provisioning
+Create `scripts/$1-$2.sh` following the MiOS provisioning
 script conventions. `$1` is a two-digit number that slots into the
 ordering (01=repos, 02=kernel, 05=external-repos, 08=overlays,
 10=gnome, 11=hardware, 12=virt, 13=ceph-k3s, 20=services, 30=locale,
@@ -82,6 +82,6 @@ step "done"
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

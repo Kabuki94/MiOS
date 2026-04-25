@@ -1,9 +1,9 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# 📋 CloudWS-OS Feature Index
+# 📋 MiOS-OS Feature Index
 
 ```json
 {
@@ -61,13 +61,13 @@ Mutable environments within the immutable host.
 
 | Binary | Purpose | Path |
 | :--- | :--- | :--- |
-| **`cloudws`** | Master CLI entry point | `/usr/bin/cloudws` |
-| **`cloudws-backup`** | State & persistent data backup | `/usr/bin/cloudws-backup` |
-| **`cloudws-update`** | Staged bootc image transactions | `/usr/bin/cloudws-update` |
-| **`cloudws-status`** | Real-time role & service telemetry | `/usr/bin/cloudws-status` |
-| **`cloudws-vfio-check`** | IOMMU and passthrough diagnostics | `/usr/bin/cloudws-vfio-check` |
-| **`cloudws-vfio-toggle`** | Dynamic GPU isolation (no-reboot) | `/usr/bin/cloudws-vfio-toggle` |
-| **`cloudws-rebuild`** | In-place OS self-replication | `/usr/bin/cloudws-rebuild` |
+| **`mios`** | Master CLI entry point | `/usr/bin/mios` |
+| **`mios-backup`** | State & persistent data backup | `/usr/bin/mios-backup` |
+| **`mios-update`** | Staged bootc image transactions | `/usr/bin/mios-update` |
+| **`mios-status`** | Real-time role & service telemetry | `/usr/bin/mios-status` |
+| **`mios-vfio-check`** | IOMMU and passthrough diagnostics | `/usr/bin/mios-vfio-check` |
+| **`mios-vfio-toggle`** | Dynamic GPU isolation (no-reboot) | `/usr/bin/mios-vfio-toggle` |
+| **`mios-rebuild`** | In-place OS self-replication | `/usr/bin/mios-rebuild` |
 | **`ujust`** | Unified Blue build & config recipes | `/usr/bin/ujust` |
 | **`iommu-groups`** | Raw hardware isolation reporting | `/usr/bin/iommu-groups` |
 
@@ -78,6 +78,6 @@ Mutable environments within the immutable host.
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

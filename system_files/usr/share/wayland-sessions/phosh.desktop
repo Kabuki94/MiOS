@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Phosh (Mobile)
-Comment=CloudWS mobile session
+Comment=MiOS mobile session
 Exec=/usr/bin/phosh-session
 Type=Application
 DesktopNames=Phosh;GNOME;

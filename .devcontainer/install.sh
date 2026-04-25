@@ -15,7 +15,7 @@ cat << 'EOF_BASH' >> "$HOME/.bashrc"
 if [! -f "$HOME/.gemini/.ide_setup_complete" ]; then
     echo "================================================================="
     echo "Gemini CLI Dev Container Initialization Protocol"
-    echo "Target Infrastructure Project: cloudws-os"
+    echo "Target Infrastructure Project: mios-os"
     echo "================================================================="
     echo "To finalize native VSCodium integration, please run:"
     echo "1. gemini"

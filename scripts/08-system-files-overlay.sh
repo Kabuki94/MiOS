@@ -1,12 +1,12 @@
 #!/bin/bash
 # ============================================================================
-# scripts/08-system-files-overlay.sh - CloudWS-bootc v1.3.0
+# scripts/08-system-files-overlay.sh - MiOS v2.1.0
 # ----------------------------------------------------------------------------
 # Overlay /ctx/system_files/ onto the rootfs during the Containerfile build,
 # correctly handling the /usr/local -> /var/usrlocal symlink that ships on
 # ucore / Fedora CoreOS / bootc images.
 #
-# v2.4.0: USR-OVER-ETC policy applied. system_files/etc/ migrated to /usr/.
+# v2.1.0: USR-OVER-ETC policy applied. system_files/etc/ migrated to /usr/.
 #
 # This script is idempotent and safe to call repeatedly.
 # ============================================================================

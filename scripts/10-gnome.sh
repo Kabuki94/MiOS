@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v1.3.0 — 10-gnome: GNOME 50 desktop — PURE BUILD-UP
+# MiOS v2.1.0 — 10-gnome: GNOME 50 desktop — PURE BUILD-UP
 #
 # STRATEGY: ucore has ZERO GNOME packages. We install exactly what we need.
 # With install_weakdeps=False (set globally in 01-repos.sh), only hard deps
@@ -12,7 +12,7 @@
 # Wayland desktop with GDM, all portals, audio, Bluetooth, networking,
 # security, and proper theming across GTK3/GTK4/Qt.
 #
-# CHANGELOG v1.3.0:
+# CHANGELOG v2.1.0:
 #   - MANDATORY Bibata cursor download — retries 3x, FAILS BUILD if missing
 #   - dconf profiles for user + GDM added to system_files/
 #   - Flatpak: 7 apps (added Flatseal + LocalSend)
@@ -41,7 +41,7 @@ echo "[10-gnome] Disabling localsearch/tracker indexing (keep package, hide auto
 
 # ═════════════════════════════════════════════════════════════════════════════
 # Qt Adwaita theming — required for Qt apps to match GNOME look
-# Managed via system_files/usr/lib/environment.d/60-cloudws-qt-adwaita.conf
+# Managed via system_files/usr/lib/environment.d/60-mios-qt-adwaita.conf
 # ═════════════════════════════════════════════════════════════════════════════
 echo "[10-gnome] Setting Qt Adwaita environment variables (managed via overlay)..."
 
@@ -70,7 +70,7 @@ fc-cache -f /usr/share/fonts/geist 2>/dev/null || true
 # ═════════════════════════════════════════════════════════════════════════════
 echo "[10-gnome] Installing Bibata-Modern-Classic cursor (MANDATORY)..."
 BIBATA_VER=""
-BIBATA_FALLBACK="2.0.7"
+BIBATA_FALLBACK="v2.1.0"
 
 # Try GitHub API for latest release tag (strips leading 'v')
 BIBATA_VER=$(scurl -sL -H "Accept: application/vnd.github+json" "https://api.github.com/repos/ful1e5/Bibata_Cursor/releases/latest" \
@@ -161,6 +161,6 @@ flatpak remote-modify --disable fedora 2>/dev/null || true
 # ═════════════════════════════════════════════════════════════════════════════
 # Essential Flatpaks
 # ═════════════════════════════════════════════════════════════════════════════
-echo "[10-gnome] Flatpaks will be installed on first boot (cloudws-flatpak-install.service)..."
-# NOTE: cloudws-flatpak-install.service is enabled in Containerfile STEP D
+echo "[10-gnome] Flatpaks will be installed on first boot (mios-flatpak-install.service)..."
+# NOTE: mios-flatpak-install.service is enabled in Containerfile STEP D
 # (unit file lives in system_files/, not available during script execution)

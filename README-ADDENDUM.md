@@ -1,4 +1,4 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
@@ -26,7 +26,7 @@ Add this section to the main `README.md` to link all new documentation files.
 
 ## CI/CD
 
-The GitHub Actions pipeline automatically builds, tests, signs, and pushes CloudWS images:
+The GitHub Actions pipeline automatically builds, tests, signs, and pushes MiOS images:
 
 ```
 .github/
@@ -43,7 +43,7 @@ The GitHub Actions pipeline automatically builds, tests, signs, and pushes Cloud
 
 ```bash
 # Run locally before submitting a PR
-./tests/smoke-test.sh localhost/cloudws-bootc:dev
+./tests/smoke-test.sh localhost/mios:dev
 ```
 
 The smoke test validates: OCI labels, bootc container lint, 14 critical packages, footgun absence, systemd service enablement, filesystem structure, security hardening files, GPU drivers, Flatpak remotes, and version info.
@@ -53,6 +53,6 @@ The smoke test validates: OCI labels, bootc container lint, 14 critical packages
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

@@ -4,10 +4,10 @@
     ],
     "transports": {
         "docker": {
-            "ghcr.io/kabuki94/cloudws-bootc": [
+            "ghcr.io/kabuki94/mios": [
                 {
                     "type": "sigstoreSigned",
-                    "keyPath": "/usr/share/pki/containers/cloudws-cosign.pub",
+                    "keyPath": "/usr/share/pki/containers/mios-cosign.pub",
                     "signedIdentity": { "type": "matchRepository" }
                 },
                 {
@@ -15,7 +15,7 @@
                     "fulcio": {
                         "caPath": "/usr/share/pki/containers/fulcio_v1.crt.pem",
                         "oidcIssuer": "https://token.actions.githubusercontent.com",
-                        "subjectEmail": "https://github.com/Kabuki94/CloudWS-bootc/.github/workflows/build.yml@refs/heads/main"
+                        "subjectEmail": "https://github.com/Kabuki94/MiOS/.github/workflows/build.yml@refs/heads/main"
                     },
                     "rekorPublicKeyPath": "/usr/share/pki/containers/rekor.pub",
                     "signedIdentity": { "type": "matchRepository" }

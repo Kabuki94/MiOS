@@ -1,9 +1,9 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# 🛡️ CloudWS-OS Security Guide
+# 🛡️ MiOS-OS Security Guide
 
 ```json
 {
@@ -18,7 +18,7 @@
 ## 🔒 Hardened Layers
 
 ### 🧠 Execution Control
-CloudWS-OS implements strict binary whitelisting to prevent unauthorized execution.
+MiOS-OS implements strict binary whitelisting to prevent unauthorized execution.
 
 ```json
 {
@@ -34,7 +34,7 @@ CloudWS-OS implements strict binary whitelisting to prevent unauthorized executi
 The core system is sealed using `composefs` and the Linux kernel's `fs-verity` subsystem.
 
 1. **Seal:** Root partition is hashed during build.
-2. **Audit:** `cloudws-verify` checks signatures early in the initramfs boot phase.
+2. **Audit:** `mios-verify` checks signatures early in the initramfs boot phase.
 3. **Recovery:** Immediate autonomous rollback to fallback deployment on verification failure.
 
 ---
@@ -70,7 +70,7 @@ Firewalld is configured for maximum isolation.
 ## 🛠️ Infrastructure Hardening
 
 ### 🧠 Kernel Hardening
-CloudWS-OS implements the **SecureBlue 29-parameter kernel hardening** standard.
+MiOS-OS implements the **SecureBlue 29-parameter kernel hardening** standard.
 
 | Parameter | Rationale |
 | :--- | :--- |
@@ -91,6 +91,6 @@ CloudWS-OS implements the **SecureBlue 29-parameter kernel hardening** standard.
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

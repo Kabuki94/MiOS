@@ -1,18 +1,18 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# CloudWS-bootc Toolkit Scripts
+# MiOS Toolkit Scripts
 
 This directory contains **standalone out-of-image tooling** that runs
-*on a booted CloudWS-bootc host* (or any Fedora/RHEL-family host, in
+*on a booted MiOS host* (or any Fedora/RHEL-family host, in
 most cases). These scripts are **not part of the image build** — the
 image-build scripts live in [`../scripts/`](../scripts/) and the
 overlays live in [`../system_files/`](../system_files/).
 
 Use these tools when you need to configure VFIO passthrough, isolate
-CPUs for VM pinning, profile a host before deploying CloudWS to it, or
+CPUs for VM pinning, profile a host before deploying MiOS to it, or
 troubleshoot Secure Boot / OVMF enrollment for Windows VMs.
 
 > **All rules from [`../CLAUDE.md`](../CLAUDE.md) §3.2 (Bash) apply
@@ -52,7 +52,7 @@ at [`../docs/knowledge/guides/cpu-isolation-guide.md`](../docs/knowledge/guides/
 
 ## Host profiling & assessment
 
-Run these **before** installing CloudWS-bootc on a new host to get a
+Run these **before** installing MiOS on a new host to get a
 full picture of the hardware, virtualization capabilities, and
 deployment readiness.
 
@@ -60,7 +60,7 @@ deployment readiness.
 |--------|---------|
 | `system-profiler.sh` | CPU / memory / GPU / storage inventory |
 | `system-assess.sh` | Full system assessment — virtualization, IOMMU, Secure Boot, TPM |
-| `cloud-ws-assess.sh` | CloudWS-specific readiness check |
+| `cloud-ws-assess.sh` | MiOS-specific readiness check |
 | `run-all-profilers.sh` | Chain every profiler, produce consolidated report |
 | `profiler-menu.sh` | Interactive menu wrapping the profilers |
 | `profile-compare.sh` | Diff two profiler outputs (e.g. before/after a change) |
@@ -104,7 +104,7 @@ predate the current `scripts/NN-*.sh` modular design.
 
 | Script | Purpose |
 |--------|---------|
-| `cloudws-full.sh` | Standalone one-shot CloudWS provisioner (188 KB — everything in one file, pre-refactor) |
+| `mios-full.sh` | Standalone one-shot MiOS provisioner (188 KB — everything in one file, pre-refactor) |
 | `cloud-ws.sh` | Earlier Linux-side orchestrator (superseded by `Justfile` + `../cloud-ws.ps1`) |
 
 If you find yourself wanting to modify either of these, stop and work
@@ -116,7 +116,7 @@ on the modular replacement in `../scripts/` instead.
 
 - The **image build** (Containerfile + `../scripts/`) produces the OS.
 - These **toolkit scripts** run on a host that's already booted —
-  either a CloudWS-bootc host, or a Fedora/RHEL host preparing to
+  either a MiOS host, or a Fedora/RHEL host preparing to
   become one.
 - Nothing in this directory is copied into the image by default.
 - If you want one of these tools inside the image (e.g. `vfio-verify.sh`
@@ -135,6 +135,6 @@ working scripts unprompted, don't rewrite bash into other languages).*
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

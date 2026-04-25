@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-# scripts/35-gpu-pv-shim.sh - CloudWS-bootc v1.3.0
+# scripts/35-gpu-pv-shim.sh - MiOS v2.1.0
 # ----------------------------------------------------------------------------
 # Automates guest-side shimming for Hyper-V GPU-PV (dxgkrnl).
 # Since dxgkrnl isn't mainlined yet, we provide the user-mode hooks
@@ -18,12 +18,12 @@ mkdir -p /usr/lib/wsl/drivers
 # 2. Add ld.so.conf entry to ensure these libraries are in the search path
 log "Configuring dynamic linker paths for GPU-PV..."
 mkdir -p /etc/ld.so.conf.d
-echo "/usr/lib/wsl/lib" > /etc/ld.so.conf.d/cloudws-gpu-pv.conf
+echo "/usr/lib/wsl/lib" > /etc/ld.so.conf.d/mios-gpu-pv.conf
 
 # 3. Create a detection script for first-boot or deployment
 # This script will attempt to detect if we're in a Hyper-V/WSL environment
 # and provide instructions or automate the driver copy if possible.
-cat > /usr/libexec/cloudws/gpu-pv-detect <<'EOF'
+cat > /usr/libexec/mios/gpu-pv-detect <<'EOF'
 #!/usr/bin/bash
 set -euo pipefail
 log() { echo "[gpu-pv-detect] $*"; }
@@ -40,19 +40,19 @@ if [ -z "$(ls -A /usr/lib/wsl/lib)" ]; then
 fi
 EOF
 
-chmod +x /usr/libexec/cloudws/gpu-pv-detect
+chmod +x /usr/libexec/mios/gpu-pv-detect
 
 # 4. Create a systemd service to run the detection/setup on boot
-cat > /usr/lib/systemd/system/cloudws-gpu-pv-detect.service <<EOF
+cat > /usr/lib/systemd/system/mios-gpu-pv-detect.service <<EOF
 [Unit]
-Description=CloudWS Hyper-V GPU-PV Detection
+Description=MiOS Hyper-V GPU-PV Detection
 ConditionVirtualization=microsoft
 After=local-fs.target
 Before=display-manager.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/libexec/cloudws/gpu-pv-detect
+ExecStart=/usr/libexec/mios/gpu-pv-detect
 RemainAfterExit=yes
 
 [Install]
@@ -60,6 +60,6 @@ WantedBy=multi-user.target
 EOF
 
 log "Enabling GPU-PV detection service..."
-systemctl enable cloudws-gpu-pv-detect.service
+systemctl enable mios-gpu-pv-detect.service
 
 log "GPU-PV shim integration complete."

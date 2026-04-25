@@ -1,15 +1,15 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# CloudWS v1.3.0 — Package Manifest
+# MiOS v2.1.0 — Package Manifest
 
-This file is both documentation and the **single source of truth** for all packages installed in CloudWS.
+This file is both documentation and the **single source of truth** for all packages installed in MiOS.
 Build scripts parse the fenced code blocks below using `scripts/lib/packages.sh`.
 To add a package, add it to the appropriate section. One package per line.
 
-**CHANGELOG v1.3.0:**
+**CHANGELOG v2.1.0:**
 - Standardized versioning across the entire stack.
 - Added uupd (unified updater replacing bootc-fetch-apply-updates.timer)
 - Added greenboot + greenboot-default-health-checks (auto-rollback on boot failure)
@@ -28,7 +28,7 @@ To add a package, add it to the appropriate section. One package per line.
        sole source of truth; 40-series scripts handle config+services only
 - Added missing audited tools: strace, lsof, iotop, ntfs-3g, efibootmgr, nm-connection-editor
 
-**CHANGELOG v1.2.0 (previous):**
+**CHANGELOG v2.1.0 (previous):**
 - Added bootupd (unified bootloader updates — Fedora 44 phase 1)
 - Added dnf5-plugins (versionlock support for critical package pinning)
 - Added systemd-boot-unsigned (UKI preparation — future composefs+UKI chain)
@@ -37,7 +37,7 @@ To add a package, add it to the appropriate section. One package per line.
 - Added clevis, clevis-luks (automated LUKS unlock via TPM2/Tang)
 - Moved driverctl from security to utils (better categorization)
 
-**CHANGELOG v1.1.0 (previous):**
+**CHANGELOG v2.1.0 (previous):**
 - Removed htop (use btop instead)
 - Added nvidia-settings to NVIDIA section
 - Added avahi/nss-mdns for .local network discovery
@@ -228,7 +228,7 @@ intel-media-driver
 NVIDIA proprietary drivers via RPMFusion akmod. Builds kmod at image time.
 Driver 590+: Open kernel modules are DEFAULT for Turing (RTX 20+) and newer.
 Blackwell (RTX 50): Open modules are the ONLY option — proprietary incompatible.
-WARNING: RTX 50-series has a VFIO reset bug — see /usr/share/doc/cloudws-vfio-warning.txt
+WARNING: RTX 50-series has a VFIO reset bug — see /usr/share/doc/mios-vfio-warning.txt
 CDI is now the default mode in nvidia-container-toolkit v1.19+.
 
 ```packages-gpu-nvidia
@@ -375,7 +375,7 @@ freerdp-libs
 ## Security
 
 Host-based IPS, application whitelisting, USB device control.
-CRITICAL: nvidia-container-toolkit >= v1.17.7 required (CVE-2025-23266/23267).
+CRITICAL: nvidia-container-toolkit >= v2.1.0 required (CVE-2025-23266/23267).
 
 ```packages-security
 crowdsec
@@ -611,7 +611,7 @@ gettext
 ## Network Discovery — Avahi / mDNS
 
 mDNS/DNS-SD for automatic .local hostname discovery on LAN.
-Every CloudWS instance advertises Cockpit and RDP services.
+Every MiOS instance advertises Cockpit and RDP services.
 
 ```packages-network-discovery
 avahi
@@ -715,6 +715,6 @@ usbutils
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

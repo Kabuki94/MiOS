@@ -1,0 +1,59 @@
+#!/usr/bin/bash
+# MiOS CPU Isolation Engine - Universal Hardware Optimization
+# Dynamically identifies CPU topology (V-Cache CCDs, P/E cores, NUMA nodes)
+# to optimize compute distribution across Bare-metal, VMs, and Containers.
+set -euo pipefail
+log() { printf '[cpu-isolate] %s\n' "$*"; }
+
+# 1. Detect Topology
+VENDOR=$(lscpu | grep "Vendor ID" | awk '{print $3}')
+MODEL=$(lscpu | grep "Model name" | sed 's/Model name:[[:space:]]*//')
+THREADS=$(lscpu | grep "^CPU(s):" | head -1 | awk '{print $2}')
+
+log "Detecting topology for $MODEL ($VENDOR)"
+
+# Hardware-specific heuristics
+if [[ "$VENDOR" == "AuthenticAMD" && "$MODEL" == *"X3D"* ]]; then
+    log "AMD X3D detected - optimizing for asymmetric CCD cache layout"
+    # Heuristic for dual-CCD 16-core variants (e.g. 9950X3D, 7950X3D)
+    if [ "$THREADS" -eq 32 ]; then
+        # CCD0: 0-7, 16-23 (V-Cache prioritized)
+        # CCD1: 8-15, 24-31 (Standard/Frequency)
+        ISOLATED="8-15,24-31"
+        SYSTEM="0-7,16-23"
+    else
+        # Fallback for 8-core single CCD or other counts
+        HALF=$((THREADS / 2))
+        SYSTEM="0-$((HALF - 1))"
+        ISOLATED="$HALF-$((THREADS - 1))"
+    fi
+elif [[ "$VENDOR" == "GenuineIntel" && "$THREADS" -gt 16 ]]; then
+    log "Intel Hybrid/Multi-core detected - isolating performance clusters"
+    # Intel Hybrid (P-cores/E-cores) detection would go here.
+    # For now, use standard upper-half isolation as a safe default.
+    HALF=$((THREADS / 2))
+    SYSTEM="0-$((HALF - 1))"
+    ISOLATED="$HALF-$((THREADS - 1))"
+else
+    log "Standard/Symmetric topology - applying 50/50 thread isolation"
+    HALF=$((THREADS / 2))
+    SYSTEM="0-$((HALF - 1))"
+    ISOLATED="$HALF-$((THREADS - 1))"
+fi
+
+log "System cores: $SYSTEM | Isolated cores: $ISOLATED"
+
+# 2. Apply CGroup Isolation (if cset is available)
+if command -v cset &>/dev/null; then
+    log "Applying cpuset isolation via cset..."
+    cset set --cpu="$SYSTEM" --set=system || true
+    cset set --cpu="$ISOLATED" --set=user || true
+    cset proc --move --fromset=root --toset=system || true
+else
+    log "WARN: 'cpuset' tool missing - skipping runtime isolation"
+fi
+
+# 3. Persistence Check
+if ! grep -q "isolcpus=" /proc/cmdline; then
+    log "HINT: To make isolation persistent, add 'isolcpus=$ISOLATED' to kargs.d"
+fi

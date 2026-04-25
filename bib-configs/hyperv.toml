@@ -1,6 +1,6 @@
 # Hyper-V VHDX target
 [customizations.kernel]
-append = "cloudws.role=desktop console=tty1"
+append = "mios.role=desktop console=tty1"
 
 [[customizations.filesystem]]
 mountpoint = "/"

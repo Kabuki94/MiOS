@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # 22-freeipa-client.sh — install FreeIPA/SSSD client + arm zero-touch enrollment.
 #
-# Runtime path: cloudws-freeipa-enroll.service runs only when
-# /etc/cloudws/ipa-enroll.env is present and /etc/ipa/default.conf is absent.
+# Runtime path: mios-freeipa-enroll.service runs only when
+# /etc/mios/ipa-enroll.env is present and /etc/ipa/default.conf is absent.
 #
 # Upstream regression notes (April 2026):
-#   bz 2320133 — SSSD file caps stripped by rpm-ostree < bootc 1.1.2-2.fc41.
+#   bz 2320133 — SSSD file caps stripped by rpm-ostree < bootc v2.1.0-2.fc41.
 #                Asserted post-install; build fails fast if caps are missing.
 #   bz 2332433 — /var/lib/ipa-client/sysrestore/ missing on first boot.
 #                Pre-created via tmpfiles.d.
@@ -41,4 +41,4 @@ if (( CAP_FAIL > 0 )); then
 fi
 
 # Arm the zero-touch enrollment oneshot (gated by ConditionPathExists).
-systemctl enable cloudws-freeipa-enroll.service
+systemctl enable mios-freeipa-enroll.service

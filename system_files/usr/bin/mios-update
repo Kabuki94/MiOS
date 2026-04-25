@@ -1,0 +1,13 @@
+#!/bin/bash
+set -euo pipefail
+echo "MiOS v2.1.0 — Checking for updates..."
+ORIGIN=$(bootc status 2>/dev/null | grep -i "image:" | head -1 | awk '{print $NF}' || echo "")
+if echo "$ORIGIN" | grep -q "localhost"; then
+    echo "WARNING: Update origin is localhost — switching to GHCR..."
+    sudo bootc switch ghcr.io/kabuki94/mios:latest
+else
+    echo "Current image: $ORIGIN"
+    sudo bootc upgrade
+    echo ""
+    echo "If an update was staged, reboot to apply: sudo reboot"
+fi

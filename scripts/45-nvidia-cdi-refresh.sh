@@ -4,7 +4,7 @@
 #
 # Key invariants:
 #   - nvidia-container-toolkit ≥ 1.18 for nvidia-cdi-refresh.service/path.
-#   - Avoid NCT 1.17.8: "unresolvable CDI devices" regression. Use 1.17.6 or 1.18+.
+#   - Avoid NCT v2.1.0: "unresolvable CDI devices" regression. Use v2.1.0 or 1.18+.
 #   - Remove oci-nvidia-hook.json: dual injection with CDI causes conflicts.
 #   - CDI canonical path: /var/run/cdi/nvidia.yaml (runtime) or /etc/cdi/nvidia.yaml (persistent).
 #   - NVIDIA kmods blacklisted by default; 34-gpu-detect.sh removes blacklist on bare metal.
@@ -37,16 +37,16 @@ systemctl enable nvidia-cdi-refresh.path    2>/dev/null || log "note: nvidia-cdi
 systemctl enable nvidia-cdi-refresh.service 2>/dev/null || log "note: nvidia-cdi-refresh.service not available (NCT < 1.18)"
 systemctl enable nvidia-persistenced.service 2>/dev/null || true
 
-# CloudWS CDI detect shim — handles bare metal vs VM vs no-GPU context.
-# Unit is in system_files/usr/lib/systemd/system/cloudws-nvidia-cdi.service.
-if systemctl cat cloudws-nvidia-cdi.service >/dev/null 2>&1; then
-    log "enabling cloudws-nvidia-cdi.service"
-    systemctl enable cloudws-nvidia-cdi.service
+# MiOS CDI detect shim — handles bare metal vs VM vs no-GPU context.
+# Unit is in system_files/usr/lib/systemd/system/mios-nvidia-cdi.service.
+if systemctl cat mios-nvidia-cdi.service >/dev/null 2>&1; then
+    log "enabling mios-nvidia-cdi.service"
+    systemctl enable mios-nvidia-cdi.service
 else
-    log "WARN: cloudws-nvidia-cdi.service missing from system_files — skipping"
+    log "WARN: mios-nvidia-cdi.service missing from system_files — skipping"
 fi
 
-# Ensure CDI persistent dir exists; tmpfiles.d/cloudws-gpu.conf creates the runtime dir.
+# Ensure CDI persistent dir exists; tmpfiles.d/mios-gpu.conf creates the runtime dir.
 install -d -m 0755 /etc/cdi
 
 log "CDI refresh pipeline configured"

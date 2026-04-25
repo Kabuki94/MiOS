@@ -1,8 +1,0 @@
-[Unit]
-Description=CloudWS first-boot provisioning
-Documentation=https://github.com/Kabuki94/CloudWS-bootc
-After=multi-user.target
-Wants=cloudws-cdi-detect.service cloudws-libvirtd-setup.service cloudws-grd-setup.service
-
-[Install]
-WantedBy=multi-user.target

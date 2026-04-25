@@ -1,11 +1,11 @@
 #!/bin/bash
-# CloudWS v1.3.0 — 31-user: PAM, user creation, groups, sudoers
+# MiOS v2.1.0 — 31-user: PAM, user creation, groups, sudoers
 # Must run AFTER skel is populated (31-locale-theme writes skel/.bashrc)
 # and BEFORE any service that references the user.
 set -euo pipefail
 
 echo "——————————————————————?"
-echo "  CloudWS v1.3.0 — User & Authentication"
+echo "  MiOS v2.1.0 — User & Authentication"
 echo "——————————————————————?"
 
 # — PAM FIX —
@@ -19,15 +19,15 @@ fi
 # — USER CREATION —
 # Password is pre-hashed (SHA-512) by the orchestrator — plaintext NEVER in build log.
 # Defaults for CI builds or when environment variables are not provided:
-C_USER="${CLOUDWS_USER:-cloudws}"
-# Note: CLOUDWS_PASSWORD_HASH should be a SHA-512 crypt-style hash
-C_HASH="${CLOUDWS_PASSWORD_HASH:-}"
+C_USER="${MIOS_USER:-mios}"
+# Note: MIOS_PASSWORD_HASH should be a SHA-512 crypt-style hash
+C_HASH="${MIOS_PASSWORD_HASH:-}"
 
 echo "[31-user] Creating user ${C_USER} via sysusers..."
-if [[ "${C_USER}" != "cloudws" ]]; then
+if [[ "${C_USER}" != "mios" ]]; then
     # Generate dynamic sysusers for custom username
-    cat <<EOF > /usr/lib/sysusers.d/15-cloudws-custom.conf
-u ${C_USER} - "CloudWS Custom User" /var/home/${C_USER} /bin/bash
+    cat <<EOF > /usr/lib/sysusers.d/15-mios-custom.conf
+u ${C_USER} - "MiOS Custom User" /var/home/${C_USER} /bin/bash
 m ${C_USER} wheel
 m ${C_USER} libvirt
 m ${C_USER} kvm
@@ -63,15 +63,15 @@ fi
 # and processed by systemd-sysusers above. Imperative calls removed.
 
 # — SUDOERS —
-# Managed via system_files/usr/lib/sudoers.d/10-cloudws-wheel
-chmod 440 /usr/lib/sudoers.d/10-cloudws-wheel 2>/dev/null || true
+# Managed via system_files/usr/lib/sudoers.d/10-mios-wheel
+chmod 440 /usr/lib/sudoers.d/10-mios-wheel 2>/dev/null || true
 
 # — LOCALE —
 # Managed via system_files/usr/lib/locale.conf
 localedef -i en_US -f UTF-8 en_US.UTF-8 2>/dev/null || true
 
 # — CLOUD-INIT —
-# Managed via system_files/usr/lib/cloud/cloud.cfg.d/10-cloudws.cfg
+# Managed via system_files/usr/lib/cloud/cloud.cfg.d/10-mios.cfg
 
 # — MULTIPATH —
 # Managed via system_files/usr/lib/multipath.conf
@@ -87,6 +87,6 @@ awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd | while read -r u; do
 done
 
 # — NFS STATE DIRECTORY —
-# Managed via system_files/usr/lib/tmpfiles.d/cloudws-nfs.conf
+# Managed via system_files/usr/lib/tmpfiles.d/mios-nfs.conf
 
 echo "[31-user] User & authentication configured."

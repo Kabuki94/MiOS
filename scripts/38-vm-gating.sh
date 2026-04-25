@@ -1,7 +1,7 @@
 #!/bin/bash
-# CloudWS v1.3.0 — 38-vm-gating: VM service gating + Hyper-V Enhanced Session
+# MiOS v2.1.0 — 38-vm-gating: VM service gating + Hyper-V Enhanced Session
 #
-# v2.1.1 CRITICAL FIX: GNOME 50 / Mutter 50 completely removed the X11 backend.
+# v2.1.0 CRITICAL FIX: GNOME 50 / Mutter 50 completely removed the X11 backend.
 # xorgxrdp is an X11 technology — it CANNOT work with Wayland-only Mutter 50.
 # The old approach caused a GDM crash loop on Hyper-V, preventing boot.
 #
@@ -24,7 +24,7 @@ echo "[38-vm-gating] Configuring VM-specific service gating..."
 # Do NOT duplicate them here — last writer wins and we want 20's canonical drop-ins.
 
 # ═══ Polkit container workaround ═══
-# Managed via system_files/usr/lib/systemd/system/polkit.service.d/10-cloudws-container.conf
+# Managed via system_files/usr/lib/systemd/system/polkit.service.d/10-mios-container.conf
 
 # ═══ Cockpit socket drop-in permissions ═══
 if [ -f /usr/lib/systemd/system/cockpit.socket.d/listen.conf ]; then
@@ -40,26 +40,26 @@ echo "[38-vm-gating] Configuring Hyper-V Enhanced Session (gnome-remote-desktop)
 # Managed via system_files/usr/lib/modprobe.d/blacklist-vmw_vsock.conf
 
 # 2. Ensure hv_sock loads on boot (required for vsock RDP transport)
-if ! grep -q 'hv_sock' /usr/lib/modules-load.d/cloudws.conf 2>/dev/null; then
-    echo "hv_sock" >> /usr/lib/modules-load.d/cloudws.conf
+if ! grep -q 'hv_sock' /usr/lib/modules-load.d/mios.conf 2>/dev/null; then
+    echo "hv_sock" >> /usr/lib/modules-load.d/mios.conf
 fi
 
 # 3. Polkit rule for colord (prevents "not authorized" errors in RDP sessions)
 # Managed via system_files/usr/share/polkit-1/rules.d/45-allow-colord.rules
 
 # 4. Hyper-V Enhanced Session service — uses gnome-remote-desktop
-# Managed via system_files/usr/lib/systemd/system/cloudws-hyperv-enhanced.service
-# and system_files/usr/libexec/cloudws-hyperv-enhanced
-systemctl enable cloudws-hyperv-enhanced.service 2>/dev/null || true
+# Managed via system_files/usr/lib/systemd/system/mios-hyperv-enhanced.service
+# and system_files/usr/libexec/mios-hyperv-enhanced
+systemctl enable mios-hyperv-enhanced.service 2>/dev/null || true
 
 # 5. GNOME Remote Desktop — first-boot setup script
-# cloudws-grd-setup is installed via system_files overlay (08-system-files-overlay.sh)
-# into /usr/libexec/cloudws-grd-setup. No copy needed here.
-chmod +x /usr/libexec/cloudws-grd-setup 2>/dev/null || true
+# mios-grd-setup is installed via system_files overlay (08-system-files-overlay.sh)
+# into /usr/libexec/mios-grd-setup. No copy needed here.
+chmod +x /usr/libexec/mios-grd-setup 2>/dev/null || true
 
 # ── WSL2 systemd-machined gating ─────────────────────────────────────────
 # dbus-broker.service.d/wsl2-fix.conf is provided by system_files overlay
-# (OOMScoreAdjust only; --audit removal is in 10-cloudws-no-audit.conf).
+# (OOMScoreAdjust only; --audit removal is in 10-mios-no-audit.conf).
 # Do NOT overwrite it here — previous versions wrote a broken drop-in with
 # ConditionPathExists=|/proc/version which is always true and caused dbus
 # to be misconfigured on bare metal.

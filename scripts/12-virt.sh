@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v1.3.0 — 12-virt: Virtualization, containers, orchestration, gaming
+# MiOS v2.1.0 — 12-virt: Virtualization, containers, orchestration, gaming
 #
 # CHANGELOG v1.3:
 #   - Looking Glass B7: MOVED to 53-bake-lookingglass-client.sh (refactored out)
@@ -13,7 +13,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
 source "${SCRIPT_DIR}/lib/common.sh"
 
-KVER=$(cat /tmp/cloudws-kver 2>/dev/null || find /usr/lib/modules/ -mindepth 1 -maxdepth 1 -printf "%f\n" | sort -V | tail -1)
+KVER=$(cat /tmp/mios-kver 2>/dev/null || find /usr/lib/modules/ -mindepth 1 -maxdepth 1 -printf "%f\n" | sort -V | tail -1)
 
 # ── KVM / QEMU / Libvirt ────────────────────────────────────────────────────
 echo "[12-virt] Installing KVM/QEMU/Libvirt..."
@@ -87,12 +87,12 @@ install_packages "android"
 # ── VirtIO-Win ISO (latest stable) ─────────────────────────────────────────
 echo "[12-virt] Downloading VirtIO-Win ISO..."
 VIRTIO_URL="https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso"
-mkdir -p /usr/share/cloudws/virtio
-scurl -sL "$VIRTIO_URL" -o /usr/share/cloudws/virtio/virtio-win.iso 2>/dev/null || {
+mkdir -p /usr/share/mios/virtio
+scurl -sL "$VIRTIO_URL" -o /usr/share/mios/virtio/virtio-win.iso 2>/dev/null || {
     echo "[12-virt] WARNING: VirtIO-Win ISO download failed — download manually later"
 }
 
 # Symlink the immutable ISO into /var/lib/libvirt/images via tmpfiles.d so it survives upgrades
-# Managed via system_files/usr/lib/tmpfiles.d/cloudws-virtio.conf
+# Managed via system_files/usr/lib/tmpfiles.d/mios-virtio.conf
 
 echo "[12-virt] Virtualization stack complete. (LG: refactored to 53-lg; K3s: refactored to 13-ceph-k3s)"

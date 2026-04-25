@@ -1,11 +1,11 @@
 #!/bin/bash
-# CloudWS v1.3.0 — 39-desktop-polish: Desktop entries, Cockpit webapp, MOTD
+# MiOS v2.1.0 — 39-desktop-polish: Desktop entries, Cockpit webapp, MOTD
 #
-# CHANGELOG v2.3.1:
-#   - FIX: cloudws-motd source path was /tmp/build/scripts/ (never exists).
+# CHANGELOG v2.1.0:
+#   - FIX: mios-motd source path was /tmp/build/scripts/ (never exists).
 #     Scripts run from /ctx/scripts/ in the buildroot. The bogus path + the
-#     `|| true` swallowed the failure silently, so /usr/libexec/cloudws-motd
-#     was never created. profile.d/cloudws-motd.sh falls back to it when
+#     `|| true` swallowed the failure silently, so /usr/libexec/mios-motd
+#     was never created. profile.d/mios-motd.sh falls back to it when
 #     fastfetch is missing, so terminal MOTD printed nothing on every
 #     v2.0-v2.2 image.
 #   - FIX: SCRIPT_DIR-relative copy so this works whether build.sh invokes
@@ -27,8 +27,8 @@ echo "[39-desktop-polish] NVIDIA Settings desktop entry delivered via overlay."
 echo "[39-desktop-polish] Ceph Dashboard desktop entry delivered via overlay."
 
 # ═══ MOTD DASHBOARD ═══
-# v2.3.5: ARCHITECTURAL PURITY FIX. The MOTD script is now delivered via the
-# system_files overlay to /usr/libexec/cloudws/motd. We no longer perform
+# v2.1.0: ARCHITECTURAL PURITY FIX. The MOTD script is now delivered via the
+# system_files overlay to /usr/libexec/mios/motd. We no longer perform
 # manual 'install' calls here.
 echo "[39-desktop-polish] MOTD dashboard delivered via overlay."
 

@@ -17,12 +17,12 @@
   },
   "postCreateCommand": "bash.devcontainer/install.sh",
   "remoteEnv": {
-    "AI_ARCH_BASELINE": "v2.3.5",
+    "AI_ARCH_BASELINE": "v2.1.0",
     "AI_DNF_POLICY": "--setopt=install_weak_deps=False",
     "AI_WSL_GATING": "ConditionVirtualization=!wsl",
     "AI_OVERLAY_PATH": "system_files/",
     "AI_PKG_SOURCE": "docs/PACKAGES.md",
-    "AI_COSIGN_PIN": "v2.6.3",
+    "AI_COSIGN_PIN": "v2.1.0",
     "AI_WORKSPACE_TYPE": "bootable-container",
     "AI_JOURNALING_LAW": "MANDATORY"
   }

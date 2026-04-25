@@ -1,4 +1,4 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
@@ -6,8 +6,8 @@
 # VM CPU Core Pinning Hook Manager
 ## Professional Per-VM CPU Orchestration for Cloud-WS
 
-> **Version**: 1.0.0  
-> **Compatible with**: CloudWS-bootc, Cloud-WS Framework, AMD Ryzen X3D, Intel Hybrid  
+> **Version**: v2.1.0  
+> **Compatible with**: MiOS, Cloud-WS Framework, AMD Ryzen X3D, Intel Hybrid  
 > **Integrates with**: libvirt, universal-cpu-isolator.sh, virt-manager
 
 ---
@@ -819,7 +819,7 @@ A: No, it complements it. Manager creates hooks (automatic), virt-manager sets X
 
 ## Changelog
 
-### v1.0.0 (2026-01-15)
+### v2.1.0 (2026-01-15)
 - Initial release
 - AMD Ryzen X3D optimized presets
 - Interactive configuration wizard
@@ -854,18 +854,18 @@ MIT License - Use freely for personal or commercial Cloud-WS deployments
 
 - **Documentation**: This README + CPU-Isolation-Guide.md
 - **Issues**: Check hook logs in `/var/log/libvirt/qemu/`
-- **Community**: CloudWS-bootc forums, r/VFIO subreddit
+- **Community**: MiOS forums, r/VFIO subreddit
 
 ---
 
 **Made with Ã¢Â¤Ã¯Â¸ for the Cloud-WS virtualization framework**  
-*Professional-grade VM orchestration on CloudWS-bootc*
+*Professional-grade VM orchestration on MiOS*
 
 ---
 ### 📚 Bootc Ecosystem & Resources
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

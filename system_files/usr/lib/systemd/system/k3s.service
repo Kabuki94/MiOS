@@ -1,8 +1,8 @@
 [Unit]
 Description=Lightweight Kubernetes (K3s)
 Documentation=https://k3s.io
-Wants=network-online.target cloudws-k3s-init.service
-After=network-online.target cloudws-k3s-init.service
+Wants=network-online.target mios-k3s-init.service
+After=network-online.target mios-k3s-init.service
 
 [Service]
 Type=notify

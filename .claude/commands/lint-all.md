@@ -1,4 +1,4 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
@@ -29,20 +29,20 @@ SC2162, SC2010, SC2054** as **fatal** — the CI runner does.
 
 ```powershell
 @(
-  'scripts/cloudws-motd',
-  'scripts/cloudws-test',
-  'scripts/cloudws-toggle-headless',
-  'scripts/cloudws-grd-setup',
-  'system_files/usr/libexec/cloudws/libvirtd-firstboot',
-  'system_files/usr/libexec/cloudws/role-apply',
-  'system_files/usr/libexec/cloudws/select-cdi-spec',
-  'system_files/usr/libexec/cloudws/wsl-firstboot',
-  'system_files/usr/libexec/cloudws-boot-diag',
-  'system_files/usr/libexec/cloudws-flatpak-install',
+  'scripts/mios-motd',
+  'scripts/mios-test',
+  'scripts/mios-toggle-headless',
+  'scripts/mios-grd-setup',
+  'system_files/usr/libexec/mios/libvirtd-firstboot',
+  'system_files/usr/libexec/mios/role-apply',
+  'system_files/usr/libexec/mios/select-cdi-spec',
+  'system_files/usr/libexec/mios/wsl-firstboot',
+  'system_files/usr/libexec/mios-boot-diag',
+  'system_files/usr/libexec/mios-flatpak-install',
   'system_files/usr/bin/gamescope-session-steam',
   'system_files/usr/bin/steamos-session-select',
-  'system_files/usr/local/bin/cloudws-ceph',
-  'system_files/usr/local/bin/cloudws-ceph-bootstrap',
+  'system_files/usr/local/bin/mios-ceph',
+  'system_files/usr/local/bin/mios-ceph-bootstrap',
   'system_files/usr/local/bin/phosh-session-wrapper'
 ) | Where-Object { Test-Path $_ } |
     ForEach-Object { shellcheck -S warning $_ }
@@ -93,7 +93,7 @@ Treat **PSAvoidUsingInvokeExpression** and
 integrated WSL (explicit `wsl -e bash -c` so it stays embedded):
 
 ```
-wsl -e bash -c "bootc container lint --image ghcr.io/kabuki94/cloudws-bootc:latest 2>&1 | tee build/bootc-lint.log"
+wsl -e bash -c "bootc container lint --image ghcr.io/kabuki94/mios:latest 2>&1 | tee build/bootc-lint.log"
 ```
 
 Scan output for:
@@ -142,6 +142,6 @@ inside the integrated terminal.
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

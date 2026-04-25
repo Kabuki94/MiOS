@@ -1,24 +1,24 @@
 <#
 .SYNOPSIS
-    CloudWS v1.3.0 — Cloud Workstation OS Builder (Windows)
+    MiOS v2.1.0 — MiOS Builder (Windows)
 
 .DESCRIPTION
     Secure build orchestrator with workflow selection.
     Tokens/passwords NEVER appear in plain text in logs or terminal output.
 
-    SECURITY FIXES in v1.3.0:
+    SECURITY FIXES in v2.1.0:
       - Passwords pre-hashed (SHA-512) before injection — plaintext never in build log
       - Registry token uses SecureString — never echoed, never in process args
       - Workflow menu: Local Build, Push Build, Custom Build
       - Admin/origin-owner detection for default token inference
       - Hostname randomization option for HA clusters
 
-    SELF-BUILDING in v1.3.0:
-      - Pulls existing CloudWS image from GHCR as the helper/builder image
-      - CloudWS image replaces alpine/python for all helper operations
+    SELF-BUILDING in v2.1.0:
+      - Pulls existing MiOS image from GHCR as the helper/builder image
+      - MiOS image replaces alpine/python for all helper operations
       - Falls back to alpine/python only on first-ever build (no prior image)
       - MAKEFLAGS passed into build for parallel compilation (akmod, Looking Glass)
-      - CloudWS image IS the builder — podman, buildah, bootc, BIB all baked in
+      - MiOS image IS the builder — podman, buildah, bootc, BIB all baked in
 #>
 
 #Requires -RunAsAdministrator
@@ -32,24 +32,24 @@ Set-StrictMode -Version Latest
 # ══════════════════════════════════════════════════════════════════════════════
 #  CONFIGURATION
 # ══════════════════════════════════════════════════════════════════════════════
-$v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "1.3.0" }
-$ImageName      = "cloudws"
+$v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "v2.1.0" }
+$ImageName      = "mios"
 $ImageTag       = "latest"
-$DefUser        = "cloudws"
-$DefPass        = "cloudws"
-$DefRegistry    = "ghcr.io/kabuki94/cloudws-bootc"
-$BuilderMachine = "cloudws-builder"
+$DefUser        = "mios"
+$DefPass        = "mios"
+$DefRegistry    = "ghcr.io/kabuki94/mios"
+$BuilderMachine = "mios-builder"
 $LocalImage     = "localhost/${ImageName}:${ImageTag}"
-$OutputFolder   = Join-Path $PWD "cloudws-deploy-out"
+$OutputFolder   = Join-Path $PWD "mios-deploy-out"
 $RechunkImage   = "quay.io/centos-bootc/centos-bootc:stream10"
 $Timeout        = 30
 
-$RawImg         = Join-Path $OutputFolder "cloudws-bootable.raw"
-$TargetVhdx     = Join-Path $OutputFolder "cloudws-hyperv.vhdx"
-$TargetWsl      = Join-Path $OutputFolder "cloudws-wsl.tar"
-$TargetIso      = Join-Path $OutputFolder "cloudws-installer.iso"
+$RawImg         = Join-Path $OutputFolder "mios-bootable.raw"
+$TargetVhdx     = Join-Path $OutputFolder "mios-hyperv.vhdx"
+$TargetWsl      = Join-Path $OutputFolder "mios-wsl.tar"
+$TargetIso      = Join-Path $OutputFolder "mios-installer.iso"
 
-# Helper image: prefer CloudWS itself, fall back to alpine/python for first build
+# Helper image: prefer MiOS itself, fall back to alpine/python for first build
 $HelperImage    = ""
 $FallbackHash   = "docker.io/library/alpine:latest"
 $FallbackConvert = "docker.io/library/alpine:latest"
@@ -99,13 +99,13 @@ function Read-Timed {
 
 function Get-SHA512Hash {
     # Generate a SHA-512 crypt hash ($6$...) compatible with chpasswd -e
-    # Prefers CloudWS helper image (has openssl), falls back to alpine/python
+    # Prefers MiOS helper image (has openssl), falls back to alpine/python
     param([string]$SecretText)
     $salt = -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 16 | ForEach-Object { [char]$_ })
 
     $hash = $null
 
-    # Try CloudWS helper image first (openssl is already installed)
+    # Try MiOS helper image first (openssl is already installed)
     if ($HelperImage) {
         $hash = & podman run --rm $HelperImage openssl passwd -6 -salt "$salt" "$SecretText" 2>$null
         if ($LASTEXITCODE -eq 0 -and $hash -match '^\$6\$') { return $hash.Trim() }
@@ -125,7 +125,7 @@ function Clear-BIBTemp { foreach ($d in "image","vpc","qcow2","bootiso") { Get-C
 # ══════════════════════════════════════════════════════════════════════════════
 #  BANNER + WORKFLOW MENU
 # ══════════════════════════════════════════════════════════════════════════════
-Write-Banner "CloudWS v$Version — Cloud Workstation OS Builder"
+Write-Banner "MiOS v$Version — MiOS Builder"
 
 Write-Host "  Select build workflow:" -ForegroundColor White
 Write-Host ""
@@ -159,10 +159,10 @@ Write-Phase "0" "Configuration"
 if ($DoCustom) {
     $U = Read-Timed "Username:" $DefUser
     $P = Read-Timed "Password:" $DefPass -Secret
-    $HostIn = Read-Timed "Static Hostname (blank for cloudws-XXXXX):" "cloudws"
+    $HostIn = Read-Timed "Static Hostname (blank for mios-XXXXX):" "mios"
     $luksIn = Read-Timed "Enable LUKS encryption? (y/N):" "N"
     $UseLuks = $luksIn -match "^[yY]"
-    $LuksPass = if ($UseLuks) { Read-Timed "LUKS passphrase:" "cloudws" -Secret } else { "" }
+    $LuksPass = if ($UseLuks) { Read-Timed "LUKS passphrase:" "mios" -Secret } else { "" }
     $RegistryUrl = Read-Timed "Registry URL:" $DefRegistry
 
     Write-Host ""
@@ -174,7 +174,7 @@ if ($DoCustom) {
 } else {
     $U = $DefUser
     $P = $DefPass
-    $HostIn = "cloudws"
+    $HostIn = "mios"
     $UseLuks = $false
     $LuksPass = ""
     $RegistryUrl = $DefRegistry
@@ -189,8 +189,8 @@ $RegistryToken = ""
 
 if ($DoPush -or $DoPull) {
     # Try environment variables first (CI/CD friendly)
-    $RegistryUser  = $env:CLOUDWS_GHCR_USER
-    $RegistryToken = if ($env:CLOUDWS_GHCR_TOKEN) { $env:CLOUDWS_GHCR_TOKEN } else { $env:GHCR_TOKEN }
+    $RegistryUser  = $env:MIOS_GHCR_USER
+    $RegistryToken = if ($env:MIOS_GHCR_TOKEN) { $env:MIOS_GHCR_TOKEN } else { $env:GHCR_TOKEN }
 
     if (-not $RegistryUser) {
         $RegistryUser = Read-Timed "Registry username:" "kabuki94"
@@ -225,7 +225,7 @@ Write-OK "CPU: $cpu cores | RAM: $ram MB"
 
 if ($DoBuild) {
     foreach ($f in "Containerfile","docs/PACKAGES.md","VERSION","scripts/build.sh","scripts/31-user.sh") {
-        if (-not (Test-Path $f)) { Write-Fatal "Missing required file: $f — are you in the CloudWS-bootc repo root?" }
+        if (-not (Test-Path $f)) { Write-Fatal "Missing required file: $f — are you in the MiOS repo root?" }
     }
     Write-OK "All repo files present"
 }
@@ -249,14 +249,14 @@ $ErrorActionPreference = "Stop"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-Write-Phase "1.5" "Self-Building — Pull CloudWS Helper Image"
+Write-Phase "1.5" "Self-Building — Pull MiOS Helper Image"
 $ErrorActionPreference = "Continue"
 
-# Try to pull the existing CloudWS image from the registry.
+# Try to pull the existing MiOS image from the registry.
 # If it exists, use it as the helper image for ALL container operations
-# (hash generation, qemu-img conversion, etc.) — CloudWS IS the builder.
+# (hash generation, qemu-img conversion, etc.) — MiOS IS the builder.
 # First build ever: no image exists yet, fall back to alpine/python.
-Write-Step "Checking for existing CloudWS image at $GhcrImage..."
+Write-Step "Checking for existing MiOS image at $GhcrImage..."
 
 # Authenticate if we have credentials
 if ($RegistryToken) {
@@ -267,22 +267,22 @@ if ($RegistryToken) {
 & podman pull $GhcrImage 2>$null
 if ($LASTEXITCODE -eq 0) {
     $HelperImage = $GhcrImage
-    Write-OK "CloudWS helper image pulled — self-building cycle active"
-    Write-OK "All helper operations will use CloudWS (openssl, qemu-img, etc.)"
+    Write-OK "MiOS helper image pulled — self-building cycle active"
+    Write-OK "All helper operations will use MiOS (openssl, qemu-img, etc.)"
 } else {
     # Check if it exists locally already (previous local build)
     & podman image exists $LocalImage 2>$null
     if ($LASTEXITCODE -eq 0) {
         $HelperImage = $LocalImage
-        Write-OK "Using local CloudWS image as helper — self-building cycle active"
+        Write-OK "Using local MiOS image as helper — self-building cycle active"
     } else {
         $HelperImage = ""
-        Write-Warn "No existing CloudWS image found — first build, using alpine/python fallbacks"
+        Write-Warn "No existing MiOS image found — first build, using alpine/python fallbacks"
         Write-Step "After this build completes and pushes, subsequent builds will self-build"
     }
 }
-# ── Self-Building BIB: Try CloudWS as bootc-image-builder ────────────────────
-# CloudWS includes bootc-image-builder + osbuild as RPMs. If HelperImage is set,
+# ── Self-Building BIB: Try MiOS as bootc-image-builder ────────────────────
+# MiOS includes bootc-image-builder + osbuild as RPMs. If HelperImage is set,
 # verify it can serve as BIB. Falls back to centos-bootc on first build.
 $BIBSelfBuild = $false
 if ($HelperImage) {
@@ -291,9 +291,9 @@ if ($HelperImage) {
     if ($LASTEXITCODE -eq 0) {
         $BIBImage = $HelperImage
         $BIBSelfBuild = $true
-        Write-OK "Self-building BIB: CloudWS image will be used as bootc-image-builder"
+        Write-OK "Self-building BIB: MiOS image will be used as bootc-image-builder"
     } else {
-        Write-Step "CloudWS image lacks bootc-image-builder binary — using centos-bootc BIB"
+        Write-Step "MiOS image lacks bootc-image-builder binary — using centos-bootc BIB"
     }
 }
 $ErrorActionPreference = "Stop"
@@ -324,20 +324,20 @@ if ($DoPull) {
     Write-OK "Password hashed (SHA-512)"
 
     # ── Inject hostname (only if custom; restored via git checkout after build) ──
-    if ($HostIn -ne "cloudws") {
+    if ($HostIn -ne "mios") {
         Write-Step "Injecting static hostname: $HostIn ..."
         Set-Content "system_files/etc/hostname" "$HostIn" -Encoding ascii
     }
 
     $t0 = Get-Date
     Write-Step "Building OCI image (all $cpu threads, MAKEFLAGS=-j$cpu)..."
-    # Credentials passed as --build-arg: hash is available as CLOUDWS_PASSWORD_HASH
+    # Credentials passed as --build-arg: hash is available as MIOS_PASSWORD_HASH
     # env var inside the container build (consumed by 31-user.sh). Plaintext NEVER
     # written to disk, never appears in the build log or image layer metadata.
     & podman build --no-cache `
         --build-arg MAKEFLAGS="-j$cpu" `
-        --build-arg CLOUDWS_USER="$U" `
-        --build-arg CLOUDWS_PASSWORD_HASH="$passHash" `
+        --build-arg MIOS_USER="$U" `
+        --build-arg MIOS_PASSWORD_HASH="$passHash" `
         --jobs 2 -t $LocalImage .
     if ($LASTEXITCODE -ne 0) { Write-Fatal "podman build failed" }
 
@@ -377,7 +377,7 @@ if ($DoPull) {
     if ($LASTEXITCODE -eq 0) {
         $BIBImage = $LocalImage
         $BIBSelfBuild = $true
-        Write-OK "Helper image updated — self-building BIB active (CloudWS IS the builder)"
+        Write-OK "Helper image updated — self-building BIB active (MiOS IS the builder)"
     } else {
         Write-OK "Helper image updated to freshly built $LocalImage (self-building ready)"
     }
@@ -472,10 +472,10 @@ if ($SelectedTargets -contains 2) {
             # -m 16 -W enables 16 parallel coroutines and out-of-order writes for massive speedup
             if ($HelperImage) {
                 & podman run --rm -v "${OutputFolder}:/data:z" $HelperImage `
-                    qemu-img convert -m 16 -W -f vpc -O vhdx /data/disk.vhd /data/cloudws-hyperv.vhdx
+                    qemu-img convert -m 16 -W -f vpc -O vhdx /data/disk.vhd /data/mios-hyperv.vhdx
             } else {
                 & podman run --rm -v "${OutputFolder}:/data:z" $FallbackConvert sh -c `
-                    "apk add --quiet qemu-img && qemu-img convert -m 16 -W -f vpc -O vhdx /data/disk.vhd /data/cloudws-hyperv.vhdx"
+                    "apk add --quiet qemu-img && qemu-img convert -m 16 -W -f vpc -O vhdx /data/disk.vhd /data/mios-hyperv.vhdx"
             }
             Remove-Item $vhdSrc -Force -ErrorAction SilentlyContinue
             Clear-BIBTemp
@@ -523,7 +523,7 @@ Write-Phase "3b" "Auto-Deploy to Hyper-V + WSL2"
 # Hyper-V
 if (Test-Path $TargetVhdx) {
     $ErrorActionPreference = "Continue"
-    $vmName = "CloudWS-OS"
+    $vmName = "MiOS-OS"
     try {
         Write-Step "Deploying to Hyper-V..."
         Remove-VM -Name $vmName -Force -ErrorAction SilentlyContinue
@@ -597,7 +597,7 @@ if (Test-Path $TargetVhdx) {
 # WSL2
 if (Test-Path $TargetWsl) {
     $ErrorActionPreference = "Continue"
-    $WslName = "CloudWS-OS"
+    $WslName = "MiOS-OS"
     $WslPath = Join-Path $env:USERPROFILE "WSL\$WslName"
     try {
         Write-Step "Deploying to WSL2..."
@@ -615,7 +615,7 @@ if (Test-Path $TargetWsl) {
         $wslCPUs = $cpu
         # Build .wslconfig content without here-string (avoids PS parser edge cases)
         $wslLines = @(
-            "# CloudWS v1.3.0 — WSL2 Configuration",
+            "# MiOS v2.1.0 — WSL2 Configuration",
             "[wsl2]",
             "memory=${wslRAM}GB",
             "processors=${wslCPUs}",
@@ -684,8 +684,8 @@ Write-Host ""
 
 # Self-building status
 if ($HelperImage) {
-    Write-OK "Self-building: ACTIVE — CloudWS image used as builder"
-    if ($BIBSelfBuild) { Write-OK "  BIB: Self-building (CloudWS used as bootc-image-builder)" }
+    Write-OK "Self-building: ACTIVE — MiOS image used as builder"
+    if ($BIBSelfBuild) { Write-OK "  BIB: Self-building (MiOS used as bootc-image-builder)" }
     else { Write-OK "  BIB: External (centos-bootc)" }
     Write-OK "  Next build will pull this image and use it for all operations"
 } else {
@@ -703,8 +703,8 @@ foreach ($t in $targets) { Write-OK $t }
 Write-Host ""
 Write-OK "Output folder: $OutputFolder"
 Write-Host ""
-Write-Host "  CloudWS is self-replicating: pull → build → push → repeat" -ForegroundColor Cyan
-Write-Host "  On deployed CloudWS:  cloudws-rebuild" -ForegroundColor Cyan
+Write-Host "  MiOS is self-replicating: pull → build → push → repeat" -ForegroundColor Cyan
+Write-Host "  On deployed MiOS:  mios-rebuild" -ForegroundColor Cyan
 Write-Host "  On any machine:       podman pull $GhcrImage" -ForegroundColor Cyan
 Write-Host ""
 

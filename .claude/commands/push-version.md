@@ -1,4 +1,4 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
@@ -10,13 +10,13 @@ argument-hint: <version> [commit-message]
 
 Update the central PowerShell push script named `push-to-github.ps1`.
 Do NOT create versioned `push-vX.Y.Z.ps1` files. `push-to-github.ps1` is the
-single source of truth for the local build stack and follows the CloudWS-bootc
+single source of truth for the local build stack and follows the MiOS
 deliverable contract defined in `CLAUDE.md` §4.
 
 The script must:
 
 1. **Clone the existing repo** to a temp directory —
-   `github.com/Kabuki94/CloudWS-bootc`. Never `git init`, never
+   `github.com/Kabuki94/MiOS`. Never `git init`, never
    create a new repo.
 2. **Copy every file** from the staged companion directory into the repo,
    preserving layout relative to the repo root. Complete replacement files only.
@@ -54,6 +54,6 @@ push anything on the user's behalf — the script is the deliverable; humans run
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

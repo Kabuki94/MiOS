@@ -12,8 +12,8 @@ systemctl preset-all 2>/dev/null || true
 systemctl set-default multi-user.target 2>/dev/null || true
 
 # Ensure role directory exists with example config
-if [[ ! -f /etc/cloudws/role.conf ]]; then
-    cp -a /usr/share/cloudws/role.conf.example /etc/cloudws/role.conf 2>/dev/null || true
+if [[ ! -f /etc/mios/role.conf ]]; then
+    cp -a /usr/share/mios/role.conf.example /etc/mios/role.conf 2>/dev/null || true
 fi
 
 # Scrub potential credential leaks from build-time placeholder injections
@@ -30,12 +30,12 @@ dnf5 clean all || true
 rm -rf /var/cache/libdnf5 /var/cache/dnf /var/log/dnf5.log* 2>/dev/null || true
 
 # Set image metadata
-CLOUDWS_VERSION=$(cat /ctx/VERSION 2>/dev/null || echo "unknown")
-echo "${CLOUDWS_VERSION}" > /etc/cloudws-version
-cat > /etc/cloudws/version <<EOF
-CLOUDWS_VERSION=${CLOUDWS_VERSION}
-CLOUDWS_BASE=ucore-hci-stable-nvidia
-CLOUDWS_BUILT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+MIOS_VERSION=$(cat /ctx/VERSION 2>/dev/null || echo "unknown")
+echo "${MIOS_VERSION}" > /etc/mios-version
+cat > /etc/mios/version <<EOF
+MIOS_VERSION=${MIOS_VERSION}
+MIOS_BASE=ucore-hci-stable-nvidia
+MIOS_BUILT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 EOF
 
 log "finalize complete"

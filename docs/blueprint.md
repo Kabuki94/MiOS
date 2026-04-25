@@ -1,14 +1,14 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# 🏗️ CloudWS-OS Strategic Blueprint
+# 🏗️ MiOS-OS Strategic Blueprint
 
 ```json
 {
-  "project": "CloudWS-OS",
-  "version": "1.3.0",
+  "project": "MiOS-OS",
+  "version": "v2.1.0",
   "architecture": "Fedora Bootc (OCI-Native)",
   "immutability": "composefs + fs-verity",
   "last_updated": "2026-04-25"
@@ -18,7 +18,7 @@
 ---
 
 ## 🚀 Executive Summary
-CloudWS-OS is a container-native, immutable workstation engineered for high-performance virtualization and Generative AI development. It bridges the gap between OCI image-based deployment and bare-metal hardware acceleration.
+MiOS-OS is a container-native, immutable workstation engineered for high-performance virtualization and Generative AI development. It bridges the gap between OCI image-based deployment and bare-metal hardware acceleration.
 
 ### 🛡️ Core Pillars
 - **Transactional Immutability:** The entire userspace is a cryptographically sealed OCI image.
@@ -70,6 +70,6 @@ The system is synthesized into multiple bootable artifacts via `bootc-image-buil
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

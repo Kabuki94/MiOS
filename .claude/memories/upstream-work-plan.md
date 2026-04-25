@@ -1,9 +1,9 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# CloudWS-bootc Upstream Implementation Work Plan
+# MiOS Upstream Implementation Work Plan
 # Generated: 2026-04-24 UTC | Agent: Claude Code (Sonnet 4.6)
 
 > Derived from upstream-research-plan.md.
@@ -19,16 +19,16 @@
 **Problem:** All other kargs.d files have `match-architectures = ["x86_64"]`. This file is the only one missing it. On a multi-arch build this would apply these kargs universally.
 **Fix:** Append `match-architectures = ["x86_64"]` below the `kargs` array.
 
-### T1.2 — New hardening kargs in `01-cloudws-hardening.toml`
-**File:** `system_files/usr/lib/bootc/kargs.d/01-cloudws-hardening.toml`
+### T1.2 — New hardening kargs in `01-mios-hardening.toml`
+**File:** `system_files/usr/lib/bootc/kargs.d/01-mios-hardening.toml`
 **Problem:** Three upstream-recommended mitigations missing:
 - `spectre_bhi=on` — Branch History Injection (BHI/Spectre-BHB) mitigation, not covered by `spectre_v2=on`
 - `kvm.nx_huge_pages=force` — Forces KVM to use NX-mapped huge pages, preventing cross-VM data leakage via huge page aliasing
-- `tsx=off` — Disables Intel TSX (TAA/MDS attack surface); no-op on AMD (9950X3D) but correct for Intel deployments of CloudWS
+- `tsx=off` — Disables Intel TSX (TAA/MDS attack surface); no-op on AMD (9950X3D) but correct for Intel deployments of MiOS
 **Fix:** Add three new karg entries to the existing array.
 
 ### T1.3 — Add BPF JIT hardening + sysrq + printk to sysctl
-**File:** `system_files/usr/lib/sysctl.d/99-cloudws-hardening.conf`
+**File:** `system_files/usr/lib/sysctl.d/99-mios-hardening.conf`
 **Problem:** Three Fedora-44-targeted hardening sysctls not yet present:
 - `net.core.bpf_jit_harden = 2` — Hardens BPF JIT against JIT-spray attacks (eBPF is heavily used by CrowdSec, K3s, CNI — this restricts BPF-compiled code to non-mappable memory)
 - `kernel.unprivileged_bpf_disabled = 1` — Prevents unprivileged users from loading BPF programs (rootless Podman/K3s use cgroup BPF as root, unaffected)
@@ -57,7 +57,7 @@
 
 ### T2.2 — Add greenboot K3s health check
 **File:** `system_files/etc/greenboot/check/wanted.d/60-k3s.sh` (NEW — `wanted.d`, not `required.d`)
-**Problem:** K3s may not be enabled on all CloudWS roles (desktop role has it disabled). A `required.d` check would cause desktop-role machines to always fail greenboot. Use `wanted.d` so failure is logged but does not trigger rollback; the `40-role-target.sh` check (already present) handles role-level failures.
+**Problem:** K3s may not be enabled on all MiOS roles (desktop role has it disabled). A `required.d` check would cause desktop-role machines to always fail greenboot. Use `wanted.d` so failure is logged but does not trigger rollback; the `40-role-target.sh` check (already present) handles role-level failures.
 **Fix:** Create `wanted.d/60-k3s.sh` that checks K3s only if it is active/enabled.
 
 ### T2.3 — Add `HttpProxy=false` to all Quadlet container files
@@ -65,14 +65,14 @@
 **Problem:** Without `HttpProxy=false`, Podman forwards the host's `http_proxy`/`https_proxy` env vars into every container. On workstations this leaks potential corporate proxy credentials or proxy config into untrusted containers.
 **Containers to patch:**
 - `crowdsec-dashboard.container` — add `HttpProxy=false`
-- `cloudws-guacamole.container` — add `HttpProxy=false`
-- `cloudws-guacd.container` — add `HttpProxy=false`
+- `mios-guacamole.container` — add `HttpProxy=false`
+- `mios-guacd.container` — add `HttpProxy=false`
 - `guacamole-postgres.container` — add `HttpProxy=false`
 - `guacd.container` — add `HttpProxy=false`
 - `ceph-radosgw.container` — add `HttpProxy=false` (also needs `GlobalArgs` since it's NOT in bound-images.d — actually it should NOT get GlobalArgs since it's not bound; skip GlobalArgs for ceph)
 
-### T2.4 — Add `cockpit.socket.d/10-cloudws.conf` (ordering fix)
-**File:** `system_files/usr/lib/systemd/system/cockpit.socket.d/10-cloudws.conf` (NEW)
+### T2.4 — Add `cockpit.socket.d/10-mios.conf` (ordering fix)
+**File:** `system_files/usr/lib/systemd/system/cockpit.socket.d/10-mios.conf` (NEW)
 **Problem:** `cockpit.socket` activates before `libvirtd.socket`. When a user opens the Machines page immediately after boot, libvirtd may not be ready, causing "Failed to connect to libvirt" errors. Adding the ordering dependency prevents the race.
 **Fix:** New drop-in with `[Unit] After=libvirtd.socket`.
 
@@ -98,7 +98,7 @@
 
 | Item | Reason deferred |
 |------|----------------|
-| `osbuild/bootc-image-builder-action@v0.0.2` migration | Current `ublue-os` action still works; migration is non-trivial and needs testing |
+| `osbuild/bootc-image-builder-action@v2.1.0` migration | Current `ublue-os` action still works; migration is non-trivial and needs testing |
 | K3s containerd v3 config template | Requires knowing exact K3s install path in image; needs deeper audit of `13-ceph-k3s.sh` |
 | K3s airgap `.cache.json` | Requires knowing which images are pre-pulled; needs separate research pass |
 | `bootc upgrade --download-only` systemd timer | Runtime feature, not build-time; document in DIAGNOSTICS.md separately |
@@ -114,19 +114,19 @@
 | File | Operation | Category |
 |------|-----------|----------|
 | `system_files/usr/lib/bootc/kargs.d/30-security.toml` | MODIFY | T1.1 |
-| `system_files/usr/lib/bootc/kargs.d/01-cloudws-hardening.toml` | MODIFY | T1.2 |
-| `system_files/usr/lib/sysctl.d/99-cloudws-hardening.conf` | MODIFY | T1.3 |
+| `system_files/usr/lib/bootc/kargs.d/01-mios-hardening.toml` | MODIFY | T1.2 |
+| `system_files/usr/lib/sysctl.d/99-mios-hardening.conf` | MODIFY | T1.3 |
 | `system_files/etc/greenboot/greenboot.conf` | CREATE | T1.4 |
 | `system_files/usr/lib/NetworkManager/conf.d/rand_mac.conf` | CREATE | T1.5 |
 | `system_files/etc/greenboot/check/required.d/30-network.sh` | CREATE | T2.1 |
 | `system_files/etc/greenboot/check/wanted.d/60-k3s.sh` | CREATE | T2.2 |
 | `system_files/usr/share/containers/systemd/crowdsec-dashboard.container` | MODIFY | T2.3 |
-| `system_files/usr/share/containers/systemd/cloudws-guacamole.container` | MODIFY | T2.3 |
-| `system_files/usr/share/containers/systemd/cloudws-guacd.container` | MODIFY | T2.3 |
+| `system_files/usr/share/containers/systemd/mios-guacamole.container` | MODIFY | T2.3 |
+| `system_files/usr/share/containers/systemd/mios-guacd.container` | MODIFY | T2.3 |
 | `system_files/usr/share/containers/systemd/guacamole-postgres.container` | MODIFY | T2.3 |
 | `system_files/usr/share/containers/systemd/guacd.container` | MODIFY | T2.3 |
 | `system_files/usr/share/containers/systemd/ceph-radosgw.container` | MODIFY | T2.3 |
-| `system_files/usr/lib/systemd/system/cockpit.socket.d/10-cloudws.conf` | CREATE | T2.4 |
+| `system_files/usr/lib/systemd/system/cockpit.socket.d/10-mios.conf` | CREATE | T2.4 |
 | `Containerfile` | DONE (line 154) | T2.5 |
 | `.ai-context/ai-journal.md` | APPEND | T3.1 |
 | `.ai-context/AI-ENVIRONMENT.md` | MODIFY | T3.2 |
@@ -136,6 +136,6 @@
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

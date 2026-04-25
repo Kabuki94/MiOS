@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v1.3.0 — 20-services: Enable systemd services + bare-metal/VM gating
+# MiOS v2.1.0 — 20-services: Enable systemd services + bare-metal/VM gating
 #
 # CHANGELOG v1.3:
 #   - systemd 260: cgroup v1 support REMOVED — all services must use cgroup v2
@@ -11,7 +11,7 @@
 set -euo pipefail
 
 echo "═══════════════════════════════════════════════════════════════════"
-echo "  CloudWS v1.3.0 — Service Configuration"
+echo "  MiOS v2.1.0 — Service Configuration"
 echo "═══════════════════════════════════════════════════════════════════"
 
 # ─── Fix systemd unit file permissions ────────────────────────────────────────
@@ -28,8 +28,8 @@ echo "[20-services] Fixed systemd unit file permissions"
 
 # ─── Service Configuration Note ──────────────────────────────────────────────
 # CORE and OPTIONAL services are now primarily managed via:
-# system_files/usr/lib/systemd/system-preset/90-cloudws.preset
-# Role-specific services are managed by cloudws-role.service at runtime.
+# system_files/usr/lib/systemd/system-preset/90-mios.preset
+# Role-specific services are managed by mios-role.service at runtime.
 
 # ─── WSL2 & Container Service Gating ─────────────────────────────────────────
 # These services skip OCI/WSL2 via drop-ins in system_files overlay.

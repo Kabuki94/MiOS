@@ -1,5 +1,5 @@
-# CloudWS — Extended SecureBlue-derived kernel hardening
-# v1.4.0 roadmap implementation pass
+# MiOS — Extended SecureBlue-derived kernel hardening
+# v2.1.0 roadmap implementation pass
 match-architectures = ["x86_64"]
 kargs = [
     "page_poison=1",

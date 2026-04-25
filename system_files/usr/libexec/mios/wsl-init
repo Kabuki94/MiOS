@@ -1,0 +1,49 @@
+#!/usr/bin/bash
+# WSL runtime bridge: links WSLg sockets, ensures GPU-PV shim, and system interop.
+# Invoked by mios-wsl-init.service (ConditionVirtualization=wsl).
+set -euo pipefail
+
+log() { printf '[mios-wsl-init] %s\n' "$*"; }
+
+# 1. WSLg Socket Mapping (Wayland, X11, PulseAudio)
+# WSLg mounts these in /mnt/wslg, but standard apps expect them in $XDG_RUNTIME_DIR.
+# We map them for the 'mios' user if they exist.
+USER="mios"
+UID_VAL=$(id -u "$USER" 2>/dev/null || echo "1000")
+RUNTIME_DIR="/run/user/${UID_VAL}"
+
+if [[ -d "/mnt/wslg" ]]; then
+    log "WSLg detected; mapping sockets..."
+    mkdir -p "${RUNTIME_DIR}"
+    
+    # Wayland
+    if [[ -S "/mnt/wslg/runtime-dir/wayland-0" ]]; then
+        ln -sf "/mnt/wslg/runtime-dir/wayland-0" "${RUNTIME_DIR}/wayland-0"
+        ln -sf "/mnt/wslg/runtime-dir/wayland-0.lock" "${RUNTIME_DIR}/wayland-0.lock"
+    fi
+    
+    # PulseAudio
+    if [[ -S "/mnt/wslg/PulseAudio" ]]; then
+        ln -sf "/mnt/wslg/PulseAudio" "${RUNTIME_DIR}/pulse-native"
+    fi
+    
+    # X11
+    if [[ -d "/mnt/wslg/.X11-unix" ]]; then
+        mkdir -p /tmp/.X11-unix
+        mount --bind /mnt/wslg/.X11-unix /tmp/.X11-unix 2>/dev/null || true
+    fi
+fi
+
+# 2. Hyper-V GPU-PV Shim Detection
+if [[ -x /usr/libexec/mios/gpu-pv-detect ]]; then
+    log "Triggering GPU-PV detection..."
+    /usr/libexec/mios/gpu-pv-detect
+fi
+
+# 3. Time Sync
+# WSL2 clocks can drift significantly after Windows sleep/hibernate.
+if command -v hwclock &>/dev/null; then
+    hwclock -s 2>/dev/null || true
+fi
+
+log "WSL2 runtime bridge complete"

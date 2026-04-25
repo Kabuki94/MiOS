@@ -1,4 +1,0 @@
-#!/bin/bash
-set -euo pipefail
-echo "CloudWS — Local build..."
-podman build --no-cache --build-arg MAKEFLAGS="-j$(nproc)" -t localhost/cloudws:latest .

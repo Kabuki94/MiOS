@@ -1,19 +1,19 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# CloudWS-bootc v1.3.0 - Truly fix the broken bits
+# MiOS v2.1.0 - Truly fix the broken bits
 
 ## Bugs this release fixes
 
 ### 1. Containerfile still had broken akmods FROM stages
 
-v2.2.1 was supposed to remove `FROM ghcr.io/ublue-os/akmods-nvidia-open:main-rawhide-580`
+v2.1.0 was supposed to remove `FROM ghcr.io/ublue-os/akmods-nvidia-open:main-rawhide-580`
 and the companion akmods-common / akmods-extra stages - that tag does not
 exist, and ucore-hci:stable-nvidia already ships NVIDIA kmods baked in.
 
-v2.2.1 never actually committed (user went v2.2.0 -> v2.2.2 directly, v2.2.1
+v2.1.0 never actually committed (user went v2.1.0 -> v2.1.0 directly, v2.1.0
 push either failed or was skipped). CI has been failing ever since on
 `manifest unknown`.
 
@@ -22,19 +22,19 @@ ucore-hci:stable-nvidia) with no external akmod pulls.
 
 ### 2. PACKAGES.md additions block was invisible to the parser
 
-v2.2.3 merged `PACKAGES-UNIFIED-EXTRAS.md` into PACKAGES.md between
-`<!-- CLOUDWS_V2_ADDITIONS_BEGIN/END -->` markers. But the fenced code blocks
+v2.1.0 merged `PACKAGES-UNIFIED-EXTRAS.md` into PACKAGES.md between
+`<!-- MIOS_V2_ADDITIONS_BEGIN/END -->` markers. But the fenced code blocks
 inside used plain ` ``` ` fences - not the ` ```packages-<category> ` tagged
 format that `scripts/lib/packages.sh` requires (it uses a sed pattern
 anchored on `` ```packages-${category}$ ``).
 
-Net effect: every package I "added" in v2.2.0 was silently ignored by
+Net effect: every package I "added" in v2.1.0 was silently ignored by
 packages.sh. uupd, greenboot, cosign, nvidia-container-selinux, aide,
 openscap-scanner, cloud-init, wslu, kubectl, helm, toolbox, steam-devices,
 freerdp, virt-viewer, libei - all skipped.
 
 **Fixed**:
-- Stripped the entire `CLOUDWS_V2_ADDITIONS_BEGIN/END` block.
+- Stripped the entire `MIOS_V2_ADDITIONS_BEGIN/END` block.
 - Added the genuinely-new packages to the **existing tagged sections** that
   packages.sh actually parses:
   - `packages-security` += aide, openscap-scanner, scap-security-guide,
@@ -54,7 +54,7 @@ freerdp, virt-viewer, libei - all skipped.
 
 The stripped block contained text: "The build pipeline parses both
 PACKAGES.md and PACKAGES-UNIFIED-EXTRAS.md." The second file was deleted in
-v2.2.3. That sentence was a lie.
+v2.1.0. That sentence was a lie.
 
 **Fixed**: the whole block is gone.
 
@@ -84,20 +84,20 @@ Specifically:
 
 ## Verify
 
-After `bootc upgrade` to v2.2.4:
+After `bootc upgrade` to v2.1.0:
 
 ```
 rpm -q uupd greenboot greenboot-default-health-checks cosign nvidia-container-selinux
 rpm -q aide openscap-scanner cloud-init wslu kubectl helm steam-devices freerdp
 systemctl is-enabled uupd.timer
-systemctl is-enabled cloudws-cdi-detect.service
+systemctl is-enabled mios-cdi-detect.service
 ```
 
 Every one should return positive.
 
 ## Commit message via file (not -m)
 
-v2.2.3 crashed on `git commit -m @"..."@` because PowerShell->git.exe argument
+v2.1.0 crashed on `git commit -m @"..."@` because PowerShell->git.exe argument
 parsing splits multi-line strings at whitespace. This script uses
 `git commit -F <tempfile>` which handles multi-line correctly.
 
@@ -106,6 +106,6 @@ parsing splits multi-line strings at whitespace. This script uses
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

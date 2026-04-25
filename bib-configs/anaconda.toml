@@ -14,6 +14,6 @@ enable  = ["org.fedoraproject.Anaconda.Modules.Storage"]
 disable = ["org.fedoraproject.Anaconda.Modules.Users"]
 
 [customizations.iso]
-volume_id      = "CLOUDWS"
-application_id = "CloudWS-bootc"
+volume_id      = "MIOS"
+application_id = "MiOS"
 publisher      = "Kabuki94"

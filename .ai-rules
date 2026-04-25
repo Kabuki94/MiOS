@@ -1,8 +1,8 @@
-# CloudWS-bootc AI Behavioral Manifest (.ai-rules)
-# v1.3.0 Standard — COGNITIVE MIRROR EDITION
+# MiOS AI Behavioral Manifest (.ai-rules)
+# v2.1.0 Standard — COGNITIVE MIRROR EDITION
 
 [meta]
-project = "CloudWS-bootc"
+project = "MiOS"
 basis = "Claude OS"
 shadow = "Google Gemini"
 shared_workspace = true

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=MiOS Window Controls
+Exec=gsettings set org.gnome.desktop.wm.preferences button-layout 'close,minimize,maximize:'
+NoDisplay=true
+X-GNOME-Autostart-Phase=Applications
+OnlyShowIn=GNOME;

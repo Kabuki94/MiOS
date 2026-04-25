@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Cockpit Dashboard
-Comment=CloudWS Server Management
+Comment=MiOS Server Management
 Exec=cockpit-desktop /
 Terminal=false
 Icon=cockpit

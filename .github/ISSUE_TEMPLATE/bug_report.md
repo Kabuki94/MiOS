@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Report a bug in CloudWS-bootc
+about: Report a bug in MiOS
 title: "[BUG] "
 labels: bug
 assignees: Kabuki94
@@ -8,7 +8,7 @@ assignees: Kabuki94
 
 ## Environment
 
-- **CloudWS version**: (run `cat /etc/cloudws-version` or `rpm-ostree status`)
+- **MiOS version**: (run `cat /etc/mios-version` or `rpm-ostree status`)
 - **Deployment method**: (Bare metal / Hyper-V VHDX / WSL2 / Anaconda ISO / OCI pull)
 - **Hardware**:
   - CPU: 
@@ -44,10 +44,10 @@ Attach relevant logs. Useful commands:
 journalctl -b -0 --no-pager | tail -200
 
 # GPU auto-detect
-journalctl -u cloudws-gpu-detect --no-pager
+journalctl -u mios-gpu-detect --no-pager
 
 # Build log (if build failure)
-cat /tmp/cloudws-build.log
+cat /tmp/mios-build.log
 
 # SELinux denials
 ausearch -m AVC -ts recent

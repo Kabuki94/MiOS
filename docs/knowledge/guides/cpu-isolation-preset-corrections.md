@@ -1,4 +1,4 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
@@ -7,7 +7,7 @@
 
 ## Executive Summary
 
-This document provides corrected implementations for the CPU isolation presets in `cloudws-full.sh`, specifically optimized for AMD Ryzen 9950X3D (16 cores, 32 threads, dual-CCD) architecture. The current implementation has several issues including inverted logic in "Host Priority" and incorrect allocations in "Gaming Optimized."
+This document provides corrected implementations for the CPU isolation presets in `mios-full.sh`, specifically optimized for AMD Ryzen 9950X3D (16 cores, 32 threads, dual-CCD) architecture. The current implementation has several issues including inverted logic in "Host Priority" and incorrect allocations in "Gaming Optimized."
 
 ---
 
@@ -1017,6 +1017,6 @@ EOF
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

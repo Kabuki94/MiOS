@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v1.3.0 — 37-selinux: Build-time SELinux policy fixes
+# MiOS v2.1.0 — 37-selinux: Build-time SELinux policy fixes
 # Custom per-rule modules for known Fedora Rawhide / systemd 260 denials.
 set -euo pipefail
 
@@ -42,133 +42,133 @@ if command -v checkmodule &>/dev/null && command -v semodule_package &>/dev/null
     SELINUX_OK=0
     SELINUX_FAIL=0
 
-    declare -A CLOUDWS_POLICIES
+    declare -A MIOS_POLICIES
 
-    CLOUDWS_POLICIES[bootupd]='
-module cloudws_bootupd 1.0;
+    MIOS_POLICIES[bootupd]='
+module mios_bootupd 1.0;
 require { type boot_t; type bootupd_t; class file { read getattr open }; }
 allow bootupd_t boot_t:file { read getattr open };'
 
-    CLOUDWS_POLICIES[accountsd]='
-module cloudws_accountsd 1.0;
+    MIOS_POLICIES[accountsd]='
+module mios_accountsd 1.0;
 require { type accountsd_t; class lnk_file { read getattr }; }
 allow accountsd_t self:lnk_file { read getattr };'
 
-    CLOUDWS_POLICIES[resolved]='
-module cloudws_resolved 1.0;
+    MIOS_POLICIES[resolved]='
+module mios_resolved 1.0;
 require { type systemd_resolved_t; type init_var_run_t; class sock_file write; }
 allow systemd_resolved_t init_var_run_t:sock_file write;'
 
-    CLOUDWS_POLICIES[fapolicyd]='
-module cloudws_fapolicyd 1.0;
+    MIOS_POLICIES[fapolicyd]='
+module mios_fapolicyd 1.0;
 require { type fapolicyd_t; type xdm_var_run_t; class sock_file write; }
 allow fapolicyd_t xdm_var_run_t:sock_file write;'
 
-    CLOUDWS_POLICIES[chcon]='
-module cloudws_chcon 1.0;
+    MIOS_POLICIES[chcon]='
+module mios_chcon 1.0;
 require { type chcon_t; class capability mac_admin; }
 allow chcon_t self:capability mac_admin;'
 
-    CLOUDWS_POLICIES[accountsd_homed]='
-module cloudws_accountsd_homed 1.0;
+    MIOS_POLICIES[accountsd_homed]='
+module mios_accountsd_homed 1.0;
 require { type accountsd_t; type systemd_homed_t; class dbus send_msg; }
 allow accountsd_t systemd_homed_t:dbus send_msg;
 allow systemd_homed_t accountsd_t:dbus send_msg;'
 
-    CLOUDWS_POLICIES[accountsd_watch]='
-module cloudws_accountsd_watch 1.0;
+    MIOS_POLICIES[accountsd_watch]='
+module mios_accountsd_watch 1.0;
 require { type accountsd_t; type usr_t; class dir { watch watch_reads }; }
 allow accountsd_t usr_t:dir { watch watch_reads };'
 
-    CLOUDWS_POLICIES[fapolicyd_gdm]='
-module cloudws_fapolicyd_gdm 1.1;
+    MIOS_POLICIES[fapolicyd_gdm]='
+module mios_fapolicyd_gdm 1.1;
 require { type fapolicyd_t; type xdm_t; class unix_stream_socket connectto; class fd use; class fifo_file write; }
 allow fapolicyd_t xdm_t:unix_stream_socket connectto;
 allow fapolicyd_t xdm_t:fd use;
 allow fapolicyd_t xdm_t:fifo_file write;'
 
-    CLOUDWS_POLICIES[fapolicyd_grd]='
-module cloudws_fapolicyd_grd 1.0;
+    MIOS_POLICIES[fapolicyd_grd]='
+module mios_fapolicyd_grd 1.0;
 require { type fapolicyd_t; type gnome_remote_desktop_t; class unix_stream_socket connectto; class fd use; class fifo_file write; }
 allow fapolicyd_t gnome_remote_desktop_t:unix_stream_socket connectto;
 allow fapolicyd_t gnome_remote_desktop_t:fd use;
 allow fapolicyd_t gnome_remote_desktop_t:fifo_file write;'
 
-    CLOUDWS_POLICIES[portabled]='
-module cloudws_portabled 1.0;
+    MIOS_POLICIES[portabled]='
+module mios_portabled 1.0;
 require { type init_t; type systemd_portabled_t; class dbus send_msg; }
 allow init_t systemd_portabled_t:dbus send_msg;
 allow systemd_portabled_t init_t:dbus send_msg;'
 
-    CLOUDWS_POLICIES[kvmfr]='
-module cloudws_kvmfr 1.0;
+    MIOS_POLICIES[kvmfr]='
+module mios_kvmfr 1.0;
 require { type svirt_t; type device_t; class chr_file { open read write map getattr }; }
 allow svirt_t device_t:chr_file { open read write map getattr };'
 
-    CLOUDWS_POLICIES[coreos_bootmount]='
-module cloudws_coreos_bootmount 1.0;
+    MIOS_POLICIES[coreos_bootmount]='
+module mios_coreos_bootmount 1.0;
 require { type coreos_boot_mount_generator_t; type systemd_generator_unit_file_t; class dir { write add_name remove_name }; class file { create write open rename unlink }; }
 allow coreos_boot_mount_generator_t systemd_generator_unit_file_t:dir { write add_name remove_name };
 allow coreos_boot_mount_generator_t systemd_generator_unit_file_t:file { create write open rename unlink };'
 
-    CLOUDWS_POLICIES[gdm_cache]='
-module cloudws_gdm_cache 1.0;
+    MIOS_POLICIES[gdm_cache]='
+module mios_gdm_cache 1.0;
 require { type xdm_t; type cache_home_t; class dir { add_name write create setattr }; class file { create write open getattr setattr }; }
 allow xdm_t cache_home_t:dir { add_name write create setattr };
 allow xdm_t cache_home_t:file { create write open getattr setattr };'
 
-    CLOUDWS_POLICIES[homed_varhome]='
-module cloudws_homed_varhome 1.0;
+    MIOS_POLICIES[homed_varhome]='
+module mios_homed_varhome 1.0;
 require { type systemd_homed_t; type home_root_t; class dir { read getattr open search }; }
 allow systemd_homed_t home_root_t:dir { read getattr open search };'
 
-    CLOUDWS_POLICIES[bootupd_state]='
-module cloudws_bootupd_state 1.1;
+    MIOS_POLICIES[bootupd_state]='
+module mios_bootupd_state 1.1;
 require { type bootupd_t; type boot_t; class file { read open getattr lock ioctl }; class dir { read open getattr search }; }
 allow bootupd_t boot_t:file { read open getattr lock ioctl };
 allow bootupd_t boot_t:dir { read open getattr search };'
 
-    CLOUDWS_POLICIES[resolved_hook]='
-module cloudws_resolved_hook 1.0;
+    MIOS_POLICIES[resolved_hook]='
+module mios_resolved_hook 1.0;
 require { type systemd_resolved_t; type init_t; class unix_stream_socket connectto; class sock_file write; }
 allow systemd_resolved_t init_t:unix_stream_socket connectto;
 allow systemd_resolved_t init_t:sock_file write;'
 
-    CLOUDWS_POLICIES[accountsd_malcontent]='
-module cloudws_accountsd_malcontent 1.0;
+    MIOS_POLICIES[accountsd_malcontent]='
+module mios_accountsd_malcontent 1.0;
 require { type accountsd_t; type usr_t; class lnk_file { read getattr }; class file { read open getattr ioctl }; class dir { read open getattr search }; }
 allow accountsd_t usr_t:lnk_file { read getattr };
 allow accountsd_t usr_t:file { read open getattr ioctl };
 allow accountsd_t usr_t:dir { read open getattr search };'
 
-    CLOUDWS_POLICIES[chcon_macadmin]='
-module cloudws_chcon_macadmin 1.0;
+    MIOS_POLICIES[chcon_macadmin]='
+module mios_chcon_macadmin 1.0;
 require { type chcon_t; class capability2 mac_admin; }
 allow chcon_t self:capability2 mac_admin;'
 
-    CLOUDWS_POLICIES[gdm_session_cache]='
-module cloudws_gdm_session_cache 1.0;
+    MIOS_POLICIES[gdm_session_cache]='
+module mios_gdm_session_cache 1.0;
 require { type xdm_t; type cache_home_t; class dir { add_name write create read open getattr search setattr }; class file { create write read open getattr setattr }; }
 allow xdm_t cache_home_t:dir { add_name write create read open getattr search setattr };
 allow xdm_t cache_home_t:file { create write read open getattr setattr };'
 
-    mkdir -p /usr/share/selinux/packages/cloudws
+    mkdir -p /usr/share/selinux/packages/mios
 
-    for name in "${!CLOUDWS_POLICIES[@]}"; do
-        echo "${CLOUDWS_POLICIES[$name]}" > "/tmp/cloudws_${name}.te"
-        if checkmodule -M -m -o "/tmp/cloudws_${name}.mod" "/tmp/cloudws_${name}.te" 2>/dev/null && \
-           semodule_package -o "/tmp/cloudws_${name}.pp" -m "/tmp/cloudws_${name}.mod" 2>/dev/null; then
-            install -m 0644 "/tmp/cloudws_${name}.pp" "/usr/share/selinux/packages/cloudws/cloudws_${name}.pp"
-            echo "[37-selinux] cloudws_${name}: Staged"
+    for name in "${!MIOS_POLICIES[@]}"; do
+        echo "${MIOS_POLICIES[$name]}" > "/tmp/mios_${name}.te"
+        if checkmodule -M -m -o "/tmp/mios_${name}.mod" "/tmp/mios_${name}.te" 2>/dev/null && \
+           semodule_package -o "/tmp/mios_${name}.pp" -m "/tmp/mios_${name}.mod" 2>/dev/null; then
+            install -m 0644 "/tmp/mios_${name}.pp" "/usr/share/selinux/packages/mios/mios_${name}.pp"
+            echo "[37-selinux] mios_${name}: Staged"
             SELINUX_OK=$((SELINUX_OK + 1))
         else
-            echo "[37-selinux] cloudws_${name}: SKIPPED (type missing in current policy)"
+            echo "[37-selinux] mios_${name}: SKIPPED (type missing in current policy)"
             SELINUX_FAIL=$((SELINUX_FAIL + 1))
         fi
-        rm -f "/tmp/cloudws_${name}".{te,mod,pp}
+        rm -f "/tmp/mios_${name}".{te,mod,pp}
     done
 
-    echo "[37-selinux] ${SELINUX_OK} policies staged in /usr/share/selinux/packages/cloudws/, ${SELINUX_FAIL} skipped"
+    echo "[37-selinux] ${SELINUX_OK} policies staged in /usr/share/selinux/packages/mios/, ${SELINUX_FAIL} skipped"
 fi
 
 echo "[37-selinux] SELinux configuration complete."

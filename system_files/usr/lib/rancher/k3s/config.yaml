@@ -1,4 +1,4 @@
-# CloudWS K3s Server Configuration
+# MiOS K3s Server Configuration
 # Single-node SQLite default (use --cluster-init for multi-node etcd)
 write-kubeconfig-mode: "0644"
 selinux: true

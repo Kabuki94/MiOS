@@ -1,9 +1,9 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# CloudWS v1.3.0 CHANGELOG
+# MiOS v2.1.0 CHANGELOG
 
 **Release Date:** April 6, 2026
 **Codename:** Intelligence Update
@@ -30,9 +30,9 @@
 
 ## New System Files
 
-- **`/usr/lib/bootc/kargs.d/00-cloudws.toml`**: Declarative kernel boot arguments via bootc v1.11+ drop-in directory. Ships IOMMU, NVIDIA DRM, and security hardening params (slab_nomerge, init_on_alloc, pti, vsyscall=none) without bootloader modification.
+- **`/usr/lib/bootc/kargs.d/00-mios.toml`**: Declarative kernel boot arguments via bootc v1.11+ drop-in directory. Ships IOMMU, NVIDIA DRM, and security hardening params (slab_nomerge, init_on_alloc, pti, vsyscall=none) without bootloader modification.
 - **`/usr/lib/ostree/prepare-root.conf`**: Enables composefs for verified boot filesystem with content-addressed dedup.
-- **`/usr/lib/sysctl.d/99-cloudws-hardening.conf`**: SecureBlue-style kernel security hardening (kptr_restrict, dmesg_restrict, ptrace_scope, network hardening, fs protection).
+- **`/usr/lib/sysctl.d/99-mios-hardening.conf`**: SecureBlue-style kernel security hardening (kptr_restrict, dmesg_restrict, ptrace_scope, network hardening, fs protection).
 
 ## Build System
 
@@ -51,16 +51,16 @@
 
 ## GPU / VFIO
 
-- **RTX 50-series VFIO reset bug**: Detection in GPU auto-detect service, user warning at boot, documentation at `/usr/share/doc/cloudws-vfio-warning.txt`
+- **RTX 50-series VFIO reset bug**: Detection in GPU auto-detect service, user warning at boot, documentation at `/usr/share/doc/mios-vfio-warning.txt`
 - **NVIDIA open kernel modules**: `nvidia-open.conf` modprobe config for Turing+ default
-- **New tool**: `cloudws-vfio-check` validates IOMMU, vfio modules, NVIDIA GPU detection, RTX 50 warning
+- **New tool**: `mios-vfio-check` validates IOMMU, vfio modules, NVIDIA GPU detection, RTX 50 warning
 
 ## Looking Glass B7
 
 - **`-DENABLE_LIBDECOR=ON`**: Required for GNOME Wayland window decorations
 - **`-DENABLE_PIPEWIRE=ON`**: PipeWire audio support
 - **Force OpenGL renderer**: Config at `/etc/skel/.config/looking-glass/client.ini` fixes NVIDIA+Wayland flicker
-- **KVMFR module**: SELinux policy (`cloudws_kvmfr`) allows svirt_t access to /dev/kvmfr0
+- **KVMFR module**: SELinux policy (`mios_kvmfr`) allows svirt_t access to /dev/kvmfr0
 
 ## Security Hardening
 
@@ -71,12 +71,12 @@
 
 ## SELinux
 
-- **New policy**: `cloudws_portabled` — systemd-portabled D-Bus for sysext/confext (systemd 258+)
-- **New policy**: `cloudws_kvmfr` — Looking Glass shared memory device access for VMs
+- **New policy**: `mios_portabled` — systemd-portabled D-Bus for sysext/confext (systemd 258+)
+- **New policy**: `mios_kvmfr` — Looking Glass shared memory device access for VMs
 
 ## K3s
 
-- **Pinned version**: v1.32.3+k3s1 for reproducible builds
+- **Pinned version**: v2.1.0+k3s1 for reproducible builds
 - **SELinux**: container-selinux + k3s-selinux installed BEFORE K3s binary
 - **Config**: `/etc/rancher/k3s/config.yaml` with selinux: true, traefik disabled
 
@@ -89,9 +89,9 @@
 
 ## Tools
 
-- **Updated**: `cloudws-update` with localhost origin detection and fix
-- **New**: `cloudws-vfio-check` — VFIO passthrough readiness checker
-- **Updated**: `cloudws()` help function lists all v1.3 tools
+- **Updated**: `mios-update` with localhost origin detection and fix
+- **New**: `mios-vfio-check` — VFIO passthrough readiness checker
+- **Updated**: `mios()` help function lists all v1.3 tools
 - **Updated**: MOTD/banner to v1.3
 
 ---
@@ -100,13 +100,13 @@
 
 | File | Status | Description |
 |------|--------|-------------|
-| VERSION | Modified | 1.2.0 → 1.3.0 |
+| VERSION | Modified | v2.1.0 → v2.1.0 |
 | Containerfile | Modified | dnf5 cache, tmpfs, /opt symlink, validation, repo disable |
 | PACKAGES.md | Modified | Duplicate fix, name corrections, new packages |
 | scripts/build.sh | Modified | Post-build validation, summary |
 | scripts/01-repos.sh | Modified | Priority hierarchy, CrowdSec repo |
 | scripts/02-kernel.sh | Modified | kernel-modules-core, version logging |
-| scripts/10-gnome.sh | Modified | GNOME 49+ systemd notes, Bibata 2.0.8, Flatseal |
+| scripts/10-gnome.sh | Modified | GNOME 49+ systemd notes, Bibata v2.1.0, Flatseal |
 | scripts/11-hardware.sh | Modified | NVIDIA open modules, RTX 50 warning |
 | scripts/12-virt.sh | Modified | LG B7 libdecor, K3s pin, quadlet |
 | scripts/20-services.sh | Modified | pmcd fix, podman-auto-update, systemd 260 |
@@ -119,6 +119,6 @@
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

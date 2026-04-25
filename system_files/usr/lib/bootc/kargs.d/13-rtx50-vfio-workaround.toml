@@ -1,4 +1,4 @@
-# CloudWS v1.3.0 — NVIDIA RTX 50 (Blackwell) VFIO/Idle fixes
+# MiOS v2.1.0 — NVIDIA RTX 50 (Blackwell) VFIO/Idle fixes
 match-architectures = ["x86_64"]
 kargs = [
     "vfio_pci.disable_idle_d3=1"

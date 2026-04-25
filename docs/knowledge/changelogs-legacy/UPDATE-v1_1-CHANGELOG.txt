@@ -4,7 +4,7 @@
 ╚═══════════════════════════════════════════════════════════════╝
 
 Date: January 15, 2026
-Version: 1.1.0
+Version: v2.1.0
 
 ═══════════════════════════════════════════════════════════════
 CRITICAL FIX: Proper User Home Directory Detection
@@ -138,14 +138,14 @@ Expected output:
 VERSION HISTORY
 ═══════════════════════════════════════════════════════════════
 
-v1.1.0 (2026-01-15)
+v2.1.0 (2026-01-15)
 ─────────────────
   ✓ Fixed: Files save to user's home directory, not /root/
   ✓ Fixed: Proper ownership when running with sudo
   ✓ Improved: Error handling for audio/power services
   ✓ Improved: Better non-critical error suppression
 
-v1.0.0 (2026-01-15)
+v2.1.0 (2026-01-15)
 ─────────────────
   • Initial release
   • Comprehensive system profiling
@@ -160,7 +160,7 @@ The fix has been tested with:
   ✓ Running with sudo
   ✓ Running without sudo
   ✓ Different user accounts
-  ✓ CloudWS-bootc (Arch-based)
+  ✓ MiOS (Arch-based)
   ✓ systemd-boot configuration
 
 All file locations and ownership now work correctly!

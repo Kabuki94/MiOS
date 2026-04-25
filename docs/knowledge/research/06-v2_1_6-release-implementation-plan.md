@@ -1,11 +1,11 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# CloudWS-bootc v1.3.0 release — complete implementation plan
+# MiOS v2.1.0 release — complete implementation plan
 
-**Bottom line:** The CI break is a `/usr/local` symlink collision inherited from the Fedora-CoreOS / ucore lineage; fix it by targeting `/var/usrlocal` directly (that's what the symlink points to) and eliminate the `cp -a` trailing-slash gotcha entirely. Of the three defensive audit fixes, the cleanest shape for v2.1.6 is to ship a full replacement `scripts/05-enable-external-repos.sh` (no RPM Fusion, `dnf` not `dnf5`, array-form `DNF_SETOPT`) and turn `push-to-github.ps1` into a 5-line deprecation shim that exec's `push-v2.1.6.ps1`. DNF_SETOPT becomes a bash array sourced from a new `scripts/lib/common.sh`, applied to every `dnf install/remove/swap/group install` call site. The three highest-ROI outstanding items — cosign keyless (Item A), bootc-image-builder artifacts (Item B), and akmod ExecCondition guards (Item C) — are all deliverable in this release with exact file contents, no further research required. One material research surprise: **ublue-os bluefin/bazzite use keyed cosign signing, not keyless**, so the keyless pattern is modeled on travier/cosign-test and the Sigstore CI quickstart, which are the authoritative keyless references for containers/image-based verification.
+**Bottom line:** The CI break is a `/usr/local` symlink collision inherited from the Fedora-CoreOS / ucore lineage; fix it by targeting `/var/usrlocal` directly (that's what the symlink points to) and eliminate the `cp -a` trailing-slash gotcha entirely. Of the three defensive audit fixes, the cleanest shape for v2.1.0 is to ship a full replacement `scripts/05-enable-external-repos.sh` (no RPM Fusion, `dnf` not `dnf5`, array-form `DNF_SETOPT`) and turn `push-to-github.ps1` into a 5-line deprecation shim that exec's `push-v2.1.0.ps1`. DNF_SETOPT becomes a bash array sourced from a new `scripts/lib/common.sh`, applied to every `dnf install/remove/swap/group install` call site. The three highest-ROI outstanding items — cosign keyless (Item A), bootc-image-builder artifacts (Item B), and akmod ExecCondition guards (Item C) — are all deliverable in this release with exact file contents, no further research required. One material research surprise: **ublue-os bluefin/bazzite use keyed cosign signing, not keyless**, so the keyless pattern is modeled on travier/cosign-test and the Sigstore CI quickstart, which are the authoritative keyless references for containers/image-based verification.
 
 Everything below is copy-pasteable. File paths are given in both repo form (`scripts/foo.sh`) and flatpack form (`scripts__foo.sh`) so you can generate the flatpack mechanically.
 
@@ -26,7 +26,7 @@ Everything below is copy-pasteable. File paths are given in both repo form (`scr
 | `rsync -a` | Adds a build-time dep (rsync not guaranteed on ucore-hci) |
 | `/usr/share/factory/var/usrlocal` with tmpfiles.d | bootc-correct for runtime population, but overkill for build-time overlay; retain as a follow-up if `bootc container lint` flags `/var` writes |
 
-**Downstream risk assessment:** writing to `/var` during container build has Docker-`VOLUME`-like semantics — it is copied only at **install** time, not on `bootc upgrade`. For `/var/usrlocal` this is acceptable because CloudWS's overlay only seeds developer conveniences (wrapper scripts, local binaries), and users who need those files to evolve across upgrades can move them under `/usr/local/bin` only if `/usr/local` is later re-made a real directory. Flagged as a v2.2 consideration; not a v2.1.6 blocker.
+**Downstream risk assessment:** writing to `/var` during container build has Docker-`VOLUME`-like semantics — it is copied only at **install** time, not on `bootc upgrade`. For `/var/usrlocal` this is acceptable because MiOS's overlay only seeds developer conveniences (wrapper scripts, local binaries), and users who need those files to evolve across upgrades can move them under `/usr/local/bin` only if `/usr/local` is later re-made a real directory. Flagged as a v2.2 consideration; not a v2.1.0 blocker.
 
 **Recommended snippet** (replaces the failing RUN block in the Containerfile):
 
@@ -61,7 +61,7 @@ Rationale for `tar | tar` rather than `cp -a` even for stage 2: identical semant
 
 ```bash
 #!/usr/bin/env bash
-# scripts/lib/common.sh — shared helpers for CloudWS-bootc build scripts.
+# scripts/lib/common.sh — shared helpers for MiOS build scripts.
 # Safe to source multiple times.
 
 # --- Logging ------------------------------------------------------------
@@ -123,11 +123,11 @@ Design: no RPM Fusion (01 handles it), `dnf` not `dnf5`, `${DNF_SETOPT[@]}` on e
 ```bash
 #!/usr/bin/env bash
 # scripts/05-enable-external-repos.sh
-# Enable external DNF repositories for CloudWS-bootc (Fedora 44).
+# Enable external DNF repositories for MiOS (Fedora 44).
 # Idempotent; fails fast; uses $DNF_SETOPT array from scripts/lib/common.sh.
 # RPM Fusion is intentionally NOT handled here — see 01-repos.sh.
 #
-# v2.1.6 CHANGES:
+# v2.1.0 CHANGES:
 #   - removed redundant/broken RPM Fusion install block (was using
 #     `rpm -E %fedora` which yielded 41/43 from the base image and
 #     overrode 01-repos.sh's explicit F44 pin).
@@ -249,19 +249,19 @@ log "05-enable-external-repos.sh complete"
 
 ## 4. `push-to-github.ps1` — deprecation shim, not a patch
 
-**Decision: replace with a shim.** Patching fixes the bug but leaves two scripts-of-record with drifting behaviour; hard-deleting breaks muscle memory and doc references. The 5-line shim preserves the filename and filepath references while routing all execution through the v2.1.5/v2.1.6 script that already uses `git commit -F $msgFile`. Plan is to remove the shim in v2.2.0 (noted in CHANGELOG).
+**Decision: replace with a shim.** Patching fixes the bug but leaves two scripts-of-record with drifting behaviour; hard-deleting breaks muscle memory and doc references. The 5-line shim preserves the filename and filepath references while routing all execution through the v2.1.0/v2.1.0 script that already uses `git commit -F $msgFile`. Plan is to remove the shim in v2.1.0 (noted in CHANGELOG).
 
 **Full replacement `push-to-github.ps1`:**
 
 ```powershell
-# push-to-github.ps1 — DEPRECATED as of v2.1.6; will be removed in v2.2.0.
-# Forwards to push-v2.1.6.ps1 (which uses `git commit -F $msgFile` and
+# push-to-github.ps1 — DEPRECATED as of v2.1.0; will be removed in v2.1.0.
+# Forwards to push-v2.1.0.ps1 (which uses `git commit -F $msgFile` and
 # correctly handles multi-word commit messages; the old body here had
 # `git commit -m $msg` which unquote-split on spaces).
-Write-Warning "push-to-github.ps1 is deprecated as of v2.1.6."
-Write-Warning "Forwarding to push-v2.1.6.ps1 — please update your references."
+Write-Warning "push-to-github.ps1 is deprecated as of v2.1.0."
+Write-Warning "Forwarding to push-v2.1.0.ps1 — please update your references."
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-& (Join-Path $scriptDir 'push-v2.1.6.ps1') @args
+& (Join-Path $scriptDir 'push-v2.1.0.ps1') @args
 exit $LASTEXITCODE
 ```
 
@@ -286,7 +286,7 @@ on:
 
 env:
   IMAGE_REGISTRY: ghcr.io
-  IMAGE_NAME: kabuki94/cloudws-bootc
+  IMAGE_NAME: kabuki94/mios
   IMAGE_BASE: ghcr.io/ublue-os/ucore-hci:stable-nvidia
 
 concurrency:
@@ -315,7 +315,7 @@ jobs:
           fetch-depth: 1
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v4.1.0
+        uses: sigstore/cosign-installer@v2.1.0
 
       - name: Log in to GHCR
         uses: redhat-actions/podman-login@v1
@@ -386,13 +386,13 @@ jobs:
     ],
     "transports": {
         "docker": {
-            "ghcr.io/kabuki94/cloudws-bootc": [
+            "ghcr.io/kabuki94/mios": [
                 {
                     "type": "sigstoreSigned",
                     "fulcio": {
                         "caPath": "/etc/pki/containers/fulcio_v1.crt.pem",
                         "oidcIssuer": "https://token.actions.githubusercontent.com",
-                        "subjectEmail": "https://github.com/Kabuki94/CloudWS-bootc/.github/workflows/build-test.yml@refs/heads/main"
+                        "subjectEmail": "https://github.com/Kabuki94/MiOS/.github/workflows/build-test.yml@refs/heads/main"
                     },
                     "rekorPublicKeyPath": "/etc/pki/containers/rekor.pub",
                     "signedIdentity": { "type": "matchRepository" }
@@ -486,7 +486,7 @@ log "37-cosign-policy: done"
 
 **Cosign gotchas to note in CHANGELOG:**
 - `id-token: write` permission is mandatory; missing it silently breaks keyless.
-- `sigstore/cosign-installer@v4.1.0` is required for cosign v3+; the v3.x installer cannot install cosign v3.
+- `sigstore/cosign-installer@v2.1.0` is required for cosign v3+; the v3.x installer cannot install cosign v3.
 - `COSIGN_EXPERIMENTAL` is obsolete since cosign 2.0 — do not set it.
 - `bootc upgrade` does not yet expose `--enforce-container-sigpolicy` (bootc-dev/bootc#528); we rely on `default: reject` in policy.json so any un-rulified registry is refused.
 - PRs from forks cannot sign (no `id-token` write) — `if: github.event_name != 'pull_request'` gates the sign/verify steps.
@@ -499,12 +499,12 @@ log "37-cosign-policy: done"
 
 ```toml
 # bib-configs/qcow2.toml
-# Target: local libvirt/QEMU smoke-test of ghcr.io/kabuki94/cloudws-bootc:latest
+# Target: local libvirt/QEMU smoke-test of ghcr.io/kabuki94/mios:latest
 
 [[customizations.user]]
-name     = "cloudws"
+name     = "mios"
 password = "$6$REPLACEME_WITH_SHA512_HASH$REPLACEME"
-key      = "ssh-ed25519 AAAA_REPLACE_WITH_REAL_PUBKEY cloudws@operator"
+key      = "ssh-ed25519 AAAA_REPLACE_WITH_REAL_PUBKEY mios@operator"
 groups   = ["wheel"]
 
 [customizations.kernel]
@@ -523,13 +523,13 @@ minsize    = "20 GiB"
 
 ```toml
 # bib-configs/vhdx.toml
-# Target: Hyper-V on Windows host ("CloudWS-2" bare metal + Win11 + RTX 4090)
+# Target: Hyper-V on Windows host ("MiOS-2" bare metal + Win11 + RTX 4090)
 # BIB --type vhd emits VPC/.vhd; CI post-converts to .vhdx via qemu-img.
 
 [[customizations.user]]
-name     = "cloudws"
+name     = "mios"
 password = "$6$REPLACEME_WITH_SHA512_HASH$REPLACEME"
-key      = "ssh-ed25519 AAAA_REPLACE_WITH_REAL_PUBKEY cloudws@operator"
+key      = "ssh-ed25519 AAAA_REPLACE_WITH_REAL_PUBKEY mios@operator"
 groups   = ["wheel"]
 
 [customizations.kernel]
@@ -548,7 +548,7 @@ minsize    = "20 GiB"
 
 ```toml
 # bib-configs/iso.toml
-# Target: Anaconda unattended installer ISO for bare-metal install onto CloudWS-1.
+# Target: Anaconda unattended installer ISO for bare-metal install onto MiOS-1.
 # NOTE: BIB #528 — [customizations.user] is ignored when kickstart is present.
 #       User is defined IN the kickstart below.
 # NOTE: source container image MUST include dracut-live + squashfs-tools,
@@ -578,8 +578,8 @@ clearpart --all --initlabel --disklabel=gpt
 reqpart --add-boot
 part / --grow --fstype xfs
 
-user --name=cloudws --groups=wheel --iscrypted --password=$6$REPLACEME_WITH_SHA512_HASH$REPLACEME
-sshkey --username=cloudws "ssh-ed25519 AAAA_REPLACE_WITH_REAL_PUBKEY cloudws@operator"
+user --name=mios --groups=wheel --iscrypted --password=$6$REPLACEME_WITH_SHA512_HASH$REPLACEME
+sshkey --username=mios "ssh-ed25519 AAAA_REPLACE_WITH_REAL_PUBKEY mios@operator"
 
 reboot --eject
 """
@@ -598,7 +598,7 @@ on:
   workflow_dispatch:
     inputs:
       image-tag:
-        description: "Tag of ghcr.io/kabuki94/cloudws-bootc to convert"
+        description: "Tag of ghcr.io/kabuki94/mios to convert"
         required: false
         default: "latest"
   schedule:
@@ -613,7 +613,7 @@ permissions:
   packages: read
 
 env:
-  IMAGE: ghcr.io/kabuki94/cloudws-bootc
+  IMAGE: ghcr.io/kabuki94/mios
   BIB_IMAGE: quay.io/centos-bootc/bootc-image-builder:latest
   ROOTFS: ext4
 
@@ -698,14 +698,14 @@ jobs:
         if: matrix.artifact == 'vhdx'
         run: |
           qemu-img convert -p -f vpc -O vhdx -o subformat=dynamic \
-            "output/vpc/disk.vhd" "output/cloudws.vhdx"
-          ls -lh output/cloudws.vhdx
+            "output/vpc/disk.vhd" "output/mios.vhdx"
+          ls -lh output/mios.vhdx
 
       - name: Compute artifact path
         id: path
         run: |
           if [ "${{ matrix.artifact }}" = "vhdx" ]; then
-            echo "ARTIFACT_PATH=output/cloudws.vhdx" >> "$GITHUB_OUTPUT"
+            echo "ARTIFACT_PATH=output/mios.vhdx" >> "$GITHUB_OUTPUT"
           else
             echo "ARTIFACT_PATH=output/${{ matrix.out-subdir }}/${{ matrix.out-file }}" >> "$GITHUB_OUTPUT"
           fi
@@ -719,7 +719,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: cloudws-${{ matrix.artifact }}
+          name: mios-${{ matrix.artifact }}
           path: |
             ${{ steps.path.outputs.ARTIFACT_PATH }}
             ${{ steps.path.outputs.ARTIFACT_PATH }}.sha256
@@ -734,7 +734,7 @@ jobs:
 
 ## 7. Outstanding Item C — akmod ExecCondition guards
 
-**Services to guard** (nvidia-cdi-refresh already done in v2.1.5, nvidia-fallback intentionally excluded — its existing `After=akmods.service` + negative `ConditionPathExists` is the anti-guard):
+**Services to guard** (nvidia-cdi-refresh already done in v2.1.0, nvidia-fallback intentionally excluded — its existing `After=akmods.service` + negative `ConditionPathExists` is the anti-guard):
 
 - `nvidia-persistenced.service`
 - `nvidia-powerd.service`
@@ -743,7 +743,7 @@ jobs:
 - `nvidia-hibernate.service`
 - `nvidia-suspend-then-hibernate.service`
 
-**kvmfr is excluded** from drop-in scope — Looking Glass ships no system-level systemd service; kvmfr is loaded via `/etc/modules-load.d/kvmfr.conf`. If a future CloudWS release adds a boot-time modprobe wrapper unit, guard it with the kvmfr-specific regex noted in §7b.
+**kvmfr is excluded** from drop-in scope — Looking Glass ships no system-level systemd service; kvmfr is loaded via `/etc/modules-load.d/kvmfr.conf`. If a future MiOS release adds a boot-time modprobe wrapper unit, guard it with the kvmfr-specific regex noted in §7b.
 
 ### 7a. ExecCondition regex: widen beyond upstream #1395
 
@@ -753,14 +753,14 @@ The `^kernel/drivers/` anchor from NVIDIA issue #1395 misses akmod-built modules
 grep -Eq '(^|/)nvidia\.ko(\.[xz]z|\.zst)?:' /lib/modules/$(uname -r)/modules.dep
 ```
 
-Recommend backporting the same widening to v2.1.5's `nvidia-cdi-refresh` drop-in in the same v2.1.6 release for consistency (one extra file in the flatpack: `/usr/lib/systemd/system/nvidia-cdi-refresh.service.d/10-cloudws-akmod-guard.conf`).
+Recommend backporting the same widening to v2.1.0's `nvidia-cdi-refresh` drop-in in the same v2.1.0 release for consistency (one extra file in the flatpack: `/usr/lib/systemd/system/nvidia-cdi-refresh.service.d/10-mios-akmod-guard.conf`).
 
 ### 7b. Drop-in content (identical across the 6 services + cdi-refresh backport)
 
-`/usr/lib/systemd/system/<svc>.service.d/10-cloudws-akmod-guard.conf`:
+`/usr/lib/systemd/system/<svc>.service.d/10-mios-akmod-guard.conf`:
 
 ```ini
-# CloudWS-bootc v1.3.0 akmod-guard
+# MiOS v2.1.0 akmod-guard
 # Skip unit if akmods has not yet registered the nvidia kernel module
 # for the currently running kernel. Pattern tolerates:
 #   - kernel/drivers/... paths (negativo17 packaging)
@@ -776,7 +776,7 @@ ExecCondition=/bin/bash -c 'grep -Eq "(^|/)nvidia\\.ko(\\.[xz]z|\\.zst)?:" /lib/
 
 ```bash
 #!/usr/bin/env bash
-# scripts/36-akmod-guards.sh — CloudWS-bootc v1.3.0
+# scripts/36-akmod-guards.sh — MiOS v2.1.0
 # Install ExecCondition drop-ins making NVIDIA systemd units exit cleanly
 # (skipped, not failed) when the running kernel's nvidia module has not yet
 # been registered by akmods/depmod. Build-time script; does not touch runtime.
@@ -791,7 +791,7 @@ log "36-akmod-guards: installing ExecCondition drop-ins"
 # Widened regex (see §7a): matches kernel/drivers/ OR extra/, plus compressed.
 EXEC_COND='ExecCondition=/bin/bash -c '\''grep -Eq "(^|/)nvidia\.ko(\.[xz]z|\.zst)?:" /lib/modules/$(uname -r)/modules.dep'\'''
 
-# Services to guard. cdi-refresh is added here too so the v2.1.5 guard is
+# Services to guard. cdi-refresh is added here too so the v2.1.0 guard is
 # re-synchronised to the widened regex in a single release.
 SERVICES=(
     nvidia-persistenced
@@ -803,14 +803,14 @@ SERVICES=(
     nvidia-cdi-refresh
 )
 
-DROPIN_NAME="10-cloudws-akmod-guard.conf"
+DROPIN_NAME="10-mios-akmod-guard.conf"
 
 for svc in "${SERVICES[@]}"; do
     dir="/usr/lib/systemd/system/${svc}.service.d"
     path="${dir}/${DROPIN_NAME}"
     tmp="$(mktemp)"
     cat > "${tmp}" <<EOF
-# CloudWS-bootc v1.3.0 akmod-guard
+# MiOS v2.1.0 akmod-guard
 # Skip unit if akmods has not yet registered the nvidia kernel module
 # for the currently running kernel. ExecCondition is additive (AND
 # semantics, systemd.service(5)). Ref: NVIDIA/nvidia-container-toolkit#1395
@@ -852,8 +852,8 @@ log "36-akmod-guards: done (${#SERVICES[@]} drop-ins)"
 | `.github/workflows/build-test.yml` (replace) | `.github__workflows__build-test.yml` | §5a |
 | `.github/workflows/build-artifacts.yml` (new) | `.github__workflows__build-artifacts.yml` | §6d |
 | `push-to-github.ps1` (replace with shim) | `push-to-github.ps1` | §4 |
-| `push-v2.1.6.ps1` (copy of v2.1.5 with version string bump) | `push-v2.1.6.ps1` | keep v2.1.5 intact |
-| `CHANGELOG.md` (append v2.1.6 section) | `CHANGELOG.md` | release notes |
+| `push-v2.1.0.ps1` (copy of v2.1.0 with version string bump) | `push-v2.1.0.ps1` | keep v2.1.0 intact |
+| `CHANGELOG.md` (append v2.1.0 section) | `CHANGELOG.md` | release notes |
 
 ### 8b. Additional Containerfile edits required (beyond the §1 RUN block)
 
@@ -871,9 +871,9 @@ Add a final linting line at the end of the Containerfile per Red Hat best-practi
 RUN bootc container lint
 ```
 
-### 8c. push-v2.1.6.ps1 idempotency contract
+### 8c. push-v2.1.0.ps1 idempotency contract
 
-The push script auto-discovers flatpack files with `__` separators, maps to repo paths, writes files with LF endings (no BOM), and commits via `git commit -F $msgFile` using the tempfile pattern. Idempotency requirements for v2.1.6:
+The push script auto-discovers flatpack files with `__` separators, maps to repo paths, writes files with LF endings (no BOM), and commits via `git commit -F $msgFile` using the tempfile pattern. Idempotency requirements for v2.1.0:
 
 1. Re-writing an identical file is a no-op (git sees no diff, no commit created).
 2. The script must NOT attempt a commit if `git status --porcelain` is empty after all writes.
@@ -884,7 +884,7 @@ The push script auto-discovers flatpack files with `__` separators, maps to repo
 ### 8d. Commit message (embedded in the push script's tempfile)
 
 ```
-v2.1.6: fix CI /usr/local symlink, absorb audit fixes, add cosign/BIB/akmod-guards
+v2.1.0: fix CI /usr/local symlink, absorb audit fixes, add cosign/BIB/akmod-guards
 
 CI fix:
 - Containerfile: rewrite system_files overlay to write through the
@@ -896,8 +896,8 @@ Audit fixes (defensive; idempotent if remote already has them):
   redundant RPM Fusion install that used `rpm -E %fedora` and clobbered
   01-repos.sh's F44 pin; switched dnf5 -> dnf for consistency.
 - push-to-github.ps1: replaced buggy `git commit -m $msg` script body
-  with a deprecation shim forwarding to push-v2.1.6.ps1. Removal slated
-  for v2.2.0.
+  with a deprecation shim forwarding to push-v2.1.0.ps1. Removal slated
+  for v2.1.0.
 
 DNF_SETOPT activation:
 - scripts/lib/common.sh: new shared helper declaring DNF_SETOPT as a
@@ -907,10 +907,10 @@ DNF_SETOPT activation:
 
 Outstanding item A (cosign keyless):
 - .github/workflows/build-test.yml: cosign v3 keyless sign+verify with
-  sigstore/cosign-installer@v4.1.0, id-token: write, digest capture
+  sigstore/cosign-installer@v2.1.0, id-token: write, digest capture
   via buildah push --digestfile.
 - system_files/etc/containers/policy.json: strict default-reject with
-  sigstoreSigned rules for ghcr.io/kabuki94/cloudws-bootc and
+  sigstoreSigned rules for ghcr.io/kabuki94/mios and
   ghcr.io/ublue-os.
 - system_files/etc/containers/registries.d/ghcr.io-kabuki94.yaml:
   use-sigstore-attachments: true.
@@ -926,7 +926,7 @@ Outstanding item C (akmod guards):
 - scripts/36-akmod-guards.sh: ExecCondition drop-ins for
   nvidia-persistenced, nvidia-powerd, nvidia-{suspend,resume,hibernate,
   suspend-then-hibernate}, plus re-sync of nvidia-cdi-refresh from
-  v2.1.5 to the widened regex that matches extra/ paths and .ko.xz/.zst.
+  v2.1.0 to the widened regex that matches extra/ paths and .ko.xz/.zst.
 ```
 
 ---
@@ -941,14 +941,14 @@ Outstanding item C (akmod guards):
 6. CI run on PR — cosign sign/verify steps gated off for PRs, only build+lint+push run.
 7. First merge to main — cosign sign succeeds, `cosign verify` step passes.
 8. Manual `workflow_dispatch` of build-artifacts — all three matrix legs complete; artifacts downloadable.
-9. On a test VM: `podman pull ghcr.io/kabuki94/cloudws-bootc:latest` with the new policy.json installed — policy triggers, fetches sigstore attachment, verifies Fulcio identity against the main-branch workflow URL.
+9. On a test VM: `podman pull ghcr.io/kabuki94/mios:latest` with the new policy.json installed — policy triggers, fetches sigstore attachment, verifies Fulcio identity against the main-branch workflow URL.
 10. `systemctl status nvidia-persistenced` after a kernel update on real hardware — unit is skipped (not failed) until `akmods.service` completes; re-triggers cleanly after depmod finishes.
 
 ---
 
 ## 10. Scope boundaries honoured
 
-Nothing in this plan introduces features outside the explicit item list. Not included (deliberately): Flatpak preinstall changes, brand/theme overlays, additional COPR repos, BIB AMI/GCE outputs, keyed signing fallback, SBOM generation, Trivy scanning, attestations beyond cosign sign, kvmfr systemd unit (no unit exists to guard). These can be queued for v2.1.7+ if desired.
+Nothing in this plan introduces features outside the explicit item list. Not included (deliberately): Flatpak preinstall changes, brand/theme overlays, additional COPR repos, BIB AMI/GCE outputs, keyed signing fallback, SBOM generation, Trivy scanning, attestations beyond cosign sign, kvmfr systemd unit (no unit exists to guard). These can be queued for v2.1.0+ if desired.
 
 The flatpack is ready to generate from this document alone; every file listed in §8a has exact contents specified in §1–§7; the push script requirements in §8c are fully spelled out; and the commit message in §8d can be used verbatim.
 
@@ -963,6 +963,6 @@ The flatpack is ready to generate from this document alone; every file listed in
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

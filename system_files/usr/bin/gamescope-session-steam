@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS — Gamescope SteamOS-mode session launcher
+# MiOS — Gamescope SteamOS-mode session launcher
 # Launched by GDM via /usr/share/wayland-sessions/gamescope-steam.desktop
 
 SCREEN_WIDTH="${SCREEN_WIDTH:-0}"

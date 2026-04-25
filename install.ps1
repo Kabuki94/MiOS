@@ -3,7 +3,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     Write-Host "  Run as Administrator!" -ForegroundColor Red
     return
 }
-$RepoUrl = "https://github.com/Kabuki94/CloudWS-bootc"
+$RepoUrl = "https://github.com/Kabuki94/MiOS"
 
 # --- Credential Handling ---
 if (-not $env:GHCR_TOKEN) {
@@ -22,12 +22,12 @@ function Invoke-SecureWebRequest {
 }
 
 # Read version from repo VERSION file, fallback to hardcoded
-$Ver = "v1.3.0"
+$Ver = "v2.1.0"
 try { $Ver = "v" + (Invoke-SecureWebRequest -Uri "$RepoUrl/raw/main/VERSION").Content.Trim() } catch { Write-Verbose "Failed to fetch version: $_" }
 
 Write-Host ""
 Write-Host "  +==============================================================+" -ForegroundColor Cyan
-Write-Host ("  |  CloudWS {0} -- Cloud Workstation OS Builder (Windows) " -f $Ver).PadRight(65) + "|" -ForegroundColor Cyan
+Write-Host ("  |  MiOS {0} -- MiOS Builder (Windows) " -f $Ver).PadRight(65) + "|" -ForegroundColor Cyan
 Write-Host "  +==============================================================+" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  1) Run preflight check first (recommended)" -ForegroundColor White
@@ -38,7 +38,7 @@ $choice = Read-Host "  Choice [1-3]"
 switch ($choice) {
     "1" {
         try {
-            $tmp = "$env:TEMP\cloudws-preflight-$(Get-Random).ps1"
+            $tmp = "$env:TEMP\mios-preflight-$(Get-Random).ps1"
             Invoke-SecureWebRequest -Uri "$RepoUrl/raw/main/preflight.ps1" -OutFile $tmp
             & $tmp
             Remove-Item $tmp -ErrorAction SilentlyContinue
@@ -48,7 +48,7 @@ switch ($choice) {
         }
     }
     "2" {
-        $dest = Join-Path $PWD "CloudWS-bootc"
+        $dest = Join-Path $PWD "MiOS"
         if (Test-Path $dest) {
             Write-Host "  [OK] Repository found at $dest -- updating..." -ForegroundColor Cyan
             Push-Location $dest

@@ -2,7 +2,7 @@
 # ============================================================================
 # scripts/05-enable-external-repos.sh
 # ----------------------------------------------------------------------------
-# Enable external DNF repositories for CloudWS-bootc (Fedora 44 / Rawhide).
+# Enable external DNF repositories for MiOS (Fedora 44 / Rawhide).
 # Idempotent; fails fast; uses ${DNF_SETOPT[@]} from scripts/lib/common.sh.
 # RPM Fusion is intentionally NOT handled here — see 01-repos.sh.
 #
@@ -10,7 +10,7 @@
 #   - Added Kubernetes stable v1.32 repo (kubectl not in Fedora repos).
 #   - Added ublue-os/packages COPR (uupd + greenboot; required by 43-uupd-installer.sh).
 #
-# v2.1.6 CHANGES:
+# v2.1.0 CHANGES:
 #   - removed redundant RPM Fusion install block (was using `rpm -E %fedora`
 #     which yielded 41/43 from the base image and clobbered 01-repos.sh's
 #     explicit F44 pin).

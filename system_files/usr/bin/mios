@@ -1,0 +1,107 @@
+#!/bin/bash
+# MiOS v2.1.0 — Unified management CLI
+set -euo pipefail
+VERSION="v2.1.0"
+CMD="${1:-help}"
+shift 2>/dev/null || true
+
+case "$CMD" in
+    --help|-h|help)
+        echo ""
+        echo "  MiOS v${VERSION} — MiOS"
+        echo "  ══════════════════════════════════════════"
+        echo ""
+        echo "  USAGE: mios <command> [options]"
+        echo ""
+        echo "  SYSTEM"
+        echo "    update          Check for & apply OS updates (bootc)"
+        echo "    rebuild         Clone repo, build from source, push to GHCR"
+        echo "    build           Local OCI build only (no push)"
+        echo "    deploy <image>  Switch to a different MiOS image"
+        echo "    backup          Snapshot /etc + /var/home"
+        echo "    status          Show system & service status"
+        echo "    assess          Run automated system assessment"
+        echo ""
+        echo "  DESKTOP"
+        echo "    toggle-headless Switch between desktop and headless mode"
+        echo "    dash            Dynamic auto-updating diagnostic dashboard"
+        echo "    test            Run system health checks"
+        echo ""
+        echo "  VIRTUALIZATION"
+        echo "    vfio-toggle     Bind/unbind GPU from vfio-pci"
+        echo "    vfio-check      Validate VFIO passthrough readiness"
+        echo "    iommu-groups    List IOMMU groups"
+        echo "    cpu-isolate     Configure core isolation (X3D optimized)"
+        echo ""
+        echo "  CONTAINERS"
+        echo "    gc              Run Podman garbage collection now"
+        echo "    gc-status       Show Podman disk usage"
+        echo ""
+        echo "  AI & LLM"
+        echo "    ai              Show status of Ollama, AIChat, and AIChat-NG"
+        echo "    ai-logs         Tail Ollama container logs"
+        echo "    ai-pull <m>     Pull a model into Ollama (default: llama3)"
+        echo ""
+        echo "  SECURITY"
+        echo "    scan-malware    ClamAV container scan of /home"
+        echo "    sb-audit        Secure Boot CA 2023 readiness audit (2026 deadline)"
+        echo "    sb-keygen       Generate Machine Owner Key (MOK) for signing"
+        echo "    tpm-enroll      Enroll TPM 2.0 for passwordless LUKS boot"
+        echo ""
+        echo "  SYSTEM"
+        echo "    sysext          Manage systemd-sysext extensions"
+        echo "    role            Manage system roles"
+        echo "    version         Show MiOS version"
+        echo "    motd            Show management dashboard"
+        echo "    help            Show this help"
+        echo ""
+        ;;
+    version|--version|-v)
+        echo "MiOS v${VERSION}"
+        ;;
+    update)      exec /usr/bin/mios-update "$@" ;;
+    rebuild)     exec /usr/bin/mios-rebuild "$@" ;;
+    build)       exec /usr/bin/mios-build "$@" ;;
+    deploy)      exec /usr/bin/mios-deploy "$@" ;;
+    backup)      exec /usr/bin/mios-backup "$@" ;;
+    status)      exec /usr/bin/mios-status "$@" ;;
+    assess)      exec /usr/local/bin/cloud-ws-assess.sh "$@" ;;
+    toggle-headless) exec /usr/bin/mios-toggle-headless "$@" ;;
+    dash)        exec /usr/libexec/mios/dash ;;
+    test)        exec /usr/bin/mios-test "$@" ;;
+    vfio-toggle) exec /usr/bin/mios-vfio-toggle "$@" ;;
+    vfio-check)  exec /usr/bin/mios-vfio-check "$@" ;;
+    cpu-isolate) exec /usr/libexec/mios/cpu-isolate "$@" ;;
+    iommu-groups|iommu) exec /usr/bin/iommu-groups "$@" ;;
+    gc)          exec /usr/libexec/mios-podman-gc "$@" ;;
+    gc-status)   podman system df 2>/dev/null || echo "Podman not available" ;;
+    ai)
+        echo "Ollama Status:"
+        systemctl status ollama.service --no-pager || true
+        echo ""
+        echo "AIChat Version:"
+        aichat --version || echo "AIChat not installed"
+        echo "AIChat-NG Version:"
+        aichat-ng --version || echo "AIChat-NG not installed"
+        ;;
+    ai-logs)     exec podman logs -f ollama ;;
+    ai-pull)
+        model="${1:-deepseek-coder-v2:lite}"
+        echo "Pulling model $model..."
+        exec podman exec -it ollama ollama pull "$model"
+        ;;
+    scan-malware|scan)
+        podman run --rm -v /:/scan:ro docker.io/clamav/clamav:latest \
+            clamscan -r /scan/home --max-filesize=100M --max-scansize=500M 2>/dev/null
+        ;;
+    sb-audit)    exec /usr/libexec/mios/sb-audit ;;
+    sb-keygen)   exec /usr/libexec/mios/sb-keygen ;;
+    tpm-enroll)  exec /usr/libexec/mios/tpm-enroll ;;
+    sysext)      exec systemd-sysext "$@" ;;
+    motd)        exec /usr/libexec/mios/motd ;;
+    *)
+        echo "Unknown command: $CMD"
+        echo "Run 'mios --help' for available commands."
+        exit 1
+        ;;
+esac

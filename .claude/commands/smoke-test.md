@@ -1,4 +1,4 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
@@ -8,8 +8,8 @@ description: Run the bcvk-wrapper + smoke-check pipeline against a built image. 
 argument-hint: [image-ref] [timeout-seconds]
 ---
 
-Run the CloudWS-bootc ephemeral boot smoke test against `$1` (default
-`ghcr.io/kabuki94/cloudws-bootc:latest`) with a boot timeout of `$2`
+Run the MiOS ephemeral boot smoke test against `$1` (default
+`ghcr.io/kabuki94/mios:latest`) with a boot timeout of `$2`
 seconds (default 300).
 
 This mirrors `.github/workflows/build-test.yml` so local runs match
@@ -27,22 +27,22 @@ integrated terminal.
    - `scripts/smoke-check.sh`
 
 2. **Prepare the image.**
-   - Local image (`localhost/…` or bare `cloudws:…`) → skip pull.
+   - Local image (`localhost/…` or bare `mios:…`) → skip pull.
    - Otherwise `podman pull $1`.
 
 3. **Generate disk image via BIB** using `config/bib.toml` (or a
    specified `bib-configs/*.toml`). Output:
-   `build/cloudws-smoke.qcow2`.
+   `build/mios-smoke.qcow2`.
 
 4. **Boot headless.** On Windows, inside WSL using the explicit form:
 
 ```powershell
-wsl -e bash -c "./scripts/bcvk-wrapper.sh --image build/cloudws-smoke.qcow2 --timeout $2 --serial-log build/smoke-serial.log"
+wsl -e bash -c "./scripts/bcvk-wrapper.sh --image build/mios-smoke.qcow2 --timeout $2 --serial-log build/smoke-serial.log"
 ```
 
    On Linux (native):
 ```bash
-./scripts/bcvk-wrapper.sh --image build/cloudws-smoke.qcow2 --timeout $2 --serial-log build/smoke-serial.log
+./scripts/bcvk-wrapper.sh --image build/mios-smoke.qcow2 --timeout $2 --serial-log build/smoke-serial.log
 ```
 
 5. **Analyze serial log** — same `wsl -e` pattern on Windows:
@@ -52,12 +52,12 @@ wsl -e bash -c "./scripts/smoke-check.sh build/smoke-serial.log"
 ```
 
 6. **Verify post-pivot root.**
-   - Grep the log for `cloudws-verify-root.service: Deactivated
+   - Grep the log for `mios-verify-root.service: Deactivated
      successfully`.
    - If present, list the eight paths it checked; confirm all passed.
 
 7. **Cleanup.**
-   - Remove `build/cloudws-smoke.qcow2` unless `--keep` was requested.
+   - Remove `build/mios-smoke.qcow2` unless `--keep` was requested.
    - Keep the serial log for post-mortem.
 
 ## Exit codes
@@ -81,6 +81,6 @@ wsl -e bash -c "./scripts/smoke-check.sh build/smoke-serial.log"
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

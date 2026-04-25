@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# CloudWS v1.3.0 — Post-boot serial log smoke check
+# MiOS v2.1.0 — Post-boot serial log smoke check
 # Usage: smoke-check.sh <serial-log>
 #
 # Analyzes QEMU serial console output for boot health indicators.
@@ -13,7 +13,7 @@ if [[ -z "$SERIAL_LOG" || ! -f "$SERIAL_LOG" ]]; then
     exit 2
 fi
 
-echo "═══ CloudWS Smoke Check ═══"
+echo "═══ MiOS Smoke Check ═══"
 
 # Check: systemd reached target
 if grep -qE "Reached target (Graphical|Multi-User)" "$SERIAL_LOG"; then

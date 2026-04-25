@@ -1,4 +1,4 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
@@ -12,11 +12,11 @@
 
 ## ✅ RESOLVED — April 25, 2026
 
-1. **bootc 1.15.1 confirmed latest** — no v1.15.2/v1.16.0 cut; install-time issues #2130–#2132 catalogued.
-2. **Podman 5.8.2 latest** — Quadlet 5.7/5.8 feature chain documented (Section 6).
+1. **bootc v2.1.0 confirmed latest** — no v2.1.0/v2.1.0 cut; install-time issues #2130–#2132 catalogued.
+2. **Podman v2.1.0 latest** — Quadlet 5.7/5.8 feature chain documented (Section 6).
 3. **Cockpit 349+ Quadlet GUI** — feature progression documented (349 → 350 → 357 → 360 → 361).
 4. **GNOME 50.1 NVIDIA Mutter regression** — fixed upstream April 15, 2026; F44 rebase will ship the fix automatically.
-5. **cosign CVE-2026-39395** — CVE assignment confirmed; CloudWS already pinned to v2.6.3.
+5. **cosign CVE-2026-39395** — CVE assignment confirmed; MiOS already pinned to v2.1.0.
 6. **Waydroid + NVIDIA** — no CDI device-assignment path yet; status documented in new Section 14.
 
 ---
@@ -26,7 +26,7 @@
 ### A. CVE-2026-4631 — Cockpit unauthenticated RCE (CVSS 9.8) ⚠️ HIGH PRIORITY
 - **Vector:** Remote-login SSH command-injection in Cockpit ≥327 / <360 paired with OpenSSH <9.6 → unauthenticated RCE on port 9090.
 - **Fix:** Cockpit 360 (Apr 8, 2026) and backports 360.1 / 356.1.
-- **CloudWS exposure depends on:** which Cockpit version ucore-hci `stable-nvidia` is currently installing on top of Fedora 42. F44 rebase (April 28) clears the entire risk window.
+- **MiOS exposure depends on:** which Cockpit version ucore-hci `stable-nvidia` is currently installing on top of Fedora 42. F44 rebase (April 28) clears the entire risk window.
 - **Recommended pre-rebase mitigations** (in `system_files/usr/lib/cockpit/cockpit.conf` or `/etc/cockpit/cockpit.conf`):
   ```
   [WebService]
@@ -35,15 +35,15 @@
   Plus: confirm OpenSSH ≥ 9.6 in `99-postcheck.sh`; firewalld restrict port 9090 to trusted nets.
 - **DO NOT apply in this research pass** — research-only role. Hand off to Kabu / a build-side agent.
 
-### B. WSL 2.7.3 CVE-2026-32178 — .NET SMTP header-injection
+### B. WSL v2.1.0 CVE-2026-32178 — .NET SMTP header-injection
 - Severity: **CVSS 7.5** (System.Net.Mail CRLF injection).
 - WSL pre-release dropped 2026-04-25; will roll to the stable channel imminently.
-- No CloudWS image change needed — vuln is in WSL host runtime — but document the upgrade requirement in `docs/WSL2-DEPLOYMENT.md` once a build-side agent is invoked.
+- No MiOS image change needed — vuln is in WSL host runtime — but document the upgrade requirement in `docs/WSL2-DEPLOYMENT.md` once a build-side agent is invoked.
 
 ### C. F44 base rebase (April 28, 2026)
 - Fedora 44 GA in 3 days. Konflux now drives bootc artifact builds.
 - **Pre-rebase smoke checklist** (for Kabu / build agent):
-  - Verify `cosign-installer` workflow pin still resolves to v2.6.3 post-Fedora-key-rotation.
+  - Verify `cosign-installer` workflow pin still resolves to v2.1.0 post-Fedora-key-rotation.
   - Run `bootc container lint` on a F44-based test image to catch any new lint warnings (especially the kargs.d schema strict-validation that arrived in v1.14+).
   - Snapshot `image-versions.yml` digests before/after rebase for diff audit.
   - Re-test BIB qcow2/raw/vhd/anaconda-iso outputs once F44 base lands.
@@ -59,12 +59,12 @@ Order reflects decreasing urgency.
 - Check Konflux signing-key chain: any `containers/policy.json` Fulcio root rotation? Look at `https://discussion.fedoraproject.org/t/f44-change-proposal-using-konflux-for-bootc-based-artifacts-selfcontained/179522`.
 - Verify Cockpit version delivered by F44 base is ≥ 360.
 
-### 2. bootc v1.15.2 / v1.16.0 release watch
+### 2. bootc v2.1.0 / v2.1.0 release watch
 - Monitor https://github.com/bootc-dev/bootc/releases for any new tag.
-- Track #2132 + #2131 (composefs+UKI ESP/BIOS partition) — relevant when CloudWS adopts UKI.
+- Track #2132 + #2131 (composefs+UKI ESP/BIOS partition) — relevant when MiOS adopts UKI.
 
 ### 3. NVIDIA stack health check
-- nvidia-container-toolkit appears stalled at v1.19.0 (Mar 2026). Search for any v1.19.x patch RCs or v1.20 schedule.
+- nvidia-container-toolkit appears stalled at v2.1.0 (Mar 2026). Search for any v1.19.x patch RCs or v1.20 schedule.
 - NVIDIA driver 595.x → 600 series rumor watch (Blackwell stability).
 
 ### 4. Cockpit-podman / Cockpit ≥ 362 watch
@@ -74,7 +74,7 @@ Order reflects decreasing urgency.
 - Track waydroid/waydroid#1883 + #1234 for any actual upstream CDI/virgl progress.
 
 ### 6. CrowdSec — demoted to monthly cadence
-- Still 1.7.7 (March 2025). Revisit only if 1.8.0 RC announced or new CVE filed.
+- Still v2.1.0 (March 2025). Revisit only if v2.1.0 RC announced or new CVE filed.
 
 ### 7. Renovate config migration (low-priority cleanup)
 - `stabilityDays` → `minimumReleaseAge: "N days"` migration for forward compatibility (already noted in Section 11).
@@ -108,7 +108,7 @@ Order reflects decreasing urgency.
 ## Rationale for priority order
 
 1. **F44 rebase** is in 3 days; missing this window risks shipping a Cockpit version still vulnerable to CVE-2026-4631. Highest urgency.
-2. **bootc release watch** is structurally important — any new tag may resolve install-time issues or change kargs.d/composefs semantics that CloudWS depends on.
+2. **bootc release watch** is structurally important — any new tag may resolve install-time issues or change kargs.d/composefs semantics that MiOS depends on.
 3. **NVIDIA stack** stagnation is a yellow flag for downstream image rebuilds; needs surveillance.
 4. **Cockpit weekly cadence** generates the most upstream churn; check after the F44 rebase clears the CVE.
 5. **Waydroid** is genuinely stalled; monthly cadence is fine.
@@ -120,6 +120,6 @@ Order reflects decreasing urgency.
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

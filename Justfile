@@ -1,10 +1,10 @@
-# CloudWS v1.3.0 — Linux Build Targets
+# MiOS v2.1.0 — Linux Build Targets
 # Requires: podman, just
 # Usage: just build | just iso | just all
 
-IMAGE_NAME := "ghcr.io/kabuki94/cloudws-bootc"
-VERSION := `cat VERSION 2>/dev/null || echo "1.3.0"`
-LOCAL := "localhost/cloudws:latest"
+IMAGE_NAME := "ghcr.io/kabuki94/mios"
+VERSION := `cat VERSION 2>/dev/null || echo "v2.1.0"`
+LOCAL := "localhost/mios:latest"
 BIB := "quay.io/centos-bootc/bootc-image-builder:latest"
 
 # Build OCI image
@@ -34,7 +34,7 @@ raw: build
     @echo "✓ RAW image in output/"
 
 # Generate Anaconda installer ISO
-# FIX v1.3.0: ONLY mount iso.toml (includes minsize). Do NOT also mount bib config.
+# FIX v2.1.0: ONLY mount iso.toml (includes minsize). Do NOT also mount bib config.
 # BIB crashes with: "found config.json and also config.toml"
 iso: build
     mkdir -p output
@@ -60,10 +60,10 @@ vhd: build
 # Export WSL2 tarball
 wsl: build
     mkdir -p output
-    podman create --name cloudws-wsl-tmp {{LOCAL}} 2>/dev/null || true
-    podman export cloudws-wsl-tmp -o output/cloudws-wsl.tar
-    podman rm cloudws-wsl-tmp
-    @echo "✓ WSL tarball: output/cloudws-wsl.tar"
+    podman create --name mios-wsl-tmp {{LOCAL}} 2>/dev/null || true
+    podman export mios-wsl-tmp -o output/mios-wsl.tar
+    podman rm mios-wsl-tmp
+    @echo "✓ WSL tarball: output/mios-wsl.tar"
 
 # Push to container registry
 push:
@@ -75,7 +75,7 @@ push:
 all: build rechunk raw iso vhd wsl push
 
 # Automated boot test via QEMU (requires nested virtualization)
-# v1.3.0: Added for architectural validation.
+# v2.1.0: Added for architectural validation.
 boot-test: build
     mkdir -p output/qcow2
     @echo "Building QCOW2 image for boot validation..."
@@ -99,41 +99,41 @@ ukify:
     podman run --rm -it --privileged \
         -v ./output:/output \
         {{LOCAL}} \
-        bootc container ukify --rootfs / -- --output /output/cloudws-uki.efi
-    @echo "✓ UKI generated in output/cloudws-uki.efi"
+        bootc container ukify --rootfs / -- --output /output/mios-uki.efi
+    @echo "✓ UKI generated in output/mios-uki.efi"
 
-# Run cloudws-test inside the image
+# Run mios-test inside the image
 test:
-    podman run --rm --privileged {{LOCAL}} /usr/bin/cloudws-test --quick
+    podman run --rm --privileged {{LOCAL}} /usr/bin/mios-test --quick
 
 # Fix already-deployed systems that have localhost as update origin
 switch:
-    @echo "Run this ON the deployed CloudWS system to fix update origin:"
+    @echo "Run this ON the deployed MiOS system to fix update origin:"
     @echo "  sudo bootc switch {{IMAGE_NAME}}:latest"
 
 # Compile monolithic system extension (Consolidates NVIDIA/CUDA/Runtimes)
 # Fixes 'overlayfs: maximum fs stacking depth exceeded'
 sysext:
-    chmod +x tools/cloudws-sysext-pack.sh
-    sudo ./tools/cloudws-sysext-pack.sh /usr/lib/extensions/source/*
-    @echo "✓ Monolithic sysext generated in /usr/lib/extensions/cloudws-accelerator.raw"
+    chmod +x tools/mios-sysext-pack.sh
+    sudo ./tools/mios-sysext-pack.sh /usr/lib/extensions/source/*
+    @echo "✓ Monolithic sysext generated in /usr/lib/extensions/mios-accelerator.raw"
 
 # Enable PXE Hub (netboot.xyz)
 pxe-on:
-    @echo "FEATURES=\"pxe-hub\"" | sudo tee -a /etc/cloudws/role.conf
-    sudo systemctl restart cloudws-role.service
+    @echo "FEATURES=\"pxe-hub\"" | sudo tee -a /etc/mios/role.conf
+    sudo systemctl restart mios-role.service
     @echo "✓ PXE Hub enabled"
 
 # Disable PXE Hub
 pxe-off:
-    sudo sed -i '/pxe-hub/d' /etc/cloudws/role.conf
-    sudo systemctl stop cloudws-pxe-hub.service
+    sudo sed -i '/pxe-hub/d' /etc/mios/role.conf
+    sudo systemctl stop mios-pxe-hub.service
     @echo "✓ PXE Hub disabled"
 
-# Migrate existing Fedora/CentOS root to CloudWS-bootc (Cloud Migration)
+# Migrate existing Fedora/CentOS root to MiOS (Cloud Migration)
 # WARNING: This overwrites your existing root filesystem!
 install-to-root:
-    @echo "Migrating system to CloudWS-bootc..."
+    @echo "Migrating system to MiOS..."
     sudo bootc install to-existing-root --karg="console=ttyS0,115200n8" --imgref {{IMAGE_NAME}}:latest
     @echo "✓ Migration staged. Reboot to complete."
 

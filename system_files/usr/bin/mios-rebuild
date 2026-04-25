@@ -1,0 +1,16 @@
+#!/bin/bash
+set -euo pipefail
+DIR="${MIOS_DIR:-$HOME/MiOS}"
+echo "MiOS — Rebuilding from source..."
+if [ ! -d "$DIR" ]; then
+    git clone https://github.com/Kabuki94/MiOS.git "$DIR"
+else
+    cd "$DIR" && git pull
+fi
+cd "$DIR"
+if command -v just &>/dev/null; then
+    just all
+else
+    podman build --no-cache --build-arg MAKEFLAGS="-j$(nproc)" -t localhost/mios:latest .
+    podman push localhost/mios:latest ghcr.io/kabuki94/mios:latest
+fi

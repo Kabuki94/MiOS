@@ -2,7 +2,7 @@
 # build-all.sh - emit every deployment artifact from one image
 set -euo pipefail
 
-IMG="${IMG:-ghcr.io/kabuki94/cloudws-bootc:latest}"
+IMG="${IMG:-ghcr.io/kabuki94/mios:latest}"
 OUT="${OUT:-$PWD/out}"
 mkdir -p "$OUT"
 
@@ -27,7 +27,7 @@ run_bib cloud-ami.toml ami      ext4
 # WSL2 tarball (not a BIB type - export from running container)
 echo "==> exporting WSL2 tarball"
 cid=$(podman create "$IMG" /bin/true)
-podman export "$cid" | zstd -T0 -19 -o "$OUT/cloudws-wsl2.tar.zst"
+podman export "$cid" | zstd -T0 -19 -o "$OUT/mios-wsl2.tar.zst"
 podman rm "$cid"
 
 echo "==> artifacts in $OUT:"

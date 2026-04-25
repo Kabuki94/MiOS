@@ -1,15 +1,15 @@
-# 🤖 CloudWS AI Integration
+# 🤖 MiOS AI Integration
 
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
 
-This document outlines the AI shell assistant and local LLM integration within CloudWS-bootc.
+This document outlines the AI shell assistant and local LLM integration within MiOS.
 
 ## 🚀 Overview
-CloudWS-bootc features a modern, local-first AI stack designed for high-performance coding, system automation, and mathematical reasoning. The stack is fully containerized and integrated directly into the system shell.
+MiOS features a modern, local-first AI stack designed for high-performance coding, system automation, and mathematical reasoning. The stack is fully containerized and integrated directly into the system shell.
 
 ## 🛠️ Core Components
 
@@ -35,11 +35,11 @@ The system defaults to high-performance, open-license models:
 
 ## ⌨️ Usage & Management
 
-### CloudWS CLI Commands
-The `cloudws` tool provides simplified management for the AI stack:
-- `cloudws ai`: Display status and version information.
-- `cloudws ai-logs`: View real-time logs from the Ollama backend.
-- `cloudws ai-pull <model>`: Download new models (defaults to `deepseek-coder-v2:lite`).
+### MiOS CLI Commands
+The `mios` tool provides simplified management for the AI stack:
+- `mios ai`: Display status and version information.
+- `mios ai-logs`: View real-time logs from the Ollama backend.
+- `mios ai-pull <model>`: Download new models (defaults to `deepseek-coder-v2:lite`).
 
 ### Shell Integration
 Both `aichat` and `aichat-ng` are pre-configured to use the local Ollama instance.
@@ -51,6 +51,6 @@ Both `aichat` and `aichat-ng` are pre-configured to use the local Ollama instanc
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

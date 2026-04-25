@@ -1,6 +1,6 @@
 #!/bin/bash
 # rtx4090-vfio-configurator.sh
-# Automated RTX 4090 VFIO isolation for CloudWS (Fedora bootc)
+# Automated RTX 4090 VFIO isolation for MiOS (Fedora bootc)
 # Part of Cloud-WS virtualization host setup
 
 set -euo pipefail

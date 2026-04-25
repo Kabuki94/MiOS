@@ -41,11 +41,11 @@ make -f /usr/share/selinux/devel/Makefile k3s.pp
 # ARCHITECTURAL FIX: Instead of installing at build-time with 'semodule -i',
 # we ship the compiled policy in the immutable /usr tree.
 # This ensures that 'bootc upgrade' doesn't create opaque policy layers.
-mkdir -p /usr/share/selinux/packages/cloudws
-install -m 0644 k3s.pp /usr/share/selinux/packages/cloudws/k3s.pp
+mkdir -p /usr/share/selinux/packages/mios
+install -m 0644 k3s.pp /usr/share/selinux/packages/mios/k3s.pp
 
 # Clean up
 cd /
 rm -rf /tmp/k3s-selinux
-echo "==> K3s SELinux Policy staged in /usr/share/selinux/packages/cloudws/"
+echo "==> K3s SELinux Policy staged in /usr/share/selinux/packages/mios/"
 

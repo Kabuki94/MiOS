@@ -1,4 +1,4 @@
-# CloudWS v1.3.0 — Base Image Version Pinning
+# MiOS v2.1.0 — Base Image Version Pinning
 # Managed by Renovate Bot — do NOT edit digests manually.
 # Renovate opens PRs when upstream images publish new digests.
 #
@@ -23,6 +23,6 @@ ucore_hci_stable_nvidia_digest: sha256:3f4474648ab2835bdb8a29f1afe8805de96a32bc2
 rechunk:
   # bootc-base-imagectl — image rechunking for efficient Day-2 updates
   # Run after build, before push:
-  #   bootc-base-imagectl rechunk --max-layers 67 cloudws:latest
+  #   bootc-base-imagectl rechunk --max-layers 67 mios:latest
   tool: bootc-base-imagectl
   max_layers: 67

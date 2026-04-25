@@ -1,0 +1,68 @@
+#!/bin/bash
+# MiOS v2.1.0 — Boot Diagnostic & Log Collection
+# Collects build-time and runtime logs into the user's home directory.
+
+# 1. Identify primary user (first human user UID >= 1000)
+PRIMARY_USER=$(awk -F: '$3 >= 1000 && $3 < 65000 {print $1; exit}' /etc/passwd)
+if [[ -z "$PRIMARY_USER" ]]; then
+    echo "No human user found; exiting log collection."
+    exit 0
+fi
+
+USER_HOME=$(getent passwd "$PRIMARY_USER" | cut -d: -f6)
+LOG_DIR="${USER_HOME}/logs"
+
+# 2. Ensure log directory exists
+mkdir -p "$LOG_DIR"
+
+# 3. Start diagnostic output
+{
+echo "========================================"
+echo " MiOS Boot Diagnostic (v2.1.0)"
+echo " User: ${PRIMARY_USER}"
+echo " Time: $(date -u)"
+echo "========================================"
+echo ""
+echo "--- systemd version ---"
+systemctl --version | head -1
+echo ""
+echo "--- Failed units ---"
+systemctl --failed --no-pager 2>/dev/null || true
+echo ""
+echo "--- Key service status ---"
+for svc in dbus-broker gdm systemd-logind NetworkManager cockpit.socket sshd; do
+    STATUS=$(systemctl is-active "$svc" 2>/dev/null || echo "not-found")
+    echo "  $svc: $STATUS"
+done
+echo ""
+echo "--- Waiting/blocked jobs ---"
+systemctl list-jobs --no-pager 2>/dev/null | head -20 || true
+echo ""
+echo "--- SELinux status ---"
+getenforce 2>/dev/null || echo "SELinux: not available"
+echo ""
+echo "--- Filesystem mounts ---"
+mount | grep -E '(sda|nvme|vda|sysroot|home)' | head -15 || true
+echo ""
+echo "========================================"
+echo " Boot diagnostic complete"
+echo "========================================"
+} | tee "${LOG_DIR}/boot-diag.log"
+
+# 4. Copy preserved build-time logs (from /usr/lib/mios/logs)
+if [[ -d "/usr/lib/mios/logs" ]]; then
+    cp -rp /usr/lib/mios/logs/* "$LOG_DIR/" 2>/dev/null || true
+fi
+
+# 5. Capture current boot journal
+journalctl -b --no-pager > "${LOG_DIR}/journal-boot.log" 2>/dev/null || true
+
+# 6. Capture D-Bus status (critical for graphical stability)
+dbus-send --system --dest=org.freedesktop.DBus --type=method_call --print-reply /org/freedesktop/DBus org.freedesktop.DBus.ListNames > "${LOG_DIR}/dbus-names.log" 2>/dev/null || true
+
+# 7. Ensure user ownership
+chown -R "${PRIMARY_USER}:${PRIMARY_USER}" "$LOG_DIR"
+chmod 755 "$LOG_DIR"
+chmod 644 "$LOG_DIR"/*.log 2>/dev/null || true
+
+echo "Logs collected in ${LOG_DIR}"

@@ -1,7 +1,7 @@
 #!/bin/bash
-# CloudWS v1.3.0 — 01-repos: Fedora 44 overlay on ucore (base kernel preserved)
+# MiOS v2.1.0 — 01-repos: Fedora 44 overlay on ucore (base kernel preserved)
 #
-# FIX v1.3.0: Two-phase distro-sync to handle filesystem scriptlet failure.
+# FIX v2.1.0: Two-phase distro-sync to handle filesystem scriptlet failure.
 # The filesystem package's lua %posttrans fails in container builds, aborting
 # the entire 1162-package transaction. Without this fix, the system boots with
 # F43 core libs but F44 desktop packages — a broken ABI mismatch.
@@ -12,7 +12,7 @@ source "${SCRIPT_DIR}/lib/common.sh"
 
 # ── Global DNF config ───────────────────────────────────────────────────────
 echo "[01-repos] Setting install_weak_deps=False globally..."
-# v2.4.0: dnf.conf moved to /usr/lib/dnf/dnf.conf as per USR-OVER-ETC.
+# v2.1.0: dnf.conf moved to /usr/lib/dnf/dnf.conf as per USR-OVER-ETC.
 DNF_CONF="/usr/lib/dnf/dnf.conf"
 if [ ! -f "$DNF_CONF" ]; then
     # Fallback if the file didn't exist in overlay
@@ -119,7 +119,7 @@ if [ -f /etc/yum.repos.d/terra.repo ]; then
         sed -i '/^\[terra\]/a priority=85' /etc/yum.repos.d/terra.repo
     fi
     # BIB (bootc-image-builder) runs in a CentOS Stream 10 container and cannot
-    # resolve file:// GPG key paths that live inside the CloudWS image.
+    # resolve file:// GPG key paths that live inside the MiOS image.
     # Rewrite to https:// and disable repo_gpgcheck so Anaconda ISO manifest
     # generation succeeds without "Couldn't open file RPM-GPG-KEY-terra44".
     sed -i 's|^gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-terra44|gpgkey=https://repos.fyralabs.com/terra44/key.asc|' \

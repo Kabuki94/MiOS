@@ -1,9 +1,9 @@
 #!/bin/bash
-# CloudWS v1.3.0 — Master build runner
+# MiOS v2.1.0 — Master build runner
 # Executes all numbered scripts in order, then cleans up.
 # Called from Containerfile RUN layer via bind mount.
 #
-# CHANGELOG v1.3.0:
+# CHANGELOG v2.1.0:
 #   - Standardized versioning across the entire stack.
 #   - FIX: install_weakdeps=False (was True in v1.3 — contradicted docs)
 #   - FIX: Safe arithmetic: VAR=$((VAR + 1)) not ((VAR++)) (set -e compat)
@@ -19,7 +19,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
 register_common_masks
 export PACKAGES_MD="${PACKAGES_MD:-/ctx/PACKAGES.md}"
-BUILD_LOG="/tmp/cloudws-build.log"
+BUILD_LOG="/tmp/mios-build.log"
 
 exec > >(mask_filter | tee -a "$BUILD_LOG") 2>&1
 
@@ -27,10 +27,10 @@ log_ts() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
 }
 
-VERSION_STR="$(cat "${SCRIPT_DIR}/../VERSION" 2>/dev/null || cat /ctx/VERSION 2>/dev/null || echo '1.3.0')"
+VERSION_STR="$(cat "${SCRIPT_DIR}/../VERSION" 2>/dev/null || cat /ctx/VERSION 2>/dev/null || echo 'v2.1.0')"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  CloudWS v${VERSION_STR} — Building OS Image"
+echo "  MiOS v${VERSION_STR} — Building OS Image"
 echo "  Base: ucore-hci:stable-nvidia + F44 + Rawhide kernel"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
@@ -185,9 +185,9 @@ fi
 
 # Preserve logs in an immutable path for Day-2 diagnostics
 echo ""
-log_ts "Preserving build logs to /usr/lib/cloudws/logs/..."
-mkdir -p /usr/lib/cloudws/logs
-cp -v /var/log/dnf5.log* /var/log/hawkey.log /tmp/cloudws-build.log /usr/lib/cloudws/logs/ 2>/dev/null || true
+log_ts "Preserving build logs to /usr/lib/mios/logs/..."
+mkdir -p /usr/lib/mios/logs
+cp -v /var/log/dnf5.log* /var/log/hawkey.log /tmp/mios-build.log /usr/lib/mios/logs/ 2>/dev/null || true
 
 echo ""
 log_ts "Cleaning up..."
@@ -196,12 +196,12 @@ rm -rf /var/cache/dnf /var/cache/libdnf5 /tmp/geist-font /tmp/*.tar* /tmp/*.rpm 
 rm -rf /usr/share/doc/* /usr/share/man/* /usr/share/info/* 2>/dev/null || true
 rm -rf /usr/share/gnome/help/* /usr/share/help/* 2>/dev/null || true
 
-# Clean bootc lint triggers (logs now preserved in /usr/lib/cloudws/logs)
-rm -f /var/log/dnf5.log* /var/log/hawkey.log /var/log/cloudws-build.log 2>/dev/null || true
+# Clean bootc lint triggers (logs now preserved in /usr/lib/mios/logs)
+rm -f /var/log/dnf5.log* /var/log/hawkey.log /var/log/mios-build.log 2>/dev/null || true
 rm -rf /run/ceph /run/cockpit /run/k3s /tmp/* 2>/dev/null || true
 rm -f /var/lib/systemd/random-seed 2>/dev/null || true
 
-rm -f /tmp/cloudws-build.log
+rm -f /tmp/mios-build.log
 
 # ── Summary ─────────────────────────────────────────────────────────────────
 TOTAL_ELAPSED=$(( SECONDS - TOTAL_START ))

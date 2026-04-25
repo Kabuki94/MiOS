@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# CloudWS v1.3.0 — Ephemeral QEMU boot test
+# MiOS v2.1.0 — Ephemeral QEMU boot test
 # Usage: bcvk-wrapper.sh <qcow2-path> [serial-log-path]
 #
 # Boots a QCOW2 image in headless QEMU with KVM, captures serial console,
@@ -8,7 +8,7 @@ set -euo pipefail
 # Returns 0 on success, non-zero on timeout or boot failure.
 
 QCOW="${1:-}"
-SERIAL_LOG="${2:-/tmp/cloudws-serial.log}"
+SERIAL_LOG="${2:-/tmp/mios-serial.log}"
 TIMEOUT_SECS=240
 POLL_INTERVAL=3
 

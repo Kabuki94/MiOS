@@ -1,4 +1,4 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
@@ -65,7 +65,7 @@ The Cockpit project maintains a **wiki feature page** for a "Hardware Devices" p
 
 Looking Glass complements GPU passthrough but does not handle VFIO binding itself.
 
-**vfio-isolate** is a Python tool for CPU and memory isolation (cpuset partitioning, IRQ affinity masking, CPU governor control) when running passthrough VMs. It is **only available via PyPI** (`pip install vfio-isolate`, version **0.5.2**) — no Fedora RPM or COPR exists. It does not handle GPU binding; it is used alongside passthrough to reduce host-to-VM latency. Development appears feature-complete but dormant (GitHub: spheenik/vfio-isolate, 95 stars).
+**vfio-isolate** is a Python tool for CPU and memory isolation (cpuset partitioning, IRQ affinity masking, CPU governor control) when running passthrough VMs. It is **only available via PyPI** (`pip install vfio-isolate`, version **v2.1.0**) — no Fedora RPM or COPR exists. It does not handle GPU binding; it is used alongside passthrough to reduce host-to-VM latency. Development appears feature-complete but dormant (GitHub: spheenik/vfio-isolate, 95 stars).
 
 **GPU Passthrough Manager** (uwzis/GPU-Passthrough-Manager) is a GTK GUI for toggling GPUs between default and VFIO drivers, but it only handles **boot-time configuration** via GRUB modification — no dynamic runtime switching. It is available on Arch's AUR but **not reliably packaged for Fedora** (a COPR repo exists at `steeleyeballsac1/gpu-passthrough-manager` but appears unmaintained). Users have reported GRUB corruption issues.
 
@@ -94,6 +94,6 @@ The VFIO GPU passthrough tooling landscape on Fedora remains fragmented. **`driv
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

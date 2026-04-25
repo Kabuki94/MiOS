@@ -1,15 +1,15 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# CloudWS-bootc v1.3.0 - Unified Image + Upstream Adoptions
+# MiOS v2.1.0 - Unified Image + Upstream Adoptions
 
 ## Summary
 
 Single image. All features. Role (desktop / k3s-master / k3s-worker / ha-node /
-hybrid / headless) applied at boot via `/etc/cloudws/role.conf` or kernel
-cmdline `cloudws.role=...`.
+hybrid / headless) applied at boot via `/etc/mios/role.conf` or kernel
+cmdline `mios.role=...`.
 
 ## What landed
 
@@ -19,7 +19,7 @@ cmdline `cloudws.role=...`.
 - **uupd** - unified updater (replaces `bootc-fetch-apply-updates.timer`)
 - **cosign keyless** - image signing via GitHub Actions +
   `actions/attest-build-provenance`
-- **policy.json** - signed-only pulls for `ghcr.io/kabuki94/cloudws-bootc`
+- **policy.json** - signed-only pulls for `ghcr.io/kabuki94/mios`
   and `ghcr.io/ublue-os`
 - **composefs verity** - `/usr/lib/ostree/prepare-root.conf` promoted to
   `enabled = verity` (ext4/btrfs only; NOT xfs)
@@ -29,18 +29,18 @@ cmdline `cloudws.role=...`.
 - **USBGuard** - existing USB allowed, new insertions blocked pending
   approval
 - **NVIDIA CDI auto-refresh** - `nvidia-cdi-refresh.path` + our
-  `cloudws-cdi-detect.service` (WSL `/dev/dxg` vs bare-metal mode)
+  `mios-cdi-detect.service` (WSL `/dev/dxg` vs bare-metal mode)
 - **Podman-machine backend compat** - sshd, `core` user, cloud-init,
   qemu-guest-agent; image is now usable as
-  `podman machine init --image ghcr.io/kabuki94/cloudws-bootc:latest`
+  `podman machine init --image ghcr.io/kabuki94/mios:latest`
 
 ### Unified role system (new)
-- `cloudws-role.service` runs early (sysinit.target)
-- Reads `/etc/cloudws/role.conf` OR kernel `cloudws.role=...`
+- `mios-role.service` runs early (sysinit.target)
+- Reads `/etc/mios/role.conf` OR kernel `mios.role=...`
 - WSL auto-defaults to `headless`; no DRM device auto-defaults to `headless`
-- `systemctl set-default cloudws-<role>.target` per boot
-- `ujust cloudws-set-role <role>` to change
-- `ujust cloudws-role-status` to view
+- `systemctl set-default mios-<role>.target` per boot
+- `ujust mios-set-role <role>` to change
+- `ujust mios-role-status` to view
 
 ### Build / CI
 - `.github/workflows/build-sign.yml` - buildah + cosign + SLSA provenance
@@ -49,14 +49,14 @@ cmdline `cloudws.role=...`.
 
 ## Migrating from v2.1.x
 
-Users already on v2.1.x simply `bootc upgrade` to v2.2.0. On first boot under
-v2.2.0, `cloudws-role.service` detects their environment and writes a default
-`/etc/cloudws/role.conf` (desktop for bare metal, headless for WSL/VM).
+Users already on v2.1.x simply `bootc upgrade` to v2.1.0. On first boot under
+v2.1.0, `mios-role.service` detects their environment and writes a default
+`/etc/mios/role.conf` (desktop for bare metal, headless for WSL/VM).
 
 Pin a digest during the transition if preferred:
 ```
 sudo bootc switch --enforce-container-sigpolicy \
-  ghcr.io/kabuki94/cloudws-bootc@sha256:<digest>
+  ghcr.io/kabuki94/mios@sha256:<digest>
 ```
 
 ## Compatibility matrix
@@ -77,7 +77,7 @@ sudo bootc switch --enforce-container-sigpolicy \
 ## Known gotchas
 - `xfs` target filesystem NOT supported with composefs verity; use ext4 or btrfs
 - `systemd-remount-fs.service` masked (broken on F42+ with composefs)
-- `cloudws-cosign.pub` is a placeholder until first signed build publishes;
+- `mios-cosign.pub` is a placeholder until first signed build publishes;
   bootstrap with policy.json `insecureAcceptAnything` for first install, then
   pull the fulcio cert from the published attestation
 
@@ -86,6 +86,6 @@ sudo bootc switch --enforce-container-sigpolicy \
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

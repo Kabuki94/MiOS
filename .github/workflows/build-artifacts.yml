@@ -13,11 +13,11 @@ on:
   workflow_dispatch:
     inputs:
       image-tag:
-        description: "Tag of ghcr.io/kabuki94/cloudws-bootc to convert"
+        description: "Tag of ghcr.io/kabuki94/mios-bootc to convert"
         required: false
         default: "latest"
   workflow_run:
-    workflows: ["Build CloudWS-bootc"]
+    workflows: ["Build MiOS"]
     types: [completed]
     branches: [main]
 
@@ -26,7 +26,7 @@ permissions:
   packages: read
 
 env:
-  IMAGE: ghcr.io/kabuki94/cloudws-bootc
+  IMAGE: ghcr.io/kabuki94/mios-bootc
   BIB_IMAGE: quay.io/centos-bootc/bootc-image-builder:latest
   ROOTFS: ext4
 
@@ -113,14 +113,14 @@ jobs:
         if: matrix.artifact == 'vhdx'
         run: |
           qemu-img convert -p -m 16 -W -f vpc -O vhdx -o subformat=dynamic \
-            "output/vpc/disk.vhd" "output/cloudws.vhdx"
-          ls -lh output/cloudws.vhdx
+            "output/vpc/disk.vhd" "output/mios.vhdx"
+          ls -lh output/mios.vhdx
 
       - name: Compute artifact path
         id: path
         run: |
           if [ "${{ matrix.artifact }}" = "vhdx" ]; then
-            echo "ARTIFACT_PATH=output/cloudws.vhdx" >> "$GITHUB_OUTPUT"
+            echo "ARTIFACT_PATH=output/mios.vhdx" >> "$GITHUB_OUTPUT"
           else
             echo "ARTIFACT_PATH=output/${{ matrix.out-subdir }}/${{ matrix.out-file }}" >> "$GITHUB_OUTPUT"
           fi
@@ -133,7 +133,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: cloudws-${{ matrix.artifact }}
+          name: mios-${{ matrix.artifact }}
           path: |
             ${{ steps.path.outputs.ARTIFACT_PATH }}
             ${{ steps.path.outputs.ARTIFACT_PATH }}.sha256

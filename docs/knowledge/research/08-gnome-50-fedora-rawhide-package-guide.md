@@ -1,4 +1,4 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
@@ -13,12 +13,12 @@ GNOME 50, codenamed **"Tokyo"**, was officially released on March 18, 2026. Fedo
 
 | RPM package name | Version-Release | Upstream version | Notes |
 |---|---|---|---|
-| `gtk4` | **4.22.0-1.fc45** | GTK 4.22 | Even-numbered GTK stable; GNOME 50's toolkit |
-| `libadwaita` | **1.9.0-1.fc45** | libadwaita 1.9 | Requires gtk4 ≥ 4.17.5 |
+| `gtk4` | **v2.1.0-1.fc45** | GTK 4.22 | Even-numbered GTK stable; GNOME 50's toolkit |
+| `libadwaita` | **v2.1.0-1.fc45** | libadwaita 1.9 | Requires gtk4 ≥ v2.1.0 |
 | `mutter` | **50.0-1.fc45** | Mutter 50 | Provides `libmutter-18.so` |
 | `gnome-shell` | **50.0-1.fc45** | GNOME Shell 50 | Provides `libshell-18.so` |
 
-GTK follows its own versioning scheme: even minors (4.20, 4.22, 4.24) are stable, odd minors (4.21, 4.23) are development. The 4.21.x builds visible in Koji were pre-release; the stable **4.22.0** landed alongside the rest of the GNOME 50 stack. GNOME 50 is the default desktop for Fedora 44 (stable) and Ubuntu 26.04 LTS. Key GNOME 50 highlights include the complete removal of the X11 session (Wayland-only), VRR and fractional scaling enabled by default, and GPU-accelerated remote desktop.
+GTK follows its own versioning scheme: even minors (4.20, 4.22, 4.24) are stable, odd minors (4.21, 4.23) are development. The 4.21.x builds visible in Koji were pre-release; the stable **v2.1.0** landed alongside the rest of the GNOME 50 stack. GNOME 50 is the default desktop for Fedora 44 (stable) and Ubuntu 26.04 LTS. Key GNOME 50 highlights include the complete removal of the X11 session (Wayland-only), VRR and fractional scaling enabled by default, and GPU-accelerated remote desktop.
 
 ## Replacement app RPM names on Rawhide
 
@@ -145,6 +145,6 @@ Fedora Rawhide fc45 is fully aligned with GNOME 50 "Tokyo" across every componen
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

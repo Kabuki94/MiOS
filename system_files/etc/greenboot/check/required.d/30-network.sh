@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 # Greenboot health check: Network reachability
 
 set -e

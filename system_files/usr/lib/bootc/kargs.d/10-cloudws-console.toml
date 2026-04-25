@@ -1,5 +1,0 @@
-# CloudWS v1.3.0: Disable plymouth (no-op on framebuffer/serial consoles)
-# Plymouth steals the framebuffer, making Hyper-V/QEMU/serial boot invisible.
-# Console output args are in 00-cloudws.toml + 10-cloudws-verbose.toml; this file only disables plymouth.
-match-architectures = ["x86_64"]
-kargs = ["plymouth.enable=0"]

@@ -1,6 +1,6 @@
 [project]
 name = "deep-search"
-version = "0.1.0"
+version = "v2.1.0"
 description = "A production-ready fullstack research agent that uses Gemini to strategize, research, and synthesize comprehensive reports with human-in-the-loop collaboration"
 authors = [
     {name = "Amit Dutta", email = "amitdutta@google.com"},
@@ -14,25 +14,25 @@ readme = "README.md"
 requires-python = ">=3.10,<3.13"
 
 dependencies = [
-    "google-adk>=1.8.0",
+    "google-adk>=v2.1.0",
 ]
 
 [dependency-groups]
 dev = [
-    "pytest>=9.0.1",
-    "pytest-asyncio>=1.3.0",
-    "nest-asyncio>=1.6.0",
-    "agent-starter-pack>=0.14.1",
-    "jupyter>=1.1.1",
+    "pytest>=v2.1.0",
+    "pytest-asyncio>=v2.1.0",
+    "nest-asyncio>=v2.1.0",
+    "agent-starter-pack>=v2.1.0",
+    "jupyter>=v2.1.0",
 ]
 
 [project.optional-dependencies]
 lint = [
-    "ruff>=0.4.6",
-    "mypy>=1.19.0",
-    "codespell>=2.4.1",
-    "types-pyyaml>=6.0.12.20240917",
-    "types-requests>=2.32.4.20250913",
+    "ruff>=v2.1.0",
+    "mypy>=v2.1.0",
+    "codespell>=v2.1.0",
+    "types-pyyaml>=v2.1.0.20240917",
+    "types-requests>=v2.1.0.20250913",
 ]
 
 [tool.ruff]

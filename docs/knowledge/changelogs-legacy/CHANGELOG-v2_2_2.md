@@ -1,30 +1,30 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# CloudWS-bootc v1.3.0 - BAKE IN EVERYTHING
+# MiOS v2.1.0 - BAKE IN EVERYTHING
 
-## What went wrong in v2.2.0 / v2.2.1
+## What went wrong in v2.1.0 / v2.1.0
 
 Two violations of the project principle
 **"Every image is fully self-building and fully featured"**:
 
 ### 1. PACKAGES-UNIFIED-EXTRAS.md was documentation, not installation
 
-v2.2.0 shipped a manifest listing k3s, ceph-common, pacemaker, corosync, pcs,
+v2.1.0 shipped a manifest listing k3s, ceph-common, pacemaker, corosync, pcs,
 gamescope, steam, waydroid, libvirt, crowdsec, gnome-shell, gdm, etc. -
 but no build script actually invoked `dnf5 install` on any of it. The
 manifest was parsed by `scripts/lib/packages.sh` only if pre-existing
 `PACKAGES.md` logic picked up the new file, which it did not.
 
-Result: a user boots the image, runs `ujust cloudws-set-role k3s-master`,
+Result: a user boots the image, runs `ujust mios-set-role k3s-master`,
 and discovers k3s is not installed. Same for every other "role-specific"
 capability.
 
 ### 2. Looking Glass (kvmfr + client) was deferred to "runtime compile"
 
-v2.2.1 explicitly wrote "kvmfr becomes a runtime feature (compile on first
+v2.1.0 explicitly wrote "kvmfr becomes a runtime feature (compile on first
 enable)". That is NOT baked in. The project principle does not have an
 exception for kernel modules.
 
@@ -98,17 +98,17 @@ self-building principle.
 
 - `etc/modprobe.d/kvmfr.conf` - `options kvmfr static_size_mb=128`
 - `usr/lib/udev/rules.d/99-kvmfr.rules` - kvm group, 0660, uaccess tag
-- `etc/modules-load.d/cloudws-vfio.conf` - vfio, vfio_iommu_type1, vfio_pci
+- `etc/modules-load.d/mios-vfio.conf` - vfio, vfio_iommu_type1, vfio_pci
   at boot (kvmfr deliberately NOT autoloaded - reserves shmem; users
   enable via ujust when they actually want Looking Glass)
-- `usr/lib/systemd/system/cloudws-kvmfr-load.service` - modprobe kvmfr +
+- `usr/lib/systemd/system/mios-kvmfr-load.service` - modprobe kvmfr +
   fix /dev/kvmfr0 permissions. Disabled by default; enabled via:
 
 ### New ujust recipes
 
-- `ujust cloudws-looking-glass-enable` - enable kvmfr autoload + modprobe now
-- `ujust cloudws-looking-glass-disable` - reverse
-- `ujust cloudws-looking-glass-status` - lsmod / device / binary version
+- `ujust mios-looking-glass-enable` - enable kvmfr autoload + modprobe now
+- `ujust mios-looking-glass-disable` - reverse
+- `ujust mios-looking-glass-status` - lsmod / device / binary version
 
 ## What's still NOT baked in (and why that's correct)
 
@@ -123,19 +123,19 @@ These genuinely require runtime context and are appropriately role-based:
   is runtime.
 - **CrowdSec API key / bouncer registration** - package baked in;
   bouncer registration is per-install and happens on first boot
-  (cloudws-crowdsec-init.service).
+  (mios-crowdsec-init.service).
 
-## Migration from v2.2.1
+## Migration from v2.1.0
 
-`bootc upgrade` once v2.2.2 publishes. First boot will be notably slower
+`bootc upgrade` once v2.1.0 publishes. First boot will be notably slower
 as initial systemd-tmpfiles, first-boot services, and uupd reconcile
 against the larger installed package set. Expect ~300-500 MiB additional
 image size from the unified package install.
 
 ## Known tradeoffs of baked-in approach
 
-- **Image size**: growing from ~2.5 GiB (v2.2.1) to ~3.5-4 GiB
-  (v2.2.2). Acceptable - composefs dedup and lazy inode allocation keep
+- **Image size**: growing from ~2.5 GiB (v2.1.0) to ~3.5-4 GiB
+  (v2.1.0). Acceptable - composefs dedup and lazy inode allocation keep
   disk usage sane. OCI layer cache on GHCR absorbs the pull cost after
   first fetch.
 - **Build time**: CI builds grow from ~6 min to ~15-20 min. Mostly
@@ -149,6 +149,6 @@ image size from the unified package install.
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

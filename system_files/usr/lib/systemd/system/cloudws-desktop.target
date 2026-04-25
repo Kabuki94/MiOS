@@ -1,8 +1,0 @@
-[Unit]
-Description=CloudWS Desktop Role
-Requires=multi-user.target gdm.service libvirtd.service libvirtd.socket virtnetworkd.service virtqemud.service virtstoraged.service virtnodedevd.service
-After=multi-user.target
-Conflicts=cloudws-headless.target cloudws-k3s-master.target cloudws-ha-node.target
-AllowIsolate=yes
-[Install]
-WantedBy=multi-user.target

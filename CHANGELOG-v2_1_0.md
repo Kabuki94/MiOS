@@ -1,9 +1,9 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# CloudWS v1.3.0 CHANGELOG
+# MiOS v2.1.0 CHANGELOG
 
 **Release Date:** April 12, 2026
 **Codename:** Ecosystem Intelligence Update
@@ -20,7 +20,7 @@ RHEL Image Mode, TunaOS, Bluefin, bootc-image-builder, image-builder-cli
 
 ## Security Hardening (SecureBlue Audit)
 
-### Kernel Boot Parameters (kargs.d/00-cloudws.toml)
+### Kernel Boot Parameters (kargs.d/00-mios.toml)
 - **Added**: `init_on_free=1` — zero memory on deallocation (complement to init_on_alloc)
 - **Added**: `lockdown=confidentiality` — kernel lockdown mode
 - **Added**: `spectre_v2=on` — Spectre v2 mitigation enforcement
@@ -29,7 +29,7 @@ RHEL Image Mode, TunaOS, Bluefin, bootc-image-builder, image-builder-cli
 - **Added**: `gather_data_sampling=force` — GDS/Downfall mitigation
 - Total: **15 kernel hardening parameters** (was 9 in v2.0)
 
-### Sysctl Hardening (99-cloudws-hardening.conf)
+### Sysctl Hardening (99-mios-hardening.conf)
 - **Added**: `kernel.kexec_load_disabled=1` — prevent runtime kernel replacement
 - **Added**: `kernel.io_uring_disabled=2` — disable io_uring (attack surface reduction)
 - **Added**: `net.ipv4.conf.all.secure_redirects=0` — block ICMP secure redirects
@@ -40,14 +40,14 @@ RHEL Image Mode, TunaOS, Bluefin, bootc-image-builder, image-builder-cli
 
 - **CDI is now DEFAULT mode**: nvidia-container-toolkit v1.19+ uses Container Device Interface by default. GPU access is now `podman run --device nvidia.com/gpu=0`
 - **CDI auto-refresh service**: `nvidia-cdi-refresh.service` regenerates CDI specs on driver reload and GPU hotplug
-- **CVE check**: Build validation now warns if nvidia-container-toolkit < v1.17.7 (CVE-2025-23266 Critical, CVE-2025-23267 High)
+- **CVE check**: Build validation now warns if nvidia-container-toolkit < v2.1.0 (CVE-2025-23266 Critical, CVE-2025-23267 High)
 - **RTX 50xx note**: Blackwell GPUs REQUIRE open kernel modules — proprietary modules are incompatible
 
 ## SELinux (3 New Policies)
 
-- **`cloudws_cdi`**: NVIDIA CDI device access for container_t (enables `--device nvidia.com/gpu=0`)
-- **`cloudws_quadlet`**: Podman quadlet container runtime directory watching
-- **`cloudws_sysext`**: systemd-sysext overlay mount access into /usr
+- **`mios_cdi`**: NVIDIA CDI device access for container_t (enables `--device nvidia.com/gpu=0`)
+- **`mios_quadlet`**: Podman quadlet container runtime directory watching
+- **`mios_sysext`**: systemd-sysext overlay mount access into /usr
 - **`/etc/cdi` fcontext**: Added container_file_t label for CDI spec directory
 - Total: **16 custom SELinux policy modules** (was 13 in v2.0)
 
@@ -96,19 +96,19 @@ RHEL Image Mode, TunaOS, Bluefin, bootc-image-builder, image-builder-cli
 
 | File | Status | Description |
 |------|--------|-------------|
-| VERSION | Modified | 2.0.0 → 2.1.0 |
+| VERSION | Modified | v2.1.0 → v2.1.0 |
 | Containerfile | Modified | OCI labels, bound-images, validation, restorecon scope |
 | PACKAGES.md | Modified | 6 new packages, new boot section, NVIDIA CDI notes |
 | scripts/build.sh | Modified | bootupd validation, CVE check, rechunk reminder, image size |
 | scripts/11-hardware.sh | Modified | CDI default, auto-refresh service, RTX 50 notes |
 | scripts/20-services.sh | Modified | bootupd, CDI refresh, podman-restart, version bump |
 | scripts/37-selinux.sh | Modified | 3 new policies (cdi, quadlet, sysext), CDI fcontext |
-| system_files/usr/lib/bootc/kargs.d/00-cloudws.toml | Modified | 6 new SecureBlue kernel params |
-| system_files/usr/lib/sysctl.d/99-cloudws-hardening.conf | Modified | 4 new sysctl params |
+| system_files/usr/lib/bootc/kargs.d/00-mios.toml | Modified | 6 new SecureBlue kernel params |
+| system_files/usr/lib/sysctl.d/99-mios-hardening.conf | Modified | 4 new sysctl params |
 | system_files/usr/lib/ostree/prepare-root.conf | Modified | [root] section, composefs docs |
 | image-versions.yml | **Added** | Base image digest pinning for Renovate |
 | renovate.json | **Added** | Renovate Bot configuration |
-| CHANGELOG-v1.3.0.md | **Added** | This file |
+| CHANGELOG-v2.1.0.md | **Added** | This file |
 
 ---
 
@@ -130,6 +130,6 @@ This release incorporates findings from a comprehensive analysis of the bootc ec
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

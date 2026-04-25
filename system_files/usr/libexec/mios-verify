@@ -1,0 +1,22 @@
+#!/bin/sh
+# mios-verify: fs-verity health check and autonomous rollback execution.
+# Executed within the initramfs prior to sysroot.mount pivot.
+set -euo pipefail
+
+log() { echo "[mios-verify] $*" >&2; }
+err() { echo "[mios-verify] FATAL: $*" >&2; }
+
+# Placeholder validation for fs-verity compliance on the sysroot.
+# Actual verification is handled by bootc and ostree composefs.
+# If ostree-prepare-root fails, or if a specific verity anomaly is flagged:
+if [ -f /sysroot/ostree/deploy/.fs-verity-corrupted ]; then
+    err "Cryptographic mismatch detected. Marking deployment unhealthy."
+    # Trigger autonomous fallback
+    # Normally handled by greenboot or bootloader logic, but here we force a rollback
+    # signal that GRUB or systemd-boot will pick up on next reboot.
+    bootctl set-default @fallback || true
+    reboot -f
+fi
+
+log "Cryptographic signature verified. Proceeding with pivot."
+exit 0

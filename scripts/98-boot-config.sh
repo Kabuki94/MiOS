@@ -1,17 +1,17 @@
 #!/bin/bash
-# CloudWS v1.3.0 — 98-boot-config: Boot console + service configuration
-# Plymouth disable is handled by system_files/usr/lib/bootc/kargs.d/10-cloudws-console.toml
-# Console verbosity is handled by system_files/usr/lib/bootc/kargs.d/00-cloudws.toml + 10-cloudws-verbose.toml
+# MiOS v2.1.0 — 98-boot-config: Boot console + service configuration
+# Plymouth disable is handled by system_files/usr/lib/bootc/kargs.d/10-mios-console.toml
+# Console verbosity is handled by system_files/usr/lib/bootc/kargs.d/00-mios.toml + 10-mios-verbose.toml
 set -euo pipefail
 
 echo "[98-boot-config] Configuring boot console output..."
 
 # ── Verify kargs TOML files exist ──────────────────────────────────────────
 # These are static files from system_files/ — if missing, the overlay step failed.
-if [ -f /usr/lib/bootc/kargs.d/10-cloudws-console.toml ]; then
+if [ -f /usr/lib/bootc/kargs.d/10-mios-console.toml ]; then
     echo "[98-boot-config] Configuring plymouth disable via kernel cmdline..."
 else
-    echo "[98-boot-config] ERROR: 10-cloudws-console.toml not found — check overlay!"
+    echo "[98-boot-config] ERROR: 10-mios-console.toml not found — check overlay!"
 fi
 
 # ── Ensure agetty on tty1 ─────────────────────────────────────────────────

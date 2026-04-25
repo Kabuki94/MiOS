@@ -1,6 +1,0 @@
-# CloudWS v1.3.0 — Silicon-specific GPU workarounds
-match-architectures = ["x86_64"]
-kargs = [
-    "amdgpu.pplib=0",
-    "i915.enable_guc=3"
-]

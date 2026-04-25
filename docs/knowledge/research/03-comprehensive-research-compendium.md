@@ -1,11 +1,11 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# CloudWS-bootc comprehensive research compendium
+# MiOS comprehensive research compendium
 
-**This report covers 13 technical research areas for building a Fedora Rawhide bootc immutable workstation OS**, spanning WSL2/Hyper-V virtualization, build modularization, desktop theming, system management tooling, and licensing. The most impactful findings include systemd's built-in hostname wildcard feature (`cloudws-?????` in `/etc/hostname`), the `FROM scratch AS ctx` Containerfile pattern used universally across ublue-os projects, and the `cockpit-desktop` mode that eliminates TLS certificate issues entirely. The CloudWS-bootc repository at `github.com/Kabuki94/CloudWS-bootc` is currently private/inaccessible, but ecosystem analysis from comparable projects provides strong architectural guidance.
+**This report covers 13 technical research areas for building a Fedora Rawhide bootc immutable workstation OS**, spanning WSL2/Hyper-V virtualization, build modularization, desktop theming, system management tooling, and licensing. The most impactful findings include systemd's built-in hostname wildcard feature (`mios-?????` in `/etc/hostname`), the `FROM scratch AS ctx` Containerfile pattern used universally across ublue-os projects, and the `cockpit-desktop` mode that eliminates TLS certificate issues entirely. The MiOS repository at `github.com/Kabuki94/MiOS` is currently private/inaccessible, but ecosystem analysis from comparable projects provides strong architectural guidance.
 
 ---
 
@@ -45,7 +45,7 @@ The dominant pattern across all major Fedora bootc projects is the **`FROM scrat
 
 **uCore** (602 stars) uses a tiered image architecture: `ucore-minimal` → `ucore` → `ucore-hci`, each adding layers of functionality. Kernel modules are pulled via `COPY --from=ghcr.io/ublue-os/akmods`. **secureblue** (847 stars) uses **BlueBuild**, a YAML-to-Containerfile abstraction where recipes define modules (`rpm-ostree`, `script`, `files`) in declarative YAML rather than shell scripts.
 
-For CloudWS-bootc, the **recommended architecture** based on ecosystem patterns would be: a minimal Containerfile using the `FROM scratch AS ctx` pattern, numbered build scripts in `build_files/` for each concern (packages, services, desktop config, development tools), a `system_files/` tree for configuration overlays, and `bootc container lint` at the end. Use `--mount=type=cache,dst=/var/cache/libdnf5` for dnf caching across builds.
+For MiOS, the **recommended architecture** based on ecosystem patterns would be: a minimal Containerfile using the `FROM scratch AS ctx` pattern, numbered build scripts in `build_files/` for each concern (packages, services, desktop config, development tools), a `system_files/` tree for configuration overlays, and `bootc container lint` at the end. Use `--mount=type=cache,dst=/var/cache/libdnf5` for dnf caching across builds.
 
 ---
 
@@ -57,7 +57,7 @@ Bazzite organizes recipes with **numbered file prefixes**: `80-bazzite.just` (~7
 
 A helper library at `/usr/lib/ujust/ujust.sh` provides color variables (`$bold`, `$red`, `$green`), a `Choose` function wrapping `gum`-based interactive selection, and an `Assemble` function for distrobox management. Bazzite also includes `bazzite-ujust-picker`, a compiled binary providing a searchable, categorized TUI for discovering recipes without knowing their names.
 
-For CloudWS-bootc, implementing a `cloudws` CLI would mean: install `just` via RPM, create justfiles at `/usr/share/cloudws/just/`, create a shell alias `alias cloudws='just --justfile /usr/share/cloudws/justfile'`, and write bash-based recipes for common operations (updates, service toggles, status checks). The `just --list` command provides built-in `--help`-like functionality, and `just --choose` enables interactive recipe selection when `fzf` or `gum` is installed.
+For MiOS, implementing a `mios` CLI would mean: install `just` via RPM, create justfiles at `/usr/share/mios/just/`, create a shell alias `alias mios='just --justfile /usr/share/mios/justfile'`, and write bash-based recipes for common operations (updates, service toggles, status checks). The `just --list` command provides built-in `--help`-like functionality, and `just --choose` enables interactive recipe selection when `fzf` or `gum` is installed.
 
 ---
 
@@ -89,14 +89,14 @@ The most elegant solution is a **built-in systemd feature (v249+)**: if the `?` 
 
 **Implementation in a Containerfile is one line:**
 ```dockerfile
-RUN echo "cloudws-?????" > /etc/hostname
+RUN echo "mios-?????" > /etc/hostname
 ```
 
-Each deployed instance gets a unique machine-id on first boot (systemd generates it from D-Bus machine ID, KVM DMI `product_uuid`, kernel `container_uuid`, or random UUID), which deterministically expands to a unique hostname like `cloudws-92a9f`. No custom scripts, systemd services, or firstboot logic needed. The hostname is stable across reboots (same machine-id produces the same expansion) but unique per deployment.
+Each deployed instance gets a unique machine-id on first boot (systemd generates it from D-Bus machine ID, KVM DMI `product_uuid`, kernel `container_uuid`, or random UUID), which deterministically expands to a unique hostname like `mios-92a9f`. No custom scripts, systemd services, or firstboot logic needed. The hostname is stable across reboots (same machine-id produces the same expansion) but unique per deployment.
 
 For bootc images, **`/etc` is mutable and persistent by default** using OSTree 3-way merge semantics: locally modified files (including `/etc/hostname` after expansion) are retained across image updates. The `/etc/machine-id` should be empty or missing in the container image to trigger `ConditionFirstBoot=yes` semantics and proper machine-id generation.
 
-If running an older systemd without wildcard support, the fallback is a custom oneshot service with `ConditionFirstBoot=yes` that runs `hostnamectl set-hostname "cloudws-$(head -c 5 /etc/machine-id)"`. Fedora CoreOS uses Ignition for this purpose, writing `/etc/hostname` from Butane YAML config, with dynamic hostnames generated via custom oneshot services that query cloud metadata.
+If running an older systemd without wildcard support, the fallback is a custom oneshot service with `ConditionFirstBoot=yes` that runs `hostnamectl set-hostname "mios-$(head -c 5 /etc/machine-id)"`. Fedora CoreOS uses Ignition for this purpose, writing `/etc/hostname` from Butane YAML config, with dynamic hostnames generated via custom oneshot services that query cloud metadata.
 
 ---
 
@@ -111,7 +111,7 @@ RUN dnf install -y python3-dnf-plugins-extras-versionlock && \
     dnf clean all
 ```
 
-**Option B — COPR alternative kernels** provide dedicated stable/LTS options. Bazzite uses `sentry/kernel-fsync` (futex/fsync patches for gaming) with explicit version gating logic to avoid regressions. The CloudWS-bootc COPR (`bieszczaders/kernel-cachyos`) offers LTS, RT, and server variants with BORE scheduler and AMD optimizations. The `kwizart/kernel-longterm` COPR provides true LTS kernel branches (6.1, 6.6, etc.). The official `@kernel-vanilla/stable` COPRs won't provide older kernels than Rawhide's default, making them less useful for this purpose.
+**Option B — COPR alternative kernels** provide dedicated stable/LTS options. Bazzite uses `sentry/kernel-fsync` (futex/fsync patches for gaming) with explicit version gating logic to avoid regressions. The MiOS COPR (`bieszczaders/kernel-cachyos`) offers LTS, RT, and server variants with BORE scheduler and AMD optimizations. The `kwizart/kernel-longterm` COPR provides true LTS kernel branches (6.1, 6.6, etc.). The official `@kernel-vanilla/stable` COPRs won't provide older kernels than Rawhide's default, making them less useful for this purpose.
 
 **Option C — Install from a stable Fedora release repo**: `dnf -y --releasever=42 --repo=fedora,updates install kernel kernel-core kernel-modules kernel-modules-core` then versionlock. This gives a true stable kernel but risks ABI mismatches with Rawhide userspace packages.
 
@@ -187,19 +187,19 @@ For attribution, Red Hat's October 2025 guidance suggests: trivial AI uses (auto
 
 ---
 
-## Conclusion: architectural decisions for CloudWS-bootc
+## Conclusion: architectural decisions for MiOS
 
-Several findings are directly actionable for the project. The **systemd hostname wildcard** (`echo "cloudws-?????" > /etc/hostname`) is the single most elegant solution discovered — it eliminates all custom scripting for unique hostname generation. For build modularization, Bluefin's numbered-scripts pattern (`00-packages.sh`, `05-config.sh`, `20-tests.sh`) provides the cleanest separation of concerns, combined with the universal `FROM scratch AS ctx` Containerfile pattern. The `just`-based CLI system used by every ublue project is production-proven and simple to implement — no custom tooling needed, just `.just` files with bash recipes.
+Several findings are directly actionable for the project. The **systemd hostname wildcard** (`echo "mios-?????" > /etc/hostname`) is the single most elegant solution discovered — it eliminates all custom scripting for unique hostname generation. For build modularization, Bluefin's numbered-scripts pattern (`00-packages.sh`, `05-config.sh`, `20-tests.sh`) provides the cleanest separation of concerns, combined with the universal `FROM scratch AS ctx` Containerfile pattern. The `just`-based CLI system used by every ublue project is production-proven and simple to implement — no custom tooling needed, just `.just` files with bash recipes.
 
 The Hyper-V enhanced session GDM-first challenge remains architecturally unsolvable without upstream changes — GNOME's built-in RDP (`gnome-remote-desktop`) is the most promising path but cannot yet serve as the enhanced session transport. For GPU-PV in Hyper-V Linux guests, the dxgkrnl DKMS approach works but requires manual driver file copying and is entirely community-supported. WSL2 GPU-PV is production-ready with automatic driver mounting.
 
-For kernel management, the Bazzite/fsync-kernel COPR model is battle-tested at scale, but the simpler dnf versionlock approach may suffice for CloudWS-bootc's needs. `cockpit-desktop` eliminates all TLS certificate complexity for local Cockpit access. And for licensing, Apache 2.0 with an AI Disclosure section in the README represents current best practice for AI-assisted open source projects.
+For kernel management, the Bazzite/fsync-kernel COPR model is battle-tested at scale, but the simpler dnf versionlock approach may suffice for MiOS's needs. `cockpit-desktop` eliminates all TLS certificate complexity for local Cockpit access. And for licensing, Apache 2.0 with an AI Disclosure section in the README represents current best practice for AI-assisted open source projects.
 
 ---
 ### 📚 Bootc Ecosystem & Resources
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

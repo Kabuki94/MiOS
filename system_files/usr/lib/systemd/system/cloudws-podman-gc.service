@@ -1,6 +1,0 @@
-[Unit]
-Description=CloudWS Podman Garbage Collection
-ConditionVirtualization=!container
-[Service]
-Type=oneshot
-ExecStart=/usr/bin/podman system prune -a -f

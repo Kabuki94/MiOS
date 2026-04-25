@@ -1,6 +1,6 @@
 # QEMU/libvirt qcow2 target (btrfs - verity-capable)
 [customizations.kernel]
-append = "cloudws.role=desktop"
+append = "mios.role=desktop"
 
 [[customizations.filesystem]]
 mountpoint = "/"

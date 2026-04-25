@@ -1,0 +1,19 @@
+# MiOS role configuration
+# Applied by mios-role.service on every boot.
+#
+# ROLE     : desktop | k3s-master | k3s-worker | ha-node | hybrid | headless
+# PROFILE  : workstation | server | edge | wsl
+# FEATURES : comma-separated optional features:
+#              gamescope      - Gamescope session target
+#              lookingglass   - Looking Glass kvmfr runtime
+#              waydroid       - Waydroid container service
+#              ceph-mon       - Ceph monitor (for ha-node)
+#              ceph-osd       - Ceph OSD (for ha-node/hybrid)
+#              nocloud-init   - Disable cloud-init (for long-lived bare metal)
+#
+# Override at boot with kernel cmdline:
+#   mios.role=k3s-master mios.features=ceph-mon
+
+ROLE=desktop
+PROFILE=workstation
+FEATURES=

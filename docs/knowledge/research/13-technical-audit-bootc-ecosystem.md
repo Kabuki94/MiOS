@@ -1,19 +1,19 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# Technical audit of the bootc ecosystem for CloudWS-bootc
+# Technical audit of the bootc ecosystem for MiOS
 
-CloudWS-bootc has an ambitious multi-role architecture—workstation, hypervisor, K3s node, and Cockpit-managed server in a single immutable image—but **the project's build system, security posture, and CI/CD pipeline lag significantly behind the Universal Blue ecosystem** it draws from. This audit identified 14 critical anti-patterns, 23 missing features compared to Bluefin/Bazzite/uCore/SecureBlue, and 9 imminent upstream changes requiring preparation. The composefs-native backend transition (bootc v1.14–v1.15) is the most consequential ecosystem shift on the horizon, and CloudWS-bootc has zero preparation for it.
+MiOS has an ambitious multi-role architecture—workstation, hypervisor, K3s node, and Cockpit-managed server in a single immutable image—but **the project's build system, security posture, and CI/CD pipeline lag significantly behind the Universal Blue ecosystem** it draws from. This audit identified 14 critical anti-patterns, 23 missing features compared to Bluefin/Bazzite/uCore/SecureBlue, and 9 imminent upstream changes requiring preparation. The composefs-native backend transition (bootc v1.14–v1.15) is the most consequential ecosystem shift on the horizon, and MiOS has zero preparation for it.
 
-The findings below cross-reference actual code from CloudWS-bootc against patterns from bootc upstream (v1.15.0, March 2026), Universal Blue (Bluefin, Bazzite, uCore, akmods), SecureBlue, WayBlue, and Fedora CoreOS. Every recommendation includes concrete code that can be directly adopted.
+The findings below cross-reference actual code from MiOS against patterns from bootc upstream (v2.1.0, March 2026), Universal Blue (Bluefin, Bazzite, uCore, akmods), SecureBlue, WayBlue, and Fedora CoreOS. Every recommendation includes concrete code that can be directly adopted.
 
 ---
 
 ## The Containerfile needs a fundamental restructure
 
-CloudWS-bootc's Containerfile is a monolithic, single-stage file with inline `RUN` commands—the polar opposite of what mature bootc projects use. Bluefin's Containerfile is **48 lines** with four distinct stages; CloudWS-bootc packs everything into sequential `RUN` directives with no modularity.
+MiOS's Containerfile is a monolithic, single-stage file with inline `RUN` commands—the polar opposite of what mature bootc projects use. Bluefin's Containerfile is **48 lines** with four distinct stages; MiOS packs everything into sequential `RUN` directives with no modularity.
 
 **Critical issue: hardcoded credentials baked into OCI layers.** The line `echo "cachyadmin:cachyadmin" | chpasswd` writes a password into a layer that anyone pulling the image can extract with `podman history` or `skopeo inspect`. Bluefin and Bazzite never embed passwords—they use `cloud-init`, `systemd-firstboot`, or Ignition for runtime credential injection.
 
@@ -33,7 +33,7 @@ RUN bootc container lint
 
 This pattern uses `--mount=type=bind` to inject build context without copying it into the final image, `--mount=type=cache` for package manager caches across builds, and a `FROM scratch` stage that aggregates local files and upstream OCI configuration layers. The missing `bootc container lint` at the end is the single most impactful fix—it catches multiple kernels, malformed kargs, non-UTF-8 filenames, and `/boot` content that breaks deployments.
 
-**Initramfs generation is broken.** The current `dracut --force --no-hostonly` command runs inside an unprivileged container build where the running kernel is the CI runner's kernel, not the target CloudWS-bootc kernel. This produces initramfs images with missing block device drivers. The `LIBMOUNT_FORCE_MOUNT2=always` environment variable is also missing. The correct approach is to defer initramfs generation to the `bootc-image-builder` stage or add `--reproducible` and explicit module inclusion:
+**Initramfs generation is broken.** The current `dracut --force --no-hostonly` command runs inside an unprivileged container build where the running kernel is the CI runner's kernel, not the target MiOS kernel. This produces initramfs images with missing block device drivers. The `LIBMOUNT_FORCE_MOUNT2=always` environment variable is also missing. The correct approach is to defer initramfs generation to the `bootc-image-builder` stage or add `--reproducible` and explicit module inclusion:
 
 ```dockerfile
 ENV LIBMOUNT_FORCE_MOUNT2=always
@@ -48,7 +48,7 @@ The DNF facade hack (`echo '#!/bin/sh\nexit 0' > /usr/bin/dnf`) is a known worka
 
 ## Build script orchestration should follow numbered-script patterns
 
-CloudWS-bootc's internal documentation references scripts numbered `01-` through `39-`, but the actual implementation uses inline Containerfile `RUN` commands. Bluefin delegates to `build_files/shared/build.sh`, which orchestrates numbered scripts with `set -eoux pipefail` for fail-fast behavior. Bazzite uses a similar pattern with variant-specific overrides (`build_scripts/overrides/dx/`, `build_scripts/overrides/gdx/`).
+MiOS's internal documentation references scripts numbered `01-` through `39-`, but the actual implementation uses inline Containerfile `RUN` commands. Bluefin delegates to `build_files/shared/build.sh`, which orchestrates numbered scripts with `set -eoux pipefail` for fail-fast behavior. Bazzite uses a similar pattern with variant-specific overrides (`build_scripts/overrides/dx/`, `build_scripts/overrides/gdx/`).
 
 **Recommended directory structure:**
 
@@ -56,7 +56,7 @@ CloudWS-bootc's internal documentation references scripts numbered `01-` through
 build_files/
 ├── build.sh                    # Orchestrator: copies sys_files, runs scripts in order
 ├── base/
-│   ├── 00-image-info.sh        # Generate /usr/share/cloudws/image-info.json
+│   ├── 00-image-info.sh        # Generate /usr/share/mios/image-info.json
 │   ├── 03-install-kernel-akmods.sh
 │   ├── 05-override-install.sh  # GSettings/dconf overrides
 │   ├── 10-packages.sh          # Core package installation
@@ -67,9 +67,9 @@ build_files/
     └── build-tests.sh          # Verify critical packages installed
 system_files/
 ├── usr/lib/bootc/kargs.d/01-nvidia.toml
-├── usr/lib/systemd/system/cloudws-flatpak-manager.service
-├── usr/share/glib-2.0/schemas/zz0-cloudws.gschema.override
-└── etc/dconf/db/local.d/01-cloudws
+├── usr/lib/systemd/system/mios-flatpak-manager.service
+├── usr/share/glib-2.0/schemas/zz0-mios.gschema.override
+└── etc/dconf/db/local.d/01-mios
 ```
 
 Bluefin's build-time test pattern is worth adopting: after the build completes, a verification script checks that critical packages are present and systemd units are enabled, failing the build if any are missing.
@@ -78,10 +78,10 @@ Bluefin's build-time test pattern is worth adopting: after the build completes, 
 
 ## GNOME integration requires three-layer configuration
 
-Bluefin and Bazzite use a three-layer system for GNOME customization that CloudWS-bootc should replicate. **Layer 1: GSettings schema overrides** at `/usr/share/glib-2.0/schemas/zz0-cloudws.gschema.override` (the `zz0-` prefix ensures CloudWS overrides load last, after Fedora defaults). **Layer 2: dconf database overrides** at `/etc/dconf/db/local.d/01-cloudws`. **Layer 3: runtime user setup** via a first-login systemd user service.
+Bluefin and Bazzite use a three-layer system for GNOME customization that MiOS should replicate. **Layer 1: GSettings schema overrides** at `/usr/share/glib-2.0/schemas/zz0-mios.gschema.override` (the `zz0-` prefix ensures MiOS overrides load last, after Fedora defaults). **Layer 2: dconf database overrides** at `/etc/dconf/db/local.d/01-mios`. **Layer 3: runtime user setup** via a first-login systemd user service.
 
 ```ini
-# /usr/share/glib-2.0/schemas/zz0-cloudws.gschema.override
+# /usr/share/glib-2.0/schemas/zz0-mios.gschema.override
 [org.gnome.shell]
 favorite-apps=['org.mozilla.firefox.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Ptyxis.desktop', 'cockpit.desktop']
 
@@ -92,7 +92,7 @@ gtk-theme='adw-gtk3-dark'
 ```
 
 ```ini
-# /etc/dconf/db/local.d/01-cloudws
+# /etc/dconf/db/local.d/01-mios
 [org/gnome/shell/extensions/Logo-menu]
 menu-button-terminal='ptyxis --new-window'
 menu-button-system-monitor='/usr/bin/missioncenter-helper'
@@ -117,7 +117,7 @@ Bazzite's `dconf-override-converter` tool provides bidirectional conversion betw
 
 ## NVIDIA driver integration must use the akmods OCI pattern
 
-CloudWS-bootc installs `linux-cachyos-nvidia` directly from CloudWS-bootc repos, which couples driver versions to the upstream package manager's release cadence and provides no Secure Boot signing. Universal Blue's approach is fundamentally different: **pre-built, pre-signed kernel modules distributed as OCI container layers**.
+MiOS installs `linux-cachyos-nvidia` directly from MiOS repos, which couples driver versions to the upstream package manager's release cadence and provides no Secure Boot signing. Universal Blue's approach is fundamentally different: **pre-built, pre-signed kernel modules distributed as OCI container layers**.
 
 ```dockerfile
 ARG NVIDIA_REF="ghcr.io/ublue-os/akmods-nvidia:coreos-stable-42@sha256:..."
@@ -143,7 +143,7 @@ RemainAfterExit=yes
 ExecStart=/usr/bin/nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
 ```
 
-**Secure Boot enrollment:** Universal Blue ships a public key at `/etc/pki/akmods/certs/akmods-ublue.der` with a known enrollment password (`universalblue`). CloudWS-bootc should implement its own MOK signing pipeline or consume ublue-os/akmods images directly. For multi-GPU (AMD+NVIDIA) passthrough, Bazzite's initramfs configuration ensures the integrated AMD GPU initializes first for host display, while the NVIDIA GPU is isolated for VFIO passthrough.
+**Secure Boot enrollment:** Universal Blue ships a public key at `/etc/pki/akmods/certs/akmods-ublue.der` with a known enrollment password (`universalblue`). MiOS should implement its own MOK signing pipeline or consume ublue-os/akmods images directly. For multi-GPU (AMD+NVIDIA) passthrough, Bazzite's initramfs configuration ensures the integrated AMD GPU initializes first for host display, while the NVIDIA GPU is isolated for VFIO passthrough.
 
 **Missing kernel arguments** should use the new `/usr/lib/bootc/kargs.d/` directory (bootc v1.13+):
 
@@ -156,13 +156,13 @@ kargs = ["nvidia_drm.modeset=1", "rd.driver.blacklist=nouveau", "modprobe.blackl
 
 ## Flatpak deployment must happen at first boot, never build time
 
-CloudWS-bootc has no Flatpak integration. Bazzite's `bazzite-flatpak-manager` is the gold standard: a **122-line systemd oneshot service** with version-based sentinel files for idempotency.
+MiOS has no Flatpak integration. Bazzite's `bazzite-flatpak-manager` is the gold standard: a **122-line systemd oneshot service** with version-based sentinel files for idempotency.
 
 ```bash
 #!/bin/bash
-# /usr/libexec/cloudws-flatpak-manager
+# /usr/libexec/mios-flatpak-manager
 VER=1
-VER_FILE="/etc/cloudws/flatpak_manager_version"
+VER_FILE="/etc/mios/flatpak_manager_version"
 SCRIPT_HASH=$(sha256sum "$0" | cut -d' ' -f1)
 VER_RUN="$VER-$SCRIPT_HASH"
 
@@ -177,7 +177,7 @@ flatpak remote-modify --system --disable fedora || :
 flatpak remote-modify --system --disable fedora-testing || :
 
 # Install from curated list
-xargs -a /usr/share/cloudws/flatpak-list \
+xargs -a /usr/share/mios/flatpak-list \
     flatpak install -y --noninteractive flathub
 
 # GTK theming passthrough for Flatpak apps
@@ -188,35 +188,35 @@ echo "$VER_RUN" > "$VER_FILE"
 ```
 
 ```ini
-# /usr/lib/systemd/system/cloudws-flatpak-manager.service
+# /usr/lib/systemd/system/mios-flatpak-manager.service
 [Unit]
-Description=CloudWS Flatpak Manager
+Description=MiOS Flatpak Manager
 After=network-online.target
 Wants=network-online.target
 Before=display-manager.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/libexec/cloudws-flatpak-manager
+ExecStart=/usr/libexec/mios-flatpak-manager
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-On Fedora 42+, Bluefin uses the native `flatpak-preinstall.service` with `.preinstall` files in `/etc/preinstall.d/`—a cleaner approach if CloudWS-bootc targets F42+. The Fedora Flatpak remote should be **masked** at build time: `systemctl mask flatpak-add-fedora-repos.service`.
+On Fedora 42+, Bluefin uses the native `flatpak-preinstall.service` with `.preinstall` files in `/etc/preinstall.d/`—a cleaner approach if MiOS targets F42+. The Fedora Flatpak remote should be **masked** at build time: `systemctl mask flatpak-add-fedora-repos.service`.
 
 ---
 
 ## SELinux requires build-time policy compilation and the Cockpit 330 fix
 
-CloudWS-bootc's internal documents acknowledge that SELinux policies must be "pre-compiled into CIL and packaged within the image's policy store," but **no actual policy compilation exists in the Containerfile**. The Cockpit setuid bug—where `cockpit-session` failed on composefs-backed read-only filesystems—was resolved in **Cockpit 330 (December 2024)** by replacing setuid with systemd socket activation and `DynamicUser=`. CloudWS-bootc should require Cockpit ≥330.
+MiOS's internal documents acknowledge that SELinux policies must be "pre-compiled into CIL and packaged within the image's policy store," but **no actual policy compilation exists in the Containerfile**. The Cockpit setuid bug—where `cockpit-session` failed on composefs-backed read-only filesystems—was resolved in **Cockpit 330 (December 2024)** by replacing setuid with systemd socket activation and `DynamicUser=`. MiOS should require Cockpit ≥330.
 
 **Custom policy modules should be compiled during the image build:**
 
 ```dockerfile
 # Method 1: CIL format (recommended)
-COPY selinux/cloudws-vfio.cil /root/
-RUN semodule -X 300 -i /root/cloudws-vfio.cil
+COPY selinux/mios-vfio.cil /root/
+RUN semodule -X 300 -i /root/mios-vfio.cil
 
 # Custom file contexts for VFIO and Looking Glass
 RUN semanage fcontext -a -t svirt_tmpfs_t "/dev/shm/looking-glass(/.*)?"
@@ -233,7 +233,7 @@ SecureBlue's approach is the most rigorous: SELinux enforcing mode with **SELinu
 
 ## Cockpit needs socket activation, not daemon mode
 
-The correct Cockpit deployment for bootc follows uCore's containerized pattern or Bluefin's RPM-based socket activation. CloudWS-bootc should install Cockpit packages at build time and enable only the socket:
+The correct Cockpit deployment for bootc follows uCore's containerized pattern or Bluefin's RPM-based socket activation. MiOS should install Cockpit packages at build time and enable only the socket:
 
 ```dockerfile
 RUN dnf install -y cockpit-system cockpit-storaged cockpit-networkmanager \
@@ -259,15 +259,15 @@ TLS certificates go in `/etc/cockpit/ws-certs.d/` as `.cert` files (PEM format, 
 
 ## The composefs-native backend is here and requires preparation
 
-The composefs-native backend has progressed from experimental to production-ready across bootc v1.12–v1.15. **OSTree is being phased out as the storage backend.** Key implications for CloudWS-bootc:
+The composefs-native backend has progressed from experimental to production-ready across bootc v1.12–v1.15. **OSTree is being phased out as the storage backend.** Key implications for MiOS:
 
-- **Composefs GC** (v1.14.0) can potentially delete EFI partitions if misconfigured—bootc issue #2102 documents this risk
+- **Composefs GC** (v2.1.0) can potentially delete EFI partitions if misconfigured—bootc issue #2102 documents this risk
 - **Sealed images** default to requiring Secure Boot + fs-verity on the target system; a `--disable-sealing` flag allows degraded mode
 - **UKI (Unified Kernel Image)** support is deeply integrated with composefs-native, bundling kernel, initramfs, and cmdline into a single signed EFI binary
 - The `bootc install` command gains a `--composefs-native` flag
-- **SELinux enforcement for sealed images** landed in v1.14.0
+- **SELinux enforcement for sealed images** landed in v2.1.0
 
-CloudWS-bootc should enable composefs in its images now:
+MiOS should enable composefs in its images now:
 
 ```ini
 # /usr/lib/ostree/prepare-root.conf
@@ -281,7 +281,7 @@ The download-only upgrade mode (`bootc upgrade --download-only`, February 2026 R
 
 ## Security hardening gaps compared to SecureBlue are significant
 
-SecureBlue implements hardening that CloudWS-bootc entirely lacks. The most impactful patterns to adopt:
+SecureBlue implements hardening that MiOS entirely lacks. The most impactful patterns to adopt:
 
 **Kernel argument hardening** via `/usr/lib/bootc/kargs.d/`:
 
@@ -298,7 +298,7 @@ kargs = [
 ]
 ```
 
-**SUID stripping with capability replacement** (SecureBlue's `removesuid.sh`): strips setuid from all binaries except a whitelist, removes `sudo`/`su`/`pkexec` entirely, and replaces them with `run0` (systemd-run0). CloudWS-bootc should adopt at minimum the capability replacement pattern:
+**SUID stripping with capability replacement** (SecureBlue's `removesuid.sh`): strips setuid from all binaries except a whitelist, removes `sudo`/`su`/`pkexec` entirely, and replaces them with `run0` (systemd-run0). MiOS should adopt at minimum the capability replacement pattern:
 
 ```bash
 # Strip SUID from non-essential binaries
@@ -318,7 +318,7 @@ setcap "cap_sys_admin=ep" /usr/bin/fusermount3
 **SSH hardening** should be baked into the image:
 
 ```ini
-# /etc/ssh/sshd_config.d/50-cloudws-hardened.conf
+# /etc/ssh/sshd_config.d/50-mios-hardened.conf
 PermitRootLogin no
 PasswordAuthentication no
 PubkeyAuthentication yes
@@ -347,13 +347,13 @@ ConditionPathExists=|/proc/sys/fs/binfmt_misc/WSLInterop
 ConditionPathExists=|/proc/sys/fs/binfmt_misc/WSLInterop-late
 ```
 
-The WSL2 `wsl.conf` must enable systemd (`[boot]\nsystemd=true`) and the `systemd-firstboot.service` should be disabled to prevent hangs. There is **no established bootc-on-WSL2 workflow** in the ecosystem; CloudWS-bootc's WSL2 support path via `podman export → wsl --import` is novel but unsupported upstream.
+The WSL2 `wsl.conf` must enable systemd (`[boot]\nsystemd=true`) and the `systemd-firstboot.service` should be disabled to prevent hangs. There is **no established bootc-on-WSL2 workflow** in the ecosystem; MiOS's WSL2 support path via `podman export → wsl --import` is novel but unsupported upstream.
 
 ---
 
 ## Image signing is completely absent and must be implemented immediately
 
-CloudWS-bootc publishes to `ghcr.io/kabuki94/cloudws-bootc:latest` with **no cryptographic signing, no SBOM, and no provenance verification**. The minimal implementation uses cosign keyless signing in GitHub Actions:
+MiOS publishes to `ghcr.io/kabuki94/mios:latest` with **no cryptographic signing, no SBOM, and no provenance verification**. The minimal implementation uses cosign keyless signing in GitHub Actions:
 
 ```yaml
 jobs:
@@ -362,11 +362,11 @@ jobs:
       packages: write
       id-token: write  # Required for OIDC keyless signing
     steps:
-      - uses: sigstore/cosign-installer@v3.8.2
+      - uses: sigstore/cosign-installer@v2.1.0
       - name: Sign image
         run: |
           cosign sign --yes \
-            ghcr.io/kabuki94/cloudws-bootc@${{ steps.push.outputs.digest }}
+            ghcr.io/kabuki94/mios@${{ steps.push.outputs.digest }}
 ```
 
 **The `--new-bundle-format=false` workaround is critical:** Cosign v3's default protobuf bundle format is incompatible with the `containers/image` library used by rpm-ostree and bootc for signature verification. Until upstream support lands, always sign with `cosign sign --new-bundle-format=false --yes $DIGEST`.
@@ -380,7 +380,7 @@ Universal Blue uses key-pair signing rather than keyless because rpm-ostree's si
     "docker": {
       "ghcr.io/kabuki94": [{
         "type": "sigstoreSigned",
-        "keyPath": "/etc/pki/containers/cloudws-cosign.pub"
+        "keyPath": "/etc/pki/containers/mios-cosign.pub"
       }]
     }
   }
@@ -425,19 +425,19 @@ RUN firewall-offline-cmd --zone=public --add-port=6443/tcp
 
 ## Conclusion
 
-CloudWS-bootc's ambition to unify workstation, hypervisor, and server roles in a single bootc image is architecturally sound—this is precisely what uCore-HCI demonstrates at scale. But the implementation gap is substantial. **The three highest-impact changes are:** adopting the multi-stage Containerfile pattern with `FROM scratch AS ctx` and `bootc container lint`, implementing cosign image signing in CI, and removing hardcoded credentials in favor of first-boot provisioning.
+MiOS's ambition to unify workstation, hypervisor, and server roles in a single bootc image is architecturally sound—this is precisely what uCore-HCI demonstrates at scale. But the implementation gap is substantial. **The three highest-impact changes are:** adopting the multi-stage Containerfile pattern with `FROM scratch AS ctx` and `bootc container lint`, implementing cosign image signing in CI, and removing hardcoded credentials in favor of first-boot provisioning.
 
-The project's CloudWS-bootc/Arch base adds complexity that Fedora-based Universal Blue projects avoid entirely—the DNF facade hack, manual keyring management, and bootc-image-builder incompatibilities are all self-inflicted. Consider whether the CloudWS-bootc performance optimizations (BORE scheduler, x86-64-v3) justify the maintenance burden, or whether Fedora Rawhide bootc with kernel arguments achieves comparable results.
+The project's MiOS/Arch base adds complexity that Fedora-based Universal Blue projects avoid entirely—the DNF facade hack, manual keyring management, and bootc-image-builder incompatibilities are all self-inflicted. Consider whether the MiOS performance optimizations (BORE scheduler, x86-64-v3) justify the maintenance burden, or whether Fedora Rawhide bootc with kernel arguments achieves comparable results.
 
-The composefs-native transition is not optional—it represents bootc's future storage model. CloudWS-bootc should enable composefs now, implement UKI support for Secure Boot, and begin testing with `--composefs-native` installations. The window for gradual adoption is closing as OSTree moves toward deprecation in the bootc context.
+The composefs-native transition is not optional—it represents bootc's future storage model. MiOS should enable composefs now, implement UKI support for Secure Boot, and begin testing with `--composefs-native` installations. The window for gradual adoption is closing as OSTree moves toward deprecation in the bootc context.
 
-SecureBlue's sudoless design (`run0` replacing `sudo`), SUID stripping, and hardened_malloc integration represent a security standard that any production bootc image should aspire to. The 4,500-line `cloudws-full.sh` management script should be decomposed into idempotent systemd units and declarative configuration—imperative shell scripts are the antithesis of the immutable OS model CloudWS-bootc claims to implement.
+SecureBlue's sudoless design (`run0` replacing `sudo`), SUID stripping, and hardened_malloc integration represent a security standard that any production bootc image should aspire to. The 4,500-line `mios-full.sh` management script should be decomposed into idempotent systemd units and declarative configuration—imperative shell scripts are the antithesis of the immutable OS model MiOS claims to implement.
 
 ---
 ### 📚 Bootc Ecosystem & Resources
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---

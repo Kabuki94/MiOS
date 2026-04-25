@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest a new feature or improvement for CloudWS-bootc
+about: Suggest a new feature or improvement for MiOS
 title: "[FEATURE] "
 labels: enhancement
 assignees: Kabuki94
@@ -20,7 +20,7 @@ Describe any alternative solutions or features you've considered.
 
 ## Impact area
 
-Which part of CloudWS does this affect? (check all that apply)
+Which part of MiOS does this affect? (check all that apply)
 
 - [ ] Containerfile / build system
 - [ ] PACKAGES.md / package selection

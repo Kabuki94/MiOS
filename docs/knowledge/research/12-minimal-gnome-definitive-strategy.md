@@ -1,11 +1,11 @@
-# 🌐 CloudWS-bootc — Universal AI Integration
+# 🌐 MiOS — Universal AI Integration
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
 # Minimal GNOME for Fedora Rawhide bootc: the definitive package strategy
 
-**The absolute minimum GNOME Wayland desktop on Fedora Rawhide (fc45/GNOME 50) requires approximately 25 explicitly installed RPM packages** — everything else resolves as hard dependencies. The critical technique is `--setopt=install_weak_deps=False`, which prevents DNF from pulling hundreds of Recommends/Suggests packages. The single most dangerous removal on Fedora is `malcontent`: its shared library (`malcontent-libs`) is a **compile-time hard dependency** of `gnome-control-center`, which chains upward to `gnome-shell` and `gdm`. Every other GNOME application — from gnome-tour to Firefox — can be safely removed without cascade. Universal Blue projects (Bluefin, Bazzite) do not actually strip GNOME; they build additive layers on full Silverblue images. For CloudWS-bootc, the correct pattern is building from the bare `quay.io/fedora/fedora-bootc` base and installing individual packages rather than using `@gnome-desktop`.
+**The absolute minimum GNOME Wayland desktop on Fedora Rawhide (fc45/GNOME 50) requires approximately 25 explicitly installed RPM packages** — everything else resolves as hard dependencies. The critical technique is `--setopt=install_weak_deps=False`, which prevents DNF from pulling hundreds of Recommends/Suggests packages. The single most dangerous removal on Fedora is `malcontent`: its shared library (`malcontent-libs`) is a **compile-time hard dependency** of `gnome-control-center`, which chains upward to `gnome-shell` and `gdm`. Every other GNOME application — from gnome-tour to Firefox — can be safely removed without cascade. Universal Blue projects (Bluefin, Bazzite) do not actually strip GNOME; they build additive layers on full Silverblue images. For MiOS, the correct pattern is building from the bare `quay.io/fedora/fedora-bootc` base and installing individual packages rather than using `@gnome-desktop`.
 
 ---
 
@@ -98,7 +98,7 @@ This strips the parental controls GUI and CLI tools but preserves `malcontent` a
 | `gnome-control-center` | Removes gnome-shell → gdm | Hard `Requires` |
 | `gnome-settings-daemon` | Removes gnome-shell + gnome-control-center | Hard `Requires` |
 | `mutter` | Removes gnome-shell → cascade above | Hard `Requires` |
-| `gjs` | Removes gnome-shell → cascade above | Hard `Requires` (gjs >= 1.85.90) |
+| `gjs` | Removes gnome-shell → cascade above | Hard `Requires` (gjs >= v2.1.0) |
 
 **Every other GNOME application is safe to remove.** All apps in the user's list — gnome-tour, gnome-text-editor, gnome-calculator, gnome-calendar, gnome-contacts, gnome-weather, gnome-maps, gnome-clocks, gnome-characters, gnome-font-viewer, gnome-system-monitor, gnome-disk-utility, baobab, cheese/snapshot, simple-scan, gnome-connections, totem/showtime, eog/loupe, evince/papers, file-roller, gnome-music, gnome-photos, rhythmbox, seahorse, deja-dup, gnome-boxes, gnome-logs, yelp, gnome-classic-session, all `gnome-shell-extension-*` packages, and Firefox — are standalone applications with no reverse dependencies from `gnome-shell`, `gdm`, or `mutter`. They can all be `dnf remove`d cleanly.
 
@@ -133,7 +133,7 @@ A key finding: **none of the Universal Blue projects build minimal GNOME images*
 
 **SecureBlue** uses BlueBuild YAML recipes rather than raw Containerfiles and focuses on **hardening rather than minimization**. It disables GNOME user extensions by default, disables Xwayland, removes `gnome-software` (later restored without the ostree backend), removes `sushi` and `gnome-photos`, and removes `gnome-tour`. SecureBlue explicitly dealt with the malcontent issue in issue #609, having to restore `malcontent-ui-libs` after cascading failures. Their planned switch to `--setopt=install_weak_deps=False` (issue #712) was closed as "not planned."
 
-**The takeaway for CloudWS-bootc**: Do not follow the UBlue pattern of layering on full Silverblue. Instead, start from the bare `fedora-bootc` image and install the **25 explicit packages** listed above. This produces a dramatically smaller image.
+**The takeaway for MiOS**: Do not follow the UBlue pattern of layering on full Silverblue. Instead, start from the bare `fedora-bootc` image and install the **25 explicit packages** listed above. This produces a dramatically smaller image.
 
 ---
 
@@ -145,7 +145,7 @@ The **`@gnome-desktop`** group contains mandatory packages (gnome-shell, gdm, gn
 
 Installing with `dnf group install gnome-desktop --setopt=group_package_types=mandatory` pulls only the mandatory tier — still far heavier than the 25-package approach because it includes apps like nautilus, gnome-disk-utility, gnome-system-monitor, gnome-calculator, gnome-text-editor, baobab, file-roller, orca, and gnome-initial-setup. The **`@workstation-product-environment`** adds `@firefox`, `@libreoffice`, `@multimedia`, `@printing`, `@fonts`, `@hardware-support`, and `@guest-desktop-agents` on top.
 
-The **`@base-x`** group historically provided the Xorg display server stack (xorg-x11-drv-* drivers, xorg-x11-server-Xorg, etc.). For a Wayland-only GNOME 50 desktop, this group is unnecessary and wastes significant space. Skip it entirely for CloudWS-bootc.
+The **`@base-x`** group historically provided the Xorg display server stack (xorg-x11-drv-* drivers, xorg-x11-server-Xorg, etc.). For a Wayland-only GNOME 50 desktop, this group is unnecessary and wastes significant space. Skip it entirely for MiOS.
 
 For Fedora Everything netinstall, the Anaconda Software Selection screen offers all environment groups. Selecting "Fedora Workstation" and unchecking optional groups gives a leaner install, but kickstart with `@gnome-desktop --nodefaults` is equivalent to the mandatory-only approach. The most minimal path remains individual package installation from `fedora-bootc`.
 
@@ -183,15 +183,15 @@ QT_STYLE_OVERRIDE=adwaita
 
 ---
 
-## Conclusion: a practical build strategy for CloudWS-bootc
+## Conclusion: a practical build strategy for MiOS
 
-The optimal strategy for CloudWS-bootc is **not** to install `@gnome-desktop` and then remove bloat — that fights Fedora's packaging assumptions and risks cascade traps. Instead, build from `fedora-bootc` and install the **25 explicit packages**, then add system infrastructure (podman, libvirt, virt-manager, fwupd, nautilus, gvfs backends). Use `--setopt=install_weak_deps=False` on every `dnf install` call. Never attempt to remove `malcontent` or `malcontent-libs` — only strip the UI components (`malcontent-control`, `malcontent-pam`, `malcontent-tools`). Pre-configure Flathub as the system-wide remote and ship zero user applications as RPMs. The resulting image will contain roughly **400–500 total packages** versus the **1,800+** in a full Fedora Workstation install — a 70%+ reduction in attack surface and image size while retaining complete GNOME desktop functionality, all XDG portals, full audio/Bluetooth/networking, proper theming across GTK3/GTK4/Qt, and seamless Flatpak integration.
+The optimal strategy for MiOS is **not** to install `@gnome-desktop` and then remove bloat — that fights Fedora's packaging assumptions and risks cascade traps. Instead, build from `fedora-bootc` and install the **25 explicit packages**, then add system infrastructure (podman, libvirt, virt-manager, fwupd, nautilus, gvfs backends). Use `--setopt=install_weak_deps=False` on every `dnf install` call. Never attempt to remove `malcontent` or `malcontent-libs` — only strip the UI components (`malcontent-control`, `malcontent-pam`, `malcontent-tools`). Pre-configure Flathub as the system-wide remote and ship zero user applications as RPMs. The resulting image will contain roughly **400–500 total packages** versus the **1,800+** in a full Fedora Workstation install — a 70%+ reduction in attack surface and image size while retaining complete GNOME desktop functionality, all XDG portals, full audio/Bluetooth/networking, proper theming across GTK3/GTK4/Qt, and seamless Flatpak integration.
 
 ---
 ### 📚 Bootc Ecosystem & Resources
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/CloudWS-bootc](https://github.com/Kabuki94/CloudWS-bootc)
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Sole Proprietor:** Kabu.ki
 ---
