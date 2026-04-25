@@ -1662,6 +1662,7 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 
 ---
 
+<<<<<<< HEAD:.claude/memories/journal.md
 ## 2026-04-25: Strategic Implementation Architecture (Full Stack Remediation)
 - **Claude OS & MCP Integration**: Designed and provisioned the foundational infrastructure for the Claude OS Persistent Memory workflow. Created `cloudws-mcp.service` (port 8051) and `mcp-init.sh` to initialize the 4 core SQLite vaults (`project_memories`, `project_profile`, `project_index`, `knowledge_docs`) backed by `sqlite-vec` and `FTS5`. Added `redis` to `PACKAGES.md` for the Pub/Sub event bus.
 - **Kernel Scheduling & Zram Tuning**: Enforced aggressive workstation scheduling (1000Hz tickrate, BORE scheduler synergy) via `sysctl.d/90-cloudws-le9uo.conf`. Protected against page thrashing during extreme Zram/Zstd pressure (`le9uo` patch logic). Capped Zram strictly at 32GB (50% of physical RAM) to prevent CPU compression overhead via `zram-generator.conf.d/10-cloudws.conf`.
@@ -1690,3 +1691,43 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 - **Orchestration**: Updated `AI.md` and `.ai-rules` to reflect the **Shadow Copy Law**, ensuring both agents operate in lockstep with shared context.
 
 
+=======
+### [2026-04-25 11:12:00 UTC] [AI: scheduled-research-daily (Claude Opus 4.7)]
+*   **THOUGHT:** Daily upstream-ecosystem research pass following the 2026-04-21 NEXT-RESEARCH agenda. Six priority topics queued: bootc 1.15.2/1.16.0, Waydroid/NVIDIA, CrowdSec 1.8.x, Podman 5.7 + Cockpit Quadlet GUI, F44 Konflux signature-verification, GNOME 50 bugfix series + NVIDIA CVE feed.
+*   **LEARNING (today's findings):**
+    *   **bootc:** v1.15.1 (April 14, 2026) is still the latest tag — no v1.15.2/v1.16.0 cut. Open install-time issues #2130–#2132 (composefs+UKI ESP sizing) and #2122 (`--src-imgref` config sourcing bug); none breaking for current CloudWS BIB pipeline. Composefs-native backend (#1190) still lacks rollback and is consolidating in `bootcrew/mono`.
+    *   **Podman:** Latest is **v5.8.2 (2026-04-14)**. Podman 5.7 added `.artifact` Quadlets, `HttpProxy=`/`StopTimeout=`/`BuildArg=`/`IgnoreFile=` keys, `--replace`, `quadlet cat`. Podman 5.8 matured multi-file Quadlets (`---` delimiter / `# FileName=`) and added AppArmor profile keys.
+    *   **Cockpit:** Latest **361 (2026-04-21)**. cockpit-podman + Cockpit 349 lists stopped Quadlets; 350 stop/start/restart; 360 fully integrates Quadlet management; **357 + Python 3.14**.
+    *   **CRITICAL CVE — Cockpit:** **CVE-2026-4631 / GHSA-rq49-h582-83m7** (CVSS **9.8**, unauthenticated RCE via SSH command-injection in remote-login). Cockpit ≥327 and <360 with OpenSSH <9.6 are vulnerable. Fixed in Cockpit 360 + 360.1 + 356.1 backport. CloudWS exposure depends on which Cockpit ucore-hci/F42 currently ships; F44 rebase (April 28) clears the entire risk window. Flagged as `ACTION REQUIRED` in NEXT-RESEARCH.md.
+    *   **cosign:** Confirmed dual release v3.0.6 + v2.6.3 (April 6, 2026). CVE assignment is **CVE-2026-39395** = GHSA-w6c6-c85g-mmv6. CloudWS already pinned to v2.6.3 — no action.
+    *   **WSL:** Released **2.7.1 (March 24, 2026)** with **CVE-2026-26127 .NET fix**, masked NetworkManager+systemd-networkd-wait-online, IPv6 virtio, DNS tunneling, statx in wsl-user-generator, directory mounts. **WSL 2.7.3 pre-release dropped TODAY (April 25)** with **CVE-2026-32178 fix** (.NET System.Net.Mail SMTP CRLF / header-injection, CVSS 7.5).
+    *   **GNOME:** **GNOME 50.1 released April 15, 2026** — fixes Mutter NVIDIA performance regression (high-impact for CloudWS NVIDIA users), GTK4→4.22.2/GTK3→3.24.52, on-screen keyboard, lock-screen network agent, memory leak. F44 ships 50.1+ at GA.
+    *   **Fedora 44:** Final GA confirmed for **April 28, 2026** after two delays from April 14 → April 21 → April 28. Konflux pipeline is the new upstream build infra for bootc artifacts.
+    *   **CrowdSec:** Still **v1.7.7** (March 30, 2025). No 1.8.0 RC yet. Removed the prior NEXT-RESEARCH expectation that 1.8.0 is imminent.
+    *   **nvidia-container-toolkit:** Still **v1.19.0** (March 12, 2026) — no point releases since. CDI generation regressions appear quiet; continue tracking.
+    *   **Waydroid:** Active development (commits late March 2026), but no formal "1.5" tag. NVIDIA support remains anecdotal/inconsistent — added a new Section 14 documenting current state and CDI absence.
+*   **DISCOVERY:**
+    *   `bootc-research-april2026.md` was missing dedicated sections for the GNOME desktop stack and Waydroid; both topics had been fragmented across earlier sections. Added Sections 13 + 14 + index entries.
+    *   The NEXT-RESEARCH expectation of an imminent CrowdSec 1.8.0 is unfounded — engine has been on 1.7.x for a year without an RC. Demoted in tomorrow's priority queue.
+    *   Cockpit RCE (CVSS 9.8) is the highest-priority finding from today and a clear `ACTION REQUIRED` flag for Kabu — implications depend on which Cockpit version ucore-hci ships pre-F44 rebase.
+    *   WSL 2.7.3 CVE landed *today* — CloudWS users on WSL2 should upgrade as soon as MSFT rolls 2.7.3 to the stable channel.
+*   **ACTION:**
+    1. Updated header timestamp ("Last iterative pass: 2026-04-25").
+    2. **Section 1 (bootc):** Added 2026-04-25 update — v1.15.1 still latest, table of open install-time issues, composefs-native re-check.
+    3. **Section 6 (Podman/Quadlet):** Added 2026-04-25 updates — Podman 5.7→5.8.2 chain table; Cockpit 349→361 Quadlet GUI feature progression with explicit pointer to CVE-2026-4631 mitigation.
+    4. **Section 7 (WSL2):** Replaced compatibility matrix to include WSL 2.7.0 + 2.7.1 + 2.7.3 with CVE-2026-26127 and CVE-2026-32178 details and the wsl-user-generator statx/directory-mount additions.
+    5. **Section 8 (cosign):** Refined the v3.0.6/v2.6.3 entry with the now-published CVE-2026-39395 detail and explicit "CloudWS already pinned" status.
+    6. **Section 12 (Security):** Added 2026-04-25 update for **CVE-2026-4631 Cockpit unauthenticated RCE (CVSS 9.8)** with vector, affected versions, fix pointers, and CloudWS mitigations until F44 rebase. Also added cosign CVE-2026-39395 cross-reference and CrowdSec 1.7.x stagnation note.
+    7. **Sections 13 + 14 (NEW):** Created dedicated sections for GNOME 50.x desktop stack and Waydroid; added matching INDEX entries.
+    8. Wrote new NEXT-RESEARCH.md (separate file edit) with revised priority queue, retiring "CrowdSec 1.8.x imminent" and elevating "F44 rebase fallout" + "Cockpit RCE exposure verification".
+*   **JOURNAL ENTRIES RESOLVED / INVALIDATED:**
+    *   Prior NEXT-RESEARCH item #3 (CrowdSec 1.8.x watch with weekly check) — resolved as low priority; demoted to monthly check. No 1.8 RC exists.
+    *   2026-04-21 entry assumption that "Cockpit 349+ has Quadlet GUI" is accurate — confirmed with concrete release-by-release feature progression.
+*   **SUGGESTED ALTERNATIVE:** Could have spawned an Explore subagent to grep the repo for the actual Cockpit version installed in `docs/PACKAGES.md` to quantify CVE-2026-4631 exposure precisely. Rejected — task scope explicitly forbids touching files outside `.ai-context/`, and the version is determined by the Fedora base anyway. Flagged as a Kabu-side audit question in NEXT-RESEARCH.md instead.
+*   **SURPRISES:**
+    *   WSL 2.7.3 dropped on the literal day of the research pass (April 25, 2026) — caught and incorporated.
+    *   CrowdSec engine has been on 1.7.x for over a year without a 1.8.0 RC, contradicting the NEXT-RESEARCH cadence assumption.
+    *   nvidia-container-toolkit appears stalled at v1.19.0 (March 2026); no v1.20 RC. Worth re-checking whether the `1.19.x` patch line is dormant or if internal NVIDIA-only releases are happening.
+
+---
+>>>>>>> ddaf478034abf8f51f16a8e245779245a7b45940:.ai-context/ai-journal.md
