@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-# scripts/35-gpu-pv-shim.sh - CloudWS-bootc v0.1.8
+# scripts/35-gpu-pv-shim.sh - CloudWS-bootc v1.3.0
 # ----------------------------------------------------------------------------
 # Automates guest-side shimming for Hyper-V GPU-PV (dxgkrnl).
 # Since dxgkrnl isn't mainlined yet, we provide the user-mode hooks

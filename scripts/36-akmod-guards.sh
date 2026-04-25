@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# scripts/36-akmod-guards.sh - CloudWS-bootc v0.1.8
+# scripts/36-akmod-guards.sh - CloudWS-bootc v1.3.0
 # ----------------------------------------------------------------------------
 # Install ExecCondition drop-ins that make NVIDIA systemd units exit cleanly
 # (skipped, not failed) when the running kernel's nvidia module has not yet
@@ -36,7 +36,7 @@ for svc in "${SERVICES[@]}"; do
     path="${dir}/${DROPIN_NAME}"
     install -d -m 0755 "${dir}"
     cat > "${path}" <<'EOF'
-# CloudWS-bootc v0.1.8 akmod-guard
+# CloudWS-bootc v1.3.0 akmod-guard
 # Skip unit if akmods has not yet registered the nvidia kernel module
 # for the currently running kernel. ExecCondition is additive (AND
 # semantics per systemd.service(5)), so this composes safely with any

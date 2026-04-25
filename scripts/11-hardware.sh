@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v0.1.8 — 11-hardware: GPU drivers (Mesa + AMD ROCm + Intel + NVIDIA)
+# CloudWS v1.3.0 — 11-hardware: GPU drivers (Mesa + AMD ROCm + Intel + NVIDIA)
 #
 # NVIDIA strategy (v2.3.2):
 #   Primary:  ucore-hci:stable-nvidia ships pre-signed kmods for the base

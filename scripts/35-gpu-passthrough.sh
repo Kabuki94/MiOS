@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# CloudWS-bootc v0.1.8 - 35-gpu-passthrough.sh
+# CloudWS-bootc v1.3.0 - 35-gpu-passthrough.sh
 # ----------------------------------------------------------------------------
 # Manages systemd unit enablement and SELinux for GPU passthrough.
 #

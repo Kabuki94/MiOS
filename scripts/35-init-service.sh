@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v0.1.8 — 35-init-service: Bridge to Unified Role Engine
+# CloudWS v1.3.0 — 35-init-service: Bridge to Unified Role Engine
 # This script ensures cloudws-role.service is correctly enabled.
 # The actual logic lives in /usr/libexec/cloudws/role-apply (system_files overlay).
 set -euo pipefail

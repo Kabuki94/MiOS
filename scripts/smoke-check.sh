@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# CloudWS v0.1.8 — Post-boot serial log smoke check
+# CloudWS v1.3.0 — Post-boot serial log smoke check
 # Usage: smoke-check.sh <serial-log>
 #
 # Analyzes QEMU serial console output for boot health indicators.

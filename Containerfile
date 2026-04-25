@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.9
 # ============================================================================
-# CloudWS-bootc - Unified Image (v0.1.8)
+# CloudWS-bootc - Unified Image (v1.3.0)
 # ============================================================================
 # One image. Every role. Every surface. Every GPU vendor.
 #
@@ -94,7 +94,7 @@ LABEL org.opencontainers.image.title="CloudWS-bootc"
 LABEL org.opencontainers.image.description="Unified immutable cloud-native workstation OS (desktop/k3s/ha/hybrid)"
 LABEL org.opencontainers.image.source="https://github.com/Kabuki94/CloudWS-bootc"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
-LABEL org.opencontainers.image.version="0.1.8"
+LABEL org.opencontainers.image.version="1.3.0"
 LABEL containers.bootc="1"
 LABEL ostree.bootable="1"
 
@@ -109,6 +109,11 @@ ARG CLOUDWS_PASSWORD_HASH=
 
 # Build context mounted read-only
 COPY --from=ctx /ctx /ctx
+
+# Pre-pull images for Logically Bound Images (LBI)
+# This ensures bootc-image-builder can resolve them during disk assembly.
+# Note: we use || true to prevent build failure if registry is temporarily down.
+RUN podman pull docker.io/postgres:15 || true
 
 # ---------------------------------------------------------------------------
 # Overlay system_files/ onto the rootfs. Two-stage to handle the

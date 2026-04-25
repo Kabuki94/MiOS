@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# CloudWS v0.1.8 — Ephemeral QEMU boot test
+# CloudWS v1.3.0 — Ephemeral QEMU boot test
 # Usage: bcvk-wrapper.sh <qcow2-path> [serial-log-path]
 #
 # Boots a QCOW2 image in headless QEMU with KVM, captures serial console,

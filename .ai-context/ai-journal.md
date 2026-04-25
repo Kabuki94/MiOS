@@ -1605,3 +1605,25 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 - **Issue**: Disk builds failed because all Quadlet .container files were being symlinked to /usr/lib/bootc/bound-images.d, causing bootc to attempt to resolve images (e.g., postgres:15) that weren't in the build environment.
 - **Solution**: Removed the aggressive LBI symlinking from scripts/08-system-files-overlay.sh.
 - **Changes**: Updated scripts/08-system-files-overlay.sh to remove the LBI symlink logic.
+
+## 2026-04-25: Architectural Alignment & Final Fixes
+- **Version Alignment**: Updated `VERSION` and `Justfile` to v2.4.0.
+- **DNF5 Transition**: Updated `scripts/lib/common.sh` and `scripts/lib/packages.sh` to prioritize `dnf5`.
+- **WSL Config**: Moved `wsl.conf` to `system_files/etc/wsl.conf` for standard compliance.
+- **LBI Support**: Pre-pulled `postgres:15` in `Containerfile` and restored LBI symlinking in `scripts/08-system-files-overlay.sh`.
+
+## 2026-04-25: Final Standardized WSL2 Configuration
+- **Standardization**: Reverted manual /etc/wsl.conf move and implemented the "Immutable Source + Static Symlink" pattern.
+- **Rationale**: WSL2 requires /etc/wsl.conf at the very beginning of its boot process, before systemd or tmpfiles.d execute.
+- **Compliance**:
+    - Immutable source placed at `/usr/lib/wsl.conf`.
+    - Static symlink created at `/etc/wsl.conf -> /usr/lib/wsl.conf` during build via `scripts/08-system-files-overlay.sh`.
+    - Satisfies **USR-OVER-ETC** policy while meeting WSL2 host requirements.
+
+## 2026-04-25: Project-wide Version Standardization
+- **Standardization**: Aligned all version strings across the entire stack (scripts, manifests, Containerfile, Justfile, docs) to **v1.3.0**.
+- **Rationale**: Consolidated multiple disparate version variants (v0.1.8, v2.x.x) into a single, lower consistent "official" version to ensure stack-wide integrity.
+- **Changes**:
+    - Updated `VERSION`, `Justfile`, `Containerfile`, `docs/PACKAGES.md`.
+    - Batch updated all script headers in `scripts/*.sh`.
+    - Updated `.env`, `image-versions.yml`, `iso.toml`, and `AI.md`.

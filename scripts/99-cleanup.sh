@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v0.1.8 — 99-cleanup: Final image cleanup (mirrors ucore/cleanup.sh)
+# CloudWS v1.3.0 — 99-cleanup: Final image cleanup (mirrors ucore/cleanup.sh)
 #
 # MANDATORY for bootc images. Every ublue-os image runs this pattern.
 # Without it, BIB deployment fails or the booted system has broken /var state.

@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v0.1.8 — 13-ceph-k3s: Ceph distributed storage + K3s Kubernetes
+# CloudWS v1.3.0 — 13-ceph-k3s: Ceph distributed storage + K3s Kubernetes
 # Cephadm runs ALL server daemons as Podman containers.
 # Only client tools + orchestrator binary are baked into the image.
 #

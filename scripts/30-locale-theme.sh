@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v0.1.8 — 30-locale-theme: Unified dark theme for EVERY window type
+# CloudWS v1.3.0 — 30-locale-theme: Unified dark theme for EVERY window type
 #
 # Coverage matrix (ALL must be dark):
 #   ✓ libadwaita / GTK4 apps (GNOME native) — color-scheme=prefer-dark via dconf
@@ -17,7 +17,7 @@
 set -euo pipefail
 
 echo "═══════════════════════════════════════════════════════════════════"
-echo "  CloudWS v0.1.8 — Universal Dark Theme"
+echo "  CloudWS v1.3.0 — Universal Dark Theme"
 echo "═══════════════════════════════════════════════════════════════════"
 
 # ═══ SKEL .bashrc (MUST come BEFORE useradd -m) ═══

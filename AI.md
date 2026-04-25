@@ -22,7 +22,7 @@
 
 | Component | Status |
 |-----------|--------|
-| **Baseline** | v2.4.0 (Full OS Integration) |
+| **Baseline** | v1.3.0 (Full OS Integration) |
 | **Hardware** | **Agnostic** (Universal Intel/AMD/NVIDIA/Apple/ARM Support) |
 | **Deployment** | Universal (Bare-metal, VM, OCI, WSL2/g, Hyper-V, Podman/Docker, LVM) |
 | **Para-virt** | Full (GPU-PV, SR-IOV, VSOCK, virtio-gpu, DDA/DDS) |

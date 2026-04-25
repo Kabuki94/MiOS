@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v0.1.8 — 33-firewall: Firewall configuration script
+# CloudWS v1.3.0 — 33-firewall: Firewall configuration script
 set -euo pipefail
 
 echo "[33-firewall] Installing firewall init script..."

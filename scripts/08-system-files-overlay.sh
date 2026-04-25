@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================================
-# scripts/08-system-files-overlay.sh - CloudWS-bootc v0.1.8
+# scripts/08-system-files-overlay.sh - CloudWS-bootc v1.3.0
 # ----------------------------------------------------------------------------
 # Overlay /ctx/system_files/ onto the rootfs during the Containerfile build,
 # correctly handling the /usr/local -> /var/usrlocal symlink that ships on
@@ -50,13 +50,27 @@ log "08-overlay: normalizing systemd file permissions"
 find /usr/lib/systemd -type f \( -name "*.service" -o -name "*.socket" -o -name "*.timer" -o -name "*.mount" -o -name "*.conf" -o -name "*.target" -o -name "*.path" -o -name "*.slice" -o -name "*.preset" -o -name "*.automount" -o -name "*.swap" \) -exec chmod 644 {} \; 2>/dev/null || true
 find /usr/lib/systemd -type d -exec chmod 755 {} \; 2>/dev/null || true
 
+# Logically Bound Images
+QDIR="/usr/share/containers/systemd"
+BDIR="/usr/lib/bootc/bound-images.d"
+if [[ -d "${QDIR}" ]]; then
+    install -d -m 0755 "${BDIR}"
+    shopt -s nullglob
+    for q in "${QDIR}"/*.container; do
+        name="$(basename "$q")"
+        ln -sf "${QDIR}/${name}" "${BDIR}/${name}"
+        log "  LBI: bound ${name}"
+    done
+    shopt -u nullglob
+fi
+
 # ═══ WSL2 & Pathing Compatibility ═══
 log "08-overlay: applying WSL2 and pathing compatibility symlinks"
 
-# 1. WSL2 looks for /etc/wsl.conf, but we store it in /usr/lib/wsl.conf for immutability
+# 1. WSL2 looks for /etc/wsl.conf, but we store it in /usr/lib/wsl.conf for immutability (USR-OVER-ETC)
 if [[ -f /usr/lib/wsl.conf ]]; then
     ln -sf /usr/lib/wsl.conf /etc/wsl.conf
-    log "  WSL: symlinked /etc/wsl.conf"
+    log "  WSL: symlinked /etc/wsl.conf -> /usr/lib/wsl.conf"
 fi
 
 # 2. Standardize /home to /var/home (FCOS/bootc style)

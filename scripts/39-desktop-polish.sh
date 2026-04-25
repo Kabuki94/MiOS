@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v0.1.8 — 39-desktop-polish: Desktop entries, Cockpit webapp, MOTD
+# CloudWS v1.3.0 — 39-desktop-polish: Desktop entries, Cockpit webapp, MOTD
 #
 # CHANGELOG v2.3.1:
 #   - FIX: cloudws-motd source path was /tmp/build/scripts/ (never exists).

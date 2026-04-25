@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# scripts/42-cosign-policy.sh - CloudWS-bootc v0.1.8
+# scripts/42-cosign-policy.sh - CloudWS-bootc v1.3.0
 # ----------------------------------------------------------------------------
 # Consolidates cosign binary installation, Sigstore trust roots, and policy.json.
 # Supercedes 37-cosign-policy.sh.

@@ -1,4 +1,4 @@
-# CloudWS v0.1.8 — iso.toml
+# CloudWS v1.3.0 — iso.toml
 # Combined BIB + kickstart configuration for Anaconda ISO builds.
 # This is the ONLY config file mounted for ISO builds (/config.toml).
 # bib.json/bib.toml is used for RAW/VHD targets only.
@@ -31,7 +31,7 @@ systemctl set-default graphical.target
 # Generate machine-id for unique hostname
 systemd-machine-id-setup 2>/dev/null || true
 
-echo "CloudWS v0.1.8 — Post-install complete"
+echo "CloudWS v1.3.0 — Post-install complete"
 %end
 
 reboot

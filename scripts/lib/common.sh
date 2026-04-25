@@ -12,6 +12,13 @@ warn(){ printf 'WARN: %s\n' "$*" >&2; }
 die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 
 # --- dnf flags --------------------------------------------------------------
+# Select dnf binary (prefer dnf5 if available)
+if command -v dnf5 &>/dev/null; then
+    export DNF_BIN="dnf5"
+else
+    export DNF_BIN="dnf"
+fi
+
 # Defense-in-depth: /etc/dnf/dnf.conf already carries install_weak_deps=False,
 # but passing it on every invocation guarantees behaviour even if a script or
 # transaction overrides the global default. Array form so elements are one-

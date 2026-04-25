@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v0.1.8 — 36-tools: CLI tools and consolidated cloudws command
+# CloudWS v1.3.0 — 36-tools: CLI tools and consolidated cloudws command
 # Installs all cloudws-* tools to /usr/bin/ and the master 'cloudws' CLI.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

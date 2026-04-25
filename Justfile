@@ -1,4 +1,4 @@
-# CloudWS v1.3 — Linux Build Targets
+# CloudWS v1.3.0 — Linux Build Targets
 # Requires: podman, just
 # Usage: just build | just iso | just all
 
@@ -34,7 +34,7 @@ raw: build
     @echo "✓ RAW image in output/"
 
 # Generate Anaconda installer ISO
-# FIX v1.3: ONLY mount iso.toml (includes minsize). Do NOT also mount bib config.
+# FIX v1.3.0: ONLY mount iso.toml (includes minsize). Do NOT also mount bib config.
 # BIB crashes with: "found config.json and also config.toml"
 iso: build
     mkdir -p output
@@ -75,7 +75,7 @@ push:
 all: build rechunk raw iso vhd wsl push
 
 # Automated boot test via QEMU (requires nested virtualization)
-# v2.4.0: Added for architectural validation.
+# v1.3.0: Added for architectural validation.
 boot-test: build
     mkdir -p output/qcow2
     @echo "Building QCOW2 image for boot validation..."

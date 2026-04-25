@@ -1,9 +1,10 @@
 #!/bin/bash
-# CloudWS v0.1.8 — Master build runner
+# CloudWS v1.3.0 — Master build runner
 # Executes all numbered scripts in order, then cleans up.
 # Called from Containerfile RUN layer via bind mount.
 #
-# CHANGELOG v2.0:
+# CHANGELOG v1.3.0:
+#   - Standardized versioning across the entire stack.
 #   - FIX: install_weakdeps=False (was True in v1.3 — contradicted docs)
 #   - FIX: Safe arithmetic: VAR=$((VAR + 1)) not ((VAR++)) (set -e compat)
 #   - Base: ucore-hci:stable-nvidia (Rawhide overlay in 01-repos.sh)
@@ -25,7 +26,7 @@ log_ts() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
 }
 
-VERSION_STR="$(cat "${SCRIPT_DIR}/../VERSION" 2>/dev/null || cat /ctx/VERSION 2>/dev/null || echo '2.0.0')"
+VERSION_STR="$(cat "${SCRIPT_DIR}/../VERSION" 2>/dev/null || cat /ctx/VERSION 2>/dev/null || echo '1.3.0')"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  CloudWS v${VERSION_STR} — Building OS Image"

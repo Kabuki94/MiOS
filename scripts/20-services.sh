@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v0.1.8 — 20-services: Enable systemd services + bare-metal/VM gating
+# CloudWS v1.3.0 — 20-services: Enable systemd services + bare-metal/VM gating
 #
 # CHANGELOG v1.3:
 #   - systemd 260: cgroup v1 support REMOVED — all services must use cgroup v2
@@ -11,7 +11,7 @@
 set -euo pipefail
 
 echo "═══════════════════════════════════════════════════════════════════"
-echo "  CloudWS v0.1.8 — Service Configuration"
+echo "  CloudWS v1.3.0 — Service Configuration"
 echo "═══════════════════════════════════════════════════════════════════"
 
 # ─── Fix systemd unit file permissions ────────────────────────────────────────
