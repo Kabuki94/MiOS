@@ -2307,3 +2307,11 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   2. **CI/CD Integration:** The workflow triggers on pushes to core directories, regenerates AI manifests, prepares the wiki staging area using `tools/sync-wiki.py`, and pushes the result to the repository's wiki.
   3. **Verification:** Validated that `tools/sync-wiki.py` correctly flattens paths and generates `Home.md` and `_Sidebar.md` for wiki navigation.
 * **RESULT:** The GitHub Wiki will now automatically stay in sync with the repository's internal AI context and documentation.
+
+### [2026-04-26 01:00:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** Completed repository documentation and automation enhancements.
+* **ACTION:** 
+  1. **README Update:** Updated root `README.md` to clearly display all primary build entry points (`just`, `cloud-ws.ps1`, `install.sh`, etc.) for different environments.
+  2. **Security Documentation:** Finalized `docs/knowledge/guides/WSL2-DEPLOYMENT.md` and linked it in the Knowledge Base index.
+  3. **Context Sync:** Regenerated all AI manifests and wiki staging artifacts using `tools/generate-ai-manifest.py` and `tools/sync-wiki.py`.
+* **RESULT:** The repository is now fully documented, with clear paths for developers and automated systems to build, deploy, and assist with the MiOS stack.

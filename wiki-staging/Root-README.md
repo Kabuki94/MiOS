@@ -31,6 +31,35 @@ MiOS-OS is a container-native, mathematically verifiable workstation operating s
 
 ---
 
+## 🏗️ Build Entry Points
+
+Depending on your environment, use one of the following primary entry points to build and deploy MiOS:
+
+### 🐧 Linux / WSL2 (One-Liner)
+Bootstraps the environment, clones the latest repository, and initiates the build process.
+```bash
+curl -fsSL https://raw.githubusercontent.com/Kabuki94/MiOS/main/install.sh | bash
+```
+
+### 🪟 Windows 11 (One-Liner)
+One-click repository fetch and max-resource environment setup. **Run as Administrator.**
+```powershell
+irm https://raw.githubusercontent.com/Kabuki94/MiOS/main/install.ps1 | iex
+```
+
+### 🐚 [Justfile](Justfile) (Unified Runner)
+The recommended entry point for developers with the repository already cloned.
+```bash
+just build    # Synthesis OCI image
+just wsl      # Generate WSL2 tarball
+just all      # Full artifact synthesis (RAW, VHDX, ISO, WSL)
+```
+
+### 🛠️ [scripts/build.sh](scripts/build.sh) (Internal Master Runner)
+The core build logic that executes all numbered scripts in sequence. This is typically invoked automatically during the OCI build phase.
+
+---
+
 ## 🏗️ Documentation Hub
 
 ### 📐 [Strategic Blueprint](docs/blueprint.md)

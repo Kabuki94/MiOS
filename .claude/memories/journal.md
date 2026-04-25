@@ -2310,3 +2310,11 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   2. **Security Documentation:** Finalized `docs/knowledge/guides/WSL2-DEPLOYMENT.md` and linked it in the Knowledge Base index.
   3. **Context Sync:** Regenerated all AI manifests and wiki staging artifacts using `tools/generate-ai-manifest.py` and `tools/sync-wiki.py`.
 * **RESULT:** The repository is now fully documented, with clear paths for developers and automated systems to build, deploy, and assist with the MiOS stack.
+
+### [2026-04-26 01:15:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** Standardized build entry point documentation in the root README.
+* **ACTION:** 
+  1. **README Update:** Enhanced the "Build Entry Points" section to highlight one-liner installation commands for Linux (`curl`) and Windows (`irm | iex`), providing immediate accessibility for new deployments.
+  2. **Manifest Refresh:** Regenerated all category manifests and updated the global `ai-context.json` to include the latest README and security guide revisions.
+  3. **Wiki Sync:** Pushed updated documentation to the wiki staging area.
+* **RESULT:** The onboarding process is now highly streamlined with modern, one-liner entry points documented as the primary interaction methods for both major platforms.
