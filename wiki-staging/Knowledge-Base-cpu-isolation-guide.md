@@ -1,5 +1,5 @@
 # 🌐 MiOS — Universal AI Integration
-> **Metadata:** proprietor: Kabu.ki, infrastructure: Self-Building Infrastructure (Personal Property), license: Licensed as personal property to Kabu.ki
+> **Metadata:** proprietor: Kabu.ki, infrastructure: Self-Building Infrastructure (Personal Property), license: Licensed as personal property to Kabu.ki, source_reference: MiOS-Core-v2.1.0
 
 ---
 
@@ -7,7 +7,9 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
+> **Source Reference:** MiOS-Core-v2.1.0
 ---
+
 # Universal CPU Core Isolation Guide
 ## Optimize VM Performance with Intelligent CPU Pinning
 
@@ -655,10 +657,10 @@ See libvirt hooks documentation for per-VM hook configuration.
 *Maximum performance, zero compromises*
 
 ---
-### 📚 Bootc Ecosystem & Resources
-- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
-- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
-- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+### ⚖️ Legal & Source Reference
+- **Copyright:** (c) 2026 Kabu.ki
+- **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
-- **Sole Proprietor:** Kabu.ki
+- **Documentation:** [MiOS Knowledge Base](https://github.com/Kabuki94/MiOS/tree/main/docs/knowledge)
+- **Artifact Hub:** [ai-context.json](../../ai-context.json)
 ---

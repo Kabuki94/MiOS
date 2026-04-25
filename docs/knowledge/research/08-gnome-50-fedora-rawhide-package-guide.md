@@ -2,7 +2,9 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
+> **Source Reference:** MiOS-Core-v2.1.0
 ---
+
 # GNOME 50 on Fedora Rawhide: complete package reference
 
 Fedora Rawhide (fc45) fully carries **GNOME 50 "Tokyo"** as of March 18, 2026, with all core libraries, shell components, and replacement apps updated to their 50.0 stable releases. The `fedora-bootc:rawhide` container image does not ship a desktop by default but can install GNOME 50 via a single `dnf` group install with no special repo configuration. Below is every RPM name, gsettings key, environment variable, and renderer detail needed to build and configure a GNOME 50 desktop on Rawhide.
@@ -141,10 +143,10 @@ This bypasses all GL/Vulkan driver issues at the cost of losing 3D transforms an
 Fedora Rawhide fc45 is fully aligned with GNOME 50 "Tokyo" across every component — from gtk4 4.22 and libadwaita 1.9 through gnome-shell 50.0 and all the modern replacement apps (`papers`, `showtime`, `loupe`, `ptyxis`, `resources`). Building a GNOME 50 bootc image requires nothing more than `dnf -y install @workstation-product-environment` on the rawhide base, since the single `rawhide` repo already contains everything. The Dash to Dock extension (`gnome-shell-extension-dash-to-dock` v103) is in the official repos with native GNOME 50 support. For theming, the `org.gnome.desktop.interface` schema handles both `color-scheme` and `accent-color`, with `ADW_DISABLE_PORTAL=1` being the critical environment variable for containers where the portal daemon isn't running. In Hyper-V VMs, set `GSK_RENDERER=cairo` and `GDK_DISABLE=vulkan` to avoid the known rendering bugs that affect GTK4's GPU renderers under software-only graphics stacks.
 
 ---
-### 📚 Bootc Ecosystem & Resources
-- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
-- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
-- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+### ⚖️ Legal & Source Reference
+- **Copyright:** (c) 2026 Kabu.ki
+- **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
-- **Sole Proprietor:** Kabu.ki
+- **Documentation:** [MiOS Knowledge Base](https://github.com/Kabuki94/MiOS/tree/main/docs/knowledge)
+- **Artifact Hub:** [ai-context.json](../../ai-context.json)
 ---

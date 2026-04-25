@@ -1,14 +1,14 @@
 ## 🌐 MiOS Navigation
 
 ### Changelogs
-- [[MiOS v2.1.0 Detailed Technical Logs|Changelogs-02-v2.1.0-Detailed-Technical-Log]]
+- [[🌐 MiOS — Universal AI Integration|Changelogs-02-v2.1.0-Detailed-Technical-Log]]
 - [[🌐 MiOS — Universal AI Integration|Changelogs-03-Cumulative-Changelog]]
-- [[MiOS Legacy v1.1 - System Profiler Toolkit|Changelogs-01-v1.1-Legacy-Profiler]]
+- [[🌐 MiOS — Universal AI Integration|Changelogs-01-v1.1-Legacy-Profiler]]
 
 ### Knowledge Base
-- [[🧠 MiOS Universal AI Research & Context Reference Template|Knowledge-Base-AI-RESEARCH-TEMPLATE]]
+- [[🌐 MiOS — Universal AI Integration|Knowledge-Base-AI-RESEARCH-TEMPLATE]]
 - [[🌐 MiOS — Universal AI Integration|Knowledge-Base-README]]
-- [[🤖 MiOS AI Integration|Knowledge-Base-AI-INTEGRATION]]
+- [[🌐 MiOS — Universal AI Integration|Knowledge-Base-AI-INTEGRATION]]
 - [[🌐 MiOS — Universal AI Integration|Knowledge-Base-MiOS-OS Bootc Repository Analysis]]
 - [[🌐 MiOS — Universal AI Integration|Knowledge-Base-09-integrating-ceph-cephadm-k3s]]
 - [[🌐 MiOS — Universal AI Integration|Knowledge-Base-13-technical-audit-bootc-ecosystem]]

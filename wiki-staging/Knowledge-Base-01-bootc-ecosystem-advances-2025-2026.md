@@ -1,5 +1,5 @@
 # 🌐 MiOS — Universal AI Integration
-> **Metadata:** proprietor: Kabu.ki, infrastructure: Self-Building Infrastructure (Personal Property), license: Licensed as personal property to Kabu.ki
+> **Metadata:** proprietor: Kabu.ki, infrastructure: Self-Building Infrastructure (Personal Property), license: Licensed as personal property to Kabu.ki, source_reference: MiOS-Core-v2.1.0
 
 ---
 
@@ -7,7 +7,9 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
+> **Source Reference:** MiOS-Core-v2.1.0
 ---
+
 # Bootc ecosystem advances MiOS should adopt now
 
 **The bootc ecosystem has undergone transformative changes since v2.1.0**, with the composefs-native backend emerging as the single most consequential development—a full Rust reimplementation that will replace the OSTree backend and enable UKI-based measured boot. Universal Blue has simultaneously restructured into a modular OCI composition model, Fedora is converging all atomic variants onto bootc base images through its Image Mode Phase 2 initiative, and the merger of bootc-image-builder into image-builder-cli signals a maturing toolchain. For MiOS specifically, the most immediately actionable improvements are: adopting the new `bootc-base-imagectl rechunk` pipeline, implementing cosign keyless signing, migrating to logically-bound images for workload management, switching to NVIDIA open kernel modules with CDI, and incorporating SecureBlue's 29-parameter kernel hardening.
@@ -104,10 +106,10 @@ For NVIDIA on Fedora, recurring patterns include drivers from RPM Fusion breakin
 The bootc ecosystem is rapidly maturing toward a production-grade platform where composefs replaces OSTree, UKI enables measured boot, and Fedora converges all atomic variants onto shared bootc base images. MiOS should prioritize five immediate actions: implement `bootc-base-imagectl rechunk` in CI, adopt cosign keyless signing with build attestation, migrate NVIDIA handling to open kernel modules with CDI, deploy SecureBlue kernel hardening parameters via kargs.d TOML drop-ins, and set up Renovate Bot with `image-versions.yml` for digest-pinned dependency management. The shift from BIB to image-builder-cli, the composefs rollback limitation, and Fedora 44's Podman 6 transition are the key risks to monitor. Universal Blue's modular OCI composition model—with its three-tier layering, numbered build scripts, and uupd unified updater—provides the most complete reference architecture for MiOS to follow.
 
 ---
-### 📚 Bootc Ecosystem & Resources
-- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
-- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
-- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+### ⚖️ Legal & Source Reference
+- **Copyright:** (c) 2026 Kabu.ki
+- **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
-- **Sole Proprietor:** Kabu.ki
+- **Documentation:** [MiOS Knowledge Base](https://github.com/Kabuki94/MiOS/tree/main/docs/knowledge)
+- **Artifact Hub:** [ai-context.json](../../ai-context.json)
 ---

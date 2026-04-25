@@ -2,7 +2,9 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
+> **Source Reference:** MiOS-Core-v2.1.0
 ---
+
 # MiOS v2.1.0 release — complete implementation plan
 
 **Bottom line:** The CI break is a `/usr/local` symlink collision inherited from the Fedora-CoreOS / ucore lineage; fix it by targeting `/var/usrlocal` directly (that's what the symlink points to) and eliminate the `cp -a` trailing-slash gotcha entirely. Of the three defensive audit fixes, the cleanest shape for v2.1.0 is to ship a full replacement `scripts/05-enable-external-repos.sh` (no RPM Fusion, `dnf` not `dnf5`, array-form `DNF_SETOPT`) and turn `push-to-github.ps1` into a 5-line deprecation shim that exec's `push-v2.1.0.ps1`. DNF_SETOPT becomes a bash array sourced from a new `scripts/lib/common.sh`, applied to every `dnf install/remove/swap/group install` call site. The three highest-ROI outstanding items — cosign keyless (Item A), bootc-image-builder artifacts (Item B), and akmod ExecCondition guards (Item C) — are all deliverable in this release with exact file contents, no further research required. One material research surprise: **ublue-os bluefin/bazzite use keyed cosign signing, not keyless**, so the keyless pattern is modeled on travier/cosign-test and the Sigstore CI quickstart, which are the authoritative keyless references for containers/image-based verification.
@@ -959,10 +961,10 @@ The flatpack is ready to generate from this document alone; every file listed in
 **CRITICAL OVERRIDE:** The decision in section 4 to deprecate `push-to-github.ps1` and use versioned scripts (`push-vX.Y.Z.ps1`) has been explicitly rejected and reversed by the maintainer. `push-to-github.ps1` is the **only** variant to keep, as it is a core part of the local build stack. All versioned variants must be merged back into the main `push-to-github.ps1` file. Do NOT create versioned push scripts.
 
 ---
-### 📚 Bootc Ecosystem & Resources
-- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
-- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
-- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+### ⚖️ Legal & Source Reference
+- **Copyright:** (c) 2026 Kabu.ki
+- **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
-- **Sole Proprietor:** Kabu.ki
+- **Documentation:** [MiOS Knowledge Base](https://github.com/Kabuki94/MiOS/tree/main/docs/knowledge)
+- **Artifact Hub:** [ai-context.json](../../ai-context.json)
 ---

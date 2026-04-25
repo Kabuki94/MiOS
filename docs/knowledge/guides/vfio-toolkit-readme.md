@@ -2,7 +2,9 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
+> **Source Reference:** MiOS-Core-v2.1.0
 ---
+
 # Universal VFIO PCIe Device Isolation Toolkit
 
 A complete, production-ready toolkit for configuring **any PCIe device** for VFIO passthrough on Linux. Originally designed for RTX 4090 on MiOS/systemd-boot, now expanded to support any GPU vendor, any bootloader, and any Linux distribution.
@@ -354,10 +356,10 @@ The authors are not responsible for any system instability, data loss, or hardwa
 *Compatible with MiOS, Fedora Bootc, EndeavourOS, Manjaro, and any systemd-boot/GRUB-based distribution*
 
 ---
-### 📚 Bootc Ecosystem & Resources
-- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
-- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
-- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+### ⚖️ Legal & Source Reference
+- **Copyright:** (c) 2026 Kabu.ki
+- **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
-- **Sole Proprietor:** Kabu.ki
+- **Documentation:** [MiOS Knowledge Base](https://github.com/Kabuki94/MiOS/tree/main/docs/knowledge)
+- **Artifact Hub:** [ai-context.json](../../ai-context.json)
 ---

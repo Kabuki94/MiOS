@@ -1,6 +1,13 @@
-# MiOS v2.1.0 Detailed Technical Logs
-> **Metadata:** proprietor: Kabu.ki, infrastructure: Self-Building Infrastructure (Personal Property), license: Licensed as personal property to Kabu.ki
+# 🌐 MiOS — Universal AI Integration
+> **Metadata:** proprietor: Kabu.ki, infrastructure: Self-Building Infrastructure (Personal Property), license: Licensed as personal property to Kabu.ki, source_reference: MiOS-Core-v2.1.0
 
+---
+
+# 🌐 MiOS — Universal AI Integration
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+> **Source Reference:** MiOS-Core-v2.1.0
 ---
 
 # MiOS v2.1.0 Detailed Technical Logs
@@ -8,11 +15,6 @@ Chronological compilation of push logs and milestone updates.
 
 ---
 ## Source: CHANGELOG-v1_3_0.md
-# 🌐 MiOS — Universal AI Integration
-> **Proprietor:** Kabu.ki
-> **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
----
 # MiOS v2.1.0 CHANGELOG
 
 **Release Date:** April 6, 2026
@@ -135,11 +137,6 @@ Chronological compilation of push logs and milestone updates.
 
 ---
 ## Source: CHANGELOG-v2_1_0.md
-# 🌐 MiOS — Universal AI Integration
-> **Proprietor:** Kabu.ki
-> **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
----
 # MiOS v2.1.0 CHANGELOG
 
 **Release Date:** April 12, 2026
@@ -273,11 +270,6 @@ This release incorporates findings from a comprehensive analysis of the bootc ec
 
 ---
 ## Source: CHANGELOG-v2_2_0.md
-# 🌐 MiOS — Universal AI Integration
-> **Proprietor:** Kabu.ki
-> **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
----
 # MiOS v2.1.0 - Unified Image + Upstream Adoptions
 
 ## Summary
@@ -367,11 +359,6 @@ sudo bootc switch --enforce-container-sigpolicy \
 
 ---
 ## Source: CHANGELOG-v2_2_2.md
-# 🌐 MiOS — Universal AI Integration
-> **Proprietor:** Kabu.ki
-> **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
----
 # MiOS v2.1.0 - BAKE IN EVERYTHING
 
 ## What went wrong in v2.1.0 / v2.1.0
@@ -524,11 +511,6 @@ image size from the unified package install.
 
 ---
 ## Source: CHANGELOG-v2_2_3.md
-# 🌐 MiOS — Universal AI Integration
-> **Proprietor:** Kabu.ki
-> **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
----
 # MiOS v2.1.0 - Consolidate into PACKAGES.md
 
 ## What went wrong
@@ -625,11 +607,6 @@ One source. One installer. Everything baked in.
 
 ---
 ## Source: CHANGELOG-v2_2_4.md
-# 🌐 MiOS — Universal AI Integration
-> **Proprietor:** Kabu.ki
-> **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
----
 # MiOS v2.1.0 - Truly fix the broken bits
 
 ## Bugs this release fixes
@@ -739,11 +716,6 @@ parsing splits multi-line strings at whitespace. This script uses
 
 ---
 ## Source: CHANGELOG-v2_2_5.md
-# 🌐 MiOS — Universal AI Integration
-> **Proprietor:** Kabu.ki
-> **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
----
 # MiOS v2.1.0 - CI lowercase + cloud-ws.ps1 token-leak fix
 
 ## Two bugs, independent, both critical
@@ -833,11 +805,6 @@ the token has short scope, assume it is compromised and rotate.
 
 ---
 ## Source: CHANGELOG-v2_2_6.md
-# 🌐 MiOS — Universal AI Integration
-> **Proprietor:** Kabu.ki
-> **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
----
 # MiOS v2.1.0 - Restore UTF-8 BOM on .ps1 files
 
 ## What went wrong
@@ -910,11 +877,6 @@ is less invasive.
 
 ---
 ## Source: CHANGELOG-v2_2_7.md
-# 🌐 MiOS — Universal AI Integration
-> **Proprietor:** Kabu.ki
-> **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
----
 # MiOS v2.1.0 - ASCII-only install.ps1 + preflight.ps1
 
 ## Bug
@@ -991,3 +953,11 @@ non-ASCII bytes.
 - **Sole Proprietor:** Kabu.ki
 ---
 
+---
+### ⚖️ Legal & Source Reference
+- **Copyright:** (c) 2026 Kabu.ki
+- **Status:** Personal Property / Private Infrastructure
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
+- **Documentation:** [MiOS Knowledge Base](https://github.com/Kabuki94/MiOS/tree/main/docs/knowledge)
+- **Artifact Hub:** [ai-context.json](../../ai-context.json)
+---

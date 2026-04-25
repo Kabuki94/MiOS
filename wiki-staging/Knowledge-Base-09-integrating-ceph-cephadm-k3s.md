@@ -1,5 +1,5 @@
 # 🌐 MiOS — Universal AI Integration
-> **Metadata:** proprietor: Kabu.ki, infrastructure: Self-Building Infrastructure (Personal Property), license: Licensed as personal property to Kabu.ki
+> **Metadata:** proprietor: Kabu.ki, infrastructure: Self-Building Infrastructure (Personal Property), license: Licensed as personal property to Kabu.ki, source_reference: MiOS-Core-v2.1.0
 
 ---
 
@@ -7,7 +7,9 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
+> **Source Reference:** MiOS-Core-v2.1.0
 ---
+
 # Integrating Ceph, Cephadm, and K3s into MiOS
 
 **Ceph's entire state model aligns perfectly with bootc's immutable filesystem** — every writable path cephadm needs (`/var/lib/ceph`, `/etc/ceph`, `/var/log/ceph`) falls within the mutable `/var` and `/etc` partitions. Fedora Rawhide ships **Ceph v2.1.0 (Tentacle)** with `cephadm`, `ceph-common`, and all required packages in the standard repos, requiring zero upstream repo configuration. The practical challenge is not compatibility but orchestration: designing a systemd dependency chain that gracefully handles first boot (no Ceph cluster yet), steady-state operation (CephFS mounts for `/var/home` and container storage), and multi-node expansion via the Ceph Dashboard. This report provides every configuration file, systemd unit, Containerfile snippet, and command needed to build this integration into the existing MiOS modular build system.
@@ -508,10 +510,10 @@ system_files/
 The integration architecture resolves every major constraint. Cephadm's container-native design means **zero server packages in the immutable image** — only the ~15 MB `ceph-common` and `cephadm` client tools. The `nofail` + `ConditionPathExists` pattern for CephFS mounts elegantly handles the first-boot problem without complex fallback logic: before bootstrap, the mount units are simply skipped; after bootstrap writes credentials, they activate on next boot. K3s's built-in Helm controller enables declarative ceph-csi deployment through auto-deploy manifests, avoiding manual Kubernetes operations. The entire stack — Ceph (MON+MGR+OSD+MDS), K3s, and GNOME — fits within **8 GB RAM** with tuned memory targets, scaling gracefully to 16+ GB systems where the `autotune_memory_target_ratio` of 0.2 provides comfortable headroom. The single most important implementation detail: cephadm's `--single-host-defaults` flag combined with post-bootstrap `osd_pool_default_size = 1` creates a minimal viable cluster in under 60 seconds, while the Dashboard on port 8443 provides the web-based multi-node expansion path the user requires for growing beyond a single workstation.
 
 ---
-### 📚 Bootc Ecosystem & Resources
-- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
-- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
-- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+### ⚖️ Legal & Source Reference
+- **Copyright:** (c) 2026 Kabu.ki
+- **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
-- **Sole Proprietor:** Kabu.ki
+- **Documentation:** [MiOS Knowledge Base](https://github.com/Kabuki94/MiOS/tree/main/docs/knowledge)
+- **Artifact Hub:** [ai-context.json](../../ai-context.json)
 ---

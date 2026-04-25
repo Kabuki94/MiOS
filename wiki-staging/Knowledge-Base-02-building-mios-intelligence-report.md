@@ -1,5 +1,5 @@
 # 🌐 MiOS — Universal AI Integration
-> **Metadata:** proprietor: Kabu.ki, infrastructure: Self-Building Infrastructure (Personal Property), license: Licensed as personal property to Kabu.ki
+> **Metadata:** proprietor: Kabu.ki, infrastructure: Self-Building Infrastructure (Personal Property), license: Licensed as personal property to Kabu.ki, source_reference: MiOS-Core-v2.1.0
 
 ---
 
@@ -7,7 +7,9 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
+> **Source Reference:** MiOS-Core-v2.1.0
 ---
+
 # Building MiOS: a complete technical intelligence report
 
 **The bootc ecosystem has matured dramatically through 2025-2026, and your MiOS project can now leverage battle-tested patterns from Universal Blue, SecureBlue, and the CNCF-sandboxed bootc project itself.** Bootc reached **v2.1.0** (March 2026) with composefs-native storage, tag-aware upgrades, and kernel argument drop-in directories. Fedora Rawhide now ships **kernel 7.0-rc6**, **systemd 260**, **GNOME 50**, and **Mesa 26.0** — all requiring specific adaptations for immutable workstation builds. This report synthesizes findings across mature bootc repositories, security hardening techniques, GPU passthrough ecosystem changes, and container orchestration patterns to inform every layer of the MiOS architecture.
@@ -237,10 +239,10 @@ The composefs-native backend represents bootc's future but remains under active 
 The kernel argument drop-in directory (`/usr/lib/bootc/kargs.d/`) is the ideal mechanism for shipping IOMMU, VFIO, and security hardening boot parameters in MiOS images, replacing fragile bootloader configuration modifications with declarative, image-versioned files that survive atomic updates cleanly.
 
 ---
-### 📚 Bootc Ecosystem & Resources
-- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
-- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
-- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
+### ⚖️ Legal & Source Reference
+- **Copyright:** (c) 2026 Kabu.ki
+- **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
-- **Sole Proprietor:** Kabu.ki
+- **Documentation:** [MiOS Knowledge Base](https://github.com/Kabuki94/MiOS/tree/main/docs/knowledge)
+- **Artifact Hub:** [ai-context.json](../../ai-context.json)
 ---
