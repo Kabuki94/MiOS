@@ -2105,3 +2105,13 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   2. **Pipeline Standardization:** Updated all numbered build scripts (01, 05, 12, 19, 21, 23, 52) and master runners (`build.sh`, `99-cleanup.sh`, `packages.sh`) to use `$DNF_BIN` and correctly sequence options after commands.
   3. **Verification:** Validated that `clean all` and `remove` commands no longer receive incompatible `install`-specific flags.
 * **RESULT:** The build pipeline is now fully `dnf5`-native and resilient to the stricter CLI parsing introduced in Fedora 44/Rawhide.
+
+---
+
+### [2026-04-25 18:45:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** Fixed a CI/CD failure in GitHub Actions caused by a missing third-party action.
+* **ACTION:** 
+  1. **Action Replacement:** Replaced the unavailable `Mattraiano/delete-workflow-runs@v2` action in `.github/workflows/build.yml` with a stable, native implementation using `actions/github-script@v7`.
+  2. **Cleanup Logic:** The new script maintains the same policy: retaining the last 10 runs and any runs newer than 7 days, while providing better logging for deleted runs.
+  3. **Verification:** Validated that no other workflows in `.github/workflows/` depend on missing or unstable third-party actions.
+* **RESULT:** CI/CD pipeline health is restored. Repository maintenance tasks (workflow run cleanup) will now execute reliably using official GitHub actions.
