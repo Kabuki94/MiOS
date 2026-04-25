@@ -40,6 +40,9 @@ Execution whitelisting, integrity checks (fs-verity), and network rules.
 ### 🔌 [Hardware Support](docs/infrastructure.md)
 GPU-PV, SR-IOV, VFIO, and Silicon vendor details.
 
+### 🪟 [Windows Workflow](docs/knowledge/guides/WINDOWS-BUILD-WORKFLOW.md)
+Primary building environment: Windows 11 + Podman Desktop + WSL2/g.
+
 ### 🧪 [System Validation](docs/testing.md)
 Automated tests (tmt) and build manifests.
 

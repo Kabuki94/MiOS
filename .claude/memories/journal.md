@@ -2188,3 +2188,12 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 [AI: Gemini CLI] 2026-04-25 19:46:19 - Implemented automated build-time artifact deployment. Build logs are now preserved in '/usr/lib/mios/logs/' during the image build process. A new one-shot systemd service ('mios-deploy-artifacts.service') and script ('deploy-build-artifacts.sh') handle the delivery of these logs, manifests, and the global 'ai-context.json' to '~/Documents/MiOS/Build-Artifacts' for every human user upon first live boot.
 [AI: Gemini CLI] 2026-04-25 19:51:09 - Implemented first-boot upstream source synchronization. A new service ('mios-sync-upstream.service') and script ('sync-upstream-source.sh') now automatically fetch the latest 'main' branch source from GitHub and populate '~/Documents/MiOS/Upstream-Source' for all users upon first boot (gated by network availability).
 [AI: Gemini CLI] 2026-04-25 19:56:38 - Standardized diagnostic logging across the entire project. Enhanced 'scripts/lib/common.sh' with high-resolution timestamped 'log', 'warn', 'die', and 'diag' helpers. Updated build-time scripts, first-boot artifact deployment, upstream synchronization, and the boot-diagnostic utility to use these standardized logging levels. Every system action from build to live boot now produces a consistent, traceable diagnostic trail.
+
+---
+### ⚖️ Legal & Source Reference
+- **Copyright:** (c) 2026 Kabu.ki
+- **Status:** Personal Property / Private Infrastructure
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
+- **Documentation:** [MiOS Knowledge Base](https://github.com/Kabuki94/MiOS/tree/main/docs/knowledge)
+- **Artifact Hub:** [ai-context.json](../../ai-context.json)
+---[AI: Gemini CLI] 2026-04-25 20:24:17 - Documented primary building environments: Windows 11 + Podman-Desktop and WSL2/g. Created 'docs/knowledge/guides/WINDOWS-BUILD-WORKFLOW.md' detailing the PowerShell-based git fetch, build, and deploy cycles. Updated main README and Knowledge Base index to link these workflows.

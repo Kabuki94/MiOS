@@ -82,6 +82,7 @@ capture, and the standalone full-system provisioning script.
 |----------|---------|
 | `cpu-isolation-guide.md` | CPU isolation — concept, kernel params, cgroup boundaries |
 | `cpu-isolation-optimization-notes.md` | Optimization notes accumulated across builds |
+| `WINDOWS-BUILD-WORKFLOW.md` | Windows 11 + Podman Desktop + WSL2/g build guide |
 | `cpu-isolation-preset-corrections.md` | Preset corrections by CPU family (Zen 3/4/5, Intel hybrid) |
 | `cpu-isolator-script-improvements.md` | Script-level improvements, idempotency, edge cases |
 | `looking-glass-integration.md` | Looking Glass build + kvmfr + udev + Gamescope integration |

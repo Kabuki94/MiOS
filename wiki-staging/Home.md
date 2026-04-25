@@ -32,6 +32,7 @@ Welcome to the MiOS Knowledge Base. This wiki is automatically synchronized from
 - [[🌐 MiOS — Universal AI Integration|Knowledge-Base-01-bootc-ecosystem-advances-2025-2026]] — *Last updated: 2026-04-25*
 - [[🌐 MiOS — Universal AI Integration|Knowledge-Base-vfio-toolkit-readme]] — *Last updated: 2026-04-25*
 - [[🌐 MiOS — Universal AI Integration|Knowledge-Base-vm-cpu-pin-manager-readme]] — *Last updated: 2026-04-25*
+- [[🌐 MiOS — Universal AI Integration|Knowledge-Base-WINDOWS-BUILD-WORKFLOW]] — *Last updated: 2026-04-25*
 - [[🌐 MiOS — Universal AI Integration|Knowledge-Base-cpu-isolation-guide]] — *Last updated: 2026-04-25*
 - [[🌐 MiOS — Universal AI Integration|Knowledge-Base-mios-full-script-readme]] — *Last updated: 2026-04-25*
 - [[🌐 MiOS — Universal AI Integration|Knowledge-Base-looking-glass-integration]] — *Last updated: 2026-04-25*

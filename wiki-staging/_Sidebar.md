@@ -30,6 +30,7 @@
 - [[🌐 MiOS — Universal AI Integration|Knowledge-Base-01-bootc-ecosystem-advances-2025-2026]]
 - [[🌐 MiOS — Universal AI Integration|Knowledge-Base-vfio-toolkit-readme]]
 - [[🌐 MiOS — Universal AI Integration|Knowledge-Base-vm-cpu-pin-manager-readme]]
+- [[🌐 MiOS — Universal AI Integration|Knowledge-Base-WINDOWS-BUILD-WORKFLOW]]
 - [[🌐 MiOS — Universal AI Integration|Knowledge-Base-cpu-isolation-guide]]
 - [[🌐 MiOS — Universal AI Integration|Knowledge-Base-mios-full-script-readme]]
 - [[🌐 MiOS — Universal AI Integration|Knowledge-Base-looking-glass-integration]]
