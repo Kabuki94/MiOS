@@ -1,0 +1,14 @@
+[Unit]
+Description=Deploy MiOS Build Artifacts to User Home
+Documentation=https://github.com/Kabuki94/MiOS
+ConditionPathExists=!/var/lib/mios-artifacts-deployed
+After=systemd-user-sessions.service local-fs.target
+Before=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/mios/deploy-build-artifacts.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target mios-firstboot.target

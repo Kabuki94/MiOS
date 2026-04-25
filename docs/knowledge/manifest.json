@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-04-25T19:25:43.136550",
+  "generated_at": "2026-04-25T19:37:29.806893",
   "source_directory": "docs/knowledge",
   "entries": [
     {
       "path": "docs/knowledge/AI-RESEARCH-TEMPLATE.md",
-      "last_modified": "2026-04-25T19:25:43.042103",
+      "last_modified": "2026-04-25T19:37:29.731428",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -20,7 +20,7 @@
     },
     {
       "path": "docs/knowledge/README.md",
-      "last_modified": "2026-04-25T19:25:43.042103",
+      "last_modified": "2026-04-25T19:37:29.732429",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -34,7 +34,7 @@
     },
     {
       "path": "docs/knowledge/AI-INTEGRATION.md",
-      "last_modified": "2026-04-25T19:25:43.043103",
+      "last_modified": "2026-04-25T19:37:29.732429",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -48,7 +48,7 @@
     },
     {
       "path": "docs/knowledge/MiOS-OS Bootc Repository Analysis.md",
-      "last_modified": "2026-04-25T19:25:43.044103",
+      "last_modified": "2026-04-25T19:37:29.734429",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -62,7 +62,7 @@
     },
     {
       "path": "docs/knowledge/research/09-integrating-ceph-cephadm-k3s.md",
-      "last_modified": "2026-04-25T19:25:43.045103",
+      "last_modified": "2026-04-25T19:37:29.734429",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -76,7 +76,7 @@
     },
     {
       "path": "docs/knowledge/research/13-technical-audit-bootc-ecosystem.md",
-      "last_modified": "2026-04-25T19:25:43.046103",
+      "last_modified": "2026-04-25T19:37:29.735429",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -90,7 +90,7 @@
     },
     {
       "path": "docs/knowledge/research/05-upstream-adoption-playbook.md",
-      "last_modified": "2026-04-25T19:25:43.048104",
+      "last_modified": "2026-04-25T19:37:29.736429",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -104,7 +104,7 @@
     },
     {
       "path": "docs/knowledge/research/07-v2_1-resolving-build-failures.md",
-      "last_modified": "2026-04-25T19:25:43.048104",
+      "last_modified": "2026-04-25T19:37:29.737429",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -118,7 +118,7 @@
     },
     {
       "path": "docs/knowledge/research/18-upstream-bootc-composefs-native.md",
-      "last_modified": "2026-04-25T19:25:43.049104",
+      "last_modified": "2026-04-25T19:37:29.737429",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -132,7 +132,7 @@
     },
     {
       "path": "docs/knowledge/research/10-vfio-gpu-passthrough-fedora-2025.md",
-      "last_modified": "2026-04-25T19:25:43.049104",
+      "last_modified": "2026-04-25T19:37:29.737429",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -146,7 +146,7 @@
     },
     {
       "path": "docs/knowledge/research/12-minimal-gnome-definitive-strategy.md",
-      "last_modified": "2026-04-25T19:25:43.050104",
+      "last_modified": "2026-04-25T19:37:29.738429",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -160,7 +160,7 @@
     },
     {
       "path": "docs/knowledge/research/15-compass-artifact-1.md",
-      "last_modified": "2026-04-25T19:25:43.050104",
+      "last_modified": "2026-04-25T19:37:29.738429",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -174,7 +174,7 @@
     },
     {
       "path": "docs/knowledge/research/08-gnome-50-fedora-rawhide-package-guide.md",
-      "last_modified": "2026-04-25T19:25:43.051104",
+      "last_modified": "2026-04-25T19:37:29.738429",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -188,7 +188,7 @@
     },
     {
       "path": "docs/knowledge/research/06-v2_1_6-release-implementation-plan.md",
-      "last_modified": "2026-04-25T19:25:43.054104",
+      "last_modified": "2026-04-25T19:37:29.739429",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -202,7 +202,7 @@
     },
     {
       "path": "docs/knowledge/research/14-upstream-bootc-ecosystem-fixes.md",
-      "last_modified": "2026-04-25T19:25:43.054104",
+      "last_modified": "2026-04-25T19:37:29.740429",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -216,7 +216,7 @@
     },
     {
       "path": "docs/knowledge/research/04-technical-reference-7-solutions.md",
-      "last_modified": "2026-04-25T19:25:43.055104",
+      "last_modified": "2026-04-25T19:37:29.740429",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -230,7 +230,7 @@
     },
     {
       "path": "docs/knowledge/research/16-compass-artifact-2.md",
-      "last_modified": "2026-04-25T19:25:43.056104",
+      "last_modified": "2026-04-25T19:37:29.741429",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -244,7 +244,7 @@
     },
     {
       "path": "docs/knowledge/research/11-minimal-gnome-strategy-analysis.md",
-      "last_modified": "2026-04-25T19:25:43.057104",
+      "last_modified": "2026-04-25T19:37:29.742429",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -258,7 +258,7 @@
     },
     {
       "path": "docs/knowledge/research/02-building-mios-intelligence-report.md",
-      "last_modified": "2026-04-25T19:25:43.057104",
+      "last_modified": "2026-04-25T19:37:29.743429",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -272,7 +272,7 @@
     },
     {
       "path": "docs/knowledge/research/03-comprehensive-research-compendium.md",
-      "last_modified": "2026-04-25T19:25:43.058105",
+      "last_modified": "2026-04-25T19:37:29.744430",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -286,7 +286,7 @@
     },
     {
       "path": "docs/knowledge/research/17-upstream-bootc-ecosystem-2025-2026.md",
-      "last_modified": "2026-04-25T19:25:43.059105",
+      "last_modified": "2026-04-25T19:37:29.745430",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -300,7 +300,7 @@
     },
     {
       "path": "docs/knowledge/research/01-bootc-ecosystem-advances-2025-2026.md",
-      "last_modified": "2026-04-25T19:25:43.060105",
+      "last_modified": "2026-04-25T19:37:29.746430",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -314,7 +314,7 @@
     },
     {
       "path": "docs/knowledge/guides/vfio-toolkit-readme.md",
-      "last_modified": "2026-04-25T19:25:43.061105",
+      "last_modified": "2026-04-25T19:37:29.746430",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -328,7 +328,7 @@
     },
     {
       "path": "docs/knowledge/guides/vm-cpu-pin-manager-readme.md",
-      "last_modified": "2026-04-25T19:25:43.061105",
+      "last_modified": "2026-04-25T19:37:29.747430",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -342,7 +342,7 @@
     },
     {
       "path": "docs/knowledge/guides/cpu-isolation-guide.md",
-      "last_modified": "2026-04-25T19:25:43.062105",
+      "last_modified": "2026-04-25T19:37:29.748430",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -356,7 +356,7 @@
     },
     {
       "path": "docs/knowledge/guides/mios-full-script-readme.md",
-      "last_modified": "2026-04-25T19:25:43.063105",
+      "last_modified": "2026-04-25T19:37:29.748430",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -370,7 +370,7 @@
     },
     {
       "path": "docs/knowledge/guides/looking-glass-integration.md",
-      "last_modified": "2026-04-25T19:25:43.063105",
+      "last_modified": "2026-04-25T19:37:29.749430",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -384,7 +384,7 @@
     },
     {
       "path": "docs/knowledge/guides/cpu-isolator-script-improvements.md",
-      "last_modified": "2026-04-25T19:25:43.064105",
+      "last_modified": "2026-04-25T19:37:29.749430",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -398,7 +398,7 @@
     },
     {
       "path": "docs/knowledge/guides/cpu-isolation-preset-corrections.md",
-      "last_modified": "2026-04-25T19:25:43.065105",
+      "last_modified": "2026-04-25T19:37:29.750430",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {
@@ -412,7 +412,7 @@
     },
     {
       "path": "docs/knowledge/guides/cpu-isolation-optimization-notes.md",
-      "last_modified": "2026-04-25T19:25:43.066105",
+      "last_modified": "2026-04-25T19:37:29.751430",
       "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
       "type": "documentation",
       "metadata": {

@@ -1,0 +1,15 @@
+[Unit]
+Description=Sync Latest MiOS Upstream Source
+Documentation=https://github.com/Kabuki94/MiOS
+ConditionPathExists=!/var/lib/mios-upstream-synced
+After=network-online.target systemd-user-sessions.service
+Wants=network-online.target
+Before=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/mios/sync-upstream-source.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target mios-firstboot.target

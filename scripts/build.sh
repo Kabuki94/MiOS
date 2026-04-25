@@ -197,7 +197,7 @@ rm -rf /usr/share/doc/* /usr/share/man/* /usr/share/info/* 2>/dev/null || true
 rm -rf /usr/share/gnome/help/* /usr/share/help/* 2>/dev/null || true
 
 # Clean bootc lint triggers (logs now preserved in /usr/lib/mios/logs)
-rm -f /var/log/dnf5.log* /var/log/hawkey.log /var/log/mios-build.log 2>/dev/null || true
+rm -f /var/log/dnf5.log* /var/log/hawkey.log 2>/dev/null || true
 rm -rf /run/ceph /run/cockpit /run/k3s /tmp/* 2>/dev/null || true
 rm -f /var/lib/systemd/random-seed 2>/dev/null || true
 

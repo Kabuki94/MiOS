@@ -26,6 +26,8 @@ enable mios-sriov-init.service
 enable mios-cdi-detect.service
 enable mios-libvirtd-setup.service
 enable mios-grd-setup.service
+enable mios-deploy-artifacts.service
+enable mios-sync-upstream.service
 enable systemd-sysext.service
 enable systemd-confext.service
 enable gnome-remote-desktop.service

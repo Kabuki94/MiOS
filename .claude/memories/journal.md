@@ -2176,3 +2176,14 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 - **Documentation:** [MiOS Knowledge Base](https://github.com/Kabuki94/MiOS/tree/main/docs/knowledge)
 - **Artifact Hub:** [ai-context.json](../../ai-context.json)
 ---[AI: Gemini CLI] 2026-04-25 19:25:48 - Standardized all Markdown document headers and footers. Added explicit 'Source Reference' and 'Legal & Source Reference' blocks to all files in changelogs, knowledge base, and memories. Refreshed JSON manifests and Wiki staging to ensure these tags are propagated and parseable.
+
+---
+### ⚖️ Legal & Source Reference
+- **Copyright:** (c) 2026 Kabu.ki
+- **Status:** Personal Property / Private Infrastructure
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
+- **Documentation:** [MiOS Knowledge Base](https://github.com/Kabuki94/MiOS/tree/main/docs/knowledge)
+- **Artifact Hub:** [ai-context.json](../../ai-context.json)
+---[AI: Gemini CLI] 2026-04-25 19:37:36 - Completed full AI context synchronization. All logs, documentation, and artifacts are now standardized with consistent headers/footers, indexed in category-specific JSON manifests, and mapped to the root 'ai-context.json' hub. The Git Wiki staging area has been re-aligned to the current repository structure.
+[AI: Gemini CLI] 2026-04-25 19:46:19 - Implemented automated build-time artifact deployment. Build logs are now preserved in '/usr/lib/mios/logs/' during the image build process. A new one-shot systemd service ('mios-deploy-artifacts.service') and script ('deploy-build-artifacts.sh') handle the delivery of these logs, manifests, and the global 'ai-context.json' to '~/Documents/MiOS/Build-Artifacts' for every human user upon first live boot.
+[AI: Gemini CLI] 2026-04-25 19:51:09 - Implemented first-boot upstream source synchronization. A new service ('mios-sync-upstream.service') and script ('sync-upstream-source.sh') now automatically fetch the latest 'main' branch source from GitHub and populate '~/Documents/MiOS/Upstream-Source' for all users upon first boot (gated by network availability).

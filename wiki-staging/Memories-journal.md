@@ -2180,4 +2180,13 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 - **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
 - **Documentation:** [MiOS Knowledge Base](https://github.com/Kabuki94/MiOS/tree/main/docs/knowledge)
 - **Artifact Hub:** [ai-context.json](../../ai-context.json)
+---[AI: Gemini CLI] 2026-04-25 19:25:48 - Standardized all Markdown document headers and footers. Added explicit 'Source Reference' and 'Legal & Source Reference' blocks to all files in changelogs, knowledge base, and memories. Refreshed JSON manifests and Wiki staging to ensure these tags are propagated and parseable.
+
+---
+### ⚖️ Legal & Source Reference
+- **Copyright:** (c) 2026 Kabu.ki
+- **Status:** Personal Property / Private Infrastructure
+- **Project Repository:** [Kabuki94/MiOS](https://github.com/Kabuki94/MiOS)
+- **Documentation:** [MiOS Knowledge Base](https://github.com/Kabuki94/MiOS/tree/main/docs/knowledge)
+- **Artifact Hub:** [ai-context.json](../../ai-context.json)
 ---
