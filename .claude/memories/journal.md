@@ -2095,3 +2095,13 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   2. **Skip List Sync:** Added `37-ollama-prep.sh` to the `CONTAINERFILE_SCRIPTS` skip list in `build.sh` to prevent double-execution, as it is explicitly called in the `Containerfile`.
   3. **Verification:** Validated that all scripts explicitly called in the `Containerfile` are now correctly covered by the skip list in `build.sh`.
 * **RESULT:** The build pipeline is restored and scripts are correctly orchestrated between the main build phase and the post-processing steps.
+
+---
+
+### [2026-04-25 18:25:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** Addressed build-breaking DNF5 argument ordering and standardized package management logic.
+* **ACTION:** 
+  1. **DNF5 Refactoring:** Modified `scripts/lib/common.sh` to split `DNF_SETOPT` (global options) and `DNF_OPTS` (command-specific options like `--allowerasing`). This ensures compliance with `dnf5`'s strict argument ordering requirements.
+  2. **Pipeline Standardization:** Updated all numbered build scripts (01, 05, 12, 19, 21, 23, 52) and master runners (`build.sh`, `99-cleanup.sh`, `packages.sh`) to use `$DNF_BIN` and correctly sequence options after commands.
+  3. **Verification:** Validated that `clean all` and `remove` commands no longer receive incompatible `install`-specific flags.
+* **RESULT:** The build pipeline is now fully `dnf5`-native and resilient to the stricter CLI parsing introduced in Fedora 44/Rawhide.

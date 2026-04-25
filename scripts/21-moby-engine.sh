@@ -9,7 +9,7 @@ source "$(dirname "$0")/lib/common.sh"
 
 # moby-engine conflicts with podman-docker over /usr/bin/docker. Use --allowerasing
 # to let dnf resolve the conflict without an explicit remove (§3.9: no dnf remove).
-dnf "${DNF_SETOPT[@]}" install -y --allowerasing moby-engine
+$DNF_BIN "${DNF_SETOPT[@]}" install -y "${DNF_OPTS[@]}" moby-engine
 
 # Enable the Docker socket to ensure it's available on boot
 systemctl enable docker.socket

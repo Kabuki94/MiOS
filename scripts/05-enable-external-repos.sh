@@ -75,7 +75,7 @@ fi
 # --- 4. Tailscale -----------------------------------------------------------
 if [[ ! -f "${REPO_DIR}/tailscale.repo" ]]; then
     log "enabling Tailscale repo"
-    dnf "${DNF_SETOPT[@]}" -y config-manager addrepo \
+    $DNF_BIN "${DNF_SETOPT[@]}" config-manager addrepo -y \
         --overwrite \
         --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo
 else
@@ -85,7 +85,7 @@ fi
 # --- 5. Docker CE (required when podman-docker is removed) ------------------
 if [[ ! -f "${REPO_DIR}/docker-ce.repo" ]]; then
     log "enabling Docker CE repo"
-    dnf "${DNF_SETOPT[@]}" -y config-manager addrepo \
+    $DNF_BIN "${DNF_SETOPT[@]}" config-manager addrepo -y \
         --overwrite \
         --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
 else
@@ -148,6 +148,6 @@ else
 fi
 
 log "external repos enabled; refreshing metadata"
-dnf "${DNF_SETOPT[@]}" -y makecache
+$DNF_BIN "${DNF_SETOPT[@]}" makecache -y
 
 log "05-enable-external-repos.sh complete"

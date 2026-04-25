@@ -40,7 +40,7 @@ log "building against kernel: $KVER"
 if [[ ! -d "/usr/src/kernels/$KVER" ]]; then
     log "installing kernel-devel-$KVER"
     set +e
-    dnf "${DNF_SETOPT[@]}" -y install "kernel-devel-$KVER" >/dev/null 2>&1
+    $DNF_BIN "${DNF_SETOPT[@]}" install -y "${DNF_OPTS[@]}" "kernel-devel-$KVER" >/dev/null 2>&1
     RC=$?
     set -e
     if [[ $RC -ne 0 ]]; then
@@ -62,7 +62,7 @@ fi
 # --- Install akmod-kvmfr (from hikariknight/looking-glass-kvmfr COPR) ------
 log "installing akmod-kvmfr"
 set +e
-dnf "${DNF_SETOPT[@]}" -y install akmod-kvmfr >/dev/null 2>&1
+$DNF_BIN "${DNF_SETOPT[@]}" install -y "${DNF_OPTS[@]}" akmod-kvmfr >/dev/null 2>&1
 RC=$?
 set -e
 if [[ $RC -ne 0 ]]; then

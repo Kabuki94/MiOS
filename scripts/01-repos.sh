@@ -71,7 +71,7 @@ echo "[01-repos] Phase 1: Pre-upgrading DNF, RPM, and core systemd/filesystem...
 # Isolate the problematic filesystem scriptlet and core package upgrades.
 # By doing this first, a filesystem %posttrans failure won't abort the entire
 # 1100+ package distro-sync transaction, preventing a fractured RPM database.
-dnf "${DNF_SETOPT[@]}" upgrade -y --allowerasing --best \
+$DNF_BIN "${DNF_SETOPT[@]}" upgrade -y --allowerasing --best \
     dnf rpm fedora-release fedora-repos filesystem systemd glibc dbus-broker 2>&1 || {
     echo "[01-repos] NOTE: Pre-upgrade had warnings (likely filesystem lua scriptlet), continuing..."
 }
@@ -79,8 +79,8 @@ dnf "${DNF_SETOPT[@]}" upgrade -y --allowerasing --best \
 echo "[01-repos] Phase 2: Distro-upgrade and userspace alignment..."
 # We use 'upgrade --refresh' to ensure we have fresh metadata and catch latest
 # userspace patches, followed by 'distro-sync' to align the remainder with F44.
-dnf "${DNF_SETOPT[@]}" --setopt=excludepkgs="shim-*,kernel*" upgrade --refresh -y
-dnf "${DNF_SETOPT[@]}" --setopt=excludepkgs="shim-*,kernel*" distro-sync -y --best --allowerasing || {
+$DNF_BIN "${DNF_SETOPT[@]}" --setopt=excludepkgs="shim-*,kernel*" upgrade --refresh -y
+$DNF_BIN "${DNF_SETOPT[@]}" --setopt=excludepkgs="shim-*,kernel*" distro-sync -y --best --allowerasing || {
     echo "[01-repos] WARNING: Distro-sync to Fedora 44 failed. Repository might be unreachable."
     echo "[01-repos] Continuing with base image packages..."
 }
@@ -90,11 +90,11 @@ rpm -q systemd glibc dbus-broker filesystem || true
 
 # ── Pre-install F44 ca-certificates ────────────────────────────────────────
 echo "[01-repos] Ensuring F44 ca-certificates is installed..."
-dnf "${DNF_SETOPT[@]}" install -y ca-certificates p11-kit-trust 2>&1 | tail -5 || true
+$DNF_BIN "${DNF_SETOPT[@]}" install -y ca-certificates p11-kit-trust 2>&1 | tail -5 || true
 
 # ── RPMFusion ───────────────────────────────────────────────────────────────
 echo "[01-repos] Installing RPMFusion Free + Nonfree for Rawhide..."
-dnf "${DNF_SETOPT[@]}" install -y \
+$DNF_BIN "${DNF_SETOPT[@]}" install -y \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-rawhide.noarch.rpm" \
     "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-rawhide.noarch.rpm" \
     2>&1 | tail -15 || true
@@ -110,7 +110,7 @@ done
 
 # ── Terra repo ──────────────────────────────────────────────────────────────
 echo "[01-repos] Installing Terra repo..."
-dnf "${DNF_SETOPT[@]}" install -y --repofrompath 'terra,https://repos.fyralabs.com/terra44' \
+$DNF_BIN "${DNF_SETOPT[@]}" install -y --repofrompath 'terra,https://repos.fyralabs.com/terra44' \
     --setopt='terra.gpgcheck=1' --setopt='terra.gpgkey=https://repos.fyralabs.com/terra44/key.asc' \
     terra-release 2>&1 | tail -10 || true
 

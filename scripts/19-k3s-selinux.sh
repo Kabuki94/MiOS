@@ -7,7 +7,7 @@ echo "==> Compiling and Installing K3s SELinux Policy for Fedora 44..."
 source "$(dirname "$0")/lib/common.sh"
 
 # Install SELinux development tools required for compilation
-dnf "${DNF_SETOPT[@]}" install -y selinux-policy-devel git make
+$DNF_BIN "${DNF_SETOPT[@]}" install -y "${DNF_OPTS[@]}" selinux-policy-devel git make
 
 # Clone the upstream k3s-selinux repository
 git clone --depth 1 https://github.com/k3s-io/k3s-selinux.git /tmp/k3s-selinux

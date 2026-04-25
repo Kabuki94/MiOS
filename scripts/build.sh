@@ -96,7 +96,7 @@ echo ""
 log_ts "==> Removing known bloat packages..."
 BLOAT_PACKAGES=$(source "${SCRIPT_DIR}/lib/packages.sh"; get_packages "bloat")
 if [[ -n "$BLOAT_PACKAGES" ]]; then
-    dnf "${DNF_SETOPT[@]}" remove -y $BLOAT_PACKAGES 2>/dev/null || true
+    $DNF_BIN "${DNF_SETOPT[@]}" remove -y "${DNF_OPTS[@]}" $BLOAT_PACKAGES 2>/dev/null || true
 else
     log_ts "NOTE: No bloat packages defined in manifest."
 fi
@@ -190,7 +190,7 @@ cp -v /var/log/dnf5.log* /var/log/hawkey.log /tmp/cloudws-build.log /usr/lib/clo
 
 echo ""
 log_ts "Cleaning up..."
-dnf "${DNF_SETOPT[@]}" clean all
+$DNF_BIN "${DNF_SETOPT[@]}" clean all
 rm -rf /var/cache/dnf /var/cache/libdnf5 /tmp/geist-font /tmp/*.tar* /tmp/*.rpm 2>/dev/null || true
 rm -rf /usr/share/doc/* /usr/share/man/* /usr/share/info/* 2>/dev/null || true
 rm -rf /usr/share/gnome/help/* /usr/share/help/* 2>/dev/null || true

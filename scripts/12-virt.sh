@@ -59,7 +59,7 @@ install_packages "wintools"
 echo "[12-virt] Installing gaming packages..."
 GAMING_PKGS=$(get_packages "gaming")
 if [[ -n "$GAMING_PKGS" ]]; then
-    (dnf "${DNF_SETOPT[@]}" -y install --skip-unavailable --exclude=udev-joystick-blacklist-rm $GAMING_PKGS) || {
+    ($DNF_BIN "${DNF_SETOPT[@]}" install -y "${DNF_OPTS[@]}" --skip-unavailable --exclude=udev-joystick-blacklist-rm $GAMING_PKGS) || {
         echo "[12-virt] WARNING: Some gaming packages failed to install" >&2
     }
 fi

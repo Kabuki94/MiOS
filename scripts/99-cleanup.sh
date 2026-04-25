@@ -10,6 +10,9 @@
 # Reference: https://github.com/ublue-os/ucore/blob/main/cleanup.sh
 set -euo pipefail
 
+# shellcheck source=lib/common.sh
+source "$(dirname "$0")/lib/common.sh"
+
 echo "[99-cleanup] Running final image cleanup..."
 
 # 1. Clean /boot — BIB generates fresh bootloader, stale content causes conflicts
@@ -41,6 +44,6 @@ ostree container commit 2>&1 || true
 
 # 6. Clean DNF caches
 echo "[99-cleanup] Cleaning package manager caches..."
-dnf clean all 2>/dev/null || true
+$DNF_BIN "${DNF_SETOPT[@]}" clean all 2>/dev/null || true
 
 echo "[99-cleanup] ✓ Image cleanup complete"

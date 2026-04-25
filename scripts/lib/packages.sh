@@ -44,7 +44,7 @@ install_packages() {
         echo "[packages.sh] Installing '$category' packages..."
         # Use subshell so set -e in parent doesn't kill entire script on failure.
         # shellcheck disable=SC2086 # $packages is intentionally word-split here
-        ($DNF_BIN "${DNF_SETOPT[@]}" -y install --skip-unavailable --exclude=PackageKit $packages) || {
+        ($DNF_BIN "${DNF_SETOPT[@]}" install -y "${DNF_OPTS[@]}" --skip-unavailable --exclude=PackageKit $packages) || {
             echo "[packages.sh] WARNING: Some '$category' packages failed to install" >&2
             echo "[packages.sh] Packages requested: $packages" >&2
         }
@@ -60,7 +60,7 @@ install_packages_strict() {
     packages=$(get_packages_strict "$category" "$packages_file") || return 1
     echo "[packages.sh] Installing '$category' packages (strict section)..."
     # shellcheck disable=SC2086 # $packages is intentionally word-split here
-    $DNF_BIN "${DNF_SETOPT[@]}" -y install --skip-unavailable --exclude=PackageKit $packages || {
+    $DNF_BIN "${DNF_SETOPT[@]}" install -y "${DNF_OPTS[@]}" --skip-unavailable --exclude=PackageKit $packages || {
         echo "[packages.sh] FATAL: Mandatory '$category' packages failed to install" >&2
         echo "[packages.sh] Packages requested: $packages" >&2
         return 1
@@ -95,7 +95,7 @@ install_packages_optional() {
     if [[ -n "$packages" ]]; then
         echo "[packages.sh] Installing optional '$category' packages..."
         # shellcheck disable=SC2086 # $packages is intentionally word-split here
-        ($DNF_BIN "${DNF_SETOPT[@]}" -y install --skip-unavailable --exclude=PackageKit $packages) || {
+        ($DNF_BIN "${DNF_SETOPT[@]}" install -y "${DNF_OPTS[@]}" --skip-unavailable --exclude=PackageKit $packages) || {
             echo "[packages.sh] WARNING: Some optional '$category' packages failed" >&2
         }
     fi
