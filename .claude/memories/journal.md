@@ -2318,3 +2318,10 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   2. **Manifest Refresh:** Regenerated all category manifests and updated the global `ai-context.json` to include the latest README and security guide revisions.
   3. **Wiki Sync:** Pushed updated documentation to the wiki staging area.
 * **RESULT:** The onboarding process is now highly streamlined with modern, one-liner entry points documented as the primary interaction methods for both major platforms.
+
+### [2026-04-26 01:30:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** Enhanced Windows entry points with automatic administrative elevation.
+* **ACTION:** 
+  1. **install.ps1 Update:** Implemented auto-elevation logic that detects non-admin execution and relaunches the command stream (`irm | iex`) with high integrity via `Start-Process -Verb RunAs`.
+  2. **cloud-ws.ps1 Update:** Replaced static `#Requires -RunAsAdministrator` with a dynamic auto-elevation block, ensuring the master orchestrator automatically prompts for UAC when launched as a file.
+* **RESULT:** Windows deployment is now "zero-friction," automatically requesting the necessary privileges for high-performance builder machine creation and Hyper-V/WSL2 integration.

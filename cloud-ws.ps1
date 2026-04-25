@@ -21,8 +21,14 @@
       - MiOS image IS the builder — podman, buildah, bootc, BIB all baked in
 #>
 
-#Requires -RunAsAdministrator
 $ErrorActionPreference = "Stop"
+
+# --- Auto-Elevation ---
+if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Host "  Relaunching as Administrator..." -ForegroundColor Cyan
+    Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Path)`"" -Verb RunAs
+    return
+}
 
 # ── Self-Build defaults (initialized early — referenced throughout) ──
 $SelfBuild = $false

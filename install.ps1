@@ -1,6 +1,15 @@
 $ErrorActionPreference = "Stop"
+
+# --- Auto-Elevation ---
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host "  Run as Administrator!" -ForegroundColor Red
+    Write-Host "  Relaunching as Administrator..." -ForegroundColor Cyan
+    if ($MyInvocation.MyCommand.Path) {
+        Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Path)`"" -Verb RunAs
+    } else {
+        # Handle irm | iex scenario by relaunching the command
+        $command = "irm https://raw.githubusercontent.com/Kabuki94/MiOS/main/install.ps1 | iex"
+        Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"$command`"" -Verb RunAs
+    }
     return
 }
 $RepoUrl = "https://github.com/Kabuki94/MiOS"
