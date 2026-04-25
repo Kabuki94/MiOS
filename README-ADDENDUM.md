@@ -13,7 +13,7 @@ Add this section to the main `README.md` to link all new documentation files.
 
 | Document | Description |
 |----------|-------------|
-| [CHANGELOG.md](CHANGELOG.md) | Version history in Keep a Changelog format |
+| [changelogs/03-Cumulative-Changelog.md](changelogs/03-Cumulative-Changelog.md) | Version history in Keep a Changelog format |
 | [UPGRADE.md](UPGRADE.md) | How to upgrade, rollback, and switch between versions |
 | [SECURITY.md](SECURITY.md) | Security hardening checklist with every kernel param, sysctl, and SELinux policy |
 | [HARDWARE.md](HARDWARE.md) | GPU/CPU/platform compatibility matrix with driver details |

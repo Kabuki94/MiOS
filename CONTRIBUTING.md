@@ -85,7 +85,7 @@ The PowerShell script handles Podman machine creation, credential injection, ima
 3. Test locally with `podman build` and `bootc container lint` at minimum.
 4. Update `PACKAGES.md` if you added or changed packages.
 5. Update `VERSION` if the change is user-facing.
-6. Add an entry to `CHANGELOG.md`.
+6. Add an entry to `changelogs/03-Cumulative-Changelog.md`.
 7. Open a pull request against `main` using the PR template.
 
 ## Reporting Issues

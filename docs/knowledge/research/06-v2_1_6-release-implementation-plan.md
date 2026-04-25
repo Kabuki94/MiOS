@@ -853,7 +853,7 @@ log "36-akmod-guards: done (${#SERVICES[@]} drop-ins)"
 | `.github/workflows/build-artifacts.yml` (new) | `.github__workflows__build-artifacts.yml` | §6d |
 | `push-to-github.ps1` (replace with shim) | `push-to-github.ps1` | §4 |
 | `push-v2.1.0.ps1` (copy of v2.1.0 with version string bump) | `push-v2.1.0.ps1` | keep v2.1.0 intact |
-| `CHANGELOG.md` (append v2.1.0 section) | `CHANGELOG.md` | release notes |
+| `changelogs/03-Cumulative-Changelog.md` (append v2.1.0 section) | `changelogs/03-Cumulative-Changelog.md` | release notes |
 
 ### 8b. Additional Containerfile edits required (beyond the §1 RUN block)
 

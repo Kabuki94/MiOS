@@ -29,8 +29,7 @@ when they need background — but authoritative project rules live in:
 docs/knowledge/
 ├── research/              ← technical-intelligence reports
 ├── guides/                ← operational / troubleshooting guides
-├── blueprints/            ← engineering blueprint .docx files
-└── changelogs-legacy/     ← v1.x–v2.1.x changelogs kept for provenance
+└── blueprints/            ← engineering blueprint .docx files
 ```
 
 ---
@@ -102,23 +101,18 @@ architecture.
 
 ---
 
-## `changelogs-legacy/` — pre-v2.2 changelogs
+## `changelogs/` — Consolidated Version History (at project root)
 
-Historical changelogs kept for provenance. The **current** changelog is
-at [`../../CHANGELOG.md`](../../CHANGELOG.md) and the per-release
-fragments are in [`../changelogs/`](../changelogs/).
+Historical and detailed changelogs are now consolidated in the root [`/changelogs/`](../../changelogs/) directory.
 
 | Document | Covers |
 |----------|--------|
-| `CHANGELOG-v2.1.0.md` | v2.1.0 Ecosystem Intelligence Update |
-| `UPDATE-v1_1-CHANGELOG.txt` | v1.1 legacy changelog |
-| `QUICKSTART-legacy.txt` | Pre-v2 quickstart |
-| `CHAINING-GUIDE-legacy.txt` | Pre-v2 profiler/toolkit chaining guide |
-| `TOOLKIT-OVERVIEW-legacy.txt` | Pre-v2 toolkit overview |
-| `FIX-REFERENCE-legacy.txt` | Pre-v2 build-fix quick reference |
+| [`01-v1.1-Legacy-Profiler.md`](../../changelogs/01-v1.1-Legacy-Profiler.md) | v1.1 legacy profiler documentation |
+| [`02-v2.1.0-Detailed-Technical-Log.md`](../../changelogs/02-v2.1.0-Detailed-Technical-Log.md) | Detailed v2.1.x milestone technical logs |
+| [`03-Cumulative-Changelog.md`](../../changelogs/03-Cumulative-Changelog.md) | Main cumulative project changelog |
 
 **Do not** treat legacy changelogs as current state. Cross-reference
-with `../../CHANGELOG.md` and the `VERSION` file before acting on
+with [`03-Cumulative-Changelog.md`](../../changelogs/03-Cumulative-Changelog.md) and the `VERSION` file before acting on
 anything here.
 
 ---
