@@ -8,27 +8,31 @@ set -euo pipefail
 UPSTREAM_URL="https://github.com/Kabuki94/MiOS/archive/refs/heads/main.tar.gz"
 TARGET_SUBDIR="Documents/MiOS/Upstream-Source"
 
+log_ts() { date '+%Y-%m-%d %H:%M:%S'; }
+log()  { printf '[%s] ==> %s\n' "$(log_ts)" "$*"; }
+warn() { printf '[%s] WARN: %s\n' "$(log_ts)" "$*" >&2; }
+diag() { printf '[%s] DIAG: %s\n' "$(log_ts)" "$*"; }
+
 sync_to_user() {
     local username="$1"
     local userhome="$2"
     local target_dir="${userhome}/${TARGET_SUBDIR}"
     local temp_tar="/tmp/mios-upstream-${username}.tar.gz"
 
-    echo "Syncing upstream source to ${username} (${target_dir})..."
+    log "Syncing upstream source to ${username} (${target_dir})..."
+    diag "Fetching from ${UPSTREAM_URL}..."
     
     mkdir -p "${target_dir}"
 
-    # Download latest archive
-    if curl -L -o "${temp_tar}" "${UPSTREAM_URL}"; then
-        # Extract and strip the top-level directory (MiOS-main)
+    if curl -L -f -o "${temp_tar}" "${UPSTREAM_URL}"; then
+        diag "Download successful, extracting to ${target_dir}..."
         tar -xzf "${temp_tar}" -C "${target_dir}" --strip-components=1
         rm -f "${temp_tar}"
         
-        # Ensure correct ownership
         chown -R "${username}:${username}" "${target_dir}"
-        echo "✓ Success for ${username}"
+        log "✓ Success for ${username}"
     else
-        echo "✗ Failed to download upstream source for ${username}"
+        warn "Failed to download upstream source for ${username}"
         return 1
     fi
 }

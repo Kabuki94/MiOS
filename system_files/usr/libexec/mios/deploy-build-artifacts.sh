@@ -12,37 +12,44 @@ MANIFEST_SRC="/changelogs /docs/knowledge /artifacts"
 # Target relative to home
 TARGET_SUBDIR="Documents/MiOS/Build-Artifacts"
 
+log_ts() { date '+%Y-%m-%d %H:%M:%S'; }
+log()  { printf '[%s] ==> %s\n' "$(log_ts)" "$*"; }
+diag() { printf '[%s] DIAG: %s\n' "$(log_ts)" "$*"; }
+
 deploy_to_user() {
     local username="$1"
     local userhome="$2"
     local target_dir="${userhome}/${TARGET_SUBDIR}"
 
-    echo "Deploying artifacts to ${username} (${target_dir})..."
+    log "Deploying artifacts to ${username} (${target_dir})..."
+    diag "Checking source paths in ${ARTIFACT_SRC}..."
     
     mkdir -p "${target_dir}"
 
     # Copy build logs
     if [ -d "${ARTIFACT_SRC}/logs" ]; then
+        diag "Copying logs to ${target_dir}/logs"
         cp -r "${ARTIFACT_SRC}/logs" "${target_dir}/"
+    else
+        diag "No logs found in ${ARTIFACT_SRC}/logs"
     fi
 
     # Copy context hub and manifests
     if [ -f "${HUB_SRC}" ]; then
+        diag "Copying context hub ${HUB_SRC}"
         cp "${HUB_SRC}" "${target_dir}/"
     fi
 
     for dir in ${MANIFEST_SRC}; do
         if [ -d "${dir}" ]; then
-            # We want the content but flattened or structured? 
-            # Let's keep the structure for the user.
+            diag "Syncing manifest directory: ${dir}"
             mkdir -p "${target_dir}${dir}"
             cp -r "${dir}"/* "${target_dir}${dir}/"
         fi
     done
 
-    # Ensure correct ownership
     chown -R "${username}:${username}" "${target_dir}"
-    echo "✓ Success for ${username}"
+    log "✓ Success for ${username}"
 }
 
 # Find all human users (UID >= 1000, excluding nobody)

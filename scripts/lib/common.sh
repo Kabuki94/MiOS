@@ -10,9 +10,11 @@
 source "$(dirname "${BASH_SOURCE[0]}")/masking.sh"
 
 # --- Logging ----------------------------------------------------------------
-log() { printf '==> %s\n' "$*"; }
-warn(){ printf 'WARN: %s\n' "$*" >&2; }
-die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
+log_ts() { date '+%Y-%m-%d %H:%M:%S'; }
+log()  { printf '[%s] ==> %s\n' "$(log_ts)" "$*"; }
+warn() { printf '[%s] WARN: %s\n' "$(log_ts)" "$*" >&2; }
+die()  { printf '[%s] ERROR: %s\n' "$(log_ts)" "$*" >&2; exit 1; }
+diag() { printf '[%s] DIAG: %s\n' "$(log_ts)" "$*"; }
 
 # --- dnf flags --------------------------------------------------------------
 # Select dnf binary (prefer dnf5 if available)

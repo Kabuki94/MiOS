@@ -17,15 +17,19 @@ fi
 
 log "Downloading default model: deepseek-coder-v2:lite..."
 
-# Install temporary ollama binary
-# Using -L to follow redirects and -o to specify output file (triggers is_binary in scurl)
-scurl -L "https://ollama.com/download/ollama-linux-amd64" -o /tmp/ollama
+# Install temporary ollama binary from GitHub releases (direct binary)
+# Using -L to follow redirects. 
+OLLAMA_URL="https://github.com/ollama/ollama/releases/latest/download/ollama-linux-amd64"
+log "URL: $OLLAMA_URL"
+scurl -L "$OLLAMA_URL" -o /tmp/ollama
 chmod +x /tmp/ollama
 
 # Validation: ensure we didn't download a 404 page or empty file
 if ! file /tmp/ollama | grep -q "ELF"; then
     log "ERROR: /tmp/ollama is not a valid ELF binary. Download likely failed."
+    log "File content (first 100 bytes):"
     head -c 100 /tmp/ollama
+    echo ""
     exit 1
 fi
 
