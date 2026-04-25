@@ -670,3 +670,14 @@ gnome-initial-setup
 PackageKit
 PackageKit-command-not-found
 ```
+
+## Network UPS Tools (NUT)
+
+Managed via Distrobox container to decouple hardware config from immutable core.
+
+```packages-nut
+nut
+nut-client
+nut-xml
+usbutils
+```

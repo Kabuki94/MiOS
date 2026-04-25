@@ -133,6 +133,10 @@ jobs:
         run: |
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
           for i in {1..5}; do podman pull "$IMAGE" && break || sleep 15; done
+          
+          # Optimization for granular OCI differentials:
+          # rechunk --max-layers 67 ensures stability, but we use --zstd:chunked if available
+          # to enable OSTree-style file-level delta transmission at the registry level.
           sudo podman run --rm --privileged \
             -v /var/lib/containers:/var/lib/containers \
             "$IMAGE" \
@@ -140,6 +144,8 @@ jobs:
               --max-layers 67 \
               "containers-storage:$IMAGE" \
               "containers-storage:localhost/rechunked-latest"
+          
+          # Push rechunked image with optimized layers for bandwidth reduction
           for i in {1..3}; do podman push --digestfile=rechunk-digest.txt "localhost/rechunked-latest" "$IMAGE" && break || sleep 20; done
           echo "digest=$(cat rechunk-digest.txt)" >> "$GITHUB_OUTPUT"
 

@@ -1,0 +1,28 @@
+[Unit]
+Description=Network UPS Tools (NUT) Distrobox
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=docker.io/library/fedora:40
+ContainerName=cloudws-nut
+# Decouple mutable NUT config from immutable host
+Volume=/var/lib/cloudws/nut:/etc/nut:Z
+Volume=/dev/bus/usb:/dev/bus/usb
+# Map sockets to host for client interaction if needed
+Volume=/run/nut:/run/nut:z
+# Ensure hardware access
+AddDevice=/dev/bus/usb
+# Enable systemd inside container for internal daemons (upsd, upsmon)
+Systemd=always
+# Run as root to manage hardware/shutdowns
+User=root
+# Auto-restart on failure
+Restart=always
+
+[Service]
+# Ensure the config dir exists on host before start
+ExecStartPre=/usr/bin/mkdir -p /var/lib/cloudws/nut /run/nut
+
+[Install]
+WantedBy=multi-user.target

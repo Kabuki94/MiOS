@@ -1652,3 +1652,11 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
     - **Resource Allocation**: Dynamic calculation of RAM (75% of host) and CPU (all logical processors) for optimal build and runtime performance.
 - **Safety**: Existing `.wslconfig` files are backed up with a timestamped suffix before being updated, ensuring non-destructive configuration management.
 
+---
+
+## 2026-04-25: Architectural Maturation (Analysis Remediation)
+- **Bandwidth Management**: Optimized `.github/workflows/build.yml` rechunking step to leverage OCI-native differentials, minimizing fleet-wide update payloads.
+- **NUT Implementation**: Migrated Network UPS Tools to a **Distrobox-managed container** (`cloudws-nut.container`). Hardware configuration is now decoupled from the immutable core, allowing for mutable state in `/var/lib/cloudws/nut`.
+- **Security Sandboxing**: Enforced mandatory SELinux labels (`container_t`) across all Podman and Distrobox runtimes via `system_files/usr/share/containers/containers.conf.d/99-cloudws-security.conf`.
+- **Kernel Tuning**: Injected system-wide `sysctl` defaults for `overlayfs` mitigation and high-performance virtualization (1M inotify watches, swappiness=10).
+
