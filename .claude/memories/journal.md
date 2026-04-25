@@ -2085,3 +2085,13 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   4. **Cleanup:** Removed redundant `system_files/usr/libexec/cloudws/grd-init` and updated `scripts/18-apply-boot-fixes.sh` to reflect the script removal.
   5. **Verification:** Confirmed that all `kargs.d` files now include `match-architectures = ["x86_64"]` and that CrowdSec is correctly monitoring expanded service units (Cockpit, GNOME RDP, Libvirt, K3s).
 * **RESULT:** The system's first-boot security posture is significantly improved, and Quadlet LBI support is now uniform across all bound images.
+
+---
+
+### [2026-04-25 18:05:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** Fixed a critical build failure caused by a syntax error in the script orchestration logic.
+* **ACTION:** 
+  1. **Build Fix:** Corrected a syntax error in `scripts/build.sh` where a space in the `CONTAINERFILE_SCRIPTS` assignment caused the shell to attempt executing the script list as a command (Exit Code 127).
+  2. **Skip List Sync:** Added `37-ollama-prep.sh` to the `CONTAINERFILE_SCRIPTS` skip list in `build.sh` to prevent double-execution, as it is explicitly called in the `Containerfile`.
+  3. **Verification:** Validated that all scripts explicitly called in the `Containerfile` are now correctly covered by the skip list in `build.sh`.
+* **RESULT:** The build pipeline is restored and scripts are correctly orchestrated between the main build phase and the post-processing steps.
