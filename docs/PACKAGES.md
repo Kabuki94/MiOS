@@ -272,9 +272,7 @@ buildah
 skopeo
 bootc
 osbuild
-osbuild-composer
 osbuild-selinux
-composer-cli
 rpm-ostree
 crun
 netavark
@@ -283,18 +281,9 @@ slirp4netns
 composefs
 container-selinux
 qemu-img
-image-builder
-bootc-image-builder
-golang
 dracut-live
 squashfs-tools
 selinux-policy-devel
-# v2.2 additions
-# podman-docker REMOVED: conflicts with moby-engine shipped by ucore-hci base.
-# bootc-image-builder REMOVED: not in F44 repos; pulled as container at targets time.
-# podman-plugins REMOVED: not in F44 repos.
-# cosign REMOVED: not in F44 repos. Install via COPR or go-install if needed.
-podman-docker
 containers-common
 toolbox
 kubectl
@@ -304,6 +293,11 @@ gcc
 gcc-c++
 cmake
 golang
+# REMOVED — podman-docker: conflicts with moby-engine from ucore-hci base
+# REMOVED — osbuild-composer / composer-cli / image-builder: not in F44 repos
+# REMOVED — bootc-image-builder: not in F44 repos; pulled as container at build time
+# REMOVED — podman-plugins: not in F44 repos
+# REMOVED — cosign: not in F44 repos; install via COPR or go-install
 ```
 
 ## Self-Building Tools (Experimental/Repository dependent)
