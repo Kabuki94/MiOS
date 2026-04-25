@@ -181,6 +181,15 @@ if [[ $VALIDATION_FAIL -gt 0 ]]; then
     log_ts "WARNING: $VALIDATION_FAIL critical packages missing!"
 fi
 
+# ── Technical Invariant Validation ──
+echo ""
+log_ts "==> Running Technical Invariant Validation (99-postcheck.sh)..."
+if [[ -f "${SCRIPT_DIR}/99-postcheck.sh" ]]; then
+    bash "${SCRIPT_DIR}/99-postcheck.sh"
+else
+    log_ts "⚠ scripts/99-postcheck.sh not found — skipping"
+fi
+
 # ── Cleanup ─────────────────────────────────────────────────────────────────
 
 # Preserve logs in an immutable path for Day-2 diagnostics

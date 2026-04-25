@@ -70,7 +70,7 @@ fc-cache -f /usr/share/fonts/geist 2>/dev/null || true
 # ═════════════════════════════════════════════════════════════════════════════
 echo "[10-gnome] Installing Bibata-Modern-Classic cursor (MANDATORY)..."
 BIBATA_VER=""
-BIBATA_FALLBACK="v2.1.0"
+BIBATA_FALLBACK="v2.0.7"
 
 # Try GitHub API for latest release tag (strips leading 'v')
 BIBATA_VER=$(scurl -sL -H "Accept: application/vnd.github+json" "https://api.github.com/repos/ful1e5/Bibata_Cursor/releases/latest" \

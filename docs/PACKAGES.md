@@ -375,7 +375,7 @@ freerdp-libs
 ## Security
 
 Host-based IPS, application whitelisting, USB device control.
-CRITICAL: nvidia-container-toolkit >= v2.1.0 required (CVE-2025-23266/23267).
+CRITICAL: nvidia-container-toolkit >= v1.17.8 required (CVE-2025-23266/23267).
 
 ```packages-security
 crowdsec

@@ -4,7 +4,7 @@
 #
 # Key invariants:
 #   - nvidia-container-toolkit ≥ 1.18 for nvidia-cdi-refresh.service/path.
-#   - Avoid NCT v2.1.0: "unresolvable CDI devices" regression. Use v2.1.0 or 1.18+.
+#   - Avoid NCT 1.16.2: "unresolvable CDI devices" regression. Use 1.16.1 or 1.18+.
 #   - Remove oci-nvidia-hook.json: dual injection with CDI causes conflicts.
 #   - CDI canonical path: /var/run/cdi/nvidia.yaml (runtime) or /etc/cdi/nvidia.yaml (persistent).
 #   - NVIDIA kmods blacklisted by default; 34-gpu-detect.sh removes blacklist on bare metal.

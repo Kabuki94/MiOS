@@ -2259,3 +2259,29 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 ---
 
 
+
+## [2026-04-25 22:50 UTC] - Build Hardening & Technical Data Restoration
+**Agent:** [AI: Gemini CLI]
+
+### 🛡️ Security Posture (CVE Mitigations)
+- **CVE-2026-4631 (Cockpit RCE):** Confirmed `LoginTo = false` in `system_files/usr/lib/cockpit/cockpit.conf`. Implemented mandatory OpenSSH version check (≥ 9.6) in new build-time validation script.
+- **CVE-2026-32178 (WSL SMTP Injection):** Updated `docs/operations.md` with a critical caution note mandating WSL host version ≥ 2.1.0.
+
+### 🔧 Technical Data Restoration (Anti-Corruption)
+- **Surgically reverted "v2.1.0" branding artifacts** that masked real technical versions across the stack:
+    - `scripts/45-nvidia-cdi-refresh.sh`: NCT regression advisory corrected to 1.16.2.
+    - `scripts/52-bake-kvmfr.sh`: Reverted changelog references to stable 1.3.1 baseline.
+    - `scripts/cloud-ws-builder.ps1`: Restored CUDA image tag to `12.1.0-base-ubi9`.
+    - `scripts/10-gnome.sh`: Corrected Bibata cursor fallback to `v2.0.7`.
+    - `scripts/42-cosign-policy.sh`: Updated Cosign pin to `v2.6.3` (verified latest v2 branch).
+    - `docs/PACKAGES.md`: Restored NCT security fix version to `v1.17.8`.
+
+### 🏗️ Build System Enhancements
+- **Implemented `scripts/99-postcheck.sh`**: A new build-time technical invariant validator that enforces OpenSSH versions, Cockpit security settings, and critical binary presence.
+- **Integrated Validation Pipeline**: Modified `scripts/build.sh` to execute `99-postcheck.sh` immediately before cleanup. Failures now abort the OCI build.
+- **Robust Manifesting**: Patched `tools/generate-ai-manifest.py` to handle list-style JSON files. Successfully regenerated all project manifests.
+
+### 🚦 Current State
+- **Engineering Baseline**: v2.1.0 confirmed clean.
+- **Sub-Project Status**: `deep-search-6418` backend (uv) and frontend (npm) initialized and un-mangled.
+- **Next Step**: Prepare for F4 GA (April 28) rebase window.

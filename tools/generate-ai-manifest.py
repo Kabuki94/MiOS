@@ -66,8 +66,11 @@ def generate_json_manifest(target_dir, output_file, recursive=True, ignore_dirs=
                     with open(file_path, 'r', encoding='utf-8') as f:
                         try:
                             data = json.load(f)
+                            title = file
+                            if isinstance(data, dict):
+                                title = data.get("artifact_name", file)
                             entry.update({
-                                "title": data.get("artifact_name", file),
+                                "title": title,
                                 "type": "structured_data",
                                 "structured_data": data
                             })
