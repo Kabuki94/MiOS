@@ -1,7 +1,7 @@
 # 🌐 CloudWS-bootc — Universal AI Integration
 # AIChat-NG Default Configuration
 
-model: ollama:llama3
+model: ollama:deepseek-coder-v2:lite
 
 clients:
   - type: ollama
@@ -12,3 +12,6 @@ repl_spinner: false
 save_shell_history: true
 highlight: true
 light_theme: false
+
+# Model Shortcuts / Pre-defined Roles
+# To switch models in REPL: .model ollama:qwen2.5

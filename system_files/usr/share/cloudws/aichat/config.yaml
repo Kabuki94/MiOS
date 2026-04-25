@@ -1,7 +1,7 @@
 # 🌐 CloudWS-bootc — Universal AI Integration
 # AIChat Default Configuration
 
-model: ollama:llama3
+model: ollama:deepseek-coder-v2:lite
 # If you want to use a different provider by default, change it here.
 # Available providers: openai, claude, gemini, ollama, etc.
 

@@ -86,7 +86,7 @@ case "$CMD" in
         ;;
     ai-logs)     exec podman logs -f ollama ;;
     ai-pull)
-        model="${1:-llama3}"
+        model="${1:-deepseek-coder-v2:lite}"
         echo "Pulling model $model..."
         exec podman exec -it ollama ollama pull "$model"
         ;;

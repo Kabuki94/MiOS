@@ -529,15 +529,19 @@ if (Test-Path $TargetVhdx) {
         Remove-VM -Name $vmName -Force -ErrorAction SilentlyContinue
         $vmSwitchObj = Get-VMSwitch | Where-Object SwitchType -eq "External" | Select-Object -First 1
         $vmSwitch = if ($vmSwitchObj) { $vmSwitchObj.Name } else { "Default Switch" }
-        $vmCpu = [Math]::Max(4, $cpu)
+        $vmCpu = $cpu
         $totalRamBytes = (Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory
-        $vmRamRaw = [int64]$totalRamBytes
+        $vmRamRaw = [int64]($totalRamBytes * 0.8)
         $vmRam = [int64]([Math]::Floor($vmRamRaw / 2MB) * 2MB)  # Align to 2MB (Hyper-V requirement)
-        $vmRamGB = [Math]::Floor($vmRam / 1GB)  # Display value (2MB-aligned)
-        New-VM -Name $vmName -MemoryStartupBytes 4GB -Generation 2 -VHDPath $TargetVhdx -SwitchName $vmSwitch | Out-Null
-        Set-VM -Name $vmName -ProcessorCount $vmCpu -DynamicMemory -MemoryMinimumBytes 4GB -MemoryMaximumBytes $vmRam -MemoryStartupBytes 4GB
+        $vmRamGB = [Math]::Floor($vmRam / 1GB)
+        $minRam = [Math]::Min(16GB, [int64]([Math]::Floor($totalRamBytes * 0.5 / 2MB) * 2MB))
+        if ($totalRamBytes -lt 16GB) { $minRam = [int64]([Math]::Floor($totalRamBytes * 0.5 / 2MB) * 2MB) }
+        else { $minRam = 16GB }
+
+        New-VM -Name $vmName -MemoryStartupBytes $minRam -Generation 2 -VHDPath $TargetVhdx -SwitchName $vmSwitch | Out-Null
+        Set-VM -Name $vmName -ProcessorCount $vmCpu -DynamicMemory -MemoryMinimumBytes $minRam -MemoryMaximumBytes $vmRam -MemoryStartupBytes $minRam
         Set-VMFirmware -VMName $vmName -SecureBootTemplate "MicrosoftUEFICertificateAuthority"
-        Write-OK "Hyper-V VM '$vmName' created (CPUs: $vmCpu | RAM: 4GB startup → ${vmRamGB}GB max, dynamic)"
+        Write-OK "Hyper-V VM '$vmName' created (CPUs: $vmCpu | RAM: ${vmRamGB}GB max, 16GB min/startup, dynamic)"
 
         # Start VM and wait for POST
         Write-Step "Starting VM..."
@@ -607,8 +611,8 @@ if (Test-Path $TargetWsl) {
 
         $wslConfigPath = Join-Path $env:USERPROFILE ".wslconfig"
         $totalRAM = (Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum
-        $wslRAM = [Math]::Max(8, [Math]::Floor($totalRAM / 1GB * 0.75))
-        $wslCPUs = [Math]::Max(4, $cpu)
+        $wslRAM = [Math]::Max(16, [Math]::Floor($totalRAM / 1GB * 0.80))
+        $wslCPUs = $cpu
         # Build .wslconfig content without here-string (avoids PS parser edge cases)
         $wslLines = @(
             "# CloudWS v1.3.0 — WSL2 Configuration",

@@ -2031,3 +2031,34 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   5. Enhanced `cloudws` CLI with `ai`, `ai-logs`, and `ai-pull` commands for management.
   6. Added AI tools to `docs/PACKAGES.md`.
 * **RESULT:** The system now features a modern, local-first AI shell assistant suite ready for immediate use upon deployment.
+
+---
+
+### [2026-04-25 15:10:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** Researched top-tier open-license models for PowerShell, Linux scripting, coding, and mathematics for the 2026 landscape.
+* **ACTION:** 
+  1. Identified **DeepSeek Coder V2** (Apache 2.0) and **Qwen 2.5** (Apache 2.0) as the strongest candidates for local Ollama deployment.
+  2. Updated AIChat and AIChat-NG system-wide configurations to use `ollama:deepseek-coder-v2` as the new default model.
+  3. Synchronized updated configs to `/etc/skel` for new user profiles.
+* **RESULT:** The system is now optimized for high-performance open-source coding and mathematical reasoning by default.
+
+---
+
+### [2026-04-25 15:25:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** Configured the system to default to **DeepSeek Coder V2 Lite**, optimized for CPU compatibility and 8GB RAM environments.
+* **ACTION:** 
+  1. Updated `cloudws ai-pull` default to `deepseek-coder-v2:lite`.
+  2. Set `ollama:deepseek-coder-v2:lite` as the default model in system-wide and skeleton configs for AIChat and AIChat-NG.
+  3. Verified that the 16B "Lite" version is the most efficient V2 variant for CPU-only/low-RAM hosts, though it may require swap on 8GB systems.
+* **RESULT:** The AI suite is now tailored for the user's specific hardware constraints while maintaining access to the latest V2 coding intelligence.
+
+---
+
+### [2026-04-25 15:45:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** Standardized deployment resource allocation to a 16GB RAM minimum with intelligent auto-scaling for local environments.
+* **ACTION:** 
+  1. Updated `cloud-ws.ps1` to set Hyper-V and WSL2 defaults to 16GB minimum (clamped by host) and scale to 80% of host RAM and 100% of CPU cores.
+  2. Modified `tools/cloud-ws.sh` documentation to reflect the new 16GB standard for VM deployments.
+  3. Increased `scripts/bcvk-wrapper.sh` resource allocation to 16GB RAM and 8 vCPUs for smoke testing.
+  4. Verified that resource detection logic accurately reflects local hardware capacity.
+* **RESULT:** Deployments are now "performance-first" by default, ensuring adequate headroom for AI workloads while maximizing local hardware utilization.

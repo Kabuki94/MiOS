@@ -28,8 +28,8 @@ echo "[bcvk] Booting $QCOW (timeout: ${TIMEOUT_SECS}s)"
 
 QEMU_ARGS=(
     qemu-system-x86_64
-    -m 4096
-    -smp 4
+    -m 16384
+    -smp 8
     -cpu host
     -enable-kvm
     -drive "file=$QCOW,if=virtio,cache=none,format=qcow2"

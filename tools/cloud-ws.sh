@@ -795,13 +795,13 @@ SCRIPT
     cat > /usr/local/bin/create-win11-vm << 'SCRIPT'
 #!/bin/bash
 echo "Windows 11 VM Requirements:"
-echo "  â€¢ Firmware: UEFI (OVMF)"
-echo "  â€¢ TPM: Add Hardware â†’ TPM â†’ Emulated TIS 2.0"
-echo "  â€¢ CPU: host-passthrough"
-echo "  â€¢ RAM: 4GB minimum"
+echo "  • Firmware: UEFI (OVMF)"
+echo "  • TPM: Add Hardware → TPM → Emulated TIS 2.0"
+echo "  • CPU: host-passthrough"
+echo "  • RAM: 16GB minimum (Auto-scaled to host)"
 echo ""
 echo "Example virt-install:"
-echo "  virt-install --name win11 --memory 8192 --vcpus 4 \\"
+echo "  virt-install --name win11 --memory 16384 --vcpus 8 \\"
 echo "    --os-variant win11 --boot uefi \\"
 echo "    --tpm backend.type=emulator,backend.version=2.0,model=tpm-tis \\"
 echo "    --disk size=80 --cdrom /path/to/win11.iso"
