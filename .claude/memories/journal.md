@@ -2062,3 +2062,14 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   3. Increased `scripts/bcvk-wrapper.sh` resource allocation to 16GB RAM and 8 vCPUs for smoke testing.
   4. Verified that resource detection logic accurately reflects local hardware capacity.
 * **RESULT:** Deployments are now "performance-first" by default, ensuring adequate headroom for AI workloads while maximizing local hardware utilization.
+
+---
+
+### [2026-04-25 16:10:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** Finalized AI integration by embedding the default coding model into the image and expanding the project documentation.
+* **ACTION:** 
+  1. Created `docs/knowledge/AI-INTEGRATION.md` providing a comprehensive guide to the AI stack.
+  2. Implemented `scripts/37-ollama-prep.sh` which performs a build-time "bake-in" of the `deepseek-coder-v2:lite` model into `/var/lib/ollama`.
+  3. Integrated model embedding into the `Containerfile` pipeline.
+  4. Verified that `ollama.container` is correctly configured to use persistent storage for models.
+* **RESULT:** CloudWS-bootc is now an AI-native workstation. The default intelligence is physically embedded in the image, enabling offline, high-performance coding assistance from the first boot.

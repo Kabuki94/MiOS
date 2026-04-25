@@ -143,7 +143,8 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     /ctx/scripts/23-uki-render.sh && \
     /ctx/scripts/25-firewall-ports.sh && \
     /ctx/scripts/26-gnome-remote-desktop.sh && \
-    /ctx/scripts/27-gcp-agents.sh
+    /ctx/scripts/27-gcp-agents.sh && \
+    /ctx/scripts/37-ollama-prep.sh
 # Ensure dracut-live + squashfs-tools for the ISO artifact build leg
 RUN dnf install -y dracut-live squashfs-tools \
  && mkdir -p /usr/lib/cloudws/logs \
