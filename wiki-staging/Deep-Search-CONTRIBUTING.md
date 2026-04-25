@@ -3,19 +3,10 @@
 
 # Contributing
 
-Please feel free to file GitHub Issues or propose Pull Requests. We're always happy to discuss improvements to this library!
+Hey, thanks for wanting to contribute.
 
-## Testing
+Before you open a PR, make sure to open an issue and discuss the problem you want to solve. I will not consider PRs without issues.
 
-```shell
-npm test
-```
+I use [gitmoji](https://gitmoji.dev/) for my commit messages because I think it's fun. I encourage you to do the same, but won't enforce it.
 
-## Releasing
-
-Releases are supposed to be done from master, version bumping is automated through [`standard-version`](https://github.com/conventional-changelog/standard-version):
-
-```shell
-npm run release -- --dry-run  # verify output manually
-npm run release               # follow the instructions from the output of this command
-```
+I check PRs and issues very rarely so please be patient.

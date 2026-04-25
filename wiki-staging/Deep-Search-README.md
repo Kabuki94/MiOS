@@ -1,204 +1,308 @@
-# word-wrap [![NPM version](https://img.shields.io/npm/v/word-wrap.svg?style=flat)](https://www.npmjs.com/package/word-wrap) [![NPM monthly downloads](https://img.shields.io/npm/dm/word-wrap.svg?style=flat)](https://npmjs.org/package/word-wrap) [![NPM total downloads](https://img.shields.io/npm/dt/word-wrap.svg?style=flat)](https://npmjs.org/package/word-wrap) [![Linux Build Status](https://img.shields.io/travis/jonschlinkert/word-wrap.svg?style=flat&label=Travis)](https://travis-ci.org/jonschlinkert/word-wrap)
+# micromark-extension-gfm-task-list-item
 ---
 
-# word-wrap [![NPM version](https://img.shields.io/npm/v/word-wrap.svg?style=flat)](https://www.npmjs.com/package/word-wrap) [![NPM monthly downloads](https://img.shields.io/npm/dm/word-wrap.svg?style=flat)](https://npmjs.org/package/word-wrap) [![NPM total downloads](https://img.shields.io/npm/dt/word-wrap.svg?style=flat)](https://npmjs.org/package/word-wrap) [![Linux Build Status](https://img.shields.io/travis/jonschlinkert/word-wrap.svg?style=flat&label=Travis)](https://travis-ci.org/jonschlinkert/word-wrap)
+# micromark-extension-gfm-task-list-item
 
-> Wrap words to a specified length.
+[![Build][build-badge]][build]
+[![Coverage][coverage-badge]][coverage]
+[![Downloads][downloads-badge]][downloads]
+[![Size][size-badge]][size]
+[![Sponsors][sponsors-badge]][collective]
+[![Backers][backers-badge]][collective]
+[![Chat][chat-badge]][chat]
 
-Please consider following this project's author, [Jon Schlinkert](https://github.com/jonschlinkert), and consider starring the project to show your :heart: and support.
+[micromark][] extensions to support GFM [task list items][].
+
+## Contents
+
+* [What is this?](#what-is-this)
+* [When to use this](#when-to-use-this)
+* [Install](#install)
+* [Use](#use)
+* [API](#api)
+  * [`gfmTaskListItem()`](#gfmtasklistitem)
+  * [`gfmTaskListItemHtml()`](#gfmtasklistitemhtml)
+* [Authoring](#authoring)
+* [HTML](#html)
+* [CSS](#css)
+* [Syntax](#syntax)
+* [Types](#types)
+* [Compatibility](#compatibility)
+* [Security](#security)
+* [Related](#related)
+* [Contribute](#contribute)
+* [License](#license)
+
+## What is this?
+
+This package contains extensions that add support for task lists as enabled by
+GFM to [`micromark`][micromark].
+It matches how task list items work on `github.com`.
+
+## When to use this
+
+This project is useful when you want to support task lists in markdown.
+
+You can use these extensions when you are working with [`micromark`][micromark].
+To support all GFM features, use
+[`micromark-extension-gfm`][micromark-extension-gfm].
+
+When you need a syntax tree, you can combine this package with
+[`mdast-util-gfm-task-list-item`][mdast-util-gfm-task-list-item].
+
+All these packages are used [`remark-gfm`][remark-gfm], which focusses on making
+it easier to transform content by abstracting these internals away.
 
 ## Install
 
-Install with [npm](https://www.npmjs.com/):
+This package is [ESM only][esm].
+In Node.js (version 16+), install with [npm][]:
 
 ```sh
-$ npm install --save word-wrap
+npm install micromark-extension-gfm-task-list-item
 ```
 
-## Usage
+In Deno with [`esm.sh`][esmsh]:
 
 ```js
-var wrap = require('word-wrap');
-
-wrap('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.');
+import {gfmTaskListItem, gfmTaskListItemHtml} from 'https://esm.sh/micromark-extension-gfm-task-list-item@2'
 ```
 
-Results in:
+In browsers with [`esm.sh`][esmsh]:
 
-```
-  Lorem ipsum dolor sit amet, consectetur adipiscing
-  elit, sed do eiusmod tempor incididunt ut labore
-  et dolore magna aliqua. Ut enim ad minim veniam,
-  quis nostrud exercitation ullamco laboris nisi ut
-  aliquip ex ea commodo consequat.
+```html
+<script type="module">
+  import {gfmTaskListItem, gfmTaskListItemHtml} from 'https://esm.sh/micromark-extension-gfm-task-list-item@2?bundle'
+</script>
 ```
 
-## Options
-
-![image](https://cloud.githubusercontent.com/assets/383994/6543728/7a381c08-c4f6-11e4-8b7d-b6ba197569c9.png)
-
-### options.width
-
-Type: `Number`
-
-Default: `50`
-
-The width of the text before wrapping to a new line.
-
-**Example:**
+## Use
 
 ```js
-wrap(str, {width: 60});
+import {micromark} from 'micromark'
+import {
+  gfmTaskListItem,
+  gfmTaskListItemHtml
+} from 'micromark-extension-gfm-task-list-item'
+
+const output = micromark('* [x] a\n* [ ] b', {
+  extensions: [gfmTaskListItem()],
+  htmlExtensions: [gfmTaskListItemHtml()]
+})
+
+console.log(output)
 ```
 
-### options.indent
+Yields:
 
-Type: `String`
-
-Default: `` (two spaces)
-
-The string to use at the beginning of each line.
-
-**Example:**
-
-```js
-wrap(str, {indent: '      '});
+```html
+<ul>
+<li><input type="checkbox" disabled="" checked="" /> a</li>
+<li><input type="checkbox" disabled="" /> b</li>
+</ul>
 ```
 
-### options.newline
+## API
 
-Type: `String`
+This package exports the identifiers [`gfmTaskListItem`][api-gfm-task-list-item]
+and [`gfmTaskListItemHtml`][api-gfm-task-list-item-html].
+There is no default export.
 
-Default: `\n`
+The export map supports the [`development` condition][development].
+Run `node --conditions development module.js` to get instrumented dev code.
+Without this condition, production code is loaded.
 
-The string to use at the end of each line.
+### `gfmTaskListItem()`
 
-**Example:**
+Create an HTML extension for `micromark` to support GFM task list items
+syntax.
 
-```js
-wrap(str, {newline: '\n\n'});
+###### Returns
+
+Extension for `micromark` that can be passed in `extensions`, to enable GFM
+task list items syntax ([`Extension`][micromark-extension]).
+
+### `gfmTaskListItemHtml()`
+
+Create an HTML extension for `micromark` to support GFM task list items when
+serializing to HTML.
+
+###### Returns
+
+Extension for `micromark` that can be passed in `htmlExtensions` to support GFM
+task list items when serializing to HTML
+([`HtmlExtension`][micromark-html-extension]).
+
+## Authoring
+
+It is recommended to use lowercase `x` (instead of uppercase `X`), because in
+markdown, it is more common to use lowercase in places where casing does not
+matter.
+It is also recommended to use a space (instead of a tab), as there is no benefit
+of using tabs in this case.
+
+## HTML
+
+Checks relate to the `<input>` element, in the checkbox state (`type=checkbox`),
+in HTML.
+See [*§ 4.10.5.1.15 Checkbox state (`type=checkbox`)*][html-input-checkbox]
+in the HTML spec for more info.
+
+```html
+<!--…-->
+<li><input type="checkbox" disabled="" /> foo</li>
+<li><input type="checkbox" disabled="" checked="" /> bar</li>
+<!--…-->
 ```
 
-### options.escape
+## CSS
 
-Type: `function`
+GitHub itself uses slightly different markup for task list items than they
+define in their spec.
+When following the spec, as this extension does, only inputs are added.
+They can be styled with the following CSS:
 
-Default: `function(str){return str;}`
+```css
+input[type="checkbox"] {
+  margin: 0 .2em .25em -1.6em;
+  vertical-align: middle;
+}
 
-An escape function to run on each line after splitting them.
-
-**Example:**
-
-```js
-var xmlescape = require('xml-escape');
-wrap(str, {
-  escape: function(string){
-    return xmlescape(string);
-  }
-});
+input[type="checkbox"]:dir(rtl) {
+  margin: 0 -1.6em .25em .2em;
+}
 ```
 
-### options.trim
+For the complete actual CSS see
+[`sindresorhus/github-markdown-css`][github-markdown-css].
 
-Type: `Boolean`
+## Syntax
 
-Default: `false`
+Checks form with the following BNF:
 
-Trim trailing whitespace from the returned string. This option is included since `.trim()` would also strip the leading indentation from the first line.
-
-**Example:**
-
-```js
-wrap(str, {trim: true});
+```bnf
+gfm_task_list_item_check ::= '[' (0x09 | ' ' | 'X' | 'x') ']'
 ```
 
-### options.cut
+The check is only allowed at the start of the first paragraph, optionally
+following zero or more definitions or a blank line, in a list item.
+The check must be followed by whitespace (`[\t\n\r ]*`), which is in turn
+followed by non-whitespace.
 
-Type: `Boolean`
+## Types
 
-Default: `false`
+This package is fully typed with [TypeScript][].
+It exports no additional types.
 
-Break a word between any two letters when the word is longer than the specified width.
+## Compatibility
 
-**Example:**
+Projects maintained by the unified collective are compatible with maintained
+versions of Node.js.
 
-```js
-wrap(str, {cut: true});
-```
+When we cut a new major release, we drop support for unmaintained versions of
+Node.
+This means we try to keep the current release line,
+`micromark-extension-gfm-task-list-item@^2`, compatible with Node.js 16.
 
-## About
+This package works with `micromark` version `3` and later.
 
-<details>
-<summary><strong>Contributing</strong></summary>
+## Security
 
-Pull requests and stars are always welcome. For bugs and feature requests, [please create an issue](../../issues/new).
+This package is safe.
 
-</details>
+## Related
 
-<details>
-<summary><strong>Running Tests</strong></summary>
+* [`micromark-extension-gfm`][micromark-extension-gfm]
+  — support all of GFM
+* [`mdast-util-gfm-task-list-item`][mdast-util-gfm-task-list-item]
+  — support all of GFM in mdast
+* [`mdast-util-gfm`][mdast-util-gfm]
+  — support all of GFM in mdast
+* [`remark-gfm`][remark-gfm]
+  — support all of GFM in remark
 
-Running and reviewing unit tests is a great way to get familiarized with a library and its API. You can install dependencies and run tests with the following command:
+## Contribute
 
-```sh
-$ npm install && npm test
-```
+See [`contributing.md` in `micromark/.github`][contributing] for ways to get
+started.
+See [`support.md`][support] for ways to get help.
 
-</details>
+This project has a [code of conduct][coc].
+By interacting with this repository, organization, or community you agree to
+abide by its terms.
 
-<details>
-<summary><strong>Building docs</strong></summary>
+## License
 
-_(This project's readme.md is generated by [verb](https://github.com/verbose/verb-generate-readme), please don't edit the readme directly. Any changes to the readme must be made in the [.verb.md](.verb.md) readme template.)_
+[MIT][license] © [Titus Wormer][author]
 
-To generate the readme, run the following command:
+<!-- Definitions -->
 
-```sh
-$ npm install -g verbose/verb#dev verb-generate-readme && verb
-```
+[build-badge]: https://github.com/micromark/micromark-extension-gfm-task-list-item/workflows/main/badge.svg
 
-</details>
+[build]: https://github.com/micromark/micromark-extension-gfm-task-list-item/actions
 
-### Related projects
+[coverage-badge]: https://img.shields.io/codecov/c/github/micromark/micromark-extension-gfm-task-list-item.svg
 
-You might also be interested in these projects:
+[coverage]: https://codecov.io/github/micromark/micromark-extension-gfm-task-list-item
 
-* [common-words](https://www.npmjs.com/package/common-words): Updated list (JSON) of the 100 most common words in the English language. Useful for… [more](https://github.com/jonschlinkert/common-words) | [homepage](https://github.com/jonschlinkert/common-words "Updated list (JSON) of the 100 most common words in the English language. Useful for excluding these words from arrays.")
-* [shuffle-words](https://www.npmjs.com/package/shuffle-words): Shuffle the words in a string and optionally the letters in each word using the… [more](https://github.com/jonschlinkert/shuffle-words) | [homepage](https://github.com/jonschlinkert/shuffle-words "Shuffle the words in a string and optionally the letters in each word using the Fisher-Yates algorithm. Useful for creating test fixtures, benchmarking samples, etc.")
-* [unique-words](https://www.npmjs.com/package/unique-words): Returns an array of unique words, or the number of occurrences of each word in… [more](https://github.com/jonschlinkert/unique-words) | [homepage](https://github.com/jonschlinkert/unique-words "Returns an array of unique words, or the number of occurrences of each word in a string or list.")
-* [wordcount](https://www.npmjs.com/package/wordcount): Count the words in a string. Support for english, CJK and Cyrillic. | [homepage](https://github.com/jonschlinkert/wordcount "Count the words in a string. Support for english, CJK and Cyrillic.")
+[downloads-badge]: https://img.shields.io/npm/dm/micromark-extension-gfm-task-list-item.svg
 
-### Contributors
+[downloads]: https://www.npmjs.com/package/micromark-extension-gfm-task-list-item
 
-| **Commits** | **Contributor** |  
-| --- | --- |  
-| 47 | [jonschlinkert](https://github.com/jonschlinkert) |  
-| 7  | [OlafConijn](https://github.com/OlafConijn) |  
-| 3  | [doowb](https://github.com/doowb) |  
-| 2  | [aashutoshrathi](https://github.com/aashutoshrathi) |  
-| 2  | [lordvlad](https://github.com/lordvlad) |  
-| 2  | [hildjj](https://github.com/hildjj) |  
-| 1  | [danilosampaio](https://github.com/danilosampaio) |  
-| 1  | [2fd](https://github.com/2fd) |  
-| 1  | [leonard-thieu](https://github.com/leonard-thieu) |  
-| 1  | [mohd-akram](https://github.com/mohd-akram) |  
-| 1  | [toddself](https://github.com/toddself) |  
-| 1  | [wolfgang42](https://github.com/wolfgang42) |  
-| 1  | [zachhale](https://github.com/zachhale) |  
+[size-badge]: https://img.shields.io/badge/dynamic/json?label=minzipped%20size&query=$.size.compressedSize&url=https://deno.bundlejs.com/?q=micromark-extension-gfm-task-list-item
 
-### Author
+[size]: https://bundlejs.com/?q=micromark-extension-gfm-task-list-item
 
-**Jon Schlinkert**
+[sponsors-badge]: https://opencollective.com/unified/sponsors/badge.svg
 
-* [GitHub Profile](https://github.com/jonschlinkert)
-* [Twitter Profile](https://twitter.com/jonschlinkert)
-* [LinkedIn Profile](https://linkedin.com/in/jonschlinkert)
+[backers-badge]: https://opencollective.com/unified/backers/badge.svg
 
-### License
+[collective]: https://opencollective.com/unified
 
-Copyright © 2023, [Jon Schlinkert](https://github.com/jonschlinkert).
-Released under the [MIT License](LICENSE).
+[chat-badge]: https://img.shields.io/badge/chat-discussions-success.svg
 
-***
+[chat]: https://github.com/micromark/micromark/discussions
 
-_This file was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme), v0.8.0, on July 22, 2023._
+[npm]: https://docs.npmjs.com/cli/install
+
+[esmsh]: https://esm.sh
+
+[license]: license
+
+[author]: https://wooorm.com
+
+[contributing]: https://github.com/micromark/.github/blob/main/contributing.md
+
+[support]: https://github.com/micromark/.github/blob/main/support.md
+
+[coc]: https://github.com/micromark/.github/blob/main/code-of-conduct.md
+
+[esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
+
+[typescript]: https://www.typescriptlang.org
+
+[development]: https://nodejs.org/api/packages.html#packages_resolving_user_conditions
+
+[micromark]: https://github.com/micromark/micromark
+
+[micromark-html-extension]: https://github.com/micromark/micromark#htmlextension
+
+[micromark-extension]: https://github.com/micromark/micromark#syntaxextension
+
+[micromark-extension-gfm]: https://github.com/micromark/micromark-extension-gfm
+
+[mdast-util-gfm-task-list-item]: https://github.com/syntax-tree/mdast-util-gfm-task-list-item
+
+[mdast-util-gfm]: https://github.com/syntax-tree/mdast-util-gfm
+
+[remark-gfm]: https://github.com/remarkjs/remark-gfm
+
+[task list items]: https://github.github.com/gfm/#task-list-items-extension-
+
+[github-markdown-css]: https://github.com/sindresorhus/github-markdown-css
+
+[html-input-checkbox]: https://html.spec.whatwg.org/multipage/input.html#checkbox-state-\(type=checkbox\)
+
+[api-gfm-task-list-item]: #gfmtasklistitem
+
+[api-gfm-task-list-item-html]: #gfmtasklistitemhtml
