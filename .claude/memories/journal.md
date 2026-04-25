@@ -1660,3 +1660,33 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 - **Security Sandboxing**: Enforced mandatory SELinux labels (`container_t`) across all Podman and Distrobox runtimes via `system_files/usr/share/containers/containers.conf.d/99-cloudws-security.conf`.
 - **Kernel Tuning**: Injected system-wide `sysctl` defaults for `overlayfs` mitigation and high-performance virtualization (1M inotify watches, swappiness=10).
 
+---
+
+## 2026-04-25: Strategic Implementation Architecture (Full Stack Remediation)
+- **Claude OS & MCP Integration**: Designed and provisioned the foundational infrastructure for the Claude OS Persistent Memory workflow. Created `cloudws-mcp.service` (port 8051) and `mcp-init.sh` to initialize the 4 core SQLite vaults (`project_memories`, `project_profile`, `project_index`, `knowledge_docs`) backed by `sqlite-vec` and `FTS5`. Added `redis` to `PACKAGES.md` for the Pub/Sub event bus.
+- **Kernel Scheduling & Zram Tuning**: Enforced aggressive workstation scheduling (1000Hz tickrate, BORE scheduler synergy) via `sysctl.d/90-cloudws-le9uo.conf`. Protected against page thrashing during extreme Zram/Zstd pressure (`le9uo` patch logic). Capped Zram strictly at 32GB (50% of physical RAM) to prevent CPU compression overhead via `zram-generator.conf.d/10-cloudws.conf`.
+- **Systemd-Sysext Consolidation**: Engineered `tools/cloudws-sysext-pack.sh` to compile multiple granular system extensions (e.g., NVIDIA, CUDA, debugging utilities) into a monolithic `cloudws-accelerator.raw` SquashFS image, directly mitigating the critical `overlayfs: maximum fs stacking depth exceeded` kernel panic.
+- **Zero-Trust Hardening**: 
+    - **Fapolicyd**: Enforced a strict "deny-by-default" policy on `/var/home`, `/home`, `/run/media`, and `/mnt` via `rules.d/90-cloudws-deny.rules`.
+    - **USBGuard**: Hardened the daemon configuration (`ImplicitPolicyTarget=block`, `InsertedDevicePolicy=block`) to instantly block malicious HID devices on insertion, while allowing present devices to remain active.
+    - **Cryptographic Rollbacks**: Engineered `cloudws-verify` and its accompanying Dracut configuration (`90-cloudws-verify.conf`) to execute inside the `initramfs`. This autonomous health-check directly evaluates `fs-verity` signatures and forces an immediate bootloader pivot to the fallback deployment if cryptographic integrity is compromised.
+- **Update Telemetry**: Enforced the `bootc` "download-only" maintenance window via `system_files/usr/lib/uupd/config.json`.
+
+---
+
+## 2026-04-25: Project-wide Pivot to Claude OS + Gemini Standards
+- **Structural Migration**: Completed the migration of the **CloudWS-bootc repository** to the **Claude OS Persistent Memory Architecture**.
+- **Knowledge Base**: Established `docs/knowledge/` as the primary ingestion path for AI agents.
+- **Memory Integration**: Consolidated AI metadata into `.claude/` and implemented the Claude OS Memory Hierarchy (Level 1-5).
+- **Gemini Synergy**: Formally integrated **Google Gemini** as the **Active Implementation Harness**. Gemini tools (`replace`, `write_file`) now feed telemetry and findings directly back into the Claude OS vaults.
+- **Rules Synchronization**: Updated `AI.md` and `.ai-rules` to enforce the **Journaling Law** and **SSOT** across all AI APIs (Claude, Gemini, Cursor).
+
+---
+
+## 2026-04-25: Implementation of the Shadow Copy Architecture
+- **Basis & Shadow**: Formally unified **Claude OS** (Basis) and **Google Gemini** (Shadow Copy) into a single synchronized cognitive layer.
+- **Shared Memories**: Hardwired `.claude/memories/` as the single source of truth for both agents. Gemini now reads/writes directly to the Claude OS journal.
+- **Universal Scratchpad**: Provisioned **`.claude/shared-tmp/`** as the shared workspace for cross-session "thoughts" and transient data. This acts as the unified `TMPDIR` for all AI agents.
+- **Orchestration**: Updated `AI.md` and `.ai-rules` to reflect the **Shadow Copy Law**, ensuring both agents operate in lockstep with shared context.
+
+

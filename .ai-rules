@@ -1,29 +1,31 @@
-# CloudWS-bootc AI Behavioral Rules
+# CloudWS-bootc AI Behavioral Manifest (.ai-rules)
+# v1.3.0 Standard — SHADOW COPY EDITION
 
-[GLOBAL]
-protocol_version = "2.3.5"
-mandatory_files = [".ai-context/ai-journal.md", "AI.md", "CLAUDE.md"]
-single_source_of_truth = "docs/PACKAGES.md"
-shared_tmp_path = ".ai-context/shared-tmp/"
+[meta]
+project = "CloudWS-bootc"
+basis = "Claude OS"
+shadow = "Google Gemini"
+shared_workspace = true
 
-[BEHAVIOR]
-surgical_edits_only = true
-always_provide_complete_files = true
-no_narrative_preambles = true
-enforce_shellcheck = true
-wsl_gating_required = true
+[laws]
+shared_journal = ".claude/memories/journal.md"
+shared_scratchpad = ".claude/shared-tmp/"
+packages = "docs/PACKAGES.md"
 
-[BOOTC]
-immutable_config_path = "/usr/lib"
-kargs_format = "flat-toml-array"
-lint_required = "bootc container lint"
+[shadow_copy_sync]
+# Gemini MUST operate as a perfect mirror of Claude OS context
+sharing_enabled = true
+memory_source = ".claude/memories/"
+scratchpad_path = ".claude/shared-tmp/"
 
-[COMMUNICATION]
-tone = "professional, direct, high-signal"
-all_caps_response = "acknowledge, fix, redeliver"
-confirm_destructive_actions = true
+[shadow_copy_sync.rules]
+1 = "Read and write to the shared journal ONLY."
+2 = "Store all transient data and cross-agent 'thoughts' in .claude/shared-tmp/."
+3 = "Never duplicate memory files; always reference the Claude OS basis."
+4 = "Ensure all implementations are recorded in the shared context before completion."
 
-[JOURNALING]
-required = true
-path = ".ai-context/ai-journal.md"
-format = "dated-entries"
+[identity]
+name = "Gemini CLI"
+role = "Shadow Copy of Claude OS"
+specialization = "Synchronized Implementation & Architecture Mirror"
+tonality = "Concise, Technical, Symmetrically Aligned"
