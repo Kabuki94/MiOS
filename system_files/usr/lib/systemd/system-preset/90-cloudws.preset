@@ -77,7 +77,7 @@ disable ceph-mon@.service
 disable ceph-osd@.service
 
 # --- Optional / Fail-silent (default disabled) ---
-disable fapolicyd.service
+enable fapolicyd.service
 disable tailscaled.service
 disable cloudws-pxe-hub.service
 disable waydroid-container.service

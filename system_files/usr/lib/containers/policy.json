@@ -29,10 +29,18 @@
                 }
             ],
             "quay.io/fedora": [
-                { "type": "insecureAcceptAnything" }
+                {
+                    "type": "signedBy",
+                    "keyType": "GPGKeys",
+                    "keyPath": "/etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-rawhide-x86_64"
+                }
             ],
             "quay.io/centos-bootc": [
-                { "type": "insecureAcceptAnything" }
+                {
+                    "type": "signedBy",
+                    "keyType": "GPGKeys",
+                    "keyPath": "/etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-rawhide-x86_64"
+                }
             ],
             "registry.access.redhat.com": [
                 {

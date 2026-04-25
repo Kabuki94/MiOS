@@ -1707,6 +1707,15 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 
 ---
 
+## 2026-04-25: Security Posture Remediation (Audit Findings 1-11)
+- **Cockpit Hardening**: Eliminated all-interface bind exposure by deleting \`listen-all.conf\`. Disabled unencrypted login fallback to prevent credential sniffing on mirrored WSL networks.
+- **RDP Credential Purity**: Purged baked-in \`cloudws:cloudws\` credentials from \`grd-init\`. The service now mandates environment-based injection (\`CLOUDWS_PASSWORD\`) or remains disabled.
+- **Enforcement Layer**: Formally enabled \`fapolicyd.service\` in the system preset, transitioning hardening from "available" to "active-on-boot."
+- **CrowdSec Expansion**: Integrated Cockpit, RDP, Libvirt, and K3s into the CrowdSec acquisition pipeline, enabling automated IP banning for brute-force attacks on these surfaces.
+- **Supply Chain Assurance**: Replaced \`insecureAcceptAnything\` with GPG signature verification for Fedora and CentOS base images in the container policy, closing a build-side security hole.
+
+---
+
 ### [2026-04-25 11:12:00 UTC] [AI: scheduled-research-daily (Claude Opus 4.7)]
 *   **THOUGHT:** Daily upstream-ecosystem research pass following the 2026-04-21 NEXT-RESEARCH agenda. Six priority topics queued: bootc 1.15.2/1.16.0, Waydroid/NVIDIA, CrowdSec 1.8.x, Podman 5.7 + Cockpit Quadlet GUI, F44 Konflux signature-verification, GNOME 50 bugfix series + NVIDIA CVE feed.
 *   **LEARNING (today's findings):**
