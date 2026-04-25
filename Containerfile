@@ -154,6 +154,13 @@ RUN rm -rf /var/log/dnf5.log* /var/log/hawkey.log /var/cache/dnf /var/cache/libd
 # Install bootc bash completions so `bootc <TAB>` works on deployed systems
 RUN bootc completion bash > /etc/bash_completion.d/bootc
 
+# ── systemd-sysext consolidation ──────────
+# Squash granular extensions into a monolithic accelerator image to prevent
+# 'overlayfs: maximum fs stacking depth exceeded' errors.
+RUN mkdir -p /usr/lib/extensions/source \
+ && chmod +x /ctx/tools/cloudws-sysext-pack.sh \
+ && /ctx/tools/cloudws-sysext-pack.sh /usr/lib/extensions/source || true
+
 RUN bootc container lint
 RUN rm -rf /ctx \
  && ostree container commit

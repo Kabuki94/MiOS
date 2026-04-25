@@ -1,4 +1,5 @@
 [Unit]
+ConditionVirtualization=!container
 Description=CloudWS Boot Diagnostic — prints service status to console
 After=basic.target
 Before=graphical.target

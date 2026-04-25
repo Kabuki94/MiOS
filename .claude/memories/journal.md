@@ -1707,6 +1707,14 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 
 ---
 
+## 2026-04-25: Baseline Maturity and F44 Readiness
+- **Virtualization Gating**: Injected \`ConditionVirtualization=!container\` into all core CloudWS services to prevent hardware service cycles in standard OCI runtimes.
+- **Fedora 44 Optimization**: Enabled \`enable_partial_images\` in \`storage.conf\` to support native \`zstd:chunked\` file-level delta transmission.
+- **Build Orchestration**: Fully integrated \`cloudws-sysext-pack\` into the \`Containerfile\` pipeline, automating the consolidation of SquashFS extensions. Fixed a double-execution bug in the master build runner.
+- **Feature Traceability**: Updated the \`Feature Index\` to include the full custom toolchain and formally documented the **Cognitive Mirror** orchestration layer.
+
+---
+
 ## 2026-04-25: Implementation of the CloudWS PXE Hub
 - **Universal Netboot**: Integrated **netboot.xyz** as the core engine for the CloudWS PXE Hub, enabling the hosting of multiple OS images (CloudWS, Windows, etc.) over the LAN.
 - **Declarative Quadlet**: Created **\`cloudws-pxe-hub.container\`** to manage the service. It maps persistent storage from \`/var/lib/cloudws/pxe/\` and exposes the required TFTP/HTTP ports.

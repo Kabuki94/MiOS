@@ -1,4 +1,5 @@
 [Unit]
+ConditionVirtualization=!container
 Description=CloudWS FreeIPA Zero-Touch Enrollment
 ConditionPathExists=/etc/cloudws/ipa-enroll.env
 ConditionPathExists=!/etc/ipa/default.conf

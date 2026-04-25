@@ -40,14 +40,41 @@ Modern Wayland-only GNOME environment.
 ### 🏗️ Development Sandboxes
 Mutable environments within the immutable host.
 
-```json
 {
-  "sandboxing": {
-    "engine": "Distrobox / Podman",
-    "gui_forwarding": "Wayland socket mapping",
-    "persistence": "Home directory integration"
+    "sandboxing": {
+      "engine": "Distrobox / Podman",
+      "gui_forwarding": "Wayland socket mapping",
+      "persistence": "Home directory integration"
+    }
   }
 }
 ```
 
 ---
+
+## 🛠️ Toolchain Index
+
+| Binary | Purpose | Path |
+| :--- | :--- | :--- |
+| **`cloudws`** | Master CLI entry point | `/usr/bin/cloudws` |
+| **`cloudws-backup`** | State & persistent data backup | `/usr/bin/cloudws-backup` |
+| **`cloudws-update`** | Staged bootc image transactions | `/usr/bin/cloudws-update` |
+| **`cloudws-status`** | Real-time role & service telemetry | `/usr/bin/cloudws-status` |
+| **`cloudws-vfio-check`** | IOMMU and passthrough diagnostics | `/usr/bin/cloudws-vfio-check` |
+| **`cloudws-vfio-toggle`** | Dynamic GPU isolation (no-reboot) | `/usr/bin/cloudws-vfio-toggle` |
+| **`cloudws-rebuild`** | In-place OS self-replication | `/usr/bin/cloudws-rebuild` |
+| **`ujust`** | Unified Blue build & config recipes | `/usr/bin/ujust` |
+| **`iommu-groups`** | Raw hardware isolation reporting | `/usr/bin/iommu-groups` |
+
+---
+
+## 🧠 Cognitive Mirror
+Synchronized dual-agent orchestration.
+
+*   **Claude OS**: Architectural Basis.
+*   **Google Gemini**: Implementation Shadow.
+*   **Persistent Memory**: Local SQLite/Vector vaults.
+*   **MCP Server**: Port 8051.
+
+---
+

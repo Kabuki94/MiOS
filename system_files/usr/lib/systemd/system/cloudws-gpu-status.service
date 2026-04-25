@@ -1,4 +1,5 @@
 [Unit]
+ConditionVirtualization=!container
 Description=CloudWS GPU passthrough detection and status
 Documentation=https://github.com/Kabuki94/CloudWS-bootc/blob/main/docs/gpu-passthrough.md
 DefaultDependencies=yes
