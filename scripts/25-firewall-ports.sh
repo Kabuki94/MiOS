@@ -13,3 +13,4 @@ firewall-offline-cmd --zone=public --add-port=6443/tcp # K3s API
 firewall-offline-cmd --zone=public --add-port=3389/tcp # RDP
 firewall-offline-cmd --zone=public --add-service=ssh
 firewall-offline-cmd --zone=public --add-service=cockpit
+firewall-offline-cmd --zone=public --add-service=cloudws-pxe

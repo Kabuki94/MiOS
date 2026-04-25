@@ -111,6 +111,18 @@ switch:
     @echo "Run this ON the deployed CloudWS system to fix update origin:"
     @echo "  sudo bootc switch {{IMAGE_NAME}}:latest"
 
+# Enable PXE Hub (netboot.xyz)
+pxe-on:
+    @echo "FEATURES=\"pxe-hub\"" | sudo tee -a /etc/cloudws/role.conf
+    sudo systemctl restart cloudws-role.service
+    @echo "✓ PXE Hub enabled"
+
+# Disable PXE Hub
+pxe-off:
+    sudo sed -i '/pxe-hub/d' /etc/cloudws/role.conf
+    sudo systemctl stop cloudws-pxe-hub.service
+    @echo "✓ PXE Hub disabled"
+
 # Clean build artifacts
 clean:
     rm -rf output/

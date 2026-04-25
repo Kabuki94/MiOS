@@ -1698,6 +1698,15 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 
 ---
 
+## 2026-04-25: Implementation of the CloudWS PXE Hub
+- **Universal Netboot**: Integrated **netboot.xyz** as the core engine for the CloudWS PXE Hub, enabling the hosting of multiple OS images (CloudWS, Windows, etc.) over the LAN.
+- **Declarative Quadlet**: Created **\`cloudws-pxe-hub.container\`** to manage the service. It maps persistent storage from \`/var/lib/cloudws/pxe/\` and exposes the required TFTP/HTTP ports.
+- **Firewall Integration**: Defined and whitelisted the **\`cloudws-pxe\`** service in firewalld, ensuring network boot traffic is permitted while maintaining a zero-trust posture.
+- **Role Engine Integration**: Added **\`pxe-hub\`** as a feature to the unified role engine. It can be toggled via kernel arguments or the \`just pxe-on\` command.
+- **PXE Artifact Readiness**: Added \`dracut-live\` to \`PACKAGES.md\` to support building PXE-compatible payloads of the CloudWS-bootc image itself.
+
+---
+
 ### [2026-04-25 11:12:00 UTC] [AI: scheduled-research-daily (Claude Opus 4.7)]
 *   **THOUGHT:** Daily upstream-ecosystem research pass following the 2026-04-21 NEXT-RESEARCH agenda. Six priority topics queued: bootc 1.15.2/1.16.0, Waydroid/NVIDIA, CrowdSec 1.8.x, Podman 5.7 + Cockpit Quadlet GUI, F44 Konflux signature-verification, GNOME 50 bugfix series + NVIDIA CVE feed.
 *   **LEARNING (today's findings):**

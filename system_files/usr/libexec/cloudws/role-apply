@@ -131,6 +131,7 @@ for f in "${FEAT_ARR[@]}"; do
         ceph-mon)    systemctl start --no-block "ceph-mon@$(hostname -s).service" 2>/dev/null || true ;;
         gamescope)   systemctl start --no-block gamescope-session.target 2>/dev/null || true ;;
         waydroid)    systemctl start --no-block waydroid-container.service 2>/dev/null || true ;;
+        pxe-hub)     systemctl start --no-block cloudws-pxe-hub.service 2>/dev/null || true ;;
     esac
 done
 
