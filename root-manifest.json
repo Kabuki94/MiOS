@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-25T21:14:04.398386",
+  "generated_at": "2026-04-25T21:47:41.713326",
   "source_directory": ".",
   "entries": [
     {
@@ -17,7 +17,7 @@
     },
     {
       "path": "ai-context.json",
-      "last_modified": "2026-04-25T21:13:49.467350",
+      "last_modified": "2026-04-25T21:14:08.946096",
       "title": "ai-context.json",
       "type": "structured_data",
       "structured_data": {
@@ -36,6 +36,7 @@
           "system_files": "system_files/manifest.json",
           "tests": "tests/manifest.json",
           "bib_configs": "bib-configs/manifest.json",
+          "deep_search": "deep-search-6418/manifest.json",
           "root": "root-manifest.json"
         },
         "standard_formats": {
