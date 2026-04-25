@@ -183,7 +183,7 @@ Then run from anywhere:
 
 For complete functionality:
 
-Arch/CachyOS/EndeavourOS:
+Arch/CloudWS-bootc/EndeavourOS:
   sudo pacman -S lshw hwinfo inxi smartmontools lm_sensors \
                  ethtool dmidecode usbutils pciutils neofetch
 

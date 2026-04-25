@@ -1738,3 +1738,11 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 
 ---
 >>>>>>> ddaf478034abf8f51f16a8e245779245a7b45940:.ai-context/ai-journal.md
+
+---
+
+## 2026-04-25: Cognitive Mirror Refinement and Architectural Stabilization
+- **AI Safety Renaming**: Re-branded "Shadow Copy" to **"Cognitive Mirror"** across the entire stack (AI.md, .ai-rules, .gemini/settings.json, memory manifests). This eliminates naming collisions with filesystem snapshot features and establishes a safer, more descriptive terminology for the dual-agent brain.
+- **Missing Infrastructure Implementation**: Created **`cloudws-gpu-pv-detect.service`** in the system overlay. This fulfills the dependency for Hyper-V GPU-PV guest detection referenced in the provisioning pipeline.
+- **Initramfs Hardening**: Updated `cloudws-verify.service` with strict **`Before=ostree-prepare-root.service`** ordering. This eliminates a potential race condition where the integrity audit could conflict with the OSTree pivot during early boot.
+- **Legacy Purity Pass**: Executed a batch purge of Arch Linux and CachyOS references from the documentation and blueprints, aligning the knowledge base with the v1.3.0 Fedora Bootc standard.

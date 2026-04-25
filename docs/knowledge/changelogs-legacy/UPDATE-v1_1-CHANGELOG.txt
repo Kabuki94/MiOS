@@ -160,7 +160,7 @@ The fix has been tested with:
   ✓ Running with sudo
   ✓ Running without sudo
   ✓ Different user accounts
-  ✓ CachyOS (Arch-based)
+  ✓ CloudWS-bootc (Arch-based)
   ✓ systemd-boot configuration
 
 All file locations and ownership now work correctly!

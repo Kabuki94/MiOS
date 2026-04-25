@@ -1,6 +1,6 @@
 # Universal VFIO PCIe Device Isolation Toolkit
 
-A complete, production-ready toolkit for configuring **any PCIe device** for VFIO passthrough on Linux. Originally designed for RTX 4090 on CachyOS/systemd-boot, now expanded to support any GPU vendor, any bootloader, and any Linux distribution.
+A complete, production-ready toolkit for configuring **any PCIe device** for VFIO passthrough on Linux. Originally designed for RTX 4090 on CloudWS-bootc/systemd-boot, now expanded to support any GPU vendor, any bootloader, and any Linux distribution.
 
 ## ðŸš€ Quick Start
 
@@ -31,13 +31,13 @@ That's it! The script will guide you through device selection and configuration.
 - **Any PCIe device**: Network cards, storage controllers, etc.
 
 ### Multi-Bootloader Support
-- **systemd-boot** (CachyOS, Arch, EndeavourOS)
+- **systemd-boot** (CloudWS-bootc, Arch, EndeavourOS)
 - **GRUB / GRUB2** (Most distributions)
 - **rEFInd** (Multi-boot systems)
 - **Manual configuration** (Instructions provided)
 
 ### Multi-Initramfs Support
-- **mkinitcpio** (Arch-based distributions)
+- **mkinitcpio** (Fedora-based distributions)
 - **dracut** (Fedora, RHEL, openSUSE)
 
 ### Intelligent Device Detection
@@ -315,7 +315,7 @@ fi
 ## ðŸ“š Resources
 
 - [Arch Wiki - PCI Passthrough](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF)
-- [CachyOS Wiki - QEMU Setup](https://wiki.cachyos.org/virtualization/qemu_and_vmm_setup/)
+- [CloudWS-bootc Wiki - QEMU Setup](https://wiki.cachyos.org/virtualization/qemu_and_vmm_setup/)
 - [VFIO Subreddit](https://www.reddit.com/r/VFIO/)
 - [Level1Techs VFIO Forum](https://forum.level1techs.com/c/software/vfio/11)
 
@@ -346,4 +346,4 @@ The authors are not responsible for any system instability, data loss, or hardwa
 
 **Made with â¤ï¸ for the VFIO community**
 
-*Compatible with CachyOS, Arch Linux, EndeavourOS, Manjaro, and any systemd-boot/GRUB-based distribution*
+*Compatible with CloudWS-bootc, Fedora Bootc, EndeavourOS, Manjaro, and any systemd-boot/GRUB-based distribution*

@@ -3,6 +3,7 @@ Description=CloudWS-OS Cryptographic Integrity Audit (fs-verity)
 DefaultDependencies=no
 After=ostree-prepare-root.service
 Before=sysroot.mount
+Before=ostree-prepare-root.service
 ConditionPathExists=/sysroot/ostree/deploy
 
 [Service]

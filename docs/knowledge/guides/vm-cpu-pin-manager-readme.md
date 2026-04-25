@@ -2,7 +2,7 @@
 ## Professional Per-VM CPU Orchestration for Cloud-WS
 
 > **Version**: 1.0.0  
-> **Compatible with**: CachyOS, Cloud-WS Framework, AMD Ryzen X3D, Intel Hybrid  
+> **Compatible with**: CloudWS-bootc, Cloud-WS Framework, AMD Ryzen X3D, Intel Hybrid  
 > **Integrates with**: libvirt, universal-cpu-isolator.sh, virt-manager
 
 ---
@@ -849,9 +849,9 @@ MIT License - Use freely for personal or commercial Cloud-WS deployments
 
 - **Documentation**: This README + CPU-Isolation-Guide.md
 - **Issues**: Check hook logs in `/var/log/libvirt/qemu/`
-- **Community**: CachyOS forums, r/VFIO subreddit
+- **Community**: CloudWS-bootc forums, r/VFIO subreddit
 
 ---
 
 **Made with Ã¢Â¤Ã¯Â¸ for the Cloud-WS virtualization framework**  
-*Professional-grade VM orchestration on CachyOS*
+*Professional-grade VM orchestration on CloudWS-bootc*

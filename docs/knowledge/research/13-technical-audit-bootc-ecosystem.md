@@ -28,7 +28,7 @@ RUN bootc container lint
 
 This pattern uses `--mount=type=bind` to inject build context without copying it into the final image, `--mount=type=cache` for package manager caches across builds, and a `FROM scratch` stage that aggregates local files and upstream OCI configuration layers. The missing `bootc container lint` at the end is the single most impactful fix—it catches multiple kernels, malformed kargs, non-UTF-8 filenames, and `/boot` content that breaks deployments.
 
-**Initramfs generation is broken.** The current `dracut --force --no-hostonly` command runs inside an unprivileged container build where the running kernel is the CI runner's kernel, not the target CachyOS kernel. This produces initramfs images with missing block device drivers. The `LIBMOUNT_FORCE_MOUNT2=always` environment variable is also missing. The correct approach is to defer initramfs generation to the `bootc-image-builder` stage or add `--reproducible` and explicit module inclusion:
+**Initramfs generation is broken.** The current `dracut --force --no-hostonly` command runs inside an unprivileged container build where the running kernel is the CI runner's kernel, not the target CloudWS-bootc kernel. This produces initramfs images with missing block device drivers. The `LIBMOUNT_FORCE_MOUNT2=always` environment variable is also missing. The correct approach is to defer initramfs generation to the `bootc-image-builder` stage or add `--reproducible` and explicit module inclusion:
 
 ```dockerfile
 ENV LIBMOUNT_FORCE_MOUNT2=always
@@ -112,7 +112,7 @@ Bazzite's `dconf-override-converter` tool provides bidirectional conversion betw
 
 ## NVIDIA driver integration must use the akmods OCI pattern
 
-CloudWS-bootc installs `linux-cachyos-nvidia` directly from CachyOS repos, which couples driver versions to the upstream package manager's release cadence and provides no Secure Boot signing. Universal Blue's approach is fundamentally different: **pre-built, pre-signed kernel modules distributed as OCI container layers**.
+CloudWS-bootc installs `linux-cachyos-nvidia` directly from CloudWS-bootc repos, which couples driver versions to the upstream package manager's release cadence and provides no Secure Boot signing. Universal Blue's approach is fundamentally different: **pre-built, pre-signed kernel modules distributed as OCI container layers**.
 
 ```dockerfile
 ARG NVIDIA_REF="ghcr.io/ublue-os/akmods-nvidia:coreos-stable-42@sha256:..."
@@ -422,7 +422,7 @@ RUN firewall-offline-cmd --zone=public --add-port=6443/tcp
 
 CloudWS-bootc's ambition to unify workstation, hypervisor, and server roles in a single bootc image is architecturally sound—this is precisely what uCore-HCI demonstrates at scale. But the implementation gap is substantial. **The three highest-impact changes are:** adopting the multi-stage Containerfile pattern with `FROM scratch AS ctx` and `bootc container lint`, implementing cosign image signing in CI, and removing hardcoded credentials in favor of first-boot provisioning.
 
-The project's CachyOS/Arch base adds complexity that Fedora-based Universal Blue projects avoid entirely—the DNF facade hack, manual keyring management, and bootc-image-builder incompatibilities are all self-inflicted. Consider whether the CachyOS performance optimizations (BORE scheduler, x86-64-v3) justify the maintenance burden, or whether Fedora Rawhide bootc with kernel arguments achieves comparable results.
+The project's CloudWS-bootc/Arch base adds complexity that Fedora-based Universal Blue projects avoid entirely—the DNF facade hack, manual keyring management, and bootc-image-builder incompatibilities are all self-inflicted. Consider whether the CloudWS-bootc performance optimizations (BORE scheduler, x86-64-v3) justify the maintenance burden, or whether Fedora Rawhide bootc with kernel arguments achieves comparable results.
 
 The composefs-native transition is not optional—it represents bootc's future storage model. CloudWS-bootc should enable composefs now, implement UKI support for Secure Boot, and begin testing with `--composefs-native` installations. The window for gradual adoption is closing as OSTree moves toward deprecation in the bootc context.
 

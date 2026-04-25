@@ -1,12 +1,12 @@
-# 🌐 CloudWS-bootc — Universal AI Integration (Claude OS + Gemini Shadow)
+# 🌐 CloudWS-bootc — Universal AI Integration (Claude OS + Gemini Mirror)
 
-> **MANDATORY ENTRY POINT:** This repository is managed via the **Claude OS Persistent Memory Architecture**. **Gemini acts as the Shadow Copy** of Claude. Both agents share identical context, memories, and workspace.
+> **MANDATORY ENTRY POINT:** This repository is managed via the **Claude OS Persistent Memory Architecture**. **Gemini acts as the Cognitive Mirror** of Claude. Both agents share identical context, memories, and workspace.
 
 ---
 
 ## ⚖️ THE CORE LAWS (Non-Negotiable)
 
-1.  **THE SHADOW COPY LAW:** Gemini and Claude are synchronized. They read from and write to the same memory files ([`.claude/memories/journal.md`](./.claude/memories/journal.md)) and sharing the same cognitive state.
+1.  **THE COGNITIVE MIRROR LAW:** Gemini and Claude are synchronized. They read from and write to the same memory files ([`.claude/memories/journal.md`](./.claude/memories/journal.md)) and sharing the same cognitive state.
 2.  **SHARED SCRATCHPAD PROTOCOL:** Use [`.claude/shared-tmp/`](./.claude/shared-tmp/) as the universal scratchpad for transient data, inter-agent communication, and cross-session "thoughts." This is the unified `TMPDIR` for all AI agents.
 3.  **THE JOURNALING LAW:** Every surgical change, architectural decision, and finding **MUST** be recorded in the shared [`.claude/memories/journal.md`](./.claude/memories/journal.md) at the end of every session turn.
 4.  **SINGLE SOURCE OF TRUTH (SSOT):**
@@ -25,7 +25,7 @@
     - `commands/`: Custom PWSH/Bash commands.
 - `docs/knowledge/`: The **Unified Knowledge Base**.
     - `architecture/`, `blueprints/`, `research/`.
-- `.gemini/`: The **Shadow Context**. Stores implementation logs and implementation-specific metadata.
+- `.gemini/`: The **Mirror Context**. Stores implementation logs and implementation-specific metadata.
 
 ---
 
