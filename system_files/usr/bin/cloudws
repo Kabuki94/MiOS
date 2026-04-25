@@ -37,6 +37,11 @@ case "$CMD" in
         echo "    gc              Run Podman garbage collection now"
         echo "    gc-status       Show Podman disk usage"
         echo ""
+        echo "  AI & LLM"
+        echo "    ai              Show status of Ollama, AIChat, and AIChat-NG"
+        echo "    ai-logs         Tail Ollama container logs"
+        echo "    ai-pull <m>     Pull a model into Ollama (default: llama3)"
+        echo ""
         echo "  SECURITY"
         echo "    scan-malware    ClamAV container scan of /home"
         echo "    sb-audit        Secure Boot CA 2023 readiness audit (2026 deadline)"
@@ -70,6 +75,21 @@ case "$CMD" in
     iommu-groups|iommu) exec /usr/bin/iommu-groups "$@" ;;
     gc)          exec /usr/libexec/cloudws-podman-gc "$@" ;;
     gc-status)   podman system df 2>/dev/null || echo "Podman not available" ;;
+    ai)
+        echo "Ollama Status:"
+        systemctl status ollama.service --no-pager || true
+        echo ""
+        echo "AIChat Version:"
+        aichat --version || echo "AIChat not installed"
+        echo "AIChat-NG Version:"
+        aichat-ng --version || echo "AIChat-NG not installed"
+        ;;
+    ai-logs)     exec podman logs -f ollama ;;
+    ai-pull)
+        model="${1:-llama3}"
+        echo "Pulling model $model..."
+        exec podman exec -it ollama ollama pull "$model"
+        ;;
     scan-malware|scan)
         podman run --rm -v /:/scan:ro docker.io/clamav/clamav:latest \
             clamscan -r /scan/home --max-filesize=100M --max-scansize=500M 2>/dev/null

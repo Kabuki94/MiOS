@@ -21,6 +21,8 @@ TOOLS=(
     cloudws-vfio-toggle 
     cloudws-vfio-check 
     iommu-groups
+    aichat
+    aichat-ng
 )
 
 for tool in "${TOOLS[@]}"; do

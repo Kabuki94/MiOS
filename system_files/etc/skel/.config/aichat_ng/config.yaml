@@ -1,0 +1,14 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+# AIChat-NG Default Configuration
+
+model: ollama:llama3
+
+clients:
+  - type: ollama
+    api_base: http://localhost:11434
+
+# AIChat-NG specific features
+repl_spinner: false
+save_shell_history: true
+highlight: true
+light_theme: false

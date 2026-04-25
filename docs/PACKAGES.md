@@ -662,6 +662,14 @@ google-compute-engine
 google-osconfig-agent
 ```
 
+## AI Tools
+Rust-based LLM CLI assistants and shell integrations.
+
+```packages-ai
+aichat
+aichat-ng
+```
+
 ## Internal — Critical Validation
 
 These packages MUST be present in the final image. Build scripts use this

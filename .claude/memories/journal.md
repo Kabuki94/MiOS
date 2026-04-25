@@ -2018,3 +2018,16 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   4. Cleaned up `docs/PACKAGES.md` by merging duplicate `packages-freeipa` sections.
   5. Verified that most previously identified 'GAPs' (Cockpit `LoginTo`, `HttpProxy`, `conmon_envvars`, etc.) had been already addressed by the previous agent session.
 * **RESULT:** Infrastructure is more complete and compliant with SSOT/LBI patterns. The roadmap for F44 rebase is established.
+
+---
+
+### [2026-04-25 14:55:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** Integrated AIChat and AIChat-NG as core system shell agents with a containerized Ollama backend.
+* **ACTION:** 
+  1. Created `ollama.container` Quadlet and linked it to `bound-images.d/` for pre-pulling.
+  2. Implemented `scripts/37-aichat.sh` to download and install latest AIChat/AIChat-NG binaries during build.
+  3. Pre-configured AIChat/AIChat-NG with local Ollama defaults in `/etc/skel`.
+  4. Updated `Containerfile` to pre-pull LBI images including Ollama.
+  5. Enhanced `cloudws` CLI with `ai`, `ai-logs`, and `ai-pull` commands for management.
+  6. Added AI tools to `docs/PACKAGES.md`.
+* **RESULT:** The system now features a modern, local-first AI shell assistant suite ready for immediate use upon deployment.

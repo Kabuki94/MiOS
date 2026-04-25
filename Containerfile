@@ -113,7 +113,11 @@ COPY --from=ctx /ctx /ctx
 # Pre-pull images for Logically Bound Images (LBI)
 # This ensures bootc-image-builder can resolve them during disk assembly.
 # Note: we use || true to prevent build failure if registry is temporarily down.
-RUN podman pull docker.io/postgres:15 || true
+RUN podman pull docker.io/postgres:15 || true \
+ && podman pull docker.io/ollama/ollama:latest || true \
+ && podman pull docker.io/guacamole/guacamole:latest || true \
+ && podman pull docker.io/guacamole/guacd:latest || true \
+ && podman pull quay.io/ceph/ceph:latest || true
 
 # ---------------------------------------------------------------------------
 # Overlay system_files/ onto the rootfs. Two-stage to handle the

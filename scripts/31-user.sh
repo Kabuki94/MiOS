@@ -43,6 +43,12 @@ fi
 systemd-sysusers --root=/ 2>/dev/null || true
 
 if getent passwd "${C_USER}" >/dev/null; then
+    home=$(getent passwd "${C_USER}" | cut -d: -f6)
+    if [ ! -d "$home" ]; then
+        echo "[31-user] Creating home directory for ${C_USER} from /etc/skel..."
+        mkdir -p "$home"
+        cp -a /etc/skel/. "$home/"
+    fi
     if [[ -n "${C_HASH}" ]]; then
         echo "${C_USER}:${C_HASH}" | chpasswd -e 2>/dev/null || true
         echo "root:${C_HASH}" | chpasswd -e 2>/dev/null || true
