@@ -1,0 +1,13 @@
+[Unit]
+Description=CloudWS WSL2 Runtime Bridge
+ConditionVirtualization=wsl
+After=local-fs.target
+Before=cloudws-role.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/cloudws/wsl-init
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

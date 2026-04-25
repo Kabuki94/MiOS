@@ -19,7 +19,7 @@ fi
 # Global chmod commands in earlier pipelines stripped execution bits.
 # Handle all scripts in /usr/libexec/cloudws/ and named patterns.
 find /usr/libexec/cloudws -type f -exec chmod +x {} \; || true
-find /usr/libexec -type f \( -name 'cloudws-*' -o -name 'role-apply' -o -name 'selinux-init' -o -name 'gpu-detect' -o -name 'grd-init' -o -name 'cpu-isolate' -o -name 'motd' -o -name 'dash' -o -name 'sb-audit' \) -exec chmod +x {} \; || true
+find /usr/libexec -type f \( -name 'cloudws-*' -o -name 'role-apply' -o -name 'selinux-init' -o -name 'gpu-detect' -o -name 'grd-init' -o -name 'cpu-isolate' -o -name 'motd' -o -name 'dash' -o -name 'sb-audit' -o -name 'wsl-init' -o -name 'wsl-firstboot' \) -exec chmod +x {} \; || true
 find /usr/bin -name 'cloudws-*' -type f -exec chmod +x {} \; || true
 
 # 3. Libvirt QEMU Hooks

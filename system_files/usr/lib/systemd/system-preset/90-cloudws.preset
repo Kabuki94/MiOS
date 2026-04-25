@@ -46,6 +46,7 @@ enable qemu-guest-agent.service
 
 # --- WSL2 fallback & initialization (ConditionVirtualization=wsl gated) ---
 enable cloudws-wsl-firstboot.service
+enable cloudws-wsl-init.service
 enable dbus-daemon-wsl.service
 
 # --- Disabled in favor of uupd ---
