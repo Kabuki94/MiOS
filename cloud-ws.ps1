@@ -611,7 +611,7 @@ if (Test-Path $TargetWsl) {
         $wslCPUs = [Math]::Max(4, $cpu)
         # Build .wslconfig content without here-string (avoids PS parser edge cases)
         $wslLines = @(
-            "# CloudWS v0.1.8 — WSL2 Configuration",
+            "# CloudWS v1.3.0 — WSL2 Configuration",
             "[wsl2]",
             "memory=${wslRAM}GB",
             "processors=${wslCPUs}",
@@ -619,7 +619,12 @@ if (Test-Path $TargetWsl) {
             "localhostForwarding=true",
             "nestedVirtualization=true",
             "vmIdleTimeout=-1",
-            "systemd=true"
+            "systemd=true",
+            "",
+            "[experimental]",
+            "networkingMode=mirrored",
+            "dnsTunneling=true",
+            "autoProxy=true"
         )
         $wslConfig = $wslLines -join "`r`n"
         if (Test-Path $wslConfigPath) {

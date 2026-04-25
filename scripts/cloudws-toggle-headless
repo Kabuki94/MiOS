@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v0.1.8 — cloudws-toggle-headless
+# CloudWS v1.3.0 — cloudws-toggle-headless
 # Toggle between GUI desktop (graphical.target) and headless (multi-user.target)
 # Works from TTY, terminal, SSH, or Cockpit console.
 # Usage: cloudws-toggle-headless [on|off|status]

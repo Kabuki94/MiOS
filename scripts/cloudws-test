@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v0.1.8 — cloudws-test
+# CloudWS v1.3.0 — cloudws-test
 # System test harness — validates services, packages, configs, and capabilities.
 # Usage: cloudws-test [--quick|--full|--category NAME]
 set -euo pipefail
