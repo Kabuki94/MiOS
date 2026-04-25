@@ -4,8 +4,10 @@ After=network-online.target
 Wants=network-online.target
 
 [Container]
+GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage
 Image=docker.io/ollama/ollama:latest
 ContainerName=ollama
+HttpProxy=false
 # Expose Ollama to the host and other containers
 PublishPort=11434:11434
 # Ensure Ollama binds to all interfaces inside the container

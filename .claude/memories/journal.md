@@ -2073,3 +2073,15 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   3. Integrated model embedding into the `Containerfile` pipeline.
   4. Verified that `ollama.container` is correctly configured to use persistent storage for models.
 * **RESULT:** CloudWS-bootc is now an AI-native workstation. The default intelligence is physically embedded in the image, enabling offline, high-performance coding assistance from the first boot.
+
+---
+
+### [2026-04-25 17:35:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** Synchronized repository state and addressed architectural gaps in GRD setup and Quadlet LBI support.
+* **ACTION:** 
+  1. **Quadlet Hardening:** Updated `system_files/usr/share/containers/systemd/ollama.container` to include `GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage` and `HttpProxy=false`, ensuring consistent LBI and security behavior.
+  2. **GRD Consolidation:** Merged redundant GRD initialization logic. Updated `system_files/usr/libexec/cloudws-grd-setup` as the primary first-boot helper (supporting `CLOUDWS_PASSWORD` and file-based credentials) and updated `cloudws-grd-setup.service` to match. 
+  3. **RDP Purity:** Purged default `cloudws:cloudws` credentials from `scripts/cloudws-grd-setup` and the new `cloudws-grd-setup` helper. The service now remains disabled unless valid credentials are provided.
+  4. **Cleanup:** Removed redundant `system_files/usr/libexec/cloudws/grd-init` and updated `scripts/18-apply-boot-fixes.sh` to reflect the script removal.
+  5. **Verification:** Confirmed that all `kargs.d` files now include `match-architectures = ["x86_64"]` and that CrowdSec is correctly monitoring expanded service units (Cockpit, GNOME RDP, Libvirt, K3s).
+* **RESULT:** The system's first-boot security posture is significantly improved, and Quadlet LBI support is now uniform across all bound images.

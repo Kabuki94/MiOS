@@ -2,16 +2,14 @@
 # CloudWS GNOME Remote Desktop first-boot setup.
 # Referenced by cloudws-grd-setup.service; bakes a self-signed TLS cert for
 # headless RDP, opens the firewall port, and flips GRD on via grdctl --system.
-# Credentials are NOT set here — the operator supplies them via
-#   grdctl --system rdp set-credentials <user> <pass>
-# after first boot, or by dropping /etc/cloudws/grd/credentials (user:pass)
-# before enabling the service.
+# Supports pre-seeded credentials via CLOUDWS_PASSWORD env var or
+# /etc/cloudws/grd/credentials file (user:pass).
 set -euo pipefail
 
 SENTINEL="/var/lib/cloudws/.grd-init-done"
-STATE_DIR="/etc/cloudws/grd"
-CERT="${STATE_DIR}/tls.crt"
-KEY="${STATE_DIR}/tls.key"
+STATE_DIR="/var/lib/gnome-remote-desktop"
+CERT="${STATE_DIR}/rdp-tls.crt"
+KEY="${STATE_DIR}/rdp-tls.key"
 LOG="/var/log/cloudws-grd-setup.log"
 
 log() { printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" | tee -a "$LOG"; }
@@ -29,11 +27,12 @@ if ! command -v grdctl >/dev/null 2>&1; then
 fi
 
 if [ ! -s "$CERT" ] || [ ! -s "$KEY" ]; then
-    log "Generating self-signed TLS material for GRD..."
-    openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes \
+    log "Generating self-signed TLS material for GRD (EC prime256v1)..."
+    openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -sha256 -days 3650 -nodes \
         -keyout "$KEY" -out "$CERT" \
-        -subj "/CN=$(hostname -f 2>/dev/null || hostname)" >>"$LOG" 2>&1
-    chmod 0600 "$KEY"
+        -subj "/CN=CloudWS-RDP" >>"$LOG" 2>&1
+    chown -R gnome-remote-desktop:gnome-remote-desktop "$STATE_DIR" 2>/dev/null || true
+    chmod 600 "$KEY"
     chmod 0644 "$CERT"
 fi
 
@@ -41,13 +40,21 @@ log "Binding TLS cert/key to GRD system daemon..."
 grdctl --system rdp set-tls-cert "$CERT" >>"$LOG" 2>&1 || log "warn: set-tls-cert failed"
 grdctl --system rdp set-tls-key  "$KEY"  >>"$LOG" 2>&1 || log "warn: set-tls-key failed"
 
-# Optional pre-seeded credentials at /etc/cloudws/grd/credentials (user:pass).
-CRED_FILE="${STATE_DIR}/credentials"
+# 1. Check for env-var credentials (passed via systemd EnvironmentFile or similar)
+if [[ -n "${CLOUDWS_PASSWORD:-}" ]]; then
+    log "Applying RDP credentials from environment..."
+    grdctl --system rdp set-credentials cloudws "$CLOUDWS_PASSWORD" >>"$LOG" 2>&1 \
+        || log "warn: set-credentials failed"
+fi
+
+# 2. Optional pre-seeded credentials at /etc/cloudws/grd/credentials (user:pass).
+# This takes precedence over the default env var if present.
+CRED_FILE="/etc/cloudws/grd/credentials"
 if [ -s "$CRED_FILE" ]; then
     USER_NAME="$(cut -d: -f1 "$CRED_FILE")"
     USER_PASS="$(cut -d: -f2- "$CRED_FILE")"
     if [ -n "$USER_NAME" ] && [ -n "$USER_PASS" ]; then
-        log "Applying pre-seeded RDP credentials for user '${USER_NAME}'..."
+        log "Applying pre-seeded RDP credentials from file for user '${USER_NAME}'..."
         grdctl --system rdp set-credentials "$USER_NAME" "$USER_PASS" >>"$LOG" 2>&1 \
             || log "warn: set-credentials failed"
     fi
@@ -55,11 +62,19 @@ if [ -s "$CRED_FILE" ]; then
     shred -u "$CRED_FILE" 2>/dev/null || rm -f "$CRED_FILE"
 fi
 
-grdctl --system rdp enable >>"$LOG" 2>&1 || log "warn: rdp enable failed"
+# 3. Only enable if we actually have a password set, or it remains dormant for security
+if grdctl --system rdp set-credentials cloudws "" 2>/dev/null | grep -q "cloudws"; then
+     log "Enabling GRD RDP..."
+     grdctl --system rdp enable >>"$LOG" 2>&1 || log "warn: rdp enable failed"
+     systemctl enable --now gnome-remote-desktop.service 2>/dev/null || true
+else
+     log "INFO: No RDP credentials set. Service remains disabled until configured manually."
+fi
 
 if command -v firewall-cmd >/dev/null 2>&1 && firewall-cmd --state >/dev/null 2>&1; then
-    firewall-cmd --permanent --add-port=3389/tcp >>"$LOG" 2>&1 || true
-    firewall-cmd --reload >>"$LOG" 2>&1 || true
+    log "Configuring firewalld ports (3389/tcp, 8080/tcp)..."
+    firewall-cmd --add-port=3389/tcp --add-port=8080/tcp >>"$LOG" 2>&1 || true
+    firewall-cmd --permanent --add-port=3389/tcp --add-port=8080/tcp >>"$LOG" 2>&1 || true
 fi
 
 touch "$SENTINEL"
