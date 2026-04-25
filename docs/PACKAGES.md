@@ -638,6 +638,15 @@ greenboot-default-health-checks
 
 ---
 
+## FreeIPA & SSSD
+Zero-touch enrollment and identity management.
+
+```packages-freeipa
+freeipa-client
+sssd
+sssd-tools
+```
+
 ## Google Cloud Platform (GCP)
 Linux Guest Environment for hyperscale GCE deployments.
 

@@ -3,6 +3,7 @@ Description=Guacamole PostgreSQL Database
 ConditionVirtualization=!wsl
 
 [Container]
+GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage
 Image=docker.io/postgres:15
 ContainerName=guacamole-postgres
 HttpProxy=false

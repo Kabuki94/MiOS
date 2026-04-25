@@ -1,7 +1,7 @@
 #!/bin/bash
 # CloudWS v1.3.0 — 01-repos: Fedora 44 overlay on ucore (base kernel preserved)
 #
-# FIX v0.1.4: Two-phase distro-sync to handle filesystem scriptlet failure.
+# FIX v1.3.0: Two-phase distro-sync to handle filesystem scriptlet failure.
 # The filesystem package's lua %posttrans fails in container builds, aborting
 # the entire 1162-package transaction. Without this fix, the system boots with
 # F43 core libs but F44 desktop packages — a broken ABI mismatch.
@@ -93,11 +93,12 @@ echo "[01-repos] Ensuring F44 ca-certificates is installed..."
 dnf "${DNF_SETOPT[@]}" install -y ca-certificates p11-kit-trust 2>&1 | tail -5 || true
 
 # ── RPMFusion ───────────────────────────────────────────────────────────────
-echo "[01-repos] Installing RPMFusion Free + Nonfree for Fedora 44..."
+echo "[01-repos] Installing RPMFusion Free + Nonfree for Rawhide..."
 dnf "${DNF_SETOPT[@]}" install -y \
-    "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-44.noarch.rpm" \
-    "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-44.noarch.rpm" \
+    "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-rawhide.noarch.rpm" \
+    "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-rawhide.noarch.rpm" \
     2>&1 | tail -15 || true
+
 
 for repo in rpmfusion-free rpmfusion-free-updates rpmfusion-nonfree rpmfusion-nonfree-updates; do
     if [ -f "/etc/yum.repos.d/${repo}.repo" ]; then

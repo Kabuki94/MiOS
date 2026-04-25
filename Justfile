@@ -130,6 +130,13 @@ pxe-off:
     sudo systemctl stop cloudws-pxe-hub.service
     @echo "✓ PXE Hub disabled"
 
+# Migrate existing Fedora/CentOS root to CloudWS-bootc (GCP/Cloud Migration)
+# WARNING: This overwrites your existing root filesystem!
+install-to-root:
+    @echo "Migrating system to CloudWS-bootc..."
+    sudo bootc install to-existing-root --karg="console=ttyS0,115200n8" --imgref {{IMAGE_NAME}}:latest
+    @echo "✓ Migration staged. Reboot to complete."
+
 # Clean build artifacts
 clean:
     rm -rf output/

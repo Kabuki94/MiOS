@@ -7,6 +7,7 @@ Description=CrowdSec Metabase Dashboard
 ConditionVirtualization=!wsl
 
 [Container]
+GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage
 Image=docker.io/crowdsecurity/metabase:latest
 ContainerName=crowdsec-dashboard
 HttpProxy=false

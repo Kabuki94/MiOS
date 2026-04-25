@@ -3,6 +3,7 @@ Description=Standalone Ceph RADOS Gateway Client
 ConditionVirtualization=no
 
 [Container]
+GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage
 Image=quay.io/ceph/ceph:latest
 AutoUpdate=registry
 ContainerName=ceph-radosgw

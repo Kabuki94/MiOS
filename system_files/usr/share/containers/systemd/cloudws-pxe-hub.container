@@ -4,6 +4,8 @@ After=network-online.target
 Wants=network-online.target
 
 [Container]
+HttpProxy=false
+GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage
 Image=ghcr.io/netbootxyz/netbootxyz:latest
 ContainerName=cloudws-pxe-hub
 # Map persistent storage for ISOs and custom menus

@@ -1,4 +1,5 @@
 # VFIO / IOMMU for GPU passthrough. Safe to leave on even when no VM is running.
+match-architectures = ["x86_64"]
 kargs = [
   "amd_iommu=on",
   "iommu=pt",

@@ -60,7 +60,7 @@ install_packages_strict() {
     packages=$(get_packages_strict "$category" "$packages_file") || return 1
     echo "[packages.sh] Installing '$category' packages (strict section)..."
     # shellcheck disable=SC2086 # $packages is intentionally word-split here
-    dnf "${DNF_SETOPT[@]}" -y install --skip-unavailable --exclude=PackageKit $packages || {
+    $DNF_BIN "${DNF_SETOPT[@]}" -y install --skip-unavailable --exclude=PackageKit $packages || {
         echo "[packages.sh] FATAL: Mandatory '$category' packages failed to install" >&2
         echo "[packages.sh] Packages requested: $packages" >&2
         return 1

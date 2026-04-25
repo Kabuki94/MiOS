@@ -12,7 +12,7 @@
 # Wayland desktop with GDM, all portals, audio, Bluetooth, networking,
 # security, and proper theming across GTK3/GTK4/Qt.
 #
-# CHANGELOG v0.1.3:
+# CHANGELOG v1.3.0:
 #   - MANDATORY Bibata cursor download — retries 3x, FAILS BUILD if missing
 #   - dconf profiles for user + GDM added to system_files/
 #   - Flatpak: 7 apps (added Flatseal + LocalSend)

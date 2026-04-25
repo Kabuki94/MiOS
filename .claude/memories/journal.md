@@ -1724,6 +1724,21 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 
 ---
 
+## 2026-04-25: Stabilization and Strategic Implementation (Final Pass)
+- **Build Failure Resolution**: Corrected a repository URL mismatch in \`01-repos.sh\` (RPMFusion nonfree) and added \`--allowerasing --best\` to the global DNF options. This resolves the \`11-hardware.sh\` FATAL error during the Fedora 44 transition.
+- **Logically Bound Image (LBI) Hardening**: Injected mandatory **\`GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage\`** and **\`HttpProxy=false\`** into all Quadlet \`.container\` files. This ensures images pre-fetched during \`bootc upgrade\` are correctly surfaced in Podman storage and isolated from host proxies.
+- **Service & Logic Purity**: 
+    - Deleted the duplicate \`cloudws-guacd.container\` in favor of the production \`guacd.container\`.
+    - Resolved double-execution of \`08-system-files-overlay.sh\` by adding it to the \`build.sh\` skip list.
+    - Updated all remaining \`v0.1.x\` version fragments to **v1.3.0**.
+- **Execution & Security Hardening**:
+    - Updated \`kargs.d\` manifest with mandatory \`match-architectures = ["x86_64"]\` constraints for \`bootc 1.15.x\` compliance.
+    - Migrated FreeIPA and SSSD to the \`PACKAGES.md\` SSOT and refactored \`22-freeipa-client.sh\` to use the centralized package library.
+    - Re-implemented \`cloudws-backup\` to include virtualization state (\`/var/lib/libvirt\`) and Podman SQLite metadata, ensuring upgrade-resilient persistence.
+- **GCP Migration Automation**: Added the **\`just install-to-root\`** recipe to automate the \`bootc install to-existing-root\` workflow for cloud migration scenarios.
+
+---
+
 ### [2026-04-25 11:12:00 UTC] [AI: scheduled-research-daily (Claude Opus 4.7)]
 *   **THOUGHT:** Daily upstream-ecosystem research pass following the 2026-04-21 NEXT-RESEARCH agenda. Six priority topics queued: bootc 1.15.2/1.16.0, Waydroid/NVIDIA, CrowdSec 1.8.x, Podman 5.7 + Cockpit Quadlet GUI, F44 Konflux signature-verification, GNOME 50 bugfix series + NVIDIA CVE feed.
 *   **LEARNING (today's findings):**

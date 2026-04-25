@@ -24,7 +24,7 @@ fi
 # transaction overrides the global default. Array form so elements are one-
 # argv-each under `set -u`, and future flags can be added in one place.
 if [[ -z "${DNF_SETOPT+x}" || "$(declare -p DNF_SETOPT 2>/dev/null)" != "declare -a"* ]]; then
-    declare -ga DNF_SETOPT=(--setopt=install_weak_deps=False)
+    declare -ga DNF_SETOPT=(--setopt=install_weak_deps=False --allowerasing --best)
 fi
 # String variant for legacy/debug visibility only. Do NOT use in commands.
 export DNF_SETOPT_STR="${DNF_SETOPT[*]}"

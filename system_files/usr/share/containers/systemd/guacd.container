@@ -3,6 +3,7 @@ Description=Guacamole Proxy Daemon (guacd)
 ConditionVirtualization=!wsl
 
 [Container]
+GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage
 Image=docker.io/guacamole/guacd:latest
 ContainerName=guacd
 HttpProxy=false
