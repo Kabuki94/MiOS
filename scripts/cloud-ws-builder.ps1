@@ -159,11 +159,13 @@ Log 'Machine started (or was already running).'
 # ---------------------------------------------------------------------------
 function Invoke-MachineSSH {
   param([Parameter(Mandatory)][string]$Bash)
-  # Strip Windows CRLF → LF before piping to bash. PowerShell here-strings
-  # use \r\n on Windows; bash -s treats \r as part of option names/tokens
-  # which causes "invalid option name" errors (e.g. set -euo pipefail\r).
+  # The PowerShell | pipeline re-introduces \r\n when writing each line to a
+  # child process stdin, even after -replace stripping. Bypass entirely by
+  # base64-encoding the script and decoding inside the machine.
+  # base64 charset (A-Za-z0-9+/=) contains no CRLFs or shell metacharacters.
   $Bash = $Bash -replace "`r`n", "`n" -replace "`r", "`n"
-  $Bash | & podman machine ssh $MachineName -- sudo bash -s
+  $encoded = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Bash))
+  & podman machine ssh $MachineName -- sudo bash -c "echo $encoded | base64 -d | bash"
   return $LASTEXITCODE
 }
 
