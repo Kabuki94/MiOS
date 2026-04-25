@@ -650,6 +650,7 @@ Zero-touch enrollment and identity management.
 freeipa-client
 sssd
 sssd-tools
+libsss_nss_idmap
 ```
 
 ## Google Cloud Platform (GCP)
@@ -659,16 +660,6 @@ Linux Guest Environment for hyperscale GCE deployments.
 google-guest-agent
 google-compute-engine
 google-osconfig-agent
-```
-
-## Identity & Auth (FreeIPA / SSSD)
-Zero-touch enrollment and identity management.
-
-```packages-freeipa
-freeipa-client
-sssd
-sssd-tools
-libsss_nss_idmap
 ```
 
 ## Internal — Critical Validation

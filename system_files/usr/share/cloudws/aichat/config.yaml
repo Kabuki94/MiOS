@@ -1,0 +1,16 @@
+# 🌐 CloudWS-bootc — Universal AI Integration
+# AIChat Default Configuration
+
+model: ollama:llama3
+# If you want to use a different provider by default, change it here.
+# Available providers: openai, claude, gemini, ollama, etc.
+
+clients:
+  - type: ollama
+    # Ollama is reachable at localhost:11434 because of PublishPort in Quadlet
+    api_base: http://localhost:11434
+
+# Shell assistant configuration
+save_shell_history: true
+highlight: true
+light_theme: false

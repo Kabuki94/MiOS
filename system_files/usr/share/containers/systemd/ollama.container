@@ -1,0 +1,29 @@
+[Unit]
+Description=Ollama LLM Server
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=docker.io/ollama/ollama:latest
+ContainerName=ollama
+# Expose Ollama to the host and other containers
+PublishPort=11434:11434
+# Ensure Ollama binds to all interfaces inside the container
+Environment=OLLAMA_HOST=0.0.0.0
+# Persist models in /var/lib/ollama
+Volume=/var/lib/ollama:/root/.ollama
+# GPU support (NVIDIA)
+# Pass through NVIDIA devices if present
+# Note: Requires nvidia-container-toolkit in the host (already in PACKAGES.md)
+Annotation=run.oci.keep_original_groups=1
+# Limit resources to avoid starving the host
+# Memory=16G
+# CPU=4
+
+[Service]
+Restart=always
+# Ensure the model directory exists
+ExecStartPre=/usr/bin/mkdir -p /var/lib/ollama
+
+[Install]
+WantedBy=multi-user.target

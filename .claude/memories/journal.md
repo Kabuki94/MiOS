@@ -1994,3 +1994,27 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   4. Redacted personal names ('Corey', 'Taylor') from prose in all .md files, replacing them with 'Kabu.ki'.
   5. Verified that system paths (e.g., /home/corey_dl_taylor/) were preserved to maintain build/script integrity.
 * **RESULT:** Documentation is now synchronized with the proprietorship requirements and ecosystem references. Personal information has been scrubbed from visible documentation.
+
+---
+
+### [2026-04-25 14:35:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** Researched 'what's next' and drafted a roadmap (v1.4.0) for security hardening and Fedora 44 transition. Validated the current state of the repository against identified gaps.
+* **ACTION:** 
+  1. Created  (stored in temp plans dir) detailing research and implementation phases.
+  2. Implemented Greenboot infrastructure: ,  (required), and  (wanted).
+  3. Refined Quadlet LBI support: added  to  and removed  from unbound containers (, ).
+  4. Cleaned up  by merging duplicate  sections.
+  5. Verified that most previously identified 'GAPs' (Cockpit , , , etc.) had been already addressed by the previous agent session.
+* **RESULT:** Infrastructure is more complete and compliant with SSOT/LBI patterns. The roadmap for F44 rebase is established.
+
+---
+
+### [2026-04-25 14:35:00 UTC] [AI: Gemini CLI]
+* **THOUGHT:** Researched 'what's next' and drafted a roadmap (v1.4.0) for security hardening and Fedora 44 transition. Validated the current state of the repository against identified gaps.
+* **ACTION:** 
+  1. Created a formal roadmap detailing research and implementation phases.
+  2. Implemented Greenboot infrastructure: `greenboot.conf`, `30-network.sh` (required), and `60-k3s.sh` (wanted).
+  3. Refined Quadlet LBI support: added `cloudws-pxe-hub.container` to `bound-images.d/` and removed `GlobalArgs` from unbound containers (`ceph-radosgw`, `cloudws-nut`).
+  4. Cleaned up `docs/PACKAGES.md` by merging duplicate `packages-freeipa` sections.
+  5. Verified that most previously identified 'GAPs' (Cockpit `LoginTo`, `HttpProxy`, `conmon_envvars`, etc.) had been already addressed by the previous agent session.
+* **RESULT:** Infrastructure is more complete and compliant with SSOT/LBI patterns. The roadmap for F44 rebase is established.
