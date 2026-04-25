@@ -1,10 +1,10 @@
-# 🛡️ CloudWS-OS Security Ledger
+# 🛡️ CloudWS-OS Security Guide
 
 ```json
 {
-  "posture": "Zero-Trust Local Enforcement",
+  "setup": "Zero-Trust Enforcement",
   "frameworks": ["fapolicyd", "USBGuard", "CrowdSec", "fs-verity"],
-  "compliance": "Immutable OCI Standard"
+  "standard": "Immutable OCI"
 }
 ```
 

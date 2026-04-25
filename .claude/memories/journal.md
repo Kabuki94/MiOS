@@ -1745,6 +1745,13 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 - **Manifest Purity**: Removed the MCP/AI-specific package sections from \`docs/PACKAGES.md\` to keep the manifest focused on the immutable OS payload.
 - **Verification**: Executed a final project-wide audit confirming zero residual AI branding in user-facing files.
 
+---
+
+## 2026-04-25: Documentation "Human Purity" Pass
+- **De-robotization**: Stripped rigid corporate and robotic terminology from the documentation hub. Renamed all "Ledger" and "Protocol" files to more natural "Guide" and "Support" titles.
+- **Language Softening**: Replaced academic and automated-sounding terms (\`provenance\`, \`silicon support\`, \`posture\`) with direct engineering language (\`records\`, \`hardware support\`, \`setup\`).
+- **Metadata Optimization**: Simplified JSON frontmatter in Markdown files to remove repetitive robotic keys, improving readability for both humans and mirror-agents.
+
 
 ---
 

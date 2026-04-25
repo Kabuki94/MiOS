@@ -24,22 +24,22 @@ CloudWS-OS is a container-native, mathematically verifiable workstation operatin
 ## 🏗️ Documentation Hub
 
 ### 📐 [Strategic Blueprint](docs/blueprint.md)
-Technical specifications, filesystem hierarchy, and kernel optimizations.
+Technical specs, filesystem hierarchy, and kernel tuning.
 
 ### 🛠️ [Operational Handbook](docs/operations.md)
-Deployment guides (WSL2, Hyper-V), backup strategies, and upgrade cycles.
+Setup guides (WSL2, Hyper-V), backup steps, and upgrade cycles.
 
-### 🔒 [Security Ledger](docs/security.md)
-Execution whitelisting, cryptographic integrity (fs-verity), and network hardening.
+### 🔒 [Security Guide](docs/security.md)
+Execution whitelisting, integrity checks (fs-verity), and network rules.
 
-### 🔌 [Infrastructure Ledger](docs/infrastructure.md)
-GPU-PV, SR-IOV, VFIO, and Silicon Vendor support matrices.
+### 🔌 [Hardware Support](docs/infrastructure.md)
+GPU-PV, SR-IOV, VFIO, and Silicon vendor details.
 
-### 🧪 [Testing Protocol](docs/testing.md)
-Automated validation suites (tmt) and SBOM provenance.
+### 🧪 [System Validation](docs/testing.md)
+Automated tests (tmt) and build manifests.
 
-### 📋 [Feature Manifest](docs/manifest.md)
-A structured index of all system components and capabilities.
+### 📋 [Feature Index](docs/manifest.md)
+A structured list of all system components and features.
 
 ---
 

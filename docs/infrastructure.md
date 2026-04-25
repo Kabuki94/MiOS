@@ -1,8 +1,8 @@
-# 🔌 CloudWS-OS Infrastructure Ledger
+# 🔌 CloudWS-OS Hardware Support
 
 ```json
 {
-  "hardware_policy": "Universal Silicon Agnosticism",
+  "policy": "Universal Silicon Support",
   "acceleration": ["GPU-PV", "SR-IOV", "VFIO", "DDA"],
   "architectures": ["x86_64", "arm64"]
 }
@@ -10,7 +10,7 @@
 
 ---
 
-## 🖥️ Silicon Support
+## 🖥️ GPU & CPU Support
 
 ### 🎮 Graphics Acceleration
 CloudWS-OS provides native-tier performance across all major vendors.

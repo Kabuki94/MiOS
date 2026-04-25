@@ -1,10 +1,10 @@
-# 🧪 CloudWS-OS Testing Protocol
+# 🧪 CloudWS-OS System Validation
 
 ```json
 {
-  "framework": "tmt (Test Management Tool)",
+  "tools": "tmt (Test Management Tool)",
   "infrastructure": "Testing Farm / virtual.testcloud",
-  "methodology": "Ephemeral OCI Validation"
+  "method": "Ephemeral OCI Validation"
 }
 ```
 
@@ -39,10 +39,10 @@ Verifying the integrity of the KVM/VFIO stack.
 
 ## 📋 Software Bill of Materials (SBOM)
 
-CloudWS-OS generates cryptographically signed manifests for every build.
+CloudWS-OS generates signed manifests for every build.
 
 1. **Formats:** `CycloneDX`, `SPDX`.
-2. **Provenance:** Built via GitHub Actions with OIDC identity verification.
+2. **Records:** Built via GitHub Actions with OIDC identity verification.
 3. **Storage:** Artifacts attached to GHCR image metadata.
 
 ---
