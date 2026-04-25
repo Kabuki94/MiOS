@@ -50,20 +50,6 @@ log "08-overlay: normalizing systemd file permissions"
 find /usr/lib/systemd -type f \( -name "*.service" -o -name "*.socket" -o -name "*.timer" -o -name "*.mount" -o -name "*.conf" -o -name "*.target" -o -name "*.path" -o -name "*.slice" -o -name "*.preset" -o -name "*.automount" -o -name "*.swap" \) -exec chmod 644 {} \; 2>/dev/null || true
 find /usr/lib/systemd -type d -exec chmod 755 {} \; 2>/dev/null || true
 
-# Logically Bound Images
-QDIR="/usr/share/containers/systemd"
-BDIR="/usr/lib/bootc/bound-images.d"
-if [[ -d "${QDIR}" ]]; then
-    install -d -m 0755 "${BDIR}"
-    shopt -s nullglob
-    for q in "${QDIR}"/*.container; do
-        name="$(basename "$q")"
-        ln -sf "${QDIR}/${name}" "${BDIR}/${name}"
-        log "  LBI: bound ${name}"
-    done
-    shopt -u nullglob
-fi
-
 # ═══ WSL2 & Pathing Compatibility ═══
 log "08-overlay: applying WSL2 and pathing compatibility symlinks"
 

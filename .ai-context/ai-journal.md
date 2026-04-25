@@ -1600,3 +1600,8 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
     - Modified `system_files/usr/libexec/cloudws/wsl-firstboot` to:
         - Dynamically create home directories in `/var/home` for ALL users with UID >= 1000.
         - Ensure `skel` files are copied to new home directories.
+
+## 2026-04-25: Fixed bootc-image-builder LBI failures
+- **Issue**: Disk builds failed because all Quadlet .container files were being symlinked to /usr/lib/bootc/bound-images.d, causing bootc to attempt to resolve images (e.g., postgres:15) that weren't in the build environment.
+- **Solution**: Removed the aggressive LBI symlinking from scripts/08-system-files-overlay.sh.
+- **Changes**: Updated scripts/08-system-files-overlay.sh to remove the LBI symlink logic.
