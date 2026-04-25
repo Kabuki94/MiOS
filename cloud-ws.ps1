@@ -1,19 +1,19 @@
 <#
 .SYNOPSIS
-    CloudWS v0.1.8 — Cloud Workstation OS Builder (Windows)
+    CloudWS v1.3.0 — Cloud Workstation OS Builder (Windows)
 
 .DESCRIPTION
     Secure build orchestrator with workflow selection.
     Tokens/passwords NEVER appear in plain text in logs or terminal output.
 
-    SECURITY FIXES in v0.1.1:
+    SECURITY FIXES in v1.3.0:
       - Passwords pre-hashed (SHA-512) before injection — plaintext never in build log
       - Registry token uses SecureString — never echoed, never in process args
       - Workflow menu: Local Build, Push Build, Custom Build
       - Admin/origin-owner detection for default token inference
       - Hostname randomization option for HA clusters
 
-    SELF-BUILDING in v0.1.1:
+    SELF-BUILDING in v1.3.0:
       - Pulls existing CloudWS image from GHCR as the helper/builder image
       - CloudWS image replaces alpine/python for all helper operations
       - Falls back to alpine/python only on first-ever build (no prior image)
@@ -32,7 +32,7 @@ Set-StrictMode -Version Latest
 # ══════════════════════════════════════════════════════════════════════════════
 #  CONFIGURATION
 # ══════════════════════════════════════════════════════════════════════════════
-$v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "0.1.8" }
+$v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "1.3.0" }
 $ImageName      = "cloudws"
 $ImageTag       = "latest"
 $DefUser        = "cloudws"

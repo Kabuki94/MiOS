@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "CloudWS v0.1.8 — System Status"
+echo "CloudWS v1.3.0 — System Status"
 echo "════════════════════════════════"
 echo ""
 echo "Hostname:  $(hostname)"

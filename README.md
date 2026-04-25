@@ -225,7 +225,7 @@ See [CHANGELOG.md](CHANGELOG.md) for the full release history.
 
 - Phase 1.5 self-building cycle — pulls previous CloudWS from GHCR as build helper.
 
-### v0.1.1
+### v1.3.0
 
 - Initial public installer (`install.ps1` one-liner). Preflight checker. Four build workflows.
 

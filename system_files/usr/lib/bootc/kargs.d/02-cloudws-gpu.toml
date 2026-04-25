@@ -1,4 +1,4 @@
-# CloudWS-bootc v0.1.8 - universal GPU kernel arguments
+# CloudWS-bootc v1.3.0 - universal GPU kernel arguments
 # ----------------------------------------------------------------------------
 # bootc kargs.d schema: flat `kargs = [...]` array at document root.
 # Reference: https://bootc.dev/bootc/building/kernel-arguments.html

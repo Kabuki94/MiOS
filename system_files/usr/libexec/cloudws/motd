@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v0.1.8 — Enhanced MOTD Dashboard
+# CloudWS v1.3.0 — Enhanced MOTD Dashboard
 # Natively supports Role, MOK, and Update status (v2.3.5 baseline).
 [[ $- != *i* ]] && exit 0
 [[ -n "$CLOUDWS_NO_MOTD" ]] && exit 0
@@ -21,7 +21,7 @@ _s() {
 # ── Header ──────────────────────────────────────────────────────────────────
 echo ""
 printf '%s\n' "${C}════════════════════════════════════════════════════════════${N}"
-printf '%s\n' "${W}  CloudWS v0.1.8${N}  ${D}${HN} — ${IP}${N}"
+printf '%s\n' "${W}  CloudWS v1.3.0${N}  ${D}${HN} — ${IP}${N}"
 printf '%s\n' "${C}════════════════════════════════════════════════════════════${N}"
 
 # ── Status Row (Role, Update, MOK) ──────────────────────────────────────────

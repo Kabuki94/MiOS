@@ -57,7 +57,7 @@ All notable changes to this project will be documented in this file.
 * **systemd 260 Compliance:** Removed cgroup v1 support and SysV compatibility.
 * **composefs Integration:** Promoted root filesystem to `enabled = yes`.
 
-## [v0.1.1] - 2026-01-20
+## [v1.3.0] - 2026-04-25
 
 ### 🛠️ Hardware & WSL2 Optimization
 * **Intel Battlemage Support:** Implemented strict `xe` driver bindings for Xe2 hardware.

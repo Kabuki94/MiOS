@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-echo "CloudWS v0.1.8 — Checking for updates..."
+echo "CloudWS v1.3.0 — Checking for updates..."
 ORIGIN=$(bootc status 2>/dev/null | grep -i "image:" | head -1 | awk '{print $NF}' || echo "")
 if echo "$ORIGIN" | grep -q "localhost"; then
     echo "WARNING: Update origin is localhost — switching to GHCR..."

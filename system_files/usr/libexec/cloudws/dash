@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# CloudWS v0.1.8 - Dynamic Auto-Updating Dashboard
+# CloudWS v1.3.0 - Dynamic Auto-Updating Dashboard
 # Updates until Ctrl-C is pressed.
 
 # Exit cleanly on Ctrl-C

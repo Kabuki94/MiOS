@@ -1,5 +1,5 @@
 # ============================================================================
-# CloudWS-bootc v0.1.8 - 99-cloudws-gpu.rules
+# CloudWS-bootc v1.3.0 - 99-cloudws-gpu.rules
 # Pinned GPU device permissions across all vendors.
 # Fedora Rawhide's kernel udev rules already handle most of this; this file
 # exists to pin behavior deterministically in case setup/systemd-udev ever

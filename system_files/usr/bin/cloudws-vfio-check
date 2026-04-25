@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-echo "CloudWS v0.1.8 — VFIO Passthrough Readiness Check"
+echo "CloudWS v1.3.0 — VFIO Passthrough Readiness Check"
 echo "════════════════════════════════════════════════"
 echo ""
 if dmesg 2>/dev/null | grep -qi "IOMMU enabled"; then

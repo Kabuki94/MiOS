@@ -1,4 +1,4 @@
-# CloudWS v0.1.8 — Terminal/TTY dashboard
+# CloudWS v1.3.0 — Terminal/TTY dashboard
 # Shows fastfetch services panel on interactive login.
 # Suppress with:  export CLOUDWS_NO_MOTD=1
 if [[ $- == *i* ]] && [ -z "${CLOUDWS_NO_MOTD:-}" ]; then

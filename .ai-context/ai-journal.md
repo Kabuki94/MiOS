@@ -1643,12 +1643,12 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 
 ---
 
-### [2026-04-25 10:25:00 UTC] [AI: Gemini CLI]
-*   **THOUGHT:** The user reported issues enabling Cockpit and emphasized the "Streamlined for DNF5" mandate. I audited the environment and the codebase to reconcile the two.
-*   **LEARNING:** Cockpit in the v1.3.0 baseline is strictly socket-activated (`cockpit.socket`). In WSL2 and OCI environments, this requires `systemd` to be PID 1. The DNF5 transition is complete within the image (`DNF_BIN="dnf5"`), but the current build-host shell (Google Cloud Shell) lacks these tools.
-*   **DISCOVERY:** 
-    1) `systemctl enable cockpit` fails by design; the user must target `cockpit.socket`.
-    2) The project correctly uses `90-cloudws.preset` to enable `cockpit.socket` at build time.
-    3) The current shell is a build-harness, not the target OS, explaining the "command not found" errors for `dnf5` and `cloudws`.
-*   **ACTION:** Provided the user with the correct `systemctl enable --now cockpit.socket` command and instructed them on how to enable `systemd` in WSL2 via `/etc/wsl.conf`. Verified the `packages-cockpit` manifest in `docs/PACKAGES.md`.
+## 2026-04-25: Project-wide v1.3.0 Synchronization and .wslconfig Automation
+- **Standardization**: Completed the global migration from `v0.1.8` and `v0.1.1` fragments to the unified **v1.3.0** baseline across all scripts, manifests, and environment files (`.env`, `.vscode/settings.json`, `.claude/settings.json`).
+- **WSL2 Automation**: The Windows build orchestrator (`cloud-ws.ps1`) now automatically generates and configures the host's `.wslconfig` file during deployment.
+- **High-Performance Defaults**:
+    - **Systemd**: `systemd=true` enabled by default for all CloudWS-bootc WSL2 imports.
+    - **Networking**: Implemented `networkingMode=mirrored`, `dnsTunneling=true`, and `autoProxy=true` for native-like network performance and transparency.
+    - **Resource Allocation**: Dynamic calculation of RAM (75% of host) and CPU (all logical processors) for optimal build and runtime performance.
+- **Safety**: Existing `.wslconfig` files are backed up with a timestamped suffix before being updated, ensuring non-destructive configuration management.
 

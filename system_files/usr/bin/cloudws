@@ -1,5 +1,5 @@
 #!/bin/bash
-# CloudWS v0.1.8 — Unified management CLI
+# CloudWS v1.3.0 — Unified management CLI
 set -euo pipefail
 VERSION="2.0.0"
 CMD="${1:-help}"

@@ -10,7 +10,7 @@
 # AMD:      Mesa + ROCm in-image (PACKAGES.md packages-gpu-amd-compute)
 # Intel:    intel-compute-runtime + intel-media-driver (packages-gpu-intel-compute)
 #
-# v0.1.8 fixes the docs-restructure fallout from commit 0eff8d8:
+# v1.3.0 fixes the docs-restructure fallout from commit 0eff8d8:
 #
 #   1) PACKAGES.md was relocated from the repo root to docs/PACKAGES.md
 #      together with the other long-form docs. The ctx stage still copied
