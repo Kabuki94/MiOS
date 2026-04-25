@@ -1698,6 +1698,15 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 
 ---
 
+## 2026-04-25: Structural and Architectural Stabilization (Gap Remediation)
+- **kargs.d Hardening**: Enforced \`match-architectures = ["x86_64"]\` across the entire boot argument stack for \`bootc 1.15.x\` compliance. 
+- **Parameter Deduplication**: Surgically purged redundant IOMMU and blacklist entries, centralizing core parameters in \`00-cloudws.toml\`. Corrected a critical ext4 filesystem mismatch in \`15-rootflags.toml\` by removing the btrfs-only \`zstd\` compression flag.
+- **Global LBI Storage**: Injected mandatory \`GlobalArgs\` for additional image stores and \`HttpProxy=false\` isolation into all 8 Quadlet manifests. This ensures upgrade-resilient container storage and prevents host-proxy leakage.
+- **Service Purity**: Eliminated Guacamole service duplication by deleting the legacy \`cloudws-guacd.container\`.
+- **SSOT Alignment**: Re-synchronized the FreeIPA/SSSD manifest section with the provisioning script logic.
+
+---
+
 ## 2026-04-25: Implementation of the CloudWS PXE Hub
 - **Universal Netboot**: Integrated **netboot.xyz** as the core engine for the CloudWS PXE Hub, enabling the hosting of multiple OS images (CloudWS, Windows, etc.) over the LAN.
 - **Declarative Quadlet**: Created **\`cloudws-pxe-hub.container\`** to manage the service. It maps persistent storage from \`/var/lib/cloudws/pxe/\` and exposes the required TFTP/HTTP ports.

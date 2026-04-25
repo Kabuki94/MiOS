@@ -1,6 +1,5 @@
-# Apply root mount options directly via kernel arguments
-# Bypasses the systemd-remount-fs composefs interop bug on Fedora 42+
+# CloudWS v1.3.0 — Root filesystem mount flags
 match-architectures = ["x86_64"]
 kargs = [
-    "rootflags=compress=zstd:1,discard=async"
+    "rootflags=discard=async,noatime"
 ]

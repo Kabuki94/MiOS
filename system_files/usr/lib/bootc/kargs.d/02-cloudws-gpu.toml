@@ -1,17 +1,6 @@
-# CloudWS-bootc v1.3.0 - universal GPU kernel arguments
-# ----------------------------------------------------------------------------
-# bootc kargs.d schema: flat `kargs = [...]` array at document root.
-# Reference: https://bootc.dev/bootc/building/kernel-arguments.html
-#
-# These args are chosen to be safe on ALL hardware variants:
-#   * iommu=pt            - required for VFIO/PCI passthrough; no-op without IOMMU
-#   * nouveau blacklist   - prevents nouveau-vs-nvidia-akmod collisions
-#   * Blackwell (RTX 50)  - disable_idle_d3=1 prevents "Error 127" reset bug
-# ----------------------------------------------------------------------------
-kargs = [
-  "iommu=pt",
-  "rd.driver.blacklist=nouveau",
-  "modprobe.blacklist=nouveau",
-  "vfio_pci.disable_idle_d3=1",
-]
+# CloudWS v1.3.0 — Silicon-specific GPU workarounds
 match-architectures = ["x86_64"]
+kargs = [
+    "amdgpu.pplib=0",
+    "i915.enable_guc=3"
+]

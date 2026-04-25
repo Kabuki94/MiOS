@@ -656,6 +656,16 @@ google-compute-engine
 google-osconfig-agent
 ```
 
+## Identity & Auth (FreeIPA / SSSD)
+Zero-touch enrollment and identity management.
+
+```packages-freeipa
+freeipa-client
+sssd
+sssd-tools
+libsss_nss_idmap
+```
+
 ## Internal — Critical Validation
 
 These packages MUST be present in the final image. Build scripts use this

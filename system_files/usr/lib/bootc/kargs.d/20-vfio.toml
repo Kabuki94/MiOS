@@ -1,9 +1,7 @@
-# VFIO / IOMMU for GPU passthrough. Safe to leave on even when no VM is running.
+# CloudWS v1.3.0 — VFIO / PCI Passthrough generic hooks
 match-architectures = ["x86_64"]
 kargs = [
-  "amd_iommu=on",
-  "iommu=pt",
-  "rd.driver.pre=vfio_pci",
-  "kvm.ignore_msrs=1",
-  "kvm.report_ignored_msrs=0",
+    "intel_iommu=on",
+    "kvm.ignore_msrs=1",
+    "vfio_pci.ids="
 ]
