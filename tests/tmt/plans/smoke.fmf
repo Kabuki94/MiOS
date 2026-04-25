@@ -1,0 +1,5 @@
+summary: Basic system integrity and service readiness check
+discover:
+    how: fmf
+execute:
+    how: tmt

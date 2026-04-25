@@ -538,6 +538,8 @@ openssl
 distrobox
 just
 driverctl
+tmt
+ansible-core
 # v2.2 additions
 wslu
 python3-pip
@@ -635,6 +637,15 @@ greenboot-default-health-checks
 ```
 
 ---
+
+## Google Cloud Platform (GCP)
+Linux Guest Environment for hyperscale GCE deployments.
+
+```packages-gcp
+google-guest-agent
+google-compute-engine
+google-osconfig-agent
+```
 
 ## Internal — Critical Validation
 

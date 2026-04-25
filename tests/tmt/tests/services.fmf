@@ -1,0 +1,3 @@
+summary: Verify critical CloudWS services are active
+test: /usr/bin/cloudws-status
+duration: 5m

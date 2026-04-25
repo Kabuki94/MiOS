@@ -2,6 +2,8 @@
 Description=Network UPS Tools (NUT) Distrobox
 After=network-online.target
 Wants=network-online.target
+# Ensure NUT stops LAST during shutdown to prevent premature power-off
+Before=podman.service libvirtd.service virtqemud.service virtnetworkd.service
 
 [Container]
 Image=docker.io/library/fedora:40

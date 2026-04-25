@@ -26,6 +26,12 @@ for vault in "${VAULTS[@]}"; do
         echo "[MCP] Provisioning new SQLite knowledge base: $vault"
         # Basic schema initialization (handled fully by MCP server, creating placeholder here)
         sqlite3 "$vault_path" "CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT);"
+        
+        # Verify sqlite-vec extension presence (Finding from Strategic Implementation doc)
+        if ! sqlite3 "$vault_path" "SELECT vec_version();" 2>/dev/null; then
+            echo "[MCP] WARN: sqlite-vec extension not detected in $vault. Semantic search may be degraded." >&2
+        fi
+
         chown cloudws:cloudws "$vault_path"
         chmod 0600 "$vault_path"
     fi
