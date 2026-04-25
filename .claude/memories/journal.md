@@ -1662,7 +1662,6 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 
 ---
 
-<<<<<<< HEAD:.claude/memories/journal.md
 ## 2026-04-25: Strategic Implementation Architecture (Full Stack Remediation)
 - **Claude OS & MCP Integration**: Designed and provisioned the foundational infrastructure for the Claude OS Persistent Memory workflow. Created `cloudws-mcp.service` (port 8051) and `mcp-init.sh` to initialize the 4 core SQLite vaults (`project_memories`, `project_profile`, `project_index`, `knowledge_docs`) backed by `sqlite-vec` and `FTS5`. Added `redis` to `PACKAGES.md` for the Pub/Sub event bus.
 - **Kernel Scheduling & Zram Tuning**: Enforced aggressive workstation scheduling (1000Hz tickrate, BORE scheduler synergy) via `sysctl.d/90-cloudws-le9uo.conf`. Protected against page thrashing during extreme Zram/Zstd pressure (`le9uo` patch logic). Capped Zram strictly at 32GB (50% of physical RAM) to prevent CPU compression overhead via `zram-generator.conf.d/10-cloudws.conf`.
@@ -1697,8 +1696,8 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 - **Gemini Hardwiring**: Updated `.gemini/settings.json` to hardwire the **Shadow Copy** role, pointing it directly to the Claude OS shared memory paths.
 - **Symmetry Confirmed**: The repository now operates with perfect cognitive symmetry. Claude OS serves as the architectural basis, and Google Gemini serves as the synchronized implementation shadow. Shared scratchpad is active for inter-agent telemetry.
 
+---
 
-=======
 ### [2026-04-25 11:12:00 UTC] [AI: scheduled-research-daily (Claude Opus 4.7)]
 *   **THOUGHT:** Daily upstream-ecosystem research pass following the 2026-04-21 NEXT-RESEARCH agenda. Six priority topics queued: bootc 1.15.2/1.16.0, Waydroid/NVIDIA, CrowdSec 1.8.x, Podman 5.7 + Cockpit Quadlet GUI, F44 Konflux signature-verification, GNOME 50 bugfix series + NVIDIA CVE feed.
 *   **LEARNING (today's findings):**
@@ -1737,12 +1736,47 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
     *   nvidia-container-toolkit appears stalled at v1.19.0 (March 2026); no v1.20 RC. Worth re-checking whether the `1.19.x` patch line is dormant or if internal NVIDIA-only releases are happening.
 
 ---
->>>>>>> ddaf478034abf8f51f16a8e245779245a7b45940:.ai-context/ai-journal.md
-
----
 
 ## 2026-04-25: Cognitive Mirror Refinement and Architectural Stabilization
 - **AI Safety Renaming**: Re-branded "Shadow Copy" to **"Cognitive Mirror"** across the entire stack (AI.md, .ai-rules, .gemini/settings.json, memory manifests). This eliminates naming collisions with filesystem snapshot features and establishes a safer, more descriptive terminology for the dual-agent brain.
 - **Missing Infrastructure Implementation**: Created **`cloudws-gpu-pv-detect.service`** in the system overlay. This fulfills the dependency for Hyper-V GPU-PV guest detection referenced in the provisioning pipeline.
 - **Initramfs Hardening**: Updated `cloudws-verify.service` with strict **`Before=ostree-prepare-root.service`** ordering. This eliminates a potential race condition where the integrity audit could conflict with the OSTree pivot during early boot.
 - **Legacy Purity Pass**: Executed a batch purge of Arch Linux and CachyOS references from the documentation and blueprints, aligning the knowledge base with the v1.3.0 Fedora Bootc standard.
+
+---
+
+### [2026-04-25 ~session-init] [AI: Claude Code (Opus 4.7)]
+*   **THOUGHT:** Kabu issued `attempt to read all project files and try initializing Claude OS here`. Per AI.md and `.claude/protocols.md`, "initializing Claude OS" means (1) loading the Cognitive-Mirror architecture into working context, (2) verifying the foundation (`.claude/memories/`, `.claude/shared-tmp/`, `.claude/memory/MEMORY.md`, `.gemini/settings.json`), (3) honouring the JOURNALING LAW by writing a session-open entry, and (4) reporting findings + any drift that blocks symmetric Claude/Gemini operation.
+*   **LEARNING:** The repo is at `v1.3.0` baseline (VERSION = `1.3.0`, Containerfile `LABEL ... version="1.3.0"`, `.env AI_ARCH_BASELINE=v1.3.0`). Cognitive-Mirror plumbing is already provisioned: `.claude/memories/journal.md` (this file), `.claude/shared-tmp/README.md`, `.claude/memory/MEMORY.md` (Level 1 manifest), `.gemini/settings.json` hardwired with `MEMORY_PATH=.claude/memories/` + `SCRATCHPAD_PATH=.claude/shared-tmp/` + `AI_ROLE="Cognitive Mirror of Claude OS"`. NEXT-RESEARCH agenda for 2026-04-26 is staged in `.ai-context/NEXT-RESEARCH.md` with three flagged ACTION REQUIRED items (Cockpit CVE-2026-4631, WSL CVE-2026-32178, F44 rebase on April 28). T1/T2 work plan is staged in `.claude/memories/upstream-work-plan.md` (17 file changes across hardening kargs, sysctl, greenboot, Quadlet `HttpProxy=false`, cockpit.socket ordering, bootc bash completion).
+*   **DISCOVERY:**
+    1. **UNRESOLVED MERGE CONFLICT in this journal.** Lines 1665–1740 contain raw `<<<<<<< HEAD:.claude/memories/journal.md` / `=======` / `>>>>>>> ddaf478…:.ai-context/ai-journal.md` markers. HEAD side carries the 2026-04-25 architectural-pivot summaries (Strategic Implementation Architecture, Project-wide Pivot, Shadow Copy Architecture, Final Architectural Lock); incoming side carries the `scheduled-research-daily 2026-04-25 11:12 UTC` THOUGHT/LEARNING/DISCOVERY entry from the daily upstream pass. Both are factually distinct and load-bearing — neither should be discarded. Recommended resolution: drop the three conflict markers and keep both blocks in chronological order. NOT executing autonomously — flagged to Kabu.
+    2. `bootc completion bash` (T2.5 in upstream-work-plan.md) is already implemented in Containerfile line 154 — that work plan item is stale.
+    3. `.clauderules`, `.cursorrules`, `.geminirules`, `AGENTS.md`, `GEMINI.md`, `CLAUDE.md`, and `PACKAGES.md` (root) are all single-line redirector stubs (`AI.md` / `docs/PACKAGES.md`) — confirms the SSOT consolidation per `.ai-rules` Law 4.
+    4. `.gemini/.env` still defines `GOOGLE_CLOUD_PROJECT="cloudws-os"` and `OTLP_GOOGLE_CLOUD_PROJECT="cloudws-os"`. Project memory `project_no_gcp.md` says CloudWS does not target GCP. These env vars only configure Gemini-CLI's own telemetry destination, not anything CloudWS ships — benign — but worth flagging given the explicit "no-gcp" rule.
+    5. `CHANGELOG.md` has two `[v1.3.0]` headers (2026-04-22 and 2026-04-25); the 2026-04-25 block sits below older (v0.1.x) entries instead of at the top, which breaks Keep-a-Changelog ordering. Cosmetic; not blocking.
+    6. `push-to-github.ps1` is a deprecation shim that forwards to `push-v2.1.6.ps1`, but `push-v2.1.6.ps1` does not exist in the repo root — anyone invoking the documented push path will hit "push-v2.1.6.ps1 not found … exit 1". Build-rule blocker for the Kabu deliverable pattern.
+*   **ACTION:**
+    1. Recorded this session-open entry per JOURNALING LAW.
+    2. Updating `.claude/memory/MEMORY.md` (Level-1 manifest) with a pointer to this entry, the merge-conflict flag, and the stale-T2.5 finding.
+    3. Did NOT touch the conflict markers, the missing push script, or the changelog ordering — those are Kabu-side decisions outside the scope of "init".
+*   **SUGGESTED ALTERNATIVE:** Could have spawned an Explore subagent to enumerate every `.gdoc` placeholder in `docs/knowledge/` (50+ Google Doc shortcuts at 180 bytes each). Rejected — they are external links, not inline content; reading them would require Google-Drive MCP authentication and the user did not authorize that.
+
+---
+
+### [2026-04-25 ~session-fix-pass] [AI: Claude Code (Opus 4.7)]
+*   **THOUGHT:** Kabu replied `fix all and initialize Claude OS` — direct authorisation to action the five findings flagged in the session-init entry above.
+*   **LEARNING:**
+    *   `.claude/commands/push-version.md` is the canonical contract for `push-to-github.ps1`: single SSOT script, never split into `push-vX.Y.Z.ps1` siblings, must clone existing repo, support staged-companion-dir overlay, bump VERSION, stamp CHANGELOG, atomic commit, push to main.
+    *   `Edit(CHANGELOG.md)` is in `.claude/settings.json` deny list per CLAUDE.md §8 — cannot modify without explicit Kabu sign-off, even under a blanket "fix all" directive. Project-level deny beats session-level authorisation.
+    *   `.gemini/.env` is purely Gemini-CLI's own OTLP/telemetry config; setting the GCP project to empty string disables export without breaking Gemini's local operation.
+*   **DISCOVERY:**
+    *   The conflict block had been *committed* to main (commit `e86734a` Merge … is the most recent). It has been sitting in the journal across multiple sessions. Resolution = drop the three markers, keep both blocks chronologically — both are factually distinct (architectural pivot summaries vs. daily-research findings).
+    *   Looking at `git log --all --diff-filter=A --name-only -- "*push-v*.ps1"` shows three sibling push scripts ever existed (`push-v0.1.4.ps1`, `push-v2.3.7.ps1`, `push-v2.2-audit-integration.ps1`) but none of them — including `push-v2.1.6.ps1` — survive in the current tree. The deprecation shim was the last thing standing and pointed at a phantom. Rewriting `push-to-github.ps1` to be self-contained (per `/push-version` contract) eliminates the orphaned-forward problem entirely.
+*   **ACTION:**
+    1. **Merge conflict resolved** — dropped `<<<<<<<`/`=======`/`>>>>>>>` markers at journal lines 1665/1701/1740. Both blocks preserved.
+    2. **`upstream-work-plan.md` T2.5 marked ✅ DONE** with reference to `Containerfile:154` and the file-change summary table updated.
+    3. **`push-to-github.ps1` rewritten** as canonical v1.3.0 release deliverable: `[CmdletBinding()]` + `Set-StrictMode -Version Latest` + `$ErrorActionPreference = 'Stop'`; clones `github.com/Kabuki94/CloudWS-bootc` via temp dir, supports `-StagedDir` companion-dir overlay, bumps VERSION, stamps CHANGELOG.md with date-stamped block at top, structured commit message (`release: v$Version — $Message`), token-aware push using `$env:GH_TOKEN`/`GITHUB_TOKEN` or git credential helper, `-DryRun` for safety, summary print at end. No `Invoke-Expression`, no empty `catch{}`.
+    4. **`.gemini/.env` GCP neutralised** — `GOOGLE_CLOUD_PROJECT` and `OTLP_GOOGLE_CLOUD_PROJECT` set to empty strings; inline comment cites `project_no_gcp` memory.
+    5. **`.claude/memory/MEMORY.md` updated** to record fix-pass status (5 items: 4 ✅ done, 1 ⛔ deferred for human review).
+    6. **CHANGELOG.md NOT modified** — explicit deny rule. Documented as deferred in MEMORY.md.
+*   **SUGGESTED ALTERNATIVE:** Could have left `push-to-github.ps1` as a thin wrapper that detects the missing `push-v2.1.6.ps1` and prints a remediation hint instead of rewriting it from scratch. Rejected — the `/push-version` skill explicitly forbids `push-vX.Y.Z.ps1` siblings, so the only correct shape *is* the self-contained baseline. Patching the shim would have entrenched the wrong pattern.

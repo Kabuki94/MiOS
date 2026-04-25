@@ -71,10 +71,9 @@
 **Problem:** `cockpit.socket` activates before `libvirtd.socket`. When a user opens the Machines page immediately after boot, libvirtd may not be ready, causing "Failed to connect to libvirt" errors. Adding the ordering dependency prevents the race.
 **Fix:** New drop-in with `[Unit] After=libvirtd.socket`.
 
-### T2.5 — Add bootc bash completion to Containerfile
+### T2.5 — Add bootc bash completion to Containerfile  ✅ DONE
 **File:** `Containerfile`
-**Problem:** `bootc` has no shell completions installed in the image. Users on deployed systems get no tab-completion for `bootc` subcommands.
-**Fix:** Add `RUN bootc completion bash > /etc/bash_completion.d/bootc` as a separate `RUN` layer just before the final `bootc container lint` step. (This is a tiny layer — one file, effectively free.)
+**Status:** Implemented at `Containerfile:154` (`RUN bootc completion bash > /etc/bash_completion.d/bootc`) before the final `bootc container lint`. Verified 2026-04-25 by Claude Opus 4.7.
 
 ---
 
@@ -123,6 +122,6 @@
 | `system_files/usr/share/containers/systemd/guacd.container` | MODIFY | T2.3 |
 | `system_files/usr/share/containers/systemd/ceph-radosgw.container` | MODIFY | T2.3 |
 | `system_files/usr/lib/systemd/system/cockpit.socket.d/10-cloudws.conf` | CREATE | T2.4 |
-| `Containerfile` | MODIFY | T2.5 |
+| `Containerfile` | DONE (line 154) | T2.5 |
 | `.ai-context/ai-journal.md` | APPEND | T3.1 |
 | `.ai-context/AI-ENVIRONMENT.md` | MODIFY | T3.2 |

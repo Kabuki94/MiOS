@@ -4,7 +4,17 @@
       "Bash(where claude *)",
       "Bash(npm list *)",
       "Read(//c/Users/Administrator/AppData/Local/Programs/**)",
-      "Read(//c/Program Files/**)"
+      "Read(//c/Program Files/**)",
+      "Bash(git -C C:/Users/Administrator/OneDrive/Documents/GitHub/CloudWS-bootc status --short)",
+      "Bash(git -C C:/Users/Administrator/OneDrive/Documents/GitHub/CloudWS-bootc log --oneline -10)",
+      "Bash(git -C C:/Users/Administrator/OneDrive/Documents/GitHub/CloudWS-bootc log --all --oneline -- \"push-v2.1.6.ps1\" \"push-v*.ps1\")",
+      "Bash(git -C C:/Users/Administrator/OneDrive/Documents/GitHub/CloudWS-bootc show 35b4179 --stat)",
+      "Bash(git -C C:/Users/Administrator/OneDrive/Documents/GitHub/CloudWS-bootc show 8b5bbcf:push-v2.1.6.ps1)",
+      "Bash(git -C C:/Users/Administrator/OneDrive/Documents/GitHub/CloudWS-bootc log --all --diff-filter=A --name-only -- \"*push-v*.ps1\")",
+      "Bash(git -C C:/Users/Administrator/OneDrive/Documents/GitHub/CloudWS-bootc show b98e01a:push-v0.1.4.ps1)",
+      "Bash(git ls-tree *)",
+      "Bash(git --no-pager show b98e01a:./push-v0.1.4.ps1)",
+      "Read(//tmp/**)"
     ]
   }
 }
