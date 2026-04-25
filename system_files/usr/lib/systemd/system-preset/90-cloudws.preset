@@ -42,6 +42,8 @@ enable auditd.service
 enable crowdsec.service
 enable crowdsec-firewall-bouncer.service
 enable nftables.service
+enable cloudws-mcp.service
+enable redis.service
 enable cloud-init.service
 enable cloud-final.service
 enable qemu-guest-agent.service

@@ -1,0 +1,15 @@
+[Unit]
+Description=CloudWS-OS Cryptographic Integrity Audit (fs-verity)
+DefaultDependencies=no
+After=ostree-prepare-root.service
+Before=sysroot.mount
+ConditionPathExists=/sysroot/ostree/deploy
+
+[Service]
+Type=oneshot
+# Execute the verification script to validate fs-verity hashes
+ExecStart=/usr/libexec/cloudws-verify
+RemainAfterExit=yes
+
+[Install]
+WantedBy=initrd-root-fs.target

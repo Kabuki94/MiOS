@@ -671,6 +671,18 @@ PackageKit
 PackageKit-command-not-found
 ```
 
+## Claude OS MCP Integration
+
+Packages required to run the local Claude OS Persistent Memory architecture and semantic knowledge base.
+
+```packages-claude-os
+redis
+sqlite
+# Provide the sqlite-vec extension (via copr/external build depending on Fedora version)
+python3-sqlite-vec
+python3-tree-sitter
+```
+
 ## Network UPS Tools (NUT)
 
 Managed via Distrobox container to decouple hardware config from immutable core.
