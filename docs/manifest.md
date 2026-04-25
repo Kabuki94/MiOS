@@ -68,13 +68,3 @@ Mutable environments within the immutable host.
 
 ---
 
-## 🧠 Cognitive Mirror
-Synchronized dual-agent orchestration.
-
-*   **Claude OS**: Architectural Basis.
-*   **Google Gemini**: Implementation Shadow.
-*   **Persistent Memory**: Local SQLite/Vector vaults.
-*   **MCP Server**: Port 8051.
-
----
-

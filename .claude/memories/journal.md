@@ -1711,7 +1711,8 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 - **Virtualization Gating**: Injected \`ConditionVirtualization=!container\` into all core CloudWS services to prevent hardware service cycles in standard OCI runtimes.
 - **Fedora 44 Optimization**: Enabled \`enable_partial_images\` in \`storage.conf\` to support native \`zstd:chunked\` file-level delta transmission.
 - **Build Orchestration**: Fully integrated \`cloudws-sysext-pack\` into the \`Containerfile\` pipeline, automating the consolidation of SquashFS extensions. Fixed a double-execution bug in the master build runner.
-- **Feature Traceability**: Updated the \`Feature Index\` to include the full custom toolchain and formally documented the **Cognitive Mirror** orchestration layer.
+- **Feature Traceability**: Updated the \`Feature Index\` to include the full custom toolchain.
+- **Documentation Purity**: Removed all AI-related branding and tool-specific references from public documentation (\`docs/manifest.md\`) to ensure the source remains free of "poisoning" or slop.
 
 ---
 
