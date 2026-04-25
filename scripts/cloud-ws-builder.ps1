@@ -159,7 +159,10 @@ Log 'Machine started (or was already running).'
 # ---------------------------------------------------------------------------
 function Invoke-MachineSSH {
   param([Parameter(Mandatory)][string]$Bash)
-  # Heredoc via stdin pipe — avoids quoting hell with multi-line commands.
+  # Strip Windows CRLF → LF before piping to bash. PowerShell here-strings
+  # use \r\n on Windows; bash -s treats \r as part of option names/tokens
+  # which causes "invalid option name" errors (e.g. set -euo pipefail\r).
+  $Bash = $Bash -replace "`r`n", "`n" -replace "`r", "`n"
   $Bash | & podman machine ssh $MachineName -- sudo bash -s
   return $LASTEXITCODE
 }
@@ -226,3 +229,7 @@ Log "Builder ready. Example usage:"
 Log "  podman --connection ${MachineName}-root build -t cloudws-bootc:latest ."
 Log "  podman --connection ${MachineName}-root run --rm --device nvidia.com/gpu=all \\"
 Log "       docker.io/nvidia/cuda:12.4.0-base-ubi9 nvidia-smi"
+
+# Explicit exit 0 — non-fatal warnings (NVIDIA CDI, AMD/Intel) leave
+# $LASTEXITCODE non-zero; without this the caller sees a failure.
+exit 0
