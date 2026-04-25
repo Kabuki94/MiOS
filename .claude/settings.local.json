@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(where claude *)",
+      "Bash(npm list *)",
+      "Read(//c/Users/Administrator/AppData/Local/Programs/**)",
+      "Read(//c/Program Files/**)"
+    ]
+  }
+}
