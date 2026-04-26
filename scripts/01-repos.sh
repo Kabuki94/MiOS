@@ -146,9 +146,10 @@ if ! [ -f /etc/yum.repos.d/nvidia-container-toolkit.repo ]; then
 [nvidia-container-toolkit]
 name=NVIDIA Container Toolkit
 baseurl=https://nvidia.github.io/libnvidia-container/stable/rpm/$basearch
-enabled=0
+enabled=1
 gpgcheck=1
 gpgkey=https://nvidia.github.io/libnvidia-container/gpgkey
+priority=70
 EOREPO
 fi
 

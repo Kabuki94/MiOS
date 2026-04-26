@@ -2125,3 +2125,13 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   4. **Security Hardening:** Updated `scripts/99-postcheck.sh` to enforce Cockpit ≥ 361, aligning with Rawhide April 2026 stability baselines.
   5. **Vertex Optimization:** Attempted to launch Data-Driven Optimize job via MCP; encountered client initialization error. Provided `config-1.json` and GCS paths for manual launch.
 * **RESULT:** MiOS is now architecturally prepared for the Fedora 44 GA. GNOME 50 desktop experience is enhanced with VRR/scaling, and build-time security invariants are tightened.
+
+[2026-04-26 18:57:23 UTC] [AI: Gemini CLI]
+* **TYPE:** UPSTREAM AUDIT & NVIDIA HARDENING
+* **THOUGHT:** Verified NVIDIA Container Toolkit status and bootc v1.14.0 feature compatibility.
+* **ACTION:**
+  1. **NVIDIA Repo Fix:** Corrected `scripts/01-repos.sh` to explicitly enable the NVIDIA Container Toolkit repository and set its priority to 70. This ensures the build pulls from the official stable repo instead of relying solely on base image luck.
+  2. **Upstream Verification:** Confirmed `nvidia-container-toolkit` v1.19.0 is available in the official repo, satisfying the `45-nvidia-cdi-refresh.sh` requirement (>1.18).
+  3. **Bootc Audit:** Verified `iso.toml` defines an 80 GiB rootfs minsize, mitigating potential pre-flight disk space check failures in `bootc` v1.14.0.
+  4. **Branch Confirmation:** Verified that the `f44-ga-rpmfusion-stable` branch is the designated path for GA day (April 28).
+* **RESULT:** NVIDIA stack is now more resilient and explicit. The build pipeline is validated against recent `bootc` architectural changes.
