@@ -1,5 +1,18 @@
 # 🌐 MiOS Navigation
 
+```json:knowledge
+{
+  "summary": "Central navigation hub for MiOS documentation.",
+  "logic_type": "documentation",
+  "tags": [
+    "wiki",
+    "home",
+    "navigation"
+  ],
+  "last_rag_sync": "2026-04-26T20:27:46.599362"
+}
+```
+
 ## Changelogs
 - 🌐 MiOS — Cloud Native Operating System ([Cumulative History](https://github.com/Kabuki94/mios/blob/main/docs/changelogs/2026-04-26-Artifact-CHL-001-Cumulative.md))
 - 🌐 MiOS — Cloud Native Operating System ([v1.1 Release Log](https://github.com/Kabuki94/mios/blob/main/docs/changelogs/2026-04-26-Artifact-CHL-002-v1.1.md))
@@ -40,3 +53,7 @@
 ## Historical Audit
 - 🌐 MiOS — Cloud Native Operating System ([Next Research Queue](https://github.com/Kabuki94/mios/blob/main/docs/audit/2026-04-26-Artifact-ADT-001-Next-Research.md))
 - 🌐 MiOS — Cloud Native Operating System ([Historical Research April 2026](https://github.com/Kabuki94/mios/blob/main/docs/audit/2026-04-26-Artifact-ADT-002-Research-April2026.md))
+
+
+---
+**Latest RAG Snapshot:** `artifacts/repo-rag-snapshot.json` (2026-04-26 20:27:46)

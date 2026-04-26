@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-26T18:21:23.385877",
+  "generated_at": "2026-04-26T20:27:45.736714",
   "source_directory": "system_files",
   "entries": [
     {
@@ -134,6 +134,13 @@
       "title": "20-vfio.toml",
       "type": "source_code",
       "full_content": "# MiOS v2.1.0 \u2014 VFIO / PCI Passthrough generic hooks\nmatch-architectures = [\"x86_64\"]\nkargs = [\n    \"intel_iommu=on\",\n    \"kvm.ignore_msrs=1\",\n    \"vfio_pci.ids=\"\n]\n"
+    },
+    {
+      "path": "system_files/usr/lib/bootc/kargs.d/35-waydroid.toml",
+      "last_modified": "2026-04-26T20:14:07.013252",
+      "title": "35-waydroid.toml",
+      "type": "source_code",
+      "full_content": "# MiOS \u2014 Waydroid / GNOME 50 compatibility requirements\n# Ensures NVIDIA drivers are initialized for Wayland and Waydroid gralloc compatibility.\nkargs = [\n    \"nvidia-drm.modeset=1\",\n    \"nvidia-drm.fbdev=1\"\n]\nmatch-architectures = [\"x86_64\"]\n"
     },
     {
       "path": "system_files/usr/lib/bootc/kargs.d/10-mios-verbose.toml",
@@ -386,6 +393,7 @@
         "infrastructure": "Self-Building Infrastructure (Personal Property)",
         "license": "Licensed as personal property to Kabu.ki"
       },
+      "knowledge": {},
       "content_preview": "# \ud83c\udf10 MiOS \u2014 Cloud Native Operating System\n> **Proprietor:** Kabu.ki\n> **Infrastructure:** Self-Building Infrastructure (Personal Property)\n> **License:** Licensed as personal property to Kabu.ki\n---\n# Cosign verification keys\n\nKeys in this directory are referenced by `/etc/containers/policy.json`.\n\n- `mios-cosign.pub` - MiOS signing key (placeholder; replace with\n  your cosign keyless identity's cert once published, OR switch policy.json to\n  use `fulcio.url`/`rekorURL` with keyless verification)...",
       "full_content": "# \ud83c\udf10 MiOS \u2014 Cloud Native Operating System\n> **Proprietor:** Kabu.ki\n> **Infrastructure:** Self-Building Infrastructure (Personal Property)\n> **License:** Licensed as personal property to Kabu.ki\n---\n# Cosign verification keys\n\nKeys in this directory are referenced by `/etc/containers/policy.json`.\n\n- `mios-cosign.pub` - MiOS signing key (placeholder; replace with\n  your cosign keyless identity's cert once published, OR switch policy.json to\n  use `fulcio.url`/`rekorURL` with keyless verification).\n- `ublue-cosign.pub`   - Universal Blue signing key (fetched from\n  https://github.com/ublue-os/main/raw/main/cosign.pub at build time by\n  `scripts/42-cosign-policy.sh`).\n\nIf a key is missing and policy.json references it, `bootc switch`/`podman pull`\nwill fail closed. To bootstrap without signing, edit policy.json to replace the\nsigstoreSigned entry with `insecureAcceptAnything` temporarily.\n\n---\n### \ud83d\udcda Bootc Ecosystem & Resources\n- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)\n- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)\n- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)\n- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)\n- **Sole Proprietor:** Kabu.ki\n---\n"
     }

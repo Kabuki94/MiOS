@@ -8,9 +8,14 @@ LOCAL := "localhost/mios:latest"
 BIB := "quay.io/centos-bootc/bootc-image-builder:latest"
 
 # Build OCI image locally
-build:
+build: artifact
     podman build --no-cache -t {{LOCAL}} .
     @echo "✓ Built: {{LOCAL}}"
+
+# Refresh all AI manifests, UKB, and Wiki documentation
+artifact:
+    ./scripts/ai-bootstrap.sh
+    @echo "✓ Artifacts, UKB, and Wiki refreshed."
 
 # Build OCI image on Google Cloud (using GCS context)
 cloud-build:

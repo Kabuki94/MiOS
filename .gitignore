@@ -1,4 +1,5 @@
 # Build outputs
+artifacts/
 mios-deploy-out/
 output/
 *.raw

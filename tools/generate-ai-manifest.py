@@ -14,7 +14,16 @@ def parse_markdown_metadata(content):
     for key, value in meta_matches:
         metadata[key.strip().lower().replace(" ", "_")] = value.strip()
     
-    return title, metadata
+    # Extract json:knowledge block
+    knowledge_block = {}
+    kb_match = re.search(r'```json:knowledge\s*\n(.*?)\n```', content, re.DOTALL)
+    if kb_match:
+        try:
+            knowledge_block = json.loads(kb_match.group(1))
+        except json.JSONDecodeError:
+            pass
+
+    return title, metadata, knowledge_block
 
 def generate_json_manifest(target_dir, output_file, recursive=True, ignore_dirs=None):
     if ignore_dirs is None:
@@ -53,11 +62,12 @@ def generate_json_manifest(target_dir, output_file, recursive=True, ignore_dirs=
                 if file.endswith(".md"):
                     with open(file_path, 'r', encoding='utf-8') as f:
                         content = f.read()
-                    title, metadata = parse_markdown_metadata(content)
+                    title, metadata, knowledge_block = parse_markdown_metadata(content)
                     entry.update({
                         "title": title,
                         "type": "documentation",
                         "metadata": metadata,
+                        "knowledge": knowledge_block,
                         "content_preview": content[:500] + "..." if len(content) > 500 else content,
                         "full_content": content
                     })

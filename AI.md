@@ -149,7 +149,33 @@ Do not modify without explicit authorization from Kabu.ki:
 - `.github/workflows/build-sign.yml` and `.github/workflows/build-artifacts.yml`
 - `docs/memory/**` — AI semantic memory store
 
+## Universal Knowledge Base (UKB) — RAG Protocols
+
+MiOS maintains a **Unified Knowledge Base** for high-efficiency RAG and offline agent bootstrapping.
+
+1. **RAG Snapshot:** `artifacts/repo-rag-snapshot.json` contains a flattened, secret-redacted map of the entire repository, including environment configs and hidden dotfiles.
+2. **Auto-Wiki:** The `docs/` folder is synchronized via `tools/sync-wiki.py` to reflect the current state of scripts and packages.
+3. **Build Lifecycle:** Every `just build` (via the `artifact` target) refreshes the UKB and Wiki.
+4. **Bootstrapping:** New agents should execute `./scripts/ai-bootstrap.sh` to synchronize their local context with the UKB.
+
+## Knowledge Embedding Protocol (KEP)
+
+To ensure all Markdown files are machine-parsable and referencable, they must include a `json:knowledge` block containing structured logic, summaries, and tags.
+
+```json:knowledge
+{
+  "summary": "Brief description of the file's purpose.",
+  "logic_type": "documentation | automation | configuration",
+  "tags": ["tag1", "tag2"],
+  "relations": {
+    "depends_on": [],
+    "impacts": []
+  }
+}
+```
+
 ## Deliverable Contract
+...
 
 Complete replacement files only — no patches, no diffs, no "paste this into X". One push script:
 `push-to-github.ps1` (clone → copy → commit → push). Never `git init`. Never push without human review.

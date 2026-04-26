@@ -14,7 +14,23 @@ else
     echo "⚠️ Warning: tools/generate-ai-manifest.py not found."
 fi
 
-# 2. Initialize GCE-Research
+# 2. Sync Wiki Documentation
+if [[ -f "tools/sync-wiki.py" ]]; then
+    echo "📖 Syncing Wiki..."
+    python3 tools/sync-wiki.py
+else
+    echo "⚠️ Warning: tools/sync-wiki.py not found."
+fi
+
+# 3. Generate Unified Knowledge Base (RAG Snapshot)
+if [[ -f "tools/generate-unified-knowledge.py" ]]; then
+    echo "🧠 Generating Unified Knowledge Base (RAG Snapshot)..."
+    python3 tools/generate-unified-knowledge.py
+else
+    echo "⚠️ Warning: tools/generate-unified-knowledge.py not found."
+fi
+
+# 4. Initialize GCE-Research
 if [[ -d "GCE-Research" ]]; then
     echo "🧪 Initializing GCE-Research (Agent Starter Pack)..."
     (cd GCE-Research && make install)
