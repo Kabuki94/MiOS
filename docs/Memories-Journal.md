@@ -2439,3 +2439,12 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   6. `scripts/32-hostname.sh`: Reads MIOS_HOSTNAME build-arg; falls back to "mios" + first-boot mios-init suffix.
 * **HOSTNAME PATTERN:** Bootstrap generates `<base>-<5-digit>` (e.g. "kabu-ws-83427") at bootstrap time → passed as MIOS_HOSTNAME → baked into image. If base left blank, "mios" is used and first-boot mios-init appends XXXXX from machine-id.
 * **RESULT:** Commit e45a779 on main. Public `mios-bootstrap` repo still needs to be created on GitHub (user action required).
+
+---
+[2026-04-25T00:00Z] [AI: Claude Code]
+**bootstrap: hostname suffix UX fix — both scripts, both repos**
+- Fixed `bootstrap/bootstrap.sh` and `bootstrap/bootstrap.ps1`: 5-digit suffix is now generated BEFORE the hostname prompt so the user sees the full resulting hostname (e.g. `mios-83427`) inline in the prompt text before pressing Enter.
+- Committed to private `Kabuki94/MiOS` main (b2b9b98) and pushed.
+- Copied and pushed to public `Kabuki94/MiOS-bootstrap` main (6b2974c).
+- The live one-liners (`curl ... | bash` and `irm ... | iex`) now serve the fixed behavior.
+- Next pending: merge `f44-ga-rpmfusion-stable` on 2026-04-28; resolve D5 sysext placeholder question.
