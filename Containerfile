@@ -144,11 +144,9 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     /ctx/scripts/25-firewall-ports.sh && \
     /ctx/scripts/26-gnome-remote-desktop.sh && \
     /ctx/scripts/37-ollama-prep.sh
-# Ensure dracut-live + squashfs-tools for the ISO artifact build leg
-RUN dnf install -y dracut-live squashfs-tools \
- && mkdir -p /usr/lib/mios/logs \
- && cp -v /var/log/dnf5.log* /var/log/hawkey.log /usr/lib/mios/logs/ 2>/dev/null || true \
- && dnf clean all
+# Preserve build logs before cleanup (dracut-live + squashfs-tools already in PACKAGES.md containers section)
+RUN mkdir -p /usr/lib/mios/logs \
+ && cp -v /var/log/dnf5.log* /var/log/hawkey.log /usr/lib/mios/logs/ 2>/dev/null || true
 
 # MANDATORY CLEANUP for bootc container lint
 # Purge all logs and temporary files that violate /var immutability rules.

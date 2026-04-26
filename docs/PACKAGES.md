@@ -263,7 +263,6 @@ libguestfs-tools
 virt-viewer
 virt-v2v
 qemu-device-display-virtio-gpu
-dracut-live
 virt-firmware
 python3-cryptography
 ```

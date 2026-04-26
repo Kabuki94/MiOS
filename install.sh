@@ -35,7 +35,7 @@ _remote_ver=$(scurl "https://raw.githubusercontent.com/Kabuki94/mios/main/VERSIO
 [[ -n "$_remote_ver" ]] && VER="v${_remote_ver}"
 
 echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║  MiOS $VER — MiOS                       ║"
+printf "║  MiOS %-55s║\n" "$VER — Immutable Cloud-Native Workstation OS"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -96,12 +96,18 @@ case "$choice" in
     echo ""
     read -rp "Target disk (e.g., sda, nvme0n1): " disk
     read -rp "Enable LUKS encryption? (y/n): " use_luks
+    luks_tmpfile=""
     luks_flag=""
     if [ "$use_luks" = "y" ]; then
+        luks_tmpfile=$(mktemp)
+        chmod 600 "$luks_tmpfile"
         while true; do
             read -rsp "LUKS passphrase: " lp1; echo
             read -rsp "Confirm passphrase: " lp2; echo
-            if [ "$lp1" = "$lp2" ]; then luks_flag="--luks-passphrase $lp1"; break
+            if [ "$lp1" = "$lp2" ]; then
+                printf '%s' "$lp1" > "$luks_tmpfile"
+                luks_flag="--luks-passphrase-file /run/mios-luks.key"
+                break
             else echo "Passphrases do not match. Try again."; fi
         done
     fi
@@ -112,10 +118,16 @@ case "$choice" in
         cd /tmp/mios-build
         podman build --no-cache -t localhost/mios:latest .
         echo "Installing to /dev/$disk ..."
+        _luks_vol=""
+        if [ -n "$luks_tmpfile" ]; then
+            _luks_vol="-v ${luks_tmpfile}:/run/mios-luks.key:ro"
+        fi
         podman run --rm -it --privileged --pid=host \
             -v /var/lib/containers:/var/lib/containers \
             -v /dev:/dev \
+            ${_luks_vol} \
             localhost/mios:latest bootc install to-disk $luks_flag "/dev/$disk"
+        [ -n "$luks_tmpfile" ] && shred -u "$luks_tmpfile" 2>/dev/null || true
         echo ""
         echo "✓ MiOS installed to /dev/$disk. Reboot to start."
     else
