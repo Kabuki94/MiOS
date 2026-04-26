@@ -34,6 +34,8 @@
 - 🌐 MiOS — Cloud Native Operating System ([Looking Glass Integration](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/guides/2026-04-26-Artifact-KBX-102-looking-glass-integration.md))
 - 🌐 MiOS — Cloud Native Operating System ([VFIO Toolkit README](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/guides/2026-04-26-Artifact-KBX-103-vfio-toolkit-readme.md))
 - 🌐 MiOS — Cloud Native Operating System ([WSL2 Deployment](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/guides/2026-04-26-Artifact-KBX-106-WSL2-DEPLOYMENT.md))
+- 🌐 MiOS — Cloud Native Operating System ([AI Integration](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/research/2026-04-26-Artifact-KBX-021-AI-INTEGRATION.md))
+- 🌐 MiOS — Cloud Native Operating System ([OpenAI Standard Deployments](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/research/2026-04-26-Artifact-KBX-024-OpenAI-Integration.md))
 
 ## Historical Audit
 - 🌐 MiOS — Cloud Native Operating System ([Next Research Queue](https://github.com/Kabuki94/mios/blob/main/docs/audit/2026-04-26-Artifact-ADT-001-Next-Research.md))

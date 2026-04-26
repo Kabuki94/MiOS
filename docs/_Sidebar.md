@@ -29,6 +29,7 @@
 - [VM CPU Pin Manager](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/guides/2026-04-26-Artifact-KBX-104-vm-cpu-pin-manager-readme.md)
 - [WSL2 Deployment](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/guides/2026-04-26-Artifact-KBX-106-WSL2-DEPLOYMENT.md)
 - [AI Integration](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/research/2026-04-26-Artifact-KBX-021-AI-INTEGRATION.md)
+- [OpenAI Standard Deployments](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/research/2026-04-26-Artifact-KBX-024-OpenAI-Integration.md)
 
 ### 📜 Historical Audit
 - [Changelog v2.1.0](https://github.com/Kabuki94/mios/blob/main/docs/changelogs/2026-04-26-Artifact-CHL-003-v2.1.0.md)

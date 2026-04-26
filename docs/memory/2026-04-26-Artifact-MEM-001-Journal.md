@@ -1992,3 +1992,22 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   2. **Cleanup Robustness:** Modified `Containerfile` to purge transient data (`/tmp/*`, `/run/*`, `/var/log/*`, `/var/cache/dnf/*`) more safely without deleting the directories themselves. Removed a redundant `mkdir -p /var/tmp` that could conflict with image symlinks.
   3. **Housekeeping:** Removed a redundant duplicate config (`mios-ipa.conf`) and re-synchronized manifests.
 * **RESULT:** The `bootc container lint` step is now stabilized, resolving the crash and making the build pipeline more resilient to large `/var` additions (like Ollama models).
+
+---
+### ⚖️ Legal & Source Reference
+- **Copyright:** (c) 2026 Kabu.ki
+- **Status:** Personal Property / Private Infrastructure
+- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/docs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
+---
+### [2026-04-26 12:30:00 UTC] [AI: Gemini CLI]
+* **TYPE:** OPENAI & MULTI-AGENT COMPATIBILITY
+* **THOUGHT:** Researched and implemented industry-standard configurations to make the repository natively parseable by OpenAI and ensure the multi-agent system can be deployed as an OpenAI-compatible self-hosted API key instance.
+* **ACTION:** 
+  1. **Parsability:** Created `/llms.txt` and `/.well-known/ai-plugin.json` to expose the repository architecture to OpenAI Custom GPTs and standard AI web crawlers.
+  2. **API Standardization:** Created `/.well-known/openapi.yaml` to define the multi-agent API endpoints as a standard `/v1/chat/completions` compliant interface.
+  3. **Documentation:** Added `docs/knowledge/research/2026-04-26-Artifact-KBX-024-OpenAI-Integration.md` detailing the proxy deployment strategy for the native Google ADK agents using LiteLLM/vLLM.
+  4. **Config Update:** Added OpenAI proxy endpoint options to `deep-search-6418/.env.example`.
+  5. **Sync:** Re-generated all manifests and synced documentation links.
+* **RESULT:** The repository and its agent suite now conform to the latest industry standards for OpenAI-compatible deployment and metadata parsing.
