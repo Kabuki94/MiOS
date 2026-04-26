@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# Cloud-WS Hardware Assessment Tool
+# MiOS-Build Hardware Assessment Tool
 # Automated workflow for complete system analysis
 ################################################################################
 
@@ -17,7 +17,7 @@ readonly BOLD='\033[1m'
 readonly NC='\033[0m'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly ASSESSMENT_DIR="$HOME/cloud-ws-assessment-$(date +%Y%m%d_%H%M%S)"
+readonly ASSESSMENT_DIR="$HOME/mios-build-assessment-$(date +%Y%m%d_%H%M%S)"
 
 print_banner() {
     clear
@@ -95,7 +95,7 @@ run_quick_summary() {
     "$SCRIPT_DIR/quick-summary.sh" | tee "$ASSESSMENT_DIR/01-quick-summary.txt"
     
     # Extract readiness status
-    if grep -q "System ready for Cloud-WS" "$ASSESSMENT_DIR/01-quick-summary.txt"; then
+    if grep -q "System ready for MiOS-Build" "$ASSESSMENT_DIR/01-quick-summary.txt"; then
         print_success "Quick check: System appears ready"
         return 0
     else
@@ -270,7 +270,7 @@ generate_compatibility_report() {
         echo ""
         
         if [ "$ready" = true ] && [ $score -ge 8 ]; then
-            echo "✓ VERDICT: EXCELLENT - Ready for Cloud-WS deployment"
+            echo "✓ VERDICT: EXCELLENT - Ready for MiOS-Build deployment"
             echo ""
             echo "Your system meets all requirements and is highly suitable for"
             echo "Cloud Workstation usage with GPU passthrough capabilities."
@@ -278,16 +278,16 @@ generate_compatibility_report() {
             echo "✓ VERDICT: GOOD - Ready with minor limitations"
             echo ""
             echo "Your system meets core requirements. Some optional features"
-            echo "may be missing but Cloud-WS will work well."
+            echo "may be missing but MiOS-Build will work well."
         elif [ $score -ge 4 ]; then
             echo "⚠ VERDICT: PARTIAL - Limited functionality expected"
             echo ""
-            echo "Your system can run Cloud-WS but some features may not work."
+            echo "Your system can run MiOS-Build but some features may not work."
             echo "GPU passthrough may require additional configuration."
         else
             echo "✗ VERDICT: NOT READY - Critical requirements missing"
             echo ""
-            echo "Your system does not meet minimum requirements for Cloud-WS."
+            echo "Your system does not meet minimum requirements for MiOS-Build."
             echo "Please enable virtualization features in BIOS and ensure"
             echo "hardware supports IOMMU/VT-d/AMD-Vi."
         fi
@@ -357,7 +357,7 @@ show_summary() {
     echo -e "${BOLD}💡 Next Steps:${NC}"
     echo -e "   1. Review: ${CYAN}cat $ASSESSMENT_DIR/00-COMPATIBILITY-REPORT.txt${NC}"
     echo -e "   2. Check details: ${CYAN}less $ASSESSMENT_DIR/03-full-profile.txt${NC}"
-    echo -e "   3. If ready, proceed with Cloud-WS setup"
+    echo -e "   3. If ready, proceed with MiOS-Build setup"
     echo ""
 }
 

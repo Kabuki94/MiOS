@@ -1,6 +1,6 @@
 #!/bin/bash
 ###############################################################################
-# Cloud-WS Professional Virtualization Host
+# MiOS-Build Professional Virtualization Host
 # Version: v2.1.0
 # Target: CachyOS (Minimal or Full Install)
 #
@@ -24,7 +24,7 @@ set -o pipefail
 # CONFIGURATION
 #==============================================================================
 SCRIPT_VERSION="v2.1.0"
-LOG_DIR="/var/log/cloud-ws"
+LOG_DIR="/var/log/mios-build"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 LOGFILE="$LOG_DIR/install-$TIMESTAMP.log"
 REPORT_FILE="$LOG_DIR/report-$TIMESTAMP.txt"
@@ -48,7 +48,7 @@ SETUP_TPM=0
 INSTALL_DESKTOP=0
 
 #==============================================================================
-# COLORS - Cloud-WS Theme (Teal/Coral/White)
+# COLORS - MiOS-Build Theme (Teal/Coral/White)
 #==============================================================================
 # Primary palette
 TEAL='\033[38;5;43m'          # Greenish-teal (frames, headers)
@@ -638,7 +638,7 @@ phase_services() {
         cat > /etc/samba/smb.conf << 'EOF'
 [global]
    workgroup = WORKGROUP
-   server string = Cloud-WS
+   server string = MiOS-Build
    security = user
    map to guest = Bad User
    load printers = no
@@ -747,8 +747,8 @@ EOF
         log_skip "gcr-ssh-agent" "headless mode"
     fi
     
-    hostnamectl set-hostname Cloud-WS >> "$DEBUG_LOG" 2>&1
-    log_success "Hostname: Cloud-WS"
+    hostnamectl set-hostname MiOS-Build >> "$DEBUG_LOG" 2>&1
+    log_success "Hostname: MiOS-Build"
     
     log_info "Configuring libvirt network..."
     systemctl start virtqemud.socket virtnetworkd.socket >> "$DEBUG_LOG" 2>&1
@@ -822,13 +822,13 @@ generate_report() {
     
     cat > "$REPORT_FILE" << EOF
 ================================================================================
- Cloud-WS Professional Virtualization Host - Installation Report
+ MiOS-Build Professional Virtualization Host - Installation Report
 ================================================================================
  Version:    $SCRIPT_VERSION
  Mode:       $mode
  Completed:  $(date)
  User:       $REAL_USER
- Hostname:   Cloud-WS
+ Hostname:   MiOS-Build
 ================================================================================
 
 SUMMARY: ${#SUCCESS_TASKS[@]} success, ${#FAILED_TASKS[@]} failed, ${#SKIPPED_TASKS[@]} skipped

@@ -1,7 +1,7 @@
 #!/bin/bash
 ###############################################################################
 # Universal CPU Core Isolation Configurator
-# For Cloud-WS Professional Virtualization Hosts
+# For MiOS-Build Professional Virtualization Hosts
 # Optimized for: AMD Ryzen X3D (dual-CCD), Intel Hybrid (P/E-cores), NUMA
 # Compatible with: systemd-boot, GRUB, dynamic affinity management
 ###############################################################################

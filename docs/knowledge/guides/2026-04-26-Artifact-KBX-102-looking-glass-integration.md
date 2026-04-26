@@ -5,11 +5,11 @@
 > **Source Reference:** MiOS-Core-v2.1.0
 ---
 
-# Cloud-WS v2.1.0 - Looking Glass Integration
+# MiOS-Build v2.1.0 - Looking Glass Integration
 
 ## What's New
 
-The Cloud-WS installation script has been updated to version **v2.1.0** with full Looking Glass support for ultra-low latency GPU passthrough to Windows VMs!
+The MiOS-Build installation script has been updated to version **v2.1.0** with full Looking Glass support for ultra-low latency GPU passthrough to Windows VMs!
 
 ### Key Changes
 
@@ -78,9 +78,9 @@ Looking Glass provides **near-native gaming performance** by:
 âœ“ GPU passed through to VM  
 âœ“ Windows 11 VM created  
 
-### Step 1: Run Cloud-WS Installer
+### Step 1: Run MiOS-Build Installer
 ```bash
-sudo ./cloud-ws.sh
+sudo ./mios-build.sh
 ```
 
 When prompted:
@@ -268,7 +268,7 @@ ls -lh /var/lib/libvirt/images/virtio-win.iso
 - Pin VM CPUs to V-Cache cores
 - Disable memory ballooning
 - Use `cache=writeback` on disk
-- Enable hugepages (see Cloud-WS documentation)
+- Enable hugepages (see MiOS-Build documentation)
 
 ---
 
@@ -339,7 +339,7 @@ looking-glass-start VM_NAME
 - âœ“ Automated shared memory permissions setup
 
 **v2.1.0** (Previous)
-- Initial Cloud-WS release
+- Initial MiOS-Build release
 - Basic QEMU/KVM setup
 - Cockpit integration
 - Standard virtio-win ISO

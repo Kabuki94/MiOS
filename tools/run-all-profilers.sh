@@ -210,8 +210,8 @@ generate_summary() {
         echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
         echo ""
         
-        if grep -q "System ready for Cloud-WS" "$RUN_DIR/01-quick-summary.txt" 2>/dev/null; then
-            echo "âœ“ VERDICT: System appears ready for Cloud-WS"
+        if grep -q "System ready for MiOS-Build" "$RUN_DIR/01-quick-summary.txt" 2>/dev/null; then
+            echo "âœ“ VERDICT: System appears ready for MiOS-Build"
         else
             echo "âš  VERDICT: Check detailed reports for issues"
         fi

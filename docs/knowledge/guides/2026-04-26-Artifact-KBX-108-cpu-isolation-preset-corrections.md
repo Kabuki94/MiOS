@@ -5,7 +5,7 @@
 > **Source Reference:** MiOS-Core-v2.1.0
 ---
 
-# CPU Isolation Preset Corrections for Cloud-WS
+# CPU Isolation Preset Corrections for MiOS-Build
 
 ## Executive Summary
 
@@ -969,7 +969,7 @@ vm_create_hook_config() {
     mkdir -p "$hook_dir"
     
     cat > "$hook_dir/${vm_name}.conf" << EOF
-# Cloud-WS VM Hook Configuration
+# MiOS-Build VM Hook Configuration
 # Generated: $(date)
 # VM: $vm_name
 

@@ -299,9 +299,9 @@ pcie_acs_override=downstream,multifunction
 3. Consider motherboard with better IOMMU support
 4. Use AUR package: `linux-vfio` (includes ACS patch)
 
-## ðŸ”— Integration with Cloud-WS
+## ðŸ”— Integration with MiOS-Build
 
-Add GPU passthrough phase to your Cloud-WS script:
+Add GPU passthrough phase to your MiOS-Build script:
 
 ```bash
 # After Phase 4: VFIO GPU Isolation (Optional)

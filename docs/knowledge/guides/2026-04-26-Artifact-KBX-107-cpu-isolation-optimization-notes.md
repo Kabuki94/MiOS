@@ -294,9 +294,9 @@ sudo cpu-isolate on
 
 ---
 
-## Integration with Cloud-WS
+## Integration with MiOS-Build
 
-This optimized preset complements the Cloud-WS virtualization framework by:
+This optimized preset complements the MiOS-Build virtualization framework by:
 - Providing **professional-grade CPU isolation** for production VMs
 - Maintaining **desktop environment usability** with minimal cores
 - Enabling **concurrent VM workloads** without host degradation
@@ -356,7 +356,7 @@ CCD1 (Cores 8-15, High Freq):
 
 **Optimized for**: AMD Ryzen 9 9950X3D, 7950X3D, and future dual-CCD X3D processors  
 **Compatible with**: MiOS, Fedora Bootc, EndeavourOS, Manjaro  
-**Framework**: Cloud-WS Professional Virtualization Host
+**Framework**: MiOS-Build Professional Virtualization Host
 
 ---
 ### ⚖️ Legal & Source Reference

@@ -2,7 +2,7 @@
 
 ################################################################################
 # Linux System & Hardware Profiler
-# Comprehensive system information collection for Cloud-WS development
+# Comprehensive system information collection for MiOS-Build development
 ################################################################################
 
 set -euo pipefail

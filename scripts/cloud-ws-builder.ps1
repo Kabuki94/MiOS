@@ -28,9 +28,9 @@
   Destroy and recreate the machine even if it already looks correct.
 
 .EXAMPLE
-  pwsh .\cloud-ws-builder.ps1
-  pwsh .\cloud-ws-builder.ps1 -MinMemReserveMiB 8192
-  pwsh .\cloud-ws-builder.ps1 -Force
+  pwsh .\mios-build-builder.ps1
+  pwsh .\mios-build-builder.ps1 -MinMemReserveMiB 8192
+  pwsh .\mios-build-builder.ps1 -Force
 #>
 [CmdletBinding()]
 param(
@@ -41,9 +41,9 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-function Log ($m) { Write-Host "[cloud-ws-builder] $m" -ForegroundColor Cyan }
-function Warn($m) { Write-Host "[cloud-ws-builder] $m" -ForegroundColor Yellow }
-function Die ($m) { Write-Host "[cloud-ws-builder] FATAL: $m" -ForegroundColor Red; exit 1 }
+function Log ($m) { Write-Host "[mios-build-builder] $m" -ForegroundColor Cyan }
+function Warn($m) { Write-Host "[mios-build-builder] $m" -ForegroundColor Yellow }
+function Die ($m) { Write-Host "[mios-build-builder] FATAL: $m" -ForegroundColor Red; exit 1 }
 
 # ---------------------------------------------------------------------------
 # Preflight

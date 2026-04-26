@@ -1,14 +1,14 @@
 #!/bin/bash
 ###############################################################################
 # VM CPU Core Pinning Hook Manager
-# For Cloud-WS Professional Virtualization Hosts
+# For MiOS-Build Professional Virtualization Hosts
 # Optimized for: AMD Ryzen X3D (dual-CCD), Intel Hybrid, NUMA systems
-# Integrates with: libvirt, universal-cpu-isolator.sh, Cloud-WS framework
+# Integrates with: libvirt, universal-cpu-isolator.sh, MiOS-Build framework
 ###############################################################################
 
 set -euo pipefail
 
-# Colors - Cloud-WS Theme (Teal/Coral/White)
+# Colors - MiOS-Build Theme (Teal/Coral/White)
 readonly TEAL='\033[38;5;43m'
 readonly TEAL_LIGHT='\033[38;5;80m'
 readonly TEAL_DARK='\033[38;5;30m'

@@ -6,10 +6,10 @@
 ---
 
 # VM CPU Core Pinning Hook Manager
-## Professional Per-VM CPU Orchestration for Cloud-WS
+## Professional Per-VM CPU Orchestration for MiOS-Build
 
 > **Version**: v2.1.0  
-> **Compatible with**: MiOS, Cloud-WS Framework, AMD Ryzen X3D, Intel Hybrid  
+> **Compatible with**: MiOS, MiOS-Build Framework, AMD Ryzen X3D, Intel Hybrid  
 > **Integrates with**: libvirt, universal-cpu-isolator.sh, virt-manager
 
 ---
@@ -387,7 +387,7 @@ virsh edit vm-name
 
 ---
 
-## Integration with Cloud-WS Framework
+## Integration with MiOS-Build Framework
 
 ### Integration Point 1: After universal-cpu-isolator.sh
 
@@ -408,9 +408,9 @@ sudo ./vm-cpu-pin-manager.sh
 
 ---
 
-### Integration Point 2: Cloud-WS Installation
+### Integration Point 2: MiOS-Build Installation
 
-Add to Cloud-WS installation script (after Phase 4):
+Add to MiOS-Build installation script (after Phase 4):
 
 ```bash
 # PHASE 5: VM CPU Core Management (Optional)
@@ -848,7 +848,7 @@ Suggestions for improvement:
 
 ## License
 
-MIT License - Use freely for personal or commercial Cloud-WS deployments
+MIT License - Use freely for personal or commercial MiOS-Build deployments
 
 ---
 
@@ -860,7 +860,7 @@ MIT License - Use freely for personal or commercial Cloud-WS deployments
 
 ---
 
-**Made with Ã¢Â¤Ã¯Â¸ for the Cloud-WS virtualization framework**  
+**Made with Ã¢Â¤Ã¯Â¸ for the MiOS-Build virtualization framework**  
 *Professional-grade VM orchestration on MiOS*
 
 ---

@@ -60,7 +60,7 @@ deployment readiness.
 |--------|---------|
 | `system-profiler.sh` | CPU / memory / GPU / storage inventory |
 | `system-assess.sh` | Full system assessment — virtualization, IOMMU, Secure Boot, TPM |
-| `cloud-ws-assess.sh` | MiOS-specific readiness check |
+| `mios-build-assess.sh` | MiOS-specific readiness check |
 | `run-all-profilers.sh` | Chain every profiler, produce consolidated report |
 | `profiler-menu.sh` | Interactive menu wrapping the profilers |
 | `profile-compare.sh` | Diff two profiler outputs (e.g. before/after a change) |
@@ -105,7 +105,7 @@ predate the current `scripts/NN-*.sh` modular design.
 | Script | Purpose |
 |--------|---------|
 | `mios-full.sh` | Standalone one-shot MiOS provisioner (188 KB — everything in one file, pre-refactor) |
-| `cloud-ws.sh` | Earlier Linux-side orchestrator (superseded by `Justfile` + `../mios-build-local.ps1`) |
+| `mios-build.sh` | Earlier Linux-side orchestrator (superseded by `Justfile` + `../mios-build-local.ps1`) |
 
 If you find yourself wanting to modify either of these, stop and work
 on the modular replacement in `../scripts/` instead.

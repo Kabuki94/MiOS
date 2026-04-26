@@ -65,7 +65,7 @@ case "$CMD" in
     deploy)      exec /usr/bin/mios-deploy "$@" ;;
     backup)      exec /usr/bin/mios-backup "$@" ;;
     status)      exec /usr/bin/mios-status "$@" ;;
-    assess)      exec /usr/local/bin/cloud-ws-assess.sh "$@" ;;
+    assess)      exec /usr/local/bin/mios-build-assess.sh "$@" ;;
     toggle-headless) exec /usr/bin/mios-toggle-headless "$@" ;;
     dash)        exec /usr/libexec/mios/dash ;;
     test)        exec /usr/bin/mios-test "$@" ;;

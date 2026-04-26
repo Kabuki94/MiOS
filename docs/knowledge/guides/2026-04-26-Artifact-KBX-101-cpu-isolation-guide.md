@@ -553,9 +553,9 @@ sudo /etc/libvirt/hooks/qemu test-vm prepare begin
 sudo journalctl -u libvirtd -n 50
 ```
 
-## Cloud-WS Integration
+## MiOS-Build Integration
 
-Add to Cloud-WS after GPU passthrough phase:
+Add to MiOS-Build after GPU passthrough phase:
 
 ```bash
 # PHASE 6: CPU Core Isolation (Optional)
@@ -648,7 +648,7 @@ See libvirt hooks documentation for per-VM hook configuration.
 
 ---
 
-**Made for the Cloud-WS virtualization stack**  
+**Made for the MiOS-Build virtualization stack**  
 *Maximum performance, zero compromises*
 
 ---

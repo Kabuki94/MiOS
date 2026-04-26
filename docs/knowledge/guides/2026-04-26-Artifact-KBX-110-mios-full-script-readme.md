@@ -5,11 +5,11 @@
 > **Source Reference:** MiOS-Core-v2.1.0
 ---
 
-# Cloud-WS Unified Management System v2.1.0
+# MiOS-Build Unified Management System v2.1.0
 
 ## Complete Integrated Edition
 
-A **single, comprehensive bash script** (4,500+ lines) that provides complete Cloud-WS management without any external dependencies. Everything is built-in.
+A **single, comprehensive bash script** (4,500+ lines) that provides complete MiOS-Build management without any external dependencies. Everything is built-in.
 
 ---
 
@@ -21,7 +21,7 @@ A **single, comprehensive bash script** (4,500+ lines) that provides complete Cl
 - CPU topology detection (AMD X3D, Intel Hybrid aware)
 - Full system profiling with exportable reports
 
-### ðŸ“¦ Cloud-WS Installation (17 Phases)
+### ðŸ“¦ MiOS-Build Installation (17 Phases)
 - Desktop mode (GNOME + full virtualization)
 - Headless mode (Cockpit + CLI)
 - Minimal mode (just libvirt/QEMU)
@@ -107,7 +107,7 @@ sudo ./mios-full.sh version     # Show version
 â•‘                          MAIN MENU                                        â•‘
 â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•£
 â•‘   1) System Assessment              [Status indicator]                    â•‘
-â•‘   2) Cloud-WS Installation          [Status indicator]                    â•‘
+â•‘   2) MiOS-Build Installation          [Status indicator]                    â•‘
 â• â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•£
 â•‘  Post-Install Configuration                                               â•‘
 â•‘   3) VFIO GPU Passthrough           [GPU isolation]                       â•‘
@@ -297,7 +297,7 @@ Creates comprehensive report at:
 |---------|-------|-------------|
 | Core infrastructure | ~500 | Colors, logging, state, utilities |
 | System detection | ~400 | CPU, GPU, IOMMU, TPM, storage |
-| Installation | ~600 | 17-phase Cloud-WS install |
+| Installation | ~600 | 17-phase MiOS-Build install |
 | VFIO configuration | ~500 | GPU passthrough setup |
 | CPU isolation | ~500 | Core isolation management |
 | VM pinning | ~400 | Libvirt hooks and pinning |
@@ -323,7 +323,7 @@ Creates comprehensive report at:
 
 ## License
 
-This tool is provided as-is for Cloud-WS users. Feel free to modify and distribute.
+This tool is provided as-is for MiOS-Build users. Feel free to modify and distribute.
 
 ---
 

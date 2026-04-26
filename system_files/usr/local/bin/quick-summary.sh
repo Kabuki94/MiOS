@@ -2,7 +2,7 @@
 
 ################################################################################
 # Quick System Summary
-# Fast overview of critical system information for Cloud-WS
+# Fast overview of critical system information for MiOS-Build
 ################################################################################
 
 set -euo pipefail
@@ -233,7 +233,7 @@ EOF
     # Final verdict
     echo ""
     if [ "$ready" = true ]; then
-        echo -e "${GREEN}${BOLD}✓ System ready for Cloud-WS setup!${NC}"
+        echo -e "${GREEN}${BOLD}✓ System ready for MiOS-Build setup!${NC}"
         if [ "$warnings" -gt 0 ]; then
             echo -e "${YELLOW}  Note: $warnings optional component(s) missing${NC}"
         fi

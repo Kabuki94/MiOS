@@ -265,9 +265,9 @@ view_results() {
         has_results=true
     fi
     
-    if [ -d ~/cloud-ws-assessment-* 2>/dev/null ]; then
+    if [ -d ~/mios-build-assessment-* 2>/dev/null ]; then
         echo -e "${BOLD}Assessment Reports:${NC}"
-        ls -dlt ~/cloud-ws-assessment-* 2>/dev/null | head -5 | awk '{print "  "$9}'
+        ls -dlt ~/mios-build-assessment-* 2>/dev/null | head -5 | awk '{print "  "$9}'
         echo ""
         has_results=true
     fi
@@ -348,7 +348,7 @@ open_output_dir() {
     echo -e "${BOLD}Output Directories:${NC}"
     echo -e "  Quick/IOMMU: ${CYAN}$OUTPUT_DIR${NC}"
     echo -e "  Full Profiles: ${CYAN}~/system-profile/${NC}"
-    echo -e "  Assessments: ${CYAN}~/cloud-ws-assessment-*/${NC}"
+    echo -e "  Assessments: ${CYAN}~/mios-build-assessment-*/${NC}"
     echo ""
     
     if command -v xdg-open >/dev/null 2>&1; then
