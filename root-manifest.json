@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-26T20:27:46.531252",
+  "generated_at": "2026-04-26T20:36:15.847120",
   "source_directory": ".",
   "entries": [
     {
@@ -18,7 +18,7 @@
     },
     {
       "path": ".ai-environment.json",
-      "last_modified": "2026-04-26T20:27:32.465437",
+      "last_modified": "2026-04-26T20:34:49.600241",
       "title": ".ai-environment.json",
       "type": "structured_data",
       "structured_data": {
@@ -76,7 +76,7 @@
           "python3 tools/generate-ai-manifest.py",
           "cd GCE-Research && make install"
         ],
-        "last_refresh": "2026-04-26T20:27:32.466369"
+        "last_refresh": "2026-04-26T20:34:49.600934"
       }
     },
     {

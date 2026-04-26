@@ -9,7 +9,7 @@
     "home",
     "navigation"
   ],
-  "last_rag_sync": "2026-04-26T20:27:46.599362"
+  "last_rag_sync": "2026-04-26T20:36:16.027113"
 }
 ```
 
@@ -56,4 +56,4 @@
 
 
 ---
-**Latest RAG Snapshot:** `artifacts/repo-rag-snapshot.json` (2026-04-26 20:27:46)
+**Latest RAG Snapshot:** `artifacts/repo-rag-snapshot.json.gz` (2026-04-26 20:36:16)

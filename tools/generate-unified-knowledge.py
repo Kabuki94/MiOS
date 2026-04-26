@@ -1,6 +1,7 @@
 import os
 import json
 import re
+import gzip
 from datetime import datetime
 
 def redact_secrets(content):
@@ -15,7 +16,7 @@ def redact_secrets(content):
         redacted = re.sub(pattern, replacement, redacted)
     return redacted
 
-def generate_unified_knowledge(output_file="artifacts/repo-rag-snapshot.json"):
+def generate_unified_knowledge(output_file="artifacts/repo-rag-snapshot.json.gz"):
     print(f"🧠 Generating Unified Knowledge Base: {output_file}...")
     
     ignore_dirs = {".git", ".venv", "output", "__pycache__", "node_modules"}
@@ -34,7 +35,7 @@ def generate_unified_knowledge(output_file="artifacts/repo-rag-snapshot.json"):
         
         for file in files:
             # Skip the output file itself to avoid recursion
-            if file == os.path.basename(output_file):
+            if file == os.path.basename(output_file) or file == "repo-rag-snapshot.json":
                 continue
                 
             file_path = os.path.join(root, file)
@@ -73,7 +74,7 @@ def generate_unified_knowledge(output_file="artifacts/repo-rag-snapshot.json"):
     # Ensure artifacts directory exists
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     
-    with open(output_file, 'w', encoding='utf-8') as f:
+    with gzip.open(output_file, 'wt', encoding='utf-8') as f:
         json.dump(snapshot, f, indent=2)
     
     print(f"✅ UKB generated with {len(snapshot['knowledge_nodes'])} nodes.")

@@ -1,5 +1,6 @@
 # Build outputs
-artifacts/
+artifacts/*.json
+!artifacts/*.json.gz
 mios-deploy-out/
 output/
 *.raw

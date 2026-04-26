@@ -72,7 +72,7 @@ This file provides a machine-readable and human-readable index of all automation
             # Insert after the main title
             home_content = re.sub(r"(# .+?\n)", rf"\1\n{knowledge_block}\n", home_content, count=1)
 
-        snapshot_line = f"**Latest RAG Snapshot:** `artifacts/repo-rag-snapshot.json` ({datetime.now().strftime('%Y-%m-%d %H:%M:%S')})"
+        snapshot_line = f"**Latest RAG Snapshot:** `artifacts/repo-rag-snapshot.json.gz` ({datetime.now().strftime('%Y-%m-%d %H:%M:%S')})"
         if "Latest RAG Snapshot:" in home_content:
             home_content = re.sub(r"\*\*Latest RAG Snapshot:\*\* .*", snapshot_line, home_content)
         else:
