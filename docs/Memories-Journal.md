@@ -2460,3 +2460,28 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 - Bash uses `printf '%q'` for shell-safe quoting of all values; PS1 writes plain KEY=VALUE (no newlines in credentials assumption)
 - Also added `/dev/tty` redirect to all bash `read` calls so interactive prompts work correctly under `curl | bash`
 - Committed to private Kabuki94/MiOS (9bdae88) and public Kabuki94/MiOS-bootstrap (206e88c)
+
+---
+[2026-04-26T02:45Z] [AI: Claude Code]
+**TYPE:** ACTION — Scheduled upstream research pass (2026-04-26 agenda)
+
+**THOUGHT:** Performed the scheduled April 26 upstream research pass covering all 8 items from `Historical-Next-Research.md`. Both research tracks executed in parallel via sub-agents (F44/bootc/Cockpit track + NVIDIA/Waydroid/BIB/Renovate track) with local file verification to cross-check findings against repo state.
+
+**DISCOVERIES:**
+1. **bootc v1.14.0 is the actual current version** — prior docs cited "v1.1.x" which was stale. Inherited via base image; no explicit MiOS action.
+2. **NVIDIA CTK version correction** — prior research stated "v2.1.0 (Mar 2026)". This was erroneous. The CTK is on the v1.x series; v1.19.0 is current. MiOS `45-nvidia-cdi-refresh.sh` ≥1.18 requirement is satisfied.
+3. **BIB action migration N/A** — MiOS uses `quay.io/centos-bootc/bootc-image-builder:latest` directly in `build-artifacts.yml`, not a GitHub Action. The ublue-os action deprecation does not affect MiOS.
+4. **Renovate already migrated** — `renovate.json` already uses `minimumReleaseAge`. No action needed.
+5. **CrowdSec v1.7.7 is current; no v2.x** — prior "v2.1.0" reference in next-research was an error.
+6. **ucore-hci still on F43** — F44 tags expected 24–48h after April 28 GA.
+
+**DEFECT FOUND:** `system_files/etc/greenboot/check/wanted.d/60-k3s.sh` exits `0` on K3s health failure. This silently discards the failure signal — greenboot cannot log the warning. Correct behavior: exit `1` (wanted.d logs but does NOT trigger rollback). Fix is trivial; deferred to next build pass.
+
+**ACTIONS:**
+1. Created `docs/Knowledge-19-upstream-research-2026-04-26.md` — full April 26 research findings
+2. Updated `docs/Historical-Next-Research.md` — replaced 2026-04-25 agenda with 2026-04-28+ action queue
+3. Journal appended (this entry)
+
+**RESULT:** All T1/T2 items confirmed complete. `f44-ga-rpmfusion-stable` branch remains staged for April 28 merge. One pending action: pre-production Cockpit CVE-2026-4631 mitigation decision (Kabu).
+
+**CURRENT STATE:** main branch clean, working tree clean. No pending commits from this session.
