@@ -53,5 +53,5 @@
     "python3 tools/generate-ai-manifest.py",
     "cd GCE-Research && make install"
   ],
-  "last_refresh": "2026-04-26T14:49:16.512132"
+  "last_refresh": "2026-04-26T15:22:34.398137"
 }

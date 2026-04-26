@@ -137,6 +137,7 @@ All agents append to `journal.md` with timestamp + agent identity tag:
 |---|---|
 | `.ai-environment.json` | Workspace metadata (fonts, extensions, apps, version) |
 | `ai-context.json` | Index of all docs, memories, scripts, manifests |
+| `docs/audit/MiOS-Omni-Todo.html` | Unified HTML To-Do list for Users and Agents (append `<li>` before `<!-- TASK_END -->`) |
 | `scripts/ai-bootstrap.sh` | Regenerates manifests; initializes sub-project envs |
 
 ## Protected Files
