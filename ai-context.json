@@ -1,7 +1,7 @@
 {
   "project": "MiOS",
   "version": "2.1.0",
-  "description": "Universal AI Integration Context Hub",
+  "description": "Cloud Native Operating System Context Hub",
   "harness_instructions": "This JSON structure provides a parse-able map of all project documentation, logs, and memories. AI agents should use the 'manifests' keys to locate specific data categories. Each manifest contains 'full_content' for direct ingestion.",
   "manifests": {
     "documentation": "docs/manifest.json",

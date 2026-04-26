@@ -14,7 +14,7 @@
 ## 🏗️ 1. METADATA & IDENTITY
 | Key | Value |
 |-----|-------|
-| **Project** | MiOS (Universal AI Integration) |
+| **Project** | MiOS (Cloud Native Operating System) |
 | **Origin Agent** | [e.g., Gemini CLI / Claude OS] |
 | **Session ID** | [Unique session identifier] |
 | **Baseline Version** | [Reference VERSION file] |

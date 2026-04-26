@@ -84,6 +84,7 @@ COPY system_files/      /ctx/system_files/
 COPY docs/PACKAGES.md   /ctx/PACKAGES.md
 COPY VERSION            /ctx/VERSION
 COPY bib-configs/       /ctx/bib-configs/
+COPY tools/             /ctx/tools/
 
 # ----------------------------------------------------------------------------
 # main stage
