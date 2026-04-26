@@ -6,7 +6,7 @@
   "manifests": {
     "documentation": "docs/manifest.json",
     "memories": ".claude/memories/manifest.json",
-    "artifacts": "artifacts/manifest.json",
+    "artifacts": "artifacts/manifest.json.gz",
     "scripts": "scripts/manifest.json",
     "tools": "tools/manifest.json",
     "system_files": "system_files/manifest.json",
