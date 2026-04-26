@@ -149,33 +149,7 @@ Do not modify without explicit authorization from Kabu.ki:
 - `.github/workflows/build-sign.yml` and `.github/workflows/build-artifacts.yml`
 - `docs/memory/**` — AI semantic memory store
 
-## Universal Knowledge Base (UKB) — RAG Protocols
-
-MiOS maintains a **Unified Knowledge Base** for high-efficiency RAG and offline agent bootstrapping.
-
-1. **RAG Snapshot:** `artifacts/repo-rag-snapshot.json` contains a flattened, secret-redacted map of the entire repository, including environment configs and hidden dotfiles.
-2. **Auto-Wiki:** The `docs/` folder is synchronized via `tools/sync-wiki.py` to reflect the current state of scripts and packages.
-3. **Build Lifecycle:** Every `just build` (via the `artifact` target) refreshes the UKB and Wiki.
-4. **Bootstrapping:** New agents should execute `./scripts/ai-bootstrap.sh` to synchronize their local context with the UKB.
-
-## Knowledge Embedding Protocol (KEP)
-
-To ensure all Markdown files are machine-parsable and referencable, they must include a `json:knowledge` block containing structured logic, summaries, and tags.
-
-```json:knowledge
-{
-  "summary": "Brief description of the file's purpose.",
-  "logic_type": "documentation | automation | configuration",
-  "tags": ["tag1", "tag2"],
-  "relations": {
-    "depends_on": [],
-    "impacts": []
-  }
-}
-```
-
 ## Deliverable Contract
-...
 
 Complete replacement files only — no patches, no diffs, no "paste this into X". One push script:
 `push-to-github.ps1` (clone → copy → commit → push). Never `git init`. Never push without human review.
@@ -194,3 +168,37 @@ Complete replacement files only — no patches, no diffs, no "paste this into X"
 | Aider | `.aider.conf.yml` + `AI.md` | Config + read |
 | Web LLMs / scrapers | `llms.txt` | Structured index |
 | MCP / programmatic | `ai-context.json` | JSON manifest |
+
+---
+
+## Universal Knowledge Base (UKB) — RAG Protocols
+
+MiOS maintains a **Unified Knowledge Base** for high-efficiency RAG and offline agent bootstrapping.
+
+1. **RAG Snapshot:** `artifacts/repo-rag-snapshot.json.gz` contains a flattened, secret-redacted map of the entire repository, including environment configs and hidden dotfiles.
+2. **Auto-Wiki:** The `docs/` folder is synchronized via `tools/sync-wiki.py` to reflect the current state of scripts and packages.
+3. **Build Lifecycle:** Every `just build` (via the `artifact` target) refreshes the UKB and Wiki.
+4. **Bootstrapping:** New agents should execute `./scripts/ai-bootstrap.sh` to synchronize their local context with the UKB.
+
+## Unified Environment Configuration (.env.mios)
+
+All user-adjustable variables, including OCI images, account credentials, and Flatpak lists, MUST be consolidated in `.env.mios`.
+- **Precedence:** `.env.mios` > root `.env` > script defaults.
+- **Indexing:** This file is indexed by the UKB and serves as the single point of truth for deployment customization.
+- **Security:** Plaintext passwords should be avoided; use SHA-512 hashes if possible.
+
+## Knowledge Embedding Protocol (KEP)
+
+To ensure all Markdown files are machine-parsable and referencable, they must include a `json:knowledge` block containing structured logic, summaries, and tags.
+
+```json:knowledge
+{
+  "summary": "Brief description of the file's purpose.",
+  "logic_type": "documentation | automation | configuration",
+  "tags": ["tag1", "tag2"],
+  "relations": {
+    "depends_on": ["path/to/dependency"],
+    "impacts": ["path/to/impacted/file"]
+  }
+}
+```

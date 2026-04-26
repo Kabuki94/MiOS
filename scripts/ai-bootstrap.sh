@@ -6,6 +6,15 @@ set -euo pipefail
 
 echo "🚀 Initializing MiOS Omni-Agent Workspace..."
 
+# 0. Load Unified Environment
+if [[ -f ".env.mios" ]]; then
+    echo "📜 Loading unified environment from .env.mios..."
+    # Export all variables defined in .env.mios
+    set -a
+    source .env.mios
+    set +a
+fi
+
 # 1. Generate Manifests
 if [[ -f "tools/generate-ai-manifest.py" ]]; then
     echo "📄 Generating directory manifests..."
