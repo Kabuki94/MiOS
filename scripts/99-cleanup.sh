@@ -32,6 +32,11 @@ echo "[99-cleanup] Cleaning lint triggers..."
 rm -f /var/log/lastlog /var/log/dnf5.log* 2>/dev/null || true
 rm -rf /var/cache/ldconfig 2>/dev/null || true
 rm -f /var/lib/systemd/random-seed 2>/dev/null || true
+# MiOS v2.1.0: additional lint cleanup based on Cloud Build observations
+rm -rf /var/lib/glusterd 2>/dev/null || true
+rm -f /var/lib/containers/storage/db.sql 2>/dev/null || true
+rm -f /var/lib/flatpak/.changed 2>/dev/null || true
+rm -rf /var/lib/flatpak/repo/tmp/* 2>/dev/null || true
 
 # 4. Restore system skeleton via systemd-tmpfiles
 # This ensures all /var and /tmp directories exist with correct metadata.

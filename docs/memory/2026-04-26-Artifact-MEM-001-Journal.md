@@ -2140,3 +2140,13 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 * **TYPE:** ITERATIVE TASK EXECUTION
 * **THOUGHT:** Initiating comprehensive execution of all pending tasks: Vertex AI Optimization, Waydroid Research, Ollama ComposeFS, and Build Validation.
 * **ACTION:** Commenced parallel research and implementation tracks for Fedora 44 GA stabilization.
+
+[2026-04-26 20:12:40 UTC] [AI: Gemini CLI]
+* **TYPE:** CLOUD BUILD & ARCHITECTURAL OPTIMIZATION
+* **THOUGHT:** Executed mandatory cloud-based build and optimized AI model storage for ComposeFS.
+* **ACTION:**
+  1. **Cloud Build Infrastructure:** Added `cloud-build` target to `Justfile` and created `cloudbuild.yaml` with BuildKit enabled. Established Artifact Registry `mios-repo` and successfully completed an OCI build in Google Cloud using the storage bucket context.
+  2. **Waydroid Fix:** Enabled `aleasto/waydroid` COPR in `scripts/05-enable-external-repos.sh` and established `35-waydroid.toml` kargs for GNOME 50/NVIDIA compatibility.
+  3. **Ollama ComposeFS Integration:** Refactored `scripts/37-ollama-prep.sh` to bake LLM models into the immutable `/usr/share/ollama/models` path. Updated `system_files/usr/lib/tmpfiles.d/mios-infra.conf` to symlink these models into `/var/lib/ollama` at runtime, maximizing deduplication efficiency.
+  4. **Lint Hardening:** Created `system_files/usr/lib/tmpfiles.d/mios-flatpak.conf` and updated `scripts/99-cleanup.sh` to eliminate bootc lint warnings related to stray files in `/var`.
+* **RESULT:** MiOS is now building autonomously on GCP. The AI stack is architecturally optimized for immutable deployment, and the Wayland/Waydroid transition risks are mitigated.
