@@ -2425,3 +2425,17 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   - D5: sysext step no-op — needs clarification on whether GPU sysext source dirs will be populated or step should be removed
   - I1: Create `Kabuki94/mios-bootstrap` PUBLIC GitHub repo and commit the two bootstrap scripts
   - April 28: Merge `f44-ga-rpmfusion-stable`, trigger build
+
+---
+
+### [2026-04-26 01:15:00 UTC] [AI: Claude Code]
+* **TYPE:** ACTION — Bootstrap Variable Collection Implementation
+* **ACTION:**
+  1. `bootstrap/bootstrap.sh` (public): Full interactive collection of MIOS_USER, MIOS_PASSWORD (confirm loop), MIOS_HOSTNAME (base + 5-digit random suffix), MIOS_GHCR_USER, MIOS_GHCR_PUSH_TOKEN. Exports all as env vars. Sets MIOS_AUTOINSTALL=1. Confirmation summary before proceeding.
+  2. `bootstrap/bootstrap.ps1` (public): Mirror of above for Windows PowerShell 5.1+. Uses Read-Host -MaskInput for PS7+, SecureString marshal for PS 5.1 fallback.
+  3. `install.sh`: Added `_hash_password()` (openssl primary / python3 fallback). Auto-detects bootstrap env vars, shows config summary. MIOS_AUTOINSTALL=1 skips menu. Both build paths (option 1, option 3) pass --build-arg MIOS_USER/PASSWORD_HASH/HOSTNAME.
+  4. `cloud-ws.ps1`: $DefUser/$DefPass/$DefHostname now read from MIOS_USER/MIOS_PASSWORD/MIOS_HOSTNAME env before falling back to "mios".
+  5. `Containerfile`: Added ARG MIOS_HOSTNAME=mios.
+  6. `scripts/32-hostname.sh`: Reads MIOS_HOSTNAME build-arg; falls back to "mios" + first-boot mios-init suffix.
+* **HOSTNAME PATTERN:** Bootstrap generates `<base>-<5-digit>` (e.g. "kabu-ws-83427") at bootstrap time → passed as MIOS_HOSTNAME → baked into image. If base left blank, "mios" is used and first-boot mios-init appends XXXXX from machine-id.
+* **RESULT:** Commit e45a779 on main. Public `mios-bootstrap` repo still needs to be created on GitHub (user action required).
