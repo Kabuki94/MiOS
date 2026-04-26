@@ -10,9 +10,10 @@ DIR="${MIOS_DIR:-$HOME/MiOS}"
 VER="v2.1.0"
 
 # --- Credential Handling ---
-echo "Checking for credentials..."
 if [[ -z "${GHCR_TOKEN:-}" ]]; then
-    read -rp "GitHub Container Registry Token (optional, press enter to skip): " GHCR_TOKEN
+    echo "  Checking for GitHub credentials..."
+    read -rsp "  GitHub Personal Access Token (requires 'repo' scope, press enter to skip): " GHCR_TOKEN
+    echo ""
     [[ -n "$GHCR_TOKEN" ]] && export GHCR_TOKEN
 fi
 
@@ -20,15 +21,16 @@ fi
 scurl() {
     local args=("-fsSL")
     if [[ -n "${GHCR_TOKEN:-}" && ("$1" =~ github\.com || "$1" =~ ghcr\.io) ]]; then
-        args+=("-H" "Authorization: Bearer $GHCR_TOKEN")
+        args+=("-H" "Authorization: token $GHCR_TOKEN")
     fi
     curl "${args[@]}" "$@"
 }
 
 if [[ -n "${GHCR_TOKEN:-}" ]]; then
-    echo "  [OK] Credentials provided; using authenticated requests."
+    echo "  [OK] GitHub token detected."
 fi
 
+# Try to fetch version from repo, fallback to hardcoded
 _remote_ver=$(scurl "https://raw.githubusercontent.com/Kabuki94/mios/main/VERSION" 2>/dev/null || true)
 [[ -n "$_remote_ver" ]] && VER="v${_remote_ver}"
 

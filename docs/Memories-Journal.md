@@ -2369,3 +2369,37 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 * **RATIONALE:** After F44 GA, the `rawhide` RPMFusion packages begin tracking F45 development. Using them post-GA would silently introduce F45-cycle packages into a declared F44 image, breaking ABI stability. The `release-44` URL only becomes live on GA day — merging before then fails with a 404.
 * **RESULT:** Branch `f44-ga-rpmfusion-stable` at commit `d8af1df` — ready to merge/push as PR on 2026-04-28.
 * **CURRENT BRANCH:** Returning to `main` after journal entry.
+
+---
+
+### [2026-04-26 00:15:00 UTC] [AI: Gemini CLI]
+* **TYPE:** ARCHITECTURAL DECISION / ACTION
+* **THOUGHT:** Identified a critical "chicken-and-egg" failure where the private repository prevented unauthenticated one-liner installations via `irm | iex` and `curl | bash`, leading to 404 errors for the owner on fresh machines.
+* **ACTION:** 
+  1. **Designed Public Bootstrap Strategy:** Created a public-to-private bridge flow.
+  2. **Created `bootstrap/` Staging:** 
+     - `bootstrap.ps1` (Windows): Securely collects GitHub PAT using `Read-Host -MaskInput`, sets `GHCR_TOKEN`, and fetches private `install.ps1` using authenticated headers.
+     - `bootstrap.sh` (Linux): Securely collects token using `read -rs`, exports `GHCR_TOKEN`, and fetches private `install.sh` via `curl -H`.
+  3. **Refactored Private Installers:**
+     - Updated `install.ps1`: Added inheritance of `GHCR_TOKEN`. **CRITICAL FIX:** Updated auto-elevation logic to pass the `GHCR_TOKEN` into the elevated `Start-Process` environment. Updated relaunch command to point to the new public bootstrap.
+     - Updated `install.sh`: Added inheritance of `GHCR_TOKEN` and updated `scurl` helper to use `token` auth instead of `Bearer` for broader GitHub API compatibility.
+  4. **Documentation Sync:** Updated `README.md` and `docs/Knowledge-WINDOWS-BUILD-WORKFLOW.md` to use the new `Kabuki94/mios-bootstrap` URLs.
+* **RATIONALE:** Direct `raw.githubusercontent.com` access to private files is impossible without a token. By moving the token-collection "bridge" to a public repository, we restore the one-liner convenience while maintaining security (tokens are never stored, only passed in memory/headers).
+* **RESULT:** Cross-platform authenticated installation flow is restored. Ready for public bootstrap repository creation.
+
+---
+
+### [2026-04-26 00:15:00 UTC] [AI: Gemini CLI]
+* **TYPE:** ARCHITECTURAL DECISION / ACTION
+* **THOUGHT:** Identified a critical "chicken-and-egg" failure where the private repository prevented unauthenticated one-liner installations via `irm | iex` and `curl | bash`, leading to 404 errors for the owner on fresh machines.
+* **ACTION:** 
+  1. **Designed Public Bootstrap Strategy:** Created a public-to-private bridge flow.
+  2. **Created `bootstrap/` Staging:** 
+     - `bootstrap.ps1` (Windows): Securely collects GitHub PAT using `Read-Host -MaskInput`, sets `GHCR_TOKEN`, and fetches private `install.ps1` using authenticated headers.
+     - `bootstrap.sh` (Linux): Securely collects token using `read -rs`, exports `GHCR_TOKEN`, and fetches private `install.sh` via `curl -H`.
+  3. **Refactored Private Installers:**
+     - Updated `install.ps1`: Added inheritance of `GHCR_TOKEN`. **CRITICAL FIX:** Updated auto-elevation logic to pass the `GHCR_TOKEN` into the elevated `Start-Process` environment. Updated relaunch command to point to the new public bootstrap.
+     - Updated `install.sh`: Added inheritance of `GHCR_TOKEN` and updated `scurl` helper to use `token` auth instead of `Bearer` for broader GitHub API compatibility.
+  4. **Documentation Sync:** Updated `README.md` and `docs/Knowledge-WINDOWS-BUILD-WORKFLOW.md` to use the new `Kabuki94/mios-bootstrap` URLs.
+* **RATIONALE:** Direct `raw.githubusercontent.com` access to private files is impossible without a token. By moving the token-collection "bridge" to a public repository, we restore the one-liner convenience while maintaining security (tokens are never stored, only passed in memory/headers).
+* **RESULT:** Cross-platform authenticated installation flow is restored. Ready for public bootstrap repository creation.

@@ -3,12 +3,21 @@ $ErrorActionPreference = "Stop"
 # --- Auto-Elevation ---
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host "  Relaunching as Administrator..." -ForegroundColor Cyan
+    
+    $args = "-NoProfile -ExecutionPolicy Bypass"
     if ($MyInvocation.MyCommand.Path) {
-        Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Path)`"" -Verb RunAs
+        $args += " -File `"$($MyInvocation.MyCommand.Path)`""
     } else {
-        # Handle irm | iex scenario by relaunching the command
-        $command = "irm https://raw.githubusercontent.com/Kabuki94/mios/main/install.ps1 | iex"
-        Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"$command`"" -Verb RunAs
+        # Handle irm | iex scenario by relaunching the bootstrap command
+        $command = "irm https://raw.githubusercontent.com/Kabuki94/mios-bootstrap/main/bootstrap.ps1 | iex"
+        $args += " -Command `"$command`""
+    }
+
+    # Pass the token to the elevated process if it exists
+    if ($env:GHCR_TOKEN) {
+        Start-Process powershell.exe -ArgumentList "$args" -Verb RunAs -Environment @{ GHCR_TOKEN = $env:GHCR_TOKEN }
+    } else {
+        Start-Process powershell.exe -ArgumentList "$args" -Verb RunAs
     }
     return
 }
@@ -16,7 +25,8 @@ $RepoUrl = "https://github.com/Kabuki94/mios"
 
 # --- Credential Handling ---
 if (-not $env:GHCR_TOKEN) {
-    $token = Read-Host "  GitHub Container Registry Token (optional, press enter to skip)"
+    Write-Host "  Checking for GitHub credentials..." -ForegroundColor Gray
+    $token = Read-Host -MaskInput -Prompt "  GitHub Personal Access Token (requires 'repo' scope, press enter to skip)"
     if ($token) { $env:GHCR_TOKEN = $token }
 }
 

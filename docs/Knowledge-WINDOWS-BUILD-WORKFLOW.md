@@ -33,7 +33,7 @@ The easiest way to start is using the `install.ps1` script directly from the ups
 
 ```powershell
 # From an Administrator PowerShell prompt:
-irm https://raw.githubusercontent.com/Kabuki94/mios/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/Kabuki94/mios-bootstrap/main/bootstrap.ps1 | iex
 ```
 
 ### 2. Pre-flight Check
