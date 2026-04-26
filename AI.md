@@ -5,11 +5,29 @@
 {
   "summary": "Single source of truth for AI agent architecture, laws, and conventions in MiOS. Indexes directory maps, instruction patterns, and research presets. Native OpenAI API protocol compatible.",
   "logic_type": "documentation",
-  "tags": ["MiOS", "AI", "Agent Hub", "Index", "OpenAI"],
+  "tags": [
+    "MiOS",
+    "AI",
+    "Agent Hub",
+    "Index",
+    "OpenAI"
+  ],
   "relations": {
-    "depends_on": [".env.mios", "ai-context.json"],
-    "impacts": ["GEMINI.md", "CLAUDE.md", "AGENTS.md", ".cursorrules", ".clinerules", ".windsurfrules"]
-  }
+    "depends_on": [
+      ".env.mios",
+      "ai-context.json"
+    ],
+    "impacts": [
+      "GEMINI.md",
+      "CLAUDE.md",
+      "AGENTS.md",
+      ".cursorrules",
+      ".clinerules",
+      ".windsurfrules"
+    ]
+  },
+  "last_rag_sync": "2026-04-26T21:14:02.687887",
+  "version": "2.1.0"
 }
 ```
 
@@ -254,11 +272,20 @@ To ensure all Markdown files are machine-parsable and referencable, they must in
 {
   "summary": "Brief description of the file's purpose.",
   "logic_type": "documentation | automation | configuration",
-  "tags": ["tag1", "tag2"],
+  "tags": [
+    "tag1",
+    "tag2"
+  ],
   "relations": {
-    "depends_on": ["path/to/dependency"],
-    "impacts": ["path/to/impacted/file"]
-  }
+    "depends_on": [
+      "path/to/dependency"
+    ],
+    "impacts": [
+      "path/to/impacted/file"
+    ]
+  },
+  "last_rag_sync": "2026-04-26T21:14:02.687887",
+  "version": "2.1.0"
 }
 ```
 <!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->

@@ -1,5 +1,6 @@
+<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
 # 📜 MiOS Scripts Index
-> **Generated:** 2026-04-26T21:09:24.016149
+> **Generated:** 2026-04-26T21:16:14.062881
 > **Status:** Automated Sync
 
 ```json:knowledge
@@ -11,7 +12,8 @@
     "automation",
     "index"
   ],
-  "generated_at": "2026-04-26T21:09:24.016126"
+  "version": "2.1.0",
+  "last_rag_sync": "2026-04-26T21:14:02.687887"
 }
 ```
 
@@ -221,3 +223,4 @@ This file provides a machine-readable and human-readable index of all automation
 - **Path:** `scripts/smoke-check.sh`
 - **Description:** MiOS v2.1.0 — Post-boot serial log smoke check
 
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->

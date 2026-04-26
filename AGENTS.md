@@ -5,11 +5,20 @@
 {
   "summary": "Gateway for AI agents operating in MiOS. Defers all architectural mandates to AI.md.",
   "logic_type": "documentation",
-  "tags": ["MiOS", "AI", "Agents", "Gateway"],
+  "tags": [
+    "MiOS",
+    "AI",
+    "Agents",
+    "Gateway"
+  ],
   "relations": {
-    "depends_on": ["AI.md"],
+    "depends_on": [
+      "AI.md"
+    ],
     "impacts": []
-  }
+  },
+  "last_rag_sync": "2026-04-26T21:14:02.687887",
+  "version": "2.1.0"
 }
 ```
 

@@ -5,11 +5,19 @@
 {
   "summary": "Primary overview and entry point for the MiOS operating system project.",
   "logic_type": "documentation",
-  "tags": ["MiOS", "Overview", "Cloud-Native"],
+  "tags": [
+    "MiOS",
+    "Overview",
+    "Cloud-Native"
+  ],
   "relations": {
-    "depends_on": [".env.mios"],
+    "depends_on": [
+      ".env.mios"
+    ],
     "impacts": []
-  }
+  },
+  "last_rag_sync": "2026-04-26T21:14:02.687887",
+  "version": "2.1.0"
 }
 ```
 
@@ -24,7 +32,8 @@
   "status": "Production Stable",
   "baseline": "v2.1.0",
   "kernel": "Fedora Rawhide (OCI-Mode)",
-  "build": "just all"
+  "build": "just all",
+  "last_sync": "2026-04-26T21:14:02.687887"
 }
 ```
 

@@ -3,6 +3,63 @@ import re
 import json
 from datetime import datetime
 
+def get_last_rag_sync():
+    rag_file = "artifacts/repo-rag-snapshot.json.gz"
+    if os.path.exists(rag_file):
+        mtime = os.path.getmtime(rag_file)
+        return datetime.fromtimestamp(mtime).isoformat()
+    return datetime.now().isoformat()
+
+def get_version():
+    if os.path.exists("VERSION"):
+        with open("VERSION", "r") as f:
+            return f.read().strip()
+    return "v2.1.0"
+
+def sync_json_embeds(file_path):
+    if not os.path.exists(file_path):
+        return
+
+    with open(file_path, 'r') as f:
+        content = f.read()
+
+    version = get_version()
+    rag_sync = get_last_rag_sync()
+    
+    # 1. Update json:knowledge blocks
+    def update_knowledge(match):
+        try:
+            data = json.loads(match.group(1))
+            data["last_rag_sync"] = rag_sync
+            data["version"] = version
+            return f"```json:knowledge\n{json.dumps(data, indent=2)}\n```"
+        except:
+            return match.group(0)
+
+    content = re.sub(r"```json:knowledge\n(.*?)\n```", update_knowledge, content, flags=re.DOTALL)
+
+    # 2. Update status blocks (specifically for README.md)
+    def update_status(match):
+        try:
+            data = json.loads(match.group(1))
+            if "baseline" in data:
+                data["baseline"] = f"v{version}"
+            if "last_build" in data or True: # Force add if not present for tracking
+                 data["last_sync"] = rag_sync
+            return f"```json\n{json.dumps(data, indent=2)}\n```"
+        except:
+            return match.group(0)
+
+    # Targeted regex for the status-style JSON blocks (not knowledge)
+    content = re.sub(r"# 🌐 MiOS-OS: Immutable Cloud-Native Workstation\n\n```json\n(.*?)\n```", 
+                     r"# 🌐 MiOS-OS: Immutable Cloud-Native Workstation\n\n```json\n\1\n```", content, flags=re.DOTALL)
+    # Actually apply the update to any generic json block that looks like a status block
+    content = re.sub(r"```json\n(\{.*?\})\n```", update_status, content, flags=re.DOTALL)
+
+    with open(file_path, 'w') as f:
+        f.write(content)
+    print(f"✅ Propagated sync values to {file_path}")
+
 def sync_wiki():
     print("📖 Syncing Wiki Documentation...")
     
@@ -14,10 +71,12 @@ def sync_wiki():
         "summary": "Automated index of all MiOS automation scripts.",
         "logic_type": "automation",
         "tags": ["scripts", "automation", "index"],
-        "generated_at": datetime.now().isoformat()
+        "version": get_version(),
+        "last_rag_sync": get_last_rag_sync()
     }
 
-    content = f"""# 📜 MiOS Scripts Index
+    content = f"""<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
+# 📜 MiOS Scripts Index
 > **Generated:** {datetime.now().isoformat()}
 > **Status:** Automated Sync
 
@@ -46,41 +105,17 @@ This file provides a machine-readable and human-readable index of all automation
                 pass
             content += f"## `{script}`\n- **Path:** `{path}`\n- **Description:** {description}\n\n"
 
+    content += "<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->"
+    
     os.makedirs(os.path.dirname(scripts_doc), exist_ok=True)
     with open(scripts_doc, 'w') as f:
         f.write(content)
     print(f"✅ Updated {scripts_doc}")
 
-    # 2. Ensure Home.md reflects the latest snapshot
-    home_doc = "docs/Home.md"
-    if os.path.exists(home_doc):
-        with open(home_doc, 'r') as f:
-            home_content = f.read()
-        
-        home_knowledge = {
-            "summary": "Central navigation hub for MiOS documentation.",
-            "logic_type": "documentation",
-            "tags": ["wiki", "home", "navigation"],
-            "last_rag_sync": datetime.now().isoformat()
-        }
-
-        knowledge_block = f"```json:knowledge\n{json.dumps(home_knowledge, indent=2)}\n```"
-        
-        if "```json:knowledge" in home_content:
-            home_content = re.sub(r"```json:knowledge.*?```", knowledge_block, home_content, flags=re.DOTALL)
-        else:
-            # Insert after the main title
-            home_content = re.sub(r"(# .+?\n)", rf"\1\n{knowledge_block}\n", home_content, count=1)
-
-        snapshot_line = f"**Latest RAG Snapshot:** `artifacts/repo-rag-snapshot.json.gz` ({datetime.now().strftime('%Y-%m-%d %H:%M:%S')})"
-        if "Latest RAG Snapshot:" in home_content:
-            home_content = re.sub(r"\*\*Latest RAG Snapshot:\*\* .*", snapshot_line, home_content)
-        else:
-            home_content += f"\n\n---\n{snapshot_line}\n"
-        
-        with open(home_doc, 'w') as f:
-            f.write(home_content)
-        print(f"✅ Updated {home_doc}")
+    # 2. Sync embeds in key files
+    target_files = ["README.md", "AI.md", "CLAUDE.md", "GEMINI.md", "AGENTS.md", "docs/Home.md"]
+    for f in target_files:
+        sync_json_embeds(f)
 
 if __name__ == "__main__":
     sync_wiki()

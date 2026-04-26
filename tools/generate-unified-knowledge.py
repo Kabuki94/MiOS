@@ -19,17 +19,21 @@ def redact_secrets(content):
 def generate_unified_knowledge(output_file="artifacts/repo-rag-snapshot.json.gz"):
     print(f"🧠 Generating Unified Knowledge Base: {output_file}...")
     
-    ignore_dirs = {".git", ".venv", "output", "__pycache__", "node_modules"}
+    ignore_dirs = {".git", ".venv", "__pycache__", "node_modules"} # removed 'output' to check for logs
     snapshot = {
         "metadata": {
             "project": "MiOS",
             "timestamp": datetime.now().isoformat(),
-            "scope": "Full Repository Snapshot (including dotfiles)",
-            "rag_format_version": "1.0"
+            "scope": "Full Repository Snapshot (including dotfiles and build logs)",
+            "rag_format_version": "1.1"
         },
-        "knowledge_nodes": []
+        "knowledge_nodes": [],
+        "build_artifacts": {
+            "last_build_logs": []
+        }
     }
 
+    # 1. Capture Repository Snapshot
     for root, dirs, files in os.walk("."):
         dirs[:] = [d for d in dirs if d not in ignore_dirs]
         
@@ -52,12 +56,16 @@ def generate_unified_knowledge(output_file="artifacts/repo-rag-snapshot.json.gz"
             elif file.endswith((".sh", ".py", ".ps1", ".toml", "Justfile", "Containerfile")): category = "source"
 
             try:
-                # We want to capture the content of text-based files
-                if file.endswith((".md", ".json", ".sh", ".py", ".ps1", ".toml", ".yaml", ".yml", ".conf", ".txt", "Containerfile", "Justfile")) or file.startswith("."):
+                # Capture text-based files
+                if file.endswith((".md", ".json", ".sh", ".py", ".ps1", ".toml", ".yaml", ".yml", ".conf", ".txt", ".log", "Containerfile", "Justfile")) or file.startswith("."):
+                    # Optimization: only read small/medium files for the snapshot to keep UKB manageable
+                    if os.path.getsize(file_path) > 1024 * 1024: # Skip > 1MB in general snapshot
+                         continue
+
                     with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
                         content = f.read()
                     
-                    # Redact secrets from environment and config files
+                    # Redact secrets
                     if category in ["environment", "configuration", "source"] or file.endswith(".env"):
                         content = redact_secrets(content)
 
@@ -67,9 +75,31 @@ def generate_unified_knowledge(output_file="artifacts/repo-rag-snapshot.json.gz"
                         "last_modified": datetime.fromtimestamp(os.path.getmtime(file_path)).isoformat(),
                         "content": content
                     }
-                    snapshot["knowledge_nodes"].append(node)
+                    
+                    # Special handling for build logs
+                    if file.endswith(".log") and ("build" in file or "mios" in file):
+                        snapshot["build_artifacts"]["last_build_logs"].append(node)
+                    else:
+                        snapshot["knowledge_nodes"].append(node)
             except Exception as e:
                 print(f"⚠️ Could not process {rel_path}: {e}")
+
+    # 2. Check for standard system build log locations (if running in a build container)
+    sys_log_paths = ["/tmp/mios-build.log", "/var/log/mios-build.log", "/usr/lib/mios/logs/mios-build.log"]
+    for lp in sys_log_paths:
+        if os.path.exists(lp):
+            try:
+                with open(lp, 'r', encoding='utf-8', errors='ignore') as f:
+                    log_content = f.read()
+                snapshot["build_artifacts"]["last_build_logs"].append({
+                    "path": lp,
+                    "category": "build_log",
+                    "last_modified": datetime.fromtimestamp(os.path.getmtime(lp)).isoformat(),
+                    "content": log_content
+                })
+                print(f"📦 Artifacted system build log: {lp}")
+            except:
+                pass
 
     # Ensure artifacts directory exists
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
@@ -77,7 +107,8 @@ def generate_unified_knowledge(output_file="artifacts/repo-rag-snapshot.json.gz"
     with gzip.open(output_file, 'wt', encoding='utf-8') as f:
         json.dump(snapshot, f, indent=2)
     
-    print(f"✅ UKB generated with {len(snapshot['knowledge_nodes'])} nodes.")
+    total_nodes = len(snapshot["knowledge_nodes"]) + len(snapshot["build_artifacts"]["last_build_logs"])
+    print(f"✅ UKB generated with {total_nodes} nodes (including {len(snapshot['build_artifacts']['last_build_logs'])} build logs).")
 
 if __name__ == "__main__":
     generate_unified_knowledge()
