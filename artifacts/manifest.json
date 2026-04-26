@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-04-26T02:42:26.694020",
+  "generated_at": "2026-04-26T02:59:26.198603",
   "source_directory": "artifacts",
   "entries": [
     {
       "path": "artifacts/sboms.json",
-      "last_modified": "2026-04-26T02:08:03.723716",
+      "last_modified": "2026-04-26T02:59:26.121123",
       "title": "Software Bill of Materials",
       "type": "structured_data",
       "structured_data": {
@@ -22,7 +22,7 @@
     },
     {
       "path": "artifacts/oci-image.json",
-      "last_modified": "2026-04-26T02:08:03.723716",
+      "last_modified": "2026-04-26T02:59:26.121123",
       "title": "mios",
       "type": "structured_data",
       "structured_data": {

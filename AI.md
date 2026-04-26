@@ -15,7 +15,7 @@
 2.  **THE JOURNALING LAW:** Every surgical change, architectural decision, learning, discovery, or thought **MUST** be recorded in the shared [`.claude/memories/journal.md`](./.claude/memories/journal.md) at the end of every session turn with timestamp + agent tag (e.g., `[AI: Gemini CLI]`).
 3.  **SHARED SCRATCHPAD PROTOCOL:** Use [`.claude/shared-tmp/`](./.claude/shared-tmp/) as the universal scratchpad for transient data, inter-agent communication, and cross-session "thoughts." This is the unified `TMPDIR` for all AI agents.
 4.  **SINGLE SOURCE OF TRUTH (SSOT):**
-    -   **Packages:** [`docs/PACKAGES.md`](./docs/PACKAGES.md) is the only manifest.
+    -   **Packages:** [`docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md`](./docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md) is the only manifest.
     -   **Environment:** [`.env`](./.env) and [`.claude/settings.json`](./.claude/settings.json) track the baseline.
 5.  **USR-OVER-ETC (BOOTC IMMUTABILITY):** Align with upstream `bootc`. System configurations go in `system_files/usr/lib/`. `/etc` is reserved for user overrides only.
 

@@ -119,7 +119,7 @@ case "$choice" in
     echo ""
     echo "  Inspect:   cd $DIR && ls -la"
     echo "  Build:     podman build --no-cache -t mios:latest ."
-    echo "  Windows:   Open PowerShell as Admin → .\\cloud-ws.ps1"
+    echo "  Windows:   Open PowerShell as Admin → .\\mios-build-local.ps1"
     ;;
   3)
     echo ""

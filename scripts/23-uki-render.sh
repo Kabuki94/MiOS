@@ -7,7 +7,7 @@ echo "==> Preparing Unified Kernel Image (UKI) configuration..."
 source "$(dirname "$0")/lib/common.sh"
 
 # systemd-ukify and binutils are required for this step.
-# Ensure they are declared in docs/PACKAGES.md per the single-source-of-truth rules.
+# Ensure they are declared in docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md per the single-source-of-truth rules.
 # The packages-boot section installs ukify via install_packages (--skip-unavailable),
 # so install explicitly here as a safety net to guarantee it ends up in the image.
 if ! rpm -q systemd-ukify >/dev/null 2>&1; then

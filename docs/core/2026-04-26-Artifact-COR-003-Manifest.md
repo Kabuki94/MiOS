@@ -10,7 +10,7 @@
 ```json
 {
   "status": "Verified",
-  "data_source": "docs/PACKAGES.md"
+  "data_source": "docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md"
 }
 ```
 

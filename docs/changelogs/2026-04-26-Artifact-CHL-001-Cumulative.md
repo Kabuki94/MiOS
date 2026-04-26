@@ -27,7 +27,7 @@ All notable changes to this project will be documented in this file.
 
 ### 🏗️ Build & CI/CD Optimization
 * **Rechunking Fix:** Optimized the CI pipeline to generate 5-10x smaller updates by running rechunking inside a privileged container.
-* **Docs Restructure Fix:** Resolved build failures caused by the relocation of `PACKAGES.md` to `docs/PACKAGES.md`.
+* **Docs Restructure Fix:** Resolved build failures caused by the relocation of `PACKAGES.md` to `docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md`.
 * **Build Diagnostics:** Enhanced `packages.sh` with FATAL error logging for mandatory sections.
 * **Fix (Virtualization):** Removed `dkms` from `packages-looking-glass-build` manifest to resolve `kernel-devel-matched` dependency conflict on mixed kernel builds.
 * **Fix (Scripts):** Hardened `12-virt.sh` to ensure `/usr/share/mios/virtio` exists before VirtIO-Win ISO download.

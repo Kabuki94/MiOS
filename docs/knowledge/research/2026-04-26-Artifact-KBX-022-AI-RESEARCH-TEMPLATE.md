@@ -27,7 +27,7 @@ AI agents MUST query these paths in the following priority:
 ### A. Architectural Laws (The "Constitution")
 - `GEMINI.md` / `AI.md`: Primary behavioral mandates.
 - `.claude/memories/journal.md`: The shared chronological brain (SSOT).
-- `docs/PACKAGES.md`: The manifest of all system components.
+- `docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md`: The manifest of all system components.
 
 ### B. Persistent Memory (Long-Term Context)
 - `.claude/memories/`: Structured SQLite vaults and Markdown logs.
@@ -91,7 +91,7 @@ When generating new research documents (`docs/knowledge/research/`), use this su
 - **Reference Mapping:**
   - [ ] Checked `docs/knowledge/`
   - [ ] Checked `.claude/memories/journal.md`
-  - [ ] Checked `docs/PACKAGES.md`
+  - [ ] Checked `docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md`
 
 ---
 
@@ -101,7 +101,7 @@ When generating new research documents (`docs/knowledge/research/`), use this su
 | **Write Context** | `echo "[AI:...] msg" >> .claude/memories/journal.md` |
 | **Read Context** | `tail -n 100 .claude/memories/journal.md` |
 | **Query Knowledge** | `grep -r "subject" docs/knowledge/` |
-| **Audit Packages** | `cat docs/PACKAGES.md` |
+| **Audit Packages** | `cat docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` |
 | **Scratchpad** | `.claude/shared-tmp/` |
 
 ---

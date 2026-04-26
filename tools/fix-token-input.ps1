@@ -1,5 +1,5 @@
 <#
-.SYNOPSIS  Fix token paste bug in cloud-ws.ps1
+.SYNOPSIS  Fix token paste bug in mios-build-local.ps1
 .DESCRIPTION
     The [Console]::ReadKey loop doesn't detect Enter after paste in PS 7.6.
     Replace with Read-Host -MaskInput (PS 7.1+, handles paste natively).
@@ -10,11 +10,11 @@
 #>
 $ErrorActionPreference = "Stop"
 
-if (-not (Test-Path "cloud-ws.ps1")) {
+if (-not (Test-Path "mios-build-local.ps1")) {
     Write-Host "  ERROR: Run from MiOS repo root" -ForegroundColor Red; exit 1
 }
 
-$file = "cloud-ws.ps1"
+$file = "mios-build-local.ps1"
 $content = [System.IO.File]::ReadAllText((Resolve-Path $file).Path)
 
 # Old: custom ReadKey loop that breaks on paste
@@ -65,7 +65,7 @@ if ($content.Contains($old)) {
     }
 }
 
-git add cloud-ws.ps1
+git add mios-build-local.ps1
 git commit -m "fix: token paste bug — replace ReadKey loop with Read-Host -MaskInput`n`n[Console]::ReadKey loop in Read-Timed -Secret doesn't detect Enter`nafter paste in PowerShell 7.6/Windows Terminal. Each Enter press`nadds another masked character instead of submitting.`n`nRead-Host -MaskInput (PS 7.1+) handles paste, Enter, backspace`nnatively with * masking."
 git push origin main 2>&1 | ForEach-Object { Write-Host "  $_" }
 if ($LASTEXITCODE -eq 0) {

@@ -12,12 +12,12 @@
 #
 # v2.1.0 fixes the docs-restructure fallout from commit 0eff8d8:
 #
-#   1) PACKAGES.md was relocated from the repo root to docs/PACKAGES.md
+#   1) PACKAGES.md was relocated from the repo root to docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md
 #      together with the other long-form docs. The ctx stage still copied
 #      from the old path, so every subsequent build failed at the
 #      build-context stage with
 #         COPY PACKAGES.md /ctx/PACKAGES.md  -> no such file
-#      The COPY directive below is now `docs/PACKAGES.md -> /ctx/PACKAGES.md`
+#      The COPY directive below is now `docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md -> /ctx/PACKAGES.md`
 #      so `scripts/lib/packages.sh` (unchanged, still reads /ctx/PACKAGES.md)
 #      keeps working without modification. No other moved doc is consumed
 #      by the build pipeline — only PACKAGES.md had to be re-pathed.
@@ -79,9 +79,9 @@ ARG BASE_IMAGE=ghcr.io/ublue-os/ucore-hci:stable-nvidia
 FROM scratch AS ctx
 COPY scripts/           /ctx/scripts/
 COPY system_files/      /ctx/system_files/
-# v2.1.0: PACKAGES.md moved to docs/ during the docs consolidation; re-path
-# the COPY so /ctx/PACKAGES.md (the path packages.sh reads) stays stable.
-COPY docs/PACKAGES.md   /ctx/PACKAGES.md
+# v2.1.0: PACKAGES.md moved to docs/engineering/ during the artifact reorganization.
+# Re-path the COPY so /ctx/PACKAGES.md (the path packages.sh reads) stays stable.
+COPY docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md   /ctx/PACKAGES.md
 COPY VERSION            /ctx/VERSION
 COPY bib-configs/       /ctx/bib-configs/
 COPY tools/             /ctx/tools/
@@ -102,7 +102,7 @@ LABEL ostree.bootable="1"
 # Set /sbin/init as the default command for bootc compatibility
 CMD ["/sbin/init"]
 
-# Build-time user provisioning — injected by cloud-ws.ps1 via --build-arg.
+# Build-time user provisioning — injected by mios-build-local.ps1 via --build-arg.
 # 31-user.sh reads these as MIOS_USER / MIOS_PASSWORD_HASH env vars.
 # ARG values do NOT persist into the final image (unlike ENV).
 ARG MIOS_USER=mios

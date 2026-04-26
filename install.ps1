@@ -50,7 +50,7 @@ Write-Host ("  |  MiOS {0} -- MiOS Builder (Windows) " -f $Ver).PadRight(65) + "
 Write-Host "  +==============================================================+" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  1) Run preflight check first (recommended)" -ForegroundColor White
-Write-Host "  2) Clone repo + launch build (cloud-ws.ps1)" -ForegroundColor White
+Write-Host "  2) Clone repo + launch build (mios-build-local.ps1)" -ForegroundColor White
 Write-Host "  3) Download build script only" -ForegroundColor White
 Write-Host ""
 $choice = Read-Host "  Choice [1-3]"
@@ -86,12 +86,12 @@ switch ($choice) {
         }
         Write-Host "  Launching build script..." -ForegroundColor Cyan
         Push-Location $dest
-        & .\cloud-ws.ps1
+        & .\mios-build-local.ps1
         Pop-Location
     }
     "3" {
-        Invoke-SecureWebRequest -Uri "$RepoUrl/raw/main/cloud-ws.ps1" -OutFile "cloud-ws.ps1"
-        Write-Host "  [OK] Saved. Run: .\cloud-ws.ps1" -ForegroundColor Green
+        Invoke-SecureWebRequest -Uri "$RepoUrl/raw/main/mios-build-local.ps1" -OutFile "mios-build-local.ps1"
+        Write-Host "  [OK] Saved. Run: .\mios-build-local.ps1" -ForegroundColor Green
     }
     default {
         Write-Host "  Invalid choice." -ForegroundColor Red

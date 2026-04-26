@@ -43,8 +43,8 @@ Before building, run the pre-flight script to ensure your Windows environment is
 ./preflight.ps1
 ```
 
-### 3. Build & Orchestrate (`cloud-ws.ps1`)
-The `cloud-ws.ps1` script is the primary master orchestrator. It manages a dedicated `mios-builder` Podman machine to ensure build-time performance and isolation.
+### 3. Build & Orchestrate (`mios-build-local.ps1`)
+The `mios-build-local.ps1` script is the primary master orchestrator. It manages a dedicated `mios-builder` Podman machine to ensure build-time performance and isolation.
 
 **What it does:**
 -   **Phase 1:** Creates/Updates the `mios-builder` machine (Rootful, Max Resources).
@@ -55,10 +55,10 @@ The `cloud-ws.ps1` script is the primary master orchestrator. It manages a dedic
 **Commands:**
 ```powershell
 # Interactive Build Menu
-./cloud-ws.ps1
+./mios-build-local.ps1
 
 # Non-interactive Local Build
-./cloud-ws.ps1 -Workflow "Local Build"
+./mios-build-local.ps1 -Workflow "Local Build"
 ```
 
 ---

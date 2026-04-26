@@ -105,7 +105,7 @@ predate the current `scripts/NN-*.sh` modular design.
 | Script | Purpose |
 |--------|---------|
 | `mios-full.sh` | Standalone one-shot MiOS provisioner (188 KB — everything in one file, pre-refactor) |
-| `cloud-ws.sh` | Earlier Linux-side orchestrator (superseded by `Justfile` + `../cloud-ws.ps1`) |
+| `cloud-ws.sh` | Earlier Linux-side orchestrator (superseded by `Justfile` + `../mios-build-local.ps1`) |
 
 If you find yourself wanting to modify either of these, stop and work
 on the modular replacement in `../scripts/` instead.

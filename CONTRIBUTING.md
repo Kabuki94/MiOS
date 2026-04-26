@@ -41,7 +41,7 @@ just iso        # Generate Anaconda ISO via BIB
 On Windows (using the PowerShell orchestrator):
 
 ```powershell
-.\cloud-ws.ps1
+.\mios-build-local.ps1
 ```
 
 The PowerShell script handles Podman machine creation, credential injection, image build, rechunk, disk image generation (RAW, VHDX, WSL, ISO), GHCR push, and cleanup.

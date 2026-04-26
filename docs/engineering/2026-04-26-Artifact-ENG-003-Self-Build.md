@@ -38,13 +38,13 @@ sudo bootc upgrade
 
 No local build infrastructure needed. The CI runner is an Ubuntu 24.04 GitHub-hosted runner.
 
-### Mode 2: Windows Local Build (cloud-ws.ps1)
+### Mode 2: Windows Local Build (mios-build-local.ps1)
 
 For local development and testing on Windows with Podman Desktop:
 
 ```powershell
 # Run the 5-phase orchestrator
-.\cloud-ws.ps1
+.\mios-build-local.ps1
 ```
 
 This creates a dedicated `mios-builder` Podman machine, builds the OCI image, rechunks it, generates disk images (RAW, VHDX, WSL, ISO), and optionally pushes to GHCR. Phase by phase:
@@ -110,7 +110,7 @@ sudo systemctl reboot
 If you're starting from scratch (no existing MiOS image):
 
 1. Install Podman on any Linux system (Fedora, Ubuntu, etc.) or use Podman Desktop on Windows
-2. Clone the repo and run `podman build` (or `cloud-ws.ps1` on Windows)
+2. Clone the repo and run `podman build` (or `mios-build-local.ps1` on Windows)
 3. The Containerfile pulls `ghcr.io/ublue-os/ucore-hci:stable-nvidia` (MiOS-2 primary, pre-signed NVIDIA kmods) or `quay.io/fedora/fedora-bootc:rawhide` (MiOS-1, akmod-built drivers) as the base — no prior MiOS image needed
 4. Deploy the resulting image to your target (bare metal via ISO, Hyper-V via VHDX, etc.)
 5. Subsequent builds can use the running MiOS itself (self-build mode)

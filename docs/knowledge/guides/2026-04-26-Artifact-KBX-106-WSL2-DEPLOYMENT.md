@@ -65,7 +65,7 @@ processors=8
 ```
 
 ### Podman Integration
-MiOS in WSL2 is pre-configured to handle Podman-native workloads. The `mios-builder` machine logic in `cloud-ws.ps1` ensures that build-time isolation is maintained even when running inside a Windows host.
+MiOS in WSL2 is pre-configured to handle Podman-native workloads. The `mios-builder` machine logic in `mios-build-local.ps1` ensures that build-time isolation is maintained even when running inside a Windows host.
 
 ---
 ### ⚖️ Legal & Source Reference
