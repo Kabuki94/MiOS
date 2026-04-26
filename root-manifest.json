@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-26T14:11:44.132146",
+  "generated_at": "2026-04-26T14:14:02.788671",
   "source_directory": ".",
   "entries": [
     {
@@ -18,7 +18,7 @@
     },
     {
       "path": ".ai-environment.json",
-      "last_modified": "2026-04-26T14:01:27.195714",
+      "last_modified": "2026-04-26T14:11:46.739273",
       "title": ".ai-environment.json",
       "type": "structured_data",
       "structured_data": {
@@ -32,7 +32,7 @@
         "aesthetic_preferences": {
           "fonts": {
             "interface": "Inter",
-            "monospace": "JetBrains Mono",
+            "monospace": "'Geist Mono', monospace",
             "size": 10
           },
           "themes": {
@@ -75,7 +75,8 @@
         "initialization_commands": [
           "python3 tools/generate-ai-manifest.py",
           "cd deep-search-6418 && make install"
-        ]
+        ],
+        "last_refresh": "2026-04-26T14:11:46.740300"
       }
     },
     {
