@@ -48,3 +48,6 @@ picture-uri-dark='file:///usr/share/backgrounds/gnome/adwaita-d.webp'
 
 [org/gnome/desktop/screensaver]
 picture-uri='file:///usr/share/backgrounds/gnome/adwaita-d.webp'
+
+[org/gnome/mutter]
+experimental-features=['variable-refresh-rate', 'scale-monitor-framebuffer']

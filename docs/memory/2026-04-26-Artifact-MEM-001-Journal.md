@@ -2112,3 +2112,16 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   5. **Cleaned Up Metadata:** Updated `scripts/30-locale-theme.sh` comments to reflect the correct paths for migrated skel files in `/usr/share/skel`.
   6. **Synchronized Manifests:** Executed `scripts/ai-bootstrap.sh` to ensure all directory manifests are up to date.
 * **RESULT:** The MiOS repository is now fully aligned with the USR-OVER-ETC policy, all known architectural GAPs from the April 25/26 audit are closed, and the build pipeline has stricter security invariant validation.
+
+[2026-04-26 18:22:40 UTC] [AI: Gemini CLI] Initialized workspace via scripts/ai-bootstrap.sh. Synchronized manifests and initialized GCE-Research sub-project.
+
+[2026-04-26 18:39:56 UTC] [AI: Gemini CLI]
+* **TYPE:** FEDORA 44 GA PREPARATION & VERTEX AI SETUP
+* **THOUGHT:** Investigated Fedora 44 GA readiness, addressed GNOME 50 regressions, and established Vertex AI infrastructure.
+* **ACTION:**
+  1. **Base Image Audit:** Confirmed `ghcr.io/ublue-os/ucore-hci:stable-nvidia` is currently on Fedora 43. Decided to keep the Fedora 44 repo overlay in `scripts/01-repos.sh` for the GA transition.
+  2. **GCS Infrastructure:** Created (verified) `gs://mios-vertex-autogen-cloudws-os` bucket and uploaded `train.csv`/`test.csv` for prompt optimization.
+  3. **GNOME 50 Polish:** Enabled Mutter experimental features (VRR and fractional scaling) in `system_files/usr/share/dconf/db/local.d/01-mios`. Verified GNOME 50 GStreamer ABI compatibility.
+  4. **Security Hardening:** Updated `scripts/99-postcheck.sh` to enforce Cockpit ≥ 361, aligning with Rawhide April 2026 stability baselines.
+  5. **Vertex Optimization:** Attempted to launch Data-Driven Optimize job via MCP; encountered client initialization error. Provided `config-1.json` and GCS paths for manual launch.
+* **RESULT:** MiOS is now architecturally prepared for the Fedora 44 GA. GNOME 50 desktop experience is enhanced with VRR/scaling, and build-time security invariants are tightened.

@@ -630,7 +630,7 @@
     { "file": ".github/copilot-instructions.md" }
   ],
 
-  "geminicodeassist.project": "mios-os",
+  "geminicodeassist.project": "mios-kabu-ki-io",
   "geminicodeassist.inlineSuggestions.enableAuto": true,
   "geminicodeassist.enableTelemetry": false,
 

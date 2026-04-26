@@ -1,66 +1,66 @@
 {
-  "generated_at": "2026-04-26T15:22:30.834022",
+  "generated_at": "2026-04-26T18:21:23.401840",
   "source_directory": "bib-configs",
   "entries": [
     {
       "path": "bib-configs/_shared.toml",
-      "last_modified": "2026-04-26T14:01:27.206715",
+      "last_modified": "2026-04-26T18:00:12.644295",
       "title": "_shared.toml",
       "type": "source_code",
       "full_content": "# Shared fragment - include in target-specific configs.\n[[customizations.filesystem]]\nmountpoint = \"/\"\nminsize = \"40 GiB\"\n\n[[customizations.filesystem]]\nmountpoint = \"/var\"\nminsize = \"80 GiB\"\n\n[[customizations.user]]\nname = \"kabu\"\ngroups = [\"wheel\", \"libvirt\", \"kvm\", \"video\", \"render\"]\n# Replace with ssh-ed25519 pubkey at build time via `envsubst` or BIB --arg"
     },
     {
       "path": "bib-configs/hyperv.toml",
-      "last_modified": "2026-04-26T14:01:27.206715",
+      "last_modified": "2026-04-26T18:00:12.644295",
       "title": "hyperv.toml",
       "type": "source_code",
       "full_content": "# Hyper-V VHDX target\n[customizations.kernel]\nappend = \"mios.role=desktop console=tty1\"\n\n[[customizations.filesystem]]\nmountpoint = \"/\"\nminsize = \"40 GiB\"\n\n[[customizations.filesystem]]\nmountpoint = \"/var\"\nminsize = \"80 GiB\""
     },
     {
       "path": "bib-configs/anaconda.toml",
-      "last_modified": "2026-04-26T14:01:27.206715",
+      "last_modified": "2026-04-26T18:00:12.644295",
       "title": "anaconda.toml",
       "type": "source_code",
       "full_content": "# Installable ISO (Anaconda)\n[customizations.installer.kickstart]\ncontents = \"\"\"\ntext --non-interactive\nlang en_US.UTF-8\nkeyboard us\ntimezone --utc UTC\nreqpart --add-boot\npart / --grow --fstype=ext4\n\"\"\"\n\n[customizations.installer.modules]\nenable  = [\"org.fedoraproject.Anaconda.Modules.Storage\"]\ndisable = [\"org.fedoraproject.Anaconda.Modules.Users\"]\n\n[customizations.iso]\nvolume_id      = \"MIOS\"\napplication_id = \"MiOS\"\npublisher      = \"Kabuki94\""
     },
     {
       "path": "bib-configs/vhdx.toml",
-      "last_modified": "2026-04-26T14:01:27.207715",
+      "last_modified": "2026-04-26T18:00:12.644295",
       "title": "vhdx.toml",
       "type": "source_code",
       "full_content": "# bib-configs/vhdx.toml - MiOS v2.1.0\n# Target: Hyper-V on Windows host (MiOS-2 bare metal + Win11 + RTX 4090)\n# BIB --type vhd emits VPC/.vhd; CI post-converts to .vhdx via qemu-img convert.\n\n[[customizations.user]]\nname     = \"mios\"\n# Replace with: openssl passwd -6 'your-password'\npassword = \"$6$REPLACEME_WITH_SHA512_HASH$REPLACEME\"\n# Replace with your real ssh-ed25519 public key\nkey      = \"ssh-ed25519 AAAA_REPLACE_WITH_REAL_PUBKEY mios@operator\"\ngroups   = [\"wheel\", \"render\", \"video\"]\n\n[customizations.kernel]\nappend = \"rd.driver.blacklist=nouveau modprobe.blacklist=nouveau iommu=pt\"\n\n[[customizations.filesystem]]\nmountpoint = \"/\"\nminsize    = \"150 GiB\"\n\n[[customizations.filesystem]]\nmountpoint = \"/var/home\"\nminsize    = \"20 GiB\"\n"
     },
     {
       "path": "bib-configs/cloud-ami.toml",
-      "last_modified": "2026-04-26T14:01:27.206715",
+      "last_modified": "2026-04-26T18:00:12.644295",
       "title": "cloud-ami.toml",
       "type": "source_code",
       "full_content": "# AWS AMI target\n[customizations.kernel]\nappend = \"mios.role=headless\"\n\n[[customizations.filesystem]]\nmountpoint = \"/\"\nminsize = \"20 GiB\""
     },
     {
       "path": "bib-configs/iso.toml",
-      "last_modified": "2026-04-26T14:01:27.206715",
+      "last_modified": "2026-04-26T18:00:12.644295",
       "title": "iso.toml",
       "type": "source_code",
       "full_content": "# bib-configs/iso.toml - MiOS v2.1.0\n# Target: Anaconda unattended installer ISO for bare-metal install.\n#\n# NOTE: BIB #528 - [customizations.user] is ignored when kickstart is present.\n#       User is defined IN the kickstart below.\n# NOTE: Source container image MUST include dracut-live + squashfs-tools, or\n#       this build leg will fail. Containerfile installs these in v2.1.0.\n\n[customizations.kernel]\nappend = \"rd.driver.blacklist=nouveau modprobe.blacklist=nouveau iommu=pt\"\n\n[[customizations.filesystem]]\nmountpoint = \"/\"\nminsize    = \"150 GiB\"\n\n[customizations.installer.modules]\ndisable = [\"org.fedoraproject.Anaconda.Modules.Users\"]\n\n[customizations.installer.kickstart]\ncontents = \"\"\"\ntext --non-interactive\nlang en_US.UTF-8\nkeyboard us\ntimezone --utc UTC\n\nnetwork --bootproto=dhcp --device=link --activate --onboot=on\n\nzerombr\nclearpart --all --initlabel --disklabel=gpt\nreqpart --add-boot\npart / --grow --fstype ext4\n\n# Replace the crypted password and ssh key below before publishing ISO.\nuser --name=mios --groups=wheel,render,video --iscrypted --password=$6$REPLACEME_WITH_SHA512_HASH$REPLACEME\nsshkey --username=mios \"ssh-ed25519 AAAA_REPLACE_WITH_REAL_PUBKEY mios@operator\"\n\nreboot --eject\n\"\"\"\n"
     },
     {
       "path": "bib-configs/qemu.toml",
-      "last_modified": "2026-04-26T14:01:27.207715",
+      "last_modified": "2026-04-26T18:00:12.644295",
       "title": "qemu.toml",
       "type": "source_code",
       "full_content": "# QEMU/libvirt qcow2 target (btrfs - verity-capable)\n[customizations.kernel]\nappend = \"mios.role=desktop\"\n\n[[customizations.filesystem]]\nmountpoint = \"/\"\nminsize = \"40 GiB\""
     },
     {
       "path": "bib-configs/build-all.sh",
-      "last_modified": "2026-04-26T14:01:27.206715",
+      "last_modified": "2026-04-26T18:00:12.644295",
       "title": "build-all.sh",
       "type": "source_code",
       "full_content": "#!/usr/bin/env bash\n# build-all.sh - emit every deployment artifact from one image\nset -euo pipefail\n\nIMG=\"${IMG:-ghcr.io/kabuki94/mios:latest}\"\nOUT=\"${OUT:-$PWD/out}\"\nmkdir -p \"$OUT\"\n\nBIB=\"quay.io/centos-bootc/bootc-image-builder:latest\"\n\nrun_bib() {\n    local cfg=\"$1\" type=\"$2\" rootfs=\"${3:-ext4}\"\n    podman run --rm --privileged --pull=newer \\\n        -v \"$PWD/bib-configs/${cfg}:/config.toml:ro\" \\\n        -v \"$OUT:/output\" \\\n        -v /var/lib/containers/storage:/var/lib/containers/storage \\\n        \"$BIB\" \\\n        --type \"$type\" --rootfs \"$rootfs\" \\\n        --config /config.toml \"$IMG\"\n}\n\nrun_bib hyperv.toml   vhd       ext4\nrun_bib qemu.toml     qcow2     btrfs\nrun_bib anaconda.toml anaconda-iso\nrun_bib cloud-ami.toml ami      ext4\n\n# WSL2 tarball (not a BIB type - export from running container)\necho \"==> exporting WSL2 tarball\"\ncid=$(podman create \"$IMG\" /bin/true)\npodman export \"$cid\" | zstd -T0 -19 -o \"$OUT/mios-wsl2.tar.zst\"\npodman rm \"$cid\"\n\necho \"==> artifacts in $OUT:\"\nls -lh \"$OUT\""
     },
     {
       "path": "bib-configs/qcow2.toml",
-      "last_modified": "2026-04-26T14:01:27.207715",
+      "last_modified": "2026-04-26T18:00:12.644295",
       "title": "qcow2.toml",
       "type": "source_code",
       "full_content": "# bib-configs/qcow2.toml - MiOS v2.1.0\n# Target: local libvirt/QEMU smoke-test of ghcr.io/kabuki94/mios:latest\n# Generated by: quay.io/centos-bootc/bootc-image-builder --type qcow2\n\n[[customizations.user]]\nname     = \"mios\"\n# Replace with: openssl passwd -6 'your-password'\npassword = \"$6$REPLACEME_WITH_SHA512_HASH$REPLACEME\"\n# Replace with your real ssh-ed25519 public key\nkey      = \"ssh-ed25519 AAAA_REPLACE_WITH_REAL_PUBKEY mios@operator\"\ngroups   = [\"wheel\", \"render\", \"video\"]\n\n[customizations.kernel]\nappend = \"rd.driver.blacklist=nouveau modprobe.blacklist=nouveau iommu=pt\"\n\n[[customizations.filesystem]]\nmountpoint = \"/\"\nminsize    = \"150 GiB\"\n\n[[customizations.filesystem]]\nmountpoint = \"/var/home\"\nminsize    = \"20 GiB\"\n"

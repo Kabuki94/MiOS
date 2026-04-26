@@ -82,9 +82,9 @@ log "Checking Cockpit version..."
 if rpm -q cockpit >/dev/null 2>&1; then
     COCKPIT_VER=$(rpm -q cockpit --queryformat '%{VERSION}')
     log "  Found: Cockpit $COCKPIT_VER"
-    # CVE fixed in 360
-    if [[ $(printf '%s\n360' "$COCKPIT_VER" | sort -V | head -n1) != "360" ]]; then
-        log "  ⚠ Cockpit version $COCKPIT_VER is below 360 (Risk: CVE-2026-4631)"
+    # CVE fixed in 360. MiOS targets 361+ for Fedora 44 GA stability.
+    if [[ $(printf '%s\n361' "$COCKPIT_VER" | sort -V | head -n1) != "361" ]]; then
+        log "  ⚠ Cockpit version $COCKPIT_VER is below 361 (Risk: CVE-2026-4631 / Regressions)"
     else
         log "  ✓ Cockpit version is safe"
     fi
