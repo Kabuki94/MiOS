@@ -1,0 +1,56 @@
+{
+  "environment_name": "MiOS Omni-Agent Workspace",
+  "version": "2.1.0",
+  "identity": {
+    "proprietor": "Kabu.ki",
+    "infrastructure": "Self-Building Infrastructure (Personal Property)",
+    "license": "Licensed as personal property to Kabu.ki"
+  },
+  "aesthetic_preferences": {
+    "fonts": {
+      "interface": "Inter",
+      "monospace": "JetBrains Mono",
+      "size": 10
+    },
+    "themes": {
+      "icon": "adwaita-icon-theme",
+      "cursor": "adwaita-cursor-theme",
+      "qt_theming": "qadwaitadecorations-qt5"
+    }
+  },
+  "recommended_extensions": [
+    "anthropic.claude-code",
+    "timonwong.shellcheck",
+    "foxundermoon.shell-format",
+    "ms-vscode.powershell",
+    "ms-azuretools.vscode-docker",
+    "exiasr.hadolint",
+    "redhat.vscode-yaml",
+    "tamasfe.even-better-toml",
+    "esbenp.prettier-vscode",
+    "eamodio.gitlens",
+    "github.vscode-github-actions",
+    "github.copilot",
+    "github.copilot-chat",
+    "google.geminicodeassist",
+    "editorconfig.editorconfig",
+    "streetsidesoftware.code-spell-checker",
+    "skellock.just",
+    "jeff-hykin.better-dockerfile-syntax"
+  ],
+  "core_applications": [
+    "podman",
+    "bootc",
+    "libvirt",
+    "cockpit",
+    "gnome-shell",
+    "distrobox",
+    "just",
+    "uv",
+    "npm"
+  ],
+  "initialization_commands": [
+    "python3 tools/generate-ai-manifest.py",
+    "cd deep-search-6418 && make install"
+  ]
+}

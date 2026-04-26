@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-26T13:45:19.718485",
+  "generated_at": "2026-04-26T13:53:19.478947",
   "source_directory": "scripts",
   "entries": [
     {
@@ -155,6 +155,13 @@
       "title": "36-akmod-guards.sh",
       "type": "source_code",
       "full_content": "#!/usr/bin/env bash\n# ============================================================================\n# scripts/36-akmod-guards.sh - MiOS v2.1.0\n# ----------------------------------------------------------------------------\n# Install ExecCondition drop-ins that make NVIDIA systemd units exit cleanly\n# (skipped, not failed) when the running kernel's nvidia module has not yet\n# been registered by akmods/depmod. Build-time script; does not touch runtime.\n#\n# Regex widened beyond NVIDIA/nvidia-container-toolkit#1395 to match:\n#   - kernel/drivers/... paths (negativo17 packaging)\n#   - extra/nvidia/...    paths (RPM Fusion akmod packaging, used by ucore-hci)\n#   - .ko, .ko.xz, .ko.zst compressed variants\n# ============================================================================\nset -euo pipefail\n\n# shellcheck source=lib/common.sh\nsource \"$(dirname \"$0\")/lib/common.sh\"\n\nlog \"36-akmod-guards: installing ExecCondition drop-ins\"\n\nSERVICES=(\n    nvidia-persistenced\n    nvidia-powerd\n    nvidia-suspend\n    nvidia-resume\n    nvidia-hibernate\n    nvidia-suspend-then-hibernate\n    nvidia-cdi-refresh\n)\n\nDROPIN_NAME=\"10-mios-akmod-guard.conf\"\ncount=0\n\nfor svc in \"${SERVICES[@]}\"; do\n    dir=\"/usr/lib/systemd/system/${svc}.service.d\"\n    path=\"${dir}/${DROPIN_NAME}\"\n    install -d -m 0755 \"${dir}\"\n    cat > \"${path}\" <<'EOF'\n# MiOS v2.1.0 akmod-guard\n# Skip unit if akmods has not yet registered the nvidia kernel module\n# for the currently running kernel. ExecCondition is additive (AND\n# semantics per systemd.service(5)), so this composes safely with any\n# future upstream guard. Ref: NVIDIA/nvidia-container-toolkit#1395\n# NOTE: \\\\\\\\ in this heredoc \u2192 \\\\ in file \u2192 systemd strips one backslash\n# \u2192 grep sees \\. (literal-dot escape). Plain \\\\. triggered SC \"unknown\n# escape sequence\" warnings in systemd 259+ and could mis-match.\n[Service]\nExecCondition=/bin/bash -c 'grep -Eq \"(^|/)nvidia\\\\.ko(\\\\.[xz]z|\\\\.zst)?:\" /lib/modules/$(uname -r)/modules.dep'\nEOF\n    chmod 0644 \"${path}\"\n    count=$((count + 1))\n    log \"  installed ${path}\"\ndone\n\nlog \"36-akmod-guards: done (${count} drop-ins)\"\n"
+    },
+    {
+      "path": "scripts/ai-bootstrap.sh",
+      "last_modified": "2026-04-26T13:52:45.226424",
+      "title": "ai-bootstrap.sh",
+      "type": "source_code",
+      "full_content": "#!/bin/bash\n# MiOS Omni-Agent Bootstrap Script\n# Synchronizes manifests and initializes sub-project environments.\n\nset -euo pipefail\n\necho \"\ud83d\ude80 Initializing MiOS Omni-Agent Workspace...\"\n\n# 1. Generate Manifests\nif [[ -f \"tools/generate-ai-manifest.py\" ]]; then\n    echo \"\ud83d\udcc4 Generating directory manifests...\"\n    python3 tools/generate-ai-manifest.py\nelse\n    echo \"\u26a0\ufe0f Warning: tools/generate-ai-manifest.py not found.\"\nfi\n\n# 2. Initialize deep-search-6418\nif [[ -d \"deep-search-6418\" ]]; then\n    echo \"\ud83e\uddea Initializing deep-search-6418 (Agent Starter Pack)...\"\n    (cd deep-search-6418 && make install)\nelse\n    echo \"\u26a0\ufe0f Warning: deep-search-6418 directory not found.\"\nfi\n\necho \"\u2705 Workspace initialization complete.\"\n"
     },
     {
       "path": "scripts/validate-kargs.py",

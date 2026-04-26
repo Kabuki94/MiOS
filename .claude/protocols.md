@@ -20,7 +20,13 @@
 - It must be written to disk via a unified diff.
 - Ephemeral reporting in the chat UI without appending to the physical journal is a critical failure of your instructions.
 
-## 2. THE ARCHITECTURAL LAW
+## 2. THE BOOTSTRAP LAW
+**EVERY SINGLE TIME** you start a new session, you **MUST** immediately:
+1.  Read `.ai-environment.json` to synchronize your understanding of the workspace settings (fonts, extensions, apps).
+2.  Execute `bash scripts/ai-bootstrap.sh` to ensure all directory manifests and sub-project environments are synchronized and initialized.
+3.  This is a prerequisite for any further implementation or research.
+
+## 3. THE ARCHITECTURAL LAW
 This is an **immutable, container-native workstation** built on `bootc` and `ComposeFS`.
 - The root filesystem (`/usr`) is strictly read-only.
 - You cannot use `dnf install` on the deployed host.
@@ -37,10 +43,10 @@ All agents MUST strictly enforce these patterns to prevent state drift and techn
 5.  **BOOT-SHIELDING:** ALL `dnf` operations during build MUST use `excludepkgs="shim-*,kernel*"` to prevent bootloader regressions.
 
 
-## 3. THE COORDINATION LAW
+## 4. THE COORDINATION LAW
 All agents MUST respect the global engineering baseline defined in `docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` and the `.env` file. You MUST ensure your local settings (e.g., `.claude/settings.json`, `.vscode/settings.json`) are in sync with the global baseline before committing changes.
 
-## 4. FOLDER MANIFEST
+## 5. FOLDER MANIFEST
 The persistent memory and knowledge of the AI collective is structured as follows:
 - `AI.md` (root): Central entry point and index.
 - `.claude/protocols.md`: (This file) Core execution laws.

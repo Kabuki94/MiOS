@@ -3,60 +3,41 @@
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# 🌐 MiOS — Cloud Native Operating System (Omni-Agent Workspace)
+# 🌐 MiOS — Omni-Agent Workspace Bootstrap (GEMINI.md)
 
-> **MANDATORY ENTRY POINT:** This repository is managed via the **Claude OS Persistent Memory Architecture**, but is engineered as a universal, multi-agent workspace. **ALL AI Agents, APIs, and IDE Harnesses (Claude, Gemini, Cursor, Copilot, Windsurf, Cline, etc.)** share identical context, memories, and operational laws.
+This file is the mandatory entry point for Gemini-based agents. It imports the global laws and codifies the initialization protocol.
 
----
-
-## ⚖️ THE CORE LAWS (Non-Negotiable)
-
-1.  **THE OMNI-AGENT LAW:** All AI instances operate as synchronized mirrors. They read from and write to the same memory files (`.claude/memories/journal.md`) sharing a single cognitive state. There is one brain — never split it.
-2.  **THE JOURNALING LAW:** Every surgical change, architectural decision, learning, discovery, or thought **MUST** be recorded in the shared [`.claude/memories/journal.md`](./.claude/memories/journal.md) at the end of every session turn with a timestamp + agent tag (e.g., `[AI: Cursor]`, `[AI: Gemini CLI]`).
-3.  **SHARED SCRATCHPAD PROTOCOL:** Use [`.claude/shared-tmp/`](./.claude/shared-tmp/) as the universal scratchpad for transient data, inter-agent communication, and cross-session "thoughts." This is the unified `TMPDIR` for all AI agents.
-4.  **SINGLE SOURCE OF TRUTH (SSOT):**
-    -   **Packages:** [`docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md`](./docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md) is the only manifest.
-    -   **Environment:** [`.env`](./.env) and [`.claude/settings.json`](./.claude/settings.json) track the baseline.
-5.  **USR-OVER-ETC (BOOTC IMMUTABILITY):** Align with upstream `bootc`. System configurations go in `system_files/usr/lib/`. `/etc` is reserved for user overrides only.
+## 🔗 Global Bootstrap Chain
+- @./AI.md
+- @./.claude/protocols.md
+- @./.claude/memory/MEMORY.md
+- @./.claude/memory/project_no_gcp.md
+- @./.claude/memory/gemini-bootstrap.md
 
 ---
 
-## 📁 SHARED AI REPO LAYOUT
-
-- `.claude/`: The **Foundation (Persistent Memory Architecture)**.
-    - `memories/`: The **Shared Brain**. Contains the `journal.md` and SQLite vaults used by ALL agents.
-    - `shared-tmp/`: The **Universal Scratchpad**. Shared transient data/thoughts.
-    - `protocols.md`: Detailed behavioral execution laws.
-- `docs/knowledge/`: The **Unified Knowledge Base** (Research, Architecture, Guides).
-- `.ai-rules` / `.cursorrules` / `.clinerules`: Framework-specific symlinks and bindings that enforce these core laws across IDEs.
+## ⚖️ THE FIVE CORE LAWS
+1.  **THE OMNI-AGENT LAW:** All AI instances operate as synchronized mirrors. One brain — never split it.
+2.  **THE JOURNALING LAW:** Record EVERY action and thought in `.claude/memories/journal.md`.
+3.  **THE BOOTSTRAP LAW:** ALWAYS read `.ai-environment.json` and execute `scripts/ai-bootstrap.sh` upon first message.
+4.  **SHARED SCRATCHPAD PROTOCOL:** Use `.claude/shared-tmp/` for transient cross-agent data.
+5.  **SINGLE SOURCE OF TRUTH (SSOT):** Respect the package manifest in `docs/engineering/` and `.env` settings.
 
 ---
 
-## 🛠️ BEHAVIORAL STANDARDS
-
-- **Explain Before Acting:** Briefly state your intent/strategy before tool calls.
-- **Identical Memory Access:** ALL agents MUST query `.claude/memories/journal.md` before every implementation to maintain synchronization with prior turns from other agents.
-- **Inter-agent Handoff:** Read the last ~200 lines of the journal before acting. Append your entry after acting.
-- **Idempotency:** Re-running every script must not break existing state.
-
----
-
-## 🚫 HARD CONSTRAINTS
-
-- **No GCP integrations.** `project_no_gcp.md` is binding. Memory Bank, Vertex AI Vector Search, GAR pushes, and GCE images are all out of scope.
-- **No in-container kernel upgrade.**
-- **No [kargs] headers in kargs.d/.**
-- **No ((var++)) in scripts.** Use `VAR=$((VAR + 1))`.
-- **No --squash-all.** Do NOT use this flag on Podman builds; it strips bootc metadata.
+## 🛠️ INITIALIZATION PROTOCOL
+Upon first interaction, Gemini MUST:
+1.  **Load Context:** Verify the bootstrap chain is loaded.
+2.  **Sync Environment:** Read `.ai-environment.json`.
+3.  **Execute Bootstrap:** Run `bash scripts/ai-bootstrap.sh`.
+4.  **Synchronize Memory:** Read the last 200 lines of `.claude/memories/journal.md`.
 
 ---
-*Last Updated: 2026-04-26. v2.1.0 Baseline.*
+
+## 📂 MEMORY OPERATIONS
+- **Episodic Memory:** Add to `.claude/memories/journal.md`.
+- **Semantic Memory:** Create/Update files in `docs/memory/` and symlink to `.claude/memory/`.
+- **Handoff:** Summarize your session in the journal to provide context for the next agent.
 
 ---
-### 📚 Bootc Ecosystem & Resources
-- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
-- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
-- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
-- **Sole Proprietor:** Kabu.ki
----
+*Omni-Agent Specification v2.1.0*
