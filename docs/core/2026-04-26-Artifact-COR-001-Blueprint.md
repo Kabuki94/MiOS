@@ -1,11 +1,23 @@
-# 🌐 MiOS — Cloud Native Operating System
+<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
+# 🏗️ MiOS-OS Strategic Blueprint
+
+```json:knowledge
+{
+  "summary": "Strategic technical blueprint for MiOS-OS architecture and specifications.",
+  "logic_type": "documentation",
+  "tags": ["MiOS", "Blueprint", "Architecture", "Core"],
+  "relations": {
+    "depends_on": [".env.mios"],
+    "impacts": []
+  }
+}
+```
+
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 > **Source Reference:** MiOS-Core-v2.1.0
 ---
-
-# 🏗️ MiOS-OS Strategic Blueprint
 
 ```json
 {
@@ -75,3 +87,4 @@ The system is synthesized into multiple bootable artifacts via `bootc-image-buil
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/docs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
 ---
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->

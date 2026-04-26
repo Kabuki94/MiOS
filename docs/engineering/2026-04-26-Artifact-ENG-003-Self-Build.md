@@ -1,4 +1,21 @@
+<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
 # 🌐 MiOS — Cloud Native Operating System
+```json:knowledge
+{
+  "summary": "> **Proprietor:** Kabu.ki",
+  "logic_type": "documentation",
+  "tags": [
+    "MiOS",
+    "engineering"
+  ],
+  "relations": {
+    "depends_on": [
+      ".env.mios"
+    ],
+    "impacts": []
+  }
+}
+```
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
@@ -111,7 +128,7 @@ If you're starting from scratch (no existing MiOS image):
 
 1. Install Podman on any Linux system (Fedora, Ubuntu, etc.) or use Podman Desktop on Windows
 2. Clone the repo and run `podman build` (or `mios-build-local.ps1` on Windows)
-3. The Containerfile pulls `ghcr.io/ublue-os/ucore-hci:stable-nvidia` (MiOS-2 primary, pre-signed NVIDIA kmods) or `quay.io/fedora/fedora-bootc:rawhide` (MiOS-1, akmod-built drivers) as the base — no prior MiOS image needed
+3. The Containerfile pulls `{{MIOS_BASE_IMAGE}}` (MiOS-2 primary, pre-signed NVIDIA kmods) or `quay.io/fedora/fedora-bootc:rawhide` (MiOS-1, akmod-built drivers) as the base — no prior MiOS image needed
 4. Deploy the resulting image to your target (bare metal via ISO, Hyper-V via VHDX, etc.)
 5. Subsequent builds can use the running MiOS itself (self-build mode)
 
@@ -153,3 +170,4 @@ The build process downloads ~2-4 GB of RPM packages from Fedora repos, RPM Fusio
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/docs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
 ---
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->

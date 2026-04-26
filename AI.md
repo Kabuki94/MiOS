@@ -1,4 +1,17 @@
+<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
 # AI.md — MiOS Universal Agent Hub
+
+```json:knowledge
+{
+  "summary": "Single source of truth for AI agent architecture, laws, and conventions in MiOS.",
+  "logic_type": "documentation",
+  "tags": ["MiOS", "AI", "Agent Hub"],
+  "relations": {
+    "depends_on": [".env.mios"],
+    "impacts": []
+  }
+}
+```
 
 > **Single source of truth** for every AI agent, LLM, copilot, and API operating in this repository.
 > All provider entry files (`CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, `.cursorrules`, `.windsurfrules`,
@@ -8,7 +21,7 @@
 
 MiOS is a **bootc-based, self-building, immutable workstation OS** on Fedora Rawhide.
 One OCI image covers all hardware roles: desktop, k3s/HA, GPU passthrough (VFIO), WSL2.
-Published at `ghcr.io/kabuki94/mios:latest`. Deployed systems update atomically via `sudo bootc upgrade`.
+Published at `$MIOS_IMAGE_NAME:latest`. Deployed systems update atomically via `sudo bootc upgrade`.
 Sole proprietor: **Kabu.ki**. Target: AMD Ryzen 9 9950X3D + NVIDIA RTX 4090, hardware-agnostic by design.
 
 ## Build & Test
@@ -202,3 +215,4 @@ To ensure all Markdown files are machine-parsable and referencable, they must in
   }
 }
 ```
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->

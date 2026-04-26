@@ -1,4 +1,21 @@
+<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
 # 🌐 MiOS — Cloud Native Operating System
+```json:knowledge
+{
+  "summary": "> **Proprietor:** Kabu.ki",
+  "logic_type": "documentation",
+  "tags": [
+    "MiOS",
+    "audit"
+  ],
+  "relations": {
+    "depends_on": [
+      ".env.mios"
+    ],
+    "impacts": []
+  }
+}
+```
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
@@ -1282,21 +1299,21 @@ Authentication for private registries: set `hostRules` with `username`/`password
 **How `docker:pinDigests` works on Containerfiles:** Renovate scans for `FROM` directives using the `dockerfile` manager. It detects both standard `FROM image:tag` and multi-stage `FROM image:tag AS alias` patterns. After pinning, the line becomes:
 
 ```dockerfile
-FROM ghcr.io/ublue-os/ucore-hci:stable-nvidia@sha256:<digest>
+FROM {{MIOS_BASE_IMAGE}}@sha256:<digest>
 ```
 
 Renovate then tracks this digest and opens a PR when `stable-nvidia` resolves to a new digest. The PR diff is a single-line change to the `sha256:` value.
 
 **Behavioral notes:**
 - Renovate does NOT pin `FROM scratch` — correctly skipped.
-- In multi-stage builds, each `FROM` line is pinned independently. MiOS's `FROM scratch AS ctx` is skipped; the main `FROM ghcr.io/ublue-os/ucore-hci:stable-nvidia` is pinned.
+- In multi-stage builds, each `FROM` line is pinned independently. MiOS's `FROM scratch AS ctx` is skipped; the main `FROM {{MIOS_BASE_IMAGE}}` is pinned.
 - If the Containerfile already has `@sha256:` pinning, Renovate tracks the existing pin and updates it — it does not double-pin.
 - The `dockerfile` manager auto-detects files named `Dockerfile`, `Containerfile`, `Dockerfile.*`, `Containerfile.*`. The repo's root `Containerfile` is automatically detected with no extra `fileMatch` config needed.
 
 **Current state in this repo:** `image-versions.yml` documents the digests as reference, but the `Containerfile` currently uses bare tags (per the `image-versions.yml` comment: "the Containerfile currently uses tags"). This means Renovate is tracking the tag for version updates but is NOT currently pinning the Containerfile `FROM` line to a specific digest. To activate full digest pinning:
 
-1. Get the current digest: `podman manifest inspect ghcr.io/ublue-os/ucore-hci:stable-nvidia | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('Digest') or d['manifests'][0]['digest'])"`
-2. Update the `FROM` line in `Containerfile` to `FROM ghcr.io/ublue-os/ucore-hci:stable-nvidia@sha256:<digest>`.
+1. Get the current digest: `podman manifest inspect {{MIOS_BASE_IMAGE}} | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('Digest') or d['manifests'][0]['digest'])"`
+2. Update the `FROM` line in `Containerfile` to `FROM {{MIOS_BASE_IMAGE}}@sha256:<digest>`.
 3. Renovate will detect the pinned digest and begin managing it automatically going forward.
 4. Uncomment and populate the `digest:` field in `image-versions.yml` to match.
 
@@ -1590,3 +1607,4 @@ Confirmed via github.com/crowdsecurity/crowdsec/releases: latest tag remains **v
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/docs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
 ---
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->

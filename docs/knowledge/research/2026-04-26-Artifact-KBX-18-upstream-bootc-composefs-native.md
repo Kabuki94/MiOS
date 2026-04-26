@@ -1,4 +1,21 @@
+<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
 # 🌐 MiOS — Cloud Native Operating System
+```json:knowledge
+{
+  "summary": "> **Proprietor:** Kabu.ki",
+  "logic_type": "documentation",
+  "tags": [
+    "MiOS",
+    "knowledge"
+  ],
+  "relations": {
+    "depends_on": [
+      ".env.mios"
+    ],
+    "impacts": []
+  }
+}
+```
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
@@ -49,3 +66,4 @@ To keep progressing, we must prioritize the following missing implementations:
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/docs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
 ---
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->

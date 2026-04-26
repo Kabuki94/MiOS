@@ -1,15 +1,15 @@
+<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
 # 🌐 MiOS Navigation
 
 ```json:knowledge
 {
-  "summary": "Central navigation hub for MiOS documentation.",
+  "summary": "Central navigation hub for all MiOS documentation and artifacts.",
   "logic_type": "documentation",
-  "tags": [
-    "wiki",
-    "home",
-    "navigation"
-  ],
-  "last_rag_sync": "2026-04-26T20:36:16.027113"
+  "tags": ["MiOS", "Wiki", "Home", "Navigation"],
+  "relations": {
+    "depends_on": [".env.mios"],
+    "impacts": []
+  }
 }
 ```
 
@@ -57,3 +57,4 @@
 
 ---
 **Latest RAG Snapshot:** `artifacts/repo-rag-snapshot.json.gz` (2026-04-26 20:36:16)
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->

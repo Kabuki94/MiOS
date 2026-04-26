@@ -1,4 +1,21 @@
+<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
 # 🌐 MiOS — Cloud Native Operating System
+```json:knowledge
+{
+  "summary": "> **Proprietor:** Kabu.ki",
+  "logic_type": "documentation",
+  "tags": [
+    "MiOS",
+    "audit"
+  ],
+  "relations": {
+    "depends_on": [
+      ".env.mios"
+    ],
+    "impacts": []
+  }
+}
+```
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
@@ -32,7 +49,7 @@
 
 ### A. April 28 — Fedora 44 GA Day Checklist
 1. **Merge `f44-ga-rpmfusion-stable`** — RPMFusion `release-44` URLs go live on GA day. Do not merge before.
-2. **Watch ucore-hci digest** — poll `ghcr.io/ublue-os/ucore-hci:stable-nvidia` for F44 tag (24–48h post-GA)
+2. **Watch ucore-hci digest** — poll `{{MIOS_BASE_IMAGE}}` for F44 tag (24–48h post-GA)
 3. **Trigger image build** — once F44 tag is live, trigger full MiOS build from F44 base
 4. **Post-build verification:**
    - `cockpit --version` ≥ 360 (CVE-2026-4631 fix)
@@ -111,3 +128,4 @@ Order reflects decreasing urgency.
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/docs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
 ---
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->

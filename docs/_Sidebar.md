@@ -1,3 +1,20 @@
+<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
+```json:knowledge
+{
+  "summary": "- [Core-Blueprint](https://github.com/Kabuki94/mios/blob/main/docs/core/2026-04-26-Artifact-COR-001-...",
+  "logic_type": "documentation",
+  "tags": [
+    "MiOS",
+    "_Sidebar.md"
+  ],
+  "relations": {
+    "depends_on": [
+      ".env.mios"
+    ],
+    "impacts": []
+  }
+}
+```
 ## 🌐 MiOS Navigation
 
 ### 🏛️ Core Foundation
@@ -39,3 +56,4 @@
 
 ---
 [Home](https://github.com/Kabuki94/mios/blob/main/docs/Home.md) | [llms.txt](https://github.com/Kabuki94/mios/blob/main/docs/llms.txt)
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->

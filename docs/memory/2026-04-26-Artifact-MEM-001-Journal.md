@@ -1,4 +1,21 @@
+<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
 # 🌐 MiOS — Cloud Native Operating System
+```json:knowledge
+{
+  "summary": "> **Proprietor:** Kabu.ki",
+  "logic_type": "documentation",
+  "tags": [
+    "MiOS",
+    "memories"
+  ],
+  "relations": {
+    "depends_on": [
+      ".env.mios"
+    ],
+    "impacts": []
+  }
+}
+```
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
@@ -1029,7 +1046,7 @@
 *   **DISCOVERY:**
     1. **`bound-images.d/` NOT present** — Gemini's journal entry at 06:45 UTC claims it created symlinks in `system_files/usr/lib/bootc/bound-images.d/`, but the directory does not exist in the working tree. The logically-bound images feature is unimplemented.
     2. **`cosign-installer@v3` is unpinned** — `build.yml` line 98 uses `sigstore/cosign-installer@v3` (mutable major tag). Should pin to a specific version (e.g., `@v2.1.0`) or commit SHA for supply-chain integrity.
-    3. **Renovate App not yet running** — `renovate.json` is correctly configured with the `ARG BASE_IMAGE` customManager regex and `docker:pinDigests`, but the Containerfile still shows `ghcr.io/ublue-os/ucore-hci:stable-nvidia` without a digest. The Renovate GitHub App needs to be installed on the repo to activate digest pinning.
+    3. **Renovate App not yet running** — `renovate.json` is correctly configured with the `ARG BASE_IMAGE` customManager regex and `docker:pinDigests`, but the Containerfile still shows `{{MIOS_BASE_IMAGE}}` without a digest. The Renovate GitHub App needs to be installed on the repo to activate digest pinning.
     4. **`build-sign.yml` does not exist** — CLAUDE.md §5 references it, but cosign signing was consolidated into `build.yml`. The docs reference is stale (minor doc-only issue).
     5. **`tmpfiles.d/` coverage is minimal** — Only `mios-gpu.conf` covers `/var/lib/mios/gpu`. Multiple Gemini journal entries claim to have added tmpfiles entries for GRD, IPA, virtio-win, and mios-backups — these claims need spot-checking before trusting them.
     6. **greenboot unit names unverified for greenboot-rs** — Risk low but non-zero that the grub2-specific unit names changed in the Rust rewrite.
@@ -2119,7 +2136,7 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 * **TYPE:** FEDORA 44 GA PREPARATION & VERTEX AI SETUP
 * **THOUGHT:** Investigated Fedora 44 GA readiness, addressed GNOME 50 regressions, and established Vertex AI infrastructure.
 * **ACTION:**
-  1. **Base Image Audit:** Confirmed `ghcr.io/ublue-os/ucore-hci:stable-nvidia` is currently on Fedora 43. Decided to keep the Fedora 44 repo overlay in `scripts/01-repos.sh` for the GA transition.
+  1. **Base Image Audit:** Confirmed `{{MIOS_BASE_IMAGE}}` is currently on Fedora 43. Decided to keep the Fedora 44 repo overlay in `scripts/01-repos.sh` for the GA transition.
   2. **GCS Infrastructure:** Created (verified) `gs://mios-vertex-autogen-cloudws-os` bucket and uploaded `train.csv`/`test.csv` for prompt optimization.
   3. **GNOME 50 Polish:** Enabled Mutter experimental features (VRR and fractional scaling) in `system_files/usr/share/dconf/db/local.d/01-mios`. Verified GNOME 50 GStreamer ABI compatibility.
   4. **Security Hardening:** Updated `scripts/99-postcheck.sh` to enforce Cockpit ≥ 361, aligning with Rawhide April 2026 stability baselines.
@@ -2169,3 +2186,4 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   3. **Lifecycle Integration:** Updated Justfile (build: artifact) and scripts/ai-bootstrap.sh to ensure all knowledge artifacts are refreshed during every build and initialization.
   4. **Protocol Documentation:** Updated AI.md with UKB/RAG protocols.
 * **RESULT:** MiOS is now architecturally 'Self-Documenting'. Any OpenAI-compatible agent can ingest the UKB snapshot for immediate full-repo context.
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->

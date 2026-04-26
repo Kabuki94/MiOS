@@ -1,4 +1,21 @@
+<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
 # AI.md — MiOS Universal Agent Hub
+```json:knowledge
+{
+  "summary": "> **Single source of truth** for every AI agent, LLM, copilot, and API operating in this repository.",
+  "logic_type": "documentation",
+  "tags": [
+    "MiOS",
+    "root"
+  ],
+  "relations": {
+    "depends_on": [
+      ".env.mios"
+    ],
+    "impacts": []
+  }
+}
+```
 
 > **Single source of truth** for every AI agent, LLM, copilot, and API operating in this repository.
 > All provider entry files (`CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, `.cursorrules`, `.windsurfrules`,
@@ -168,3 +185,4 @@ Complete replacement files only — no patches, no diffs, no "paste this into X"
 | Aider | `.aider.conf.yml` + `AI.md` | Config + read |
 | Web LLMs / scrapers | `llms.txt` | Structured index |
 | MCP / programmatic | `ai-context.json` | JSON manifest |
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->
