@@ -2,7 +2,9 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
+> **Source Reference:** MiOS-Core-v2.1.0
 ---
+
 # NEXT-RESEARCH — agenda for 2026-04-28 and beyond
 
 > Prepared by `Claude Code (Sonnet 4.6)` at end of the 2026-04-26 research pass.
@@ -106,6 +108,6 @@ Order reflects decreasing urgency.
 - **Copyright:** (c) 2026 Kabu.ki
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
-- **Documentation:** [MiOS Knowledge Base](https://github.com/Kabuki94/mios/tree/main/docs/knowledge)
-- **Artifact Hub:** [ai-context.json](../../ai-context.json)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/docs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
 ---

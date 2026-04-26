@@ -363,6 +363,6 @@ CCD1 (Cores 8-15, High Freq):
 - **Copyright:** (c) 2026 Kabu.ki
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
-- **Documentation:** [MiOS Knowledge Base](https://github.com/Kabuki94/mios/tree/main/docs/knowledge)
-- **Artifact Hub:** [ai-context.json](../../ai-context.json)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/docs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
 ---

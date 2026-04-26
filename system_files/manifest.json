@@ -1,20 +1,20 @@
 {
-  "generated_at": "2026-04-26T02:25:20.306808",
+  "generated_at": "2026-04-26T02:38:28.813777",
   "source_directory": "system_files",
   "entries": [
     {
       "path": "system_files/etc/greenboot/check/required.d/30-network.sh",
-      "last_modified": "2026-04-26T02:08:03.831725",
+      "last_modified": "2026-04-26T02:31:59.488609",
       "title": "30-network.sh",
       "type": "source_code",
-      "full_content": "#!/bin/bash\n# \ud83c\udf10 MiOS \u2014 Universal AI Integration\n# Greenboot health check: Network reachability\n\nset -e\n\necho \"Starting network health check...\"\n\n# Wait up to 30s for DNS resolution of ghcr.io (our primary registry)\nTIMEOUT=30\nINTERVAL=2\nELAPSED=0\n\nwhile [ $ELAPSED -lt $TIMEOUT ]; do\n    if getent hosts ghcr.io > /dev/null; then\n        echo \"Network check passed: ghcr.io resolved.\"\n        exit 0\n    fi\n    sleep $INTERVAL\n    ELAPSED=$((ELAPSED + INTERVAL))\n    echo \"Waiting for network... ($ELAPSED/$TIMEOUT)\"\ndone\n\necho \"Network check failed: ghcr.io did not resolve within $TIMEOUT seconds.\"\nexit 1\n"
+      "full_content": "#!/bin/bash\n# \ud83c\udf10 MiOS \u2014 Cloud Native Operating System\n# Greenboot health check: Network reachability\n\nset -e\n\necho \"Starting network health check...\"\n\n# Wait up to 30s for DNS resolution of ghcr.io (our primary registry)\nTIMEOUT=30\nINTERVAL=2\nELAPSED=0\n\nwhile [ $ELAPSED -lt $TIMEOUT ]; do\n    if getent hosts ghcr.io > /dev/null; then\n        echo \"Network check passed: ghcr.io resolved.\"\n        exit 0\n    fi\n    sleep $INTERVAL\n    ELAPSED=$((ELAPSED + INTERVAL))\n    echo \"Waiting for network... ($ELAPSED/$TIMEOUT)\"\ndone\n\necho \"Network check failed: ghcr.io did not resolve within $TIMEOUT seconds.\"\nexit 1\n"
     },
     {
       "path": "system_files/etc/greenboot/check/wanted.d/60-k3s.sh",
-      "last_modified": "2026-04-26T02:08:03.831725",
+      "last_modified": "2026-04-26T02:31:59.490609",
       "title": "60-k3s.sh",
       "type": "source_code",
-      "full_content": "#!/bin/bash\n# \ud83c\udf10 MiOS \u2014 Universal AI Integration\n# Greenboot health check: K3s status (optional)\n\n# Check if k3s is enabled\nif ! systemctl is-enabled k3s.service > /dev/null 2>&1; then\n    echo \"K3s is not enabled, skipping check.\"\n    exit 0\nfi\n\necho \"Starting K3s health check...\"\n\n# Wait up to 60s for K3s to be ready\nTIMEOUT=60\nINTERVAL=5\nELAPSED=0\n\nwhile [ $ELAPSED -lt $TIMEOUT ]; do\n    if kubectl get nodes > /dev/null 2>&1; then\n        echo \"K3s check passed: nodes are reachable.\"\n        exit 0\n    fi\n    sleep $INTERVAL\n    ELAPSED=$((ELAPSED + INTERVAL))\n    echo \"Waiting for K3s... ($ELAPSED/$TIMEOUT)\"\ndone\n\necho \"K3s check failed (not triggering rollback as this is a wanted check).\"\nexit 1 # We exit 1 so greenboot logs this as a warning in wanted.d\n"
+      "full_content": "#!/bin/bash\n# \ud83c\udf10 MiOS \u2014 Cloud Native Operating System\n# Greenboot health check: K3s status (optional)\n\n# Check if k3s is enabled\nif ! systemctl is-enabled k3s.service > /dev/null 2>&1; then\n    echo \"K3s is not enabled, skipping check.\"\n    exit 0\nfi\n\necho \"Starting K3s health check...\"\n\n# Wait up to 60s for K3s to be ready\nTIMEOUT=60\nINTERVAL=5\nELAPSED=0\n\nwhile [ $ELAPSED -lt $TIMEOUT ]; do\n    if kubectl get nodes > /dev/null 2>&1; then\n        echo \"K3s check passed: nodes are reachable.\"\n        exit 0\n    fi\n    sleep $INTERVAL\n    ELAPSED=$((ELAPSED + INTERVAL))\n    echo \"Waiting for K3s... ($ELAPSED/$TIMEOUT)\"\ndone\n\necho \"K3s check failed (not triggering rollback as this is a wanted check).\"\nexit 1 # We exit 1 so greenboot logs this as a warning in wanted.d\n"
     },
     {
       "path": "system_files/usr/local/bin/profile-compare.sh",
@@ -392,16 +392,16 @@
     },
     {
       "path": "system_files/usr/share/pki/containers/README.md",
-      "last_modified": "2026-04-26T02:08:03.852727",
-      "title": "\ud83c\udf10 MiOS \u2014 Universal AI Integration",
+      "last_modified": "2026-04-26T02:31:59.498610",
+      "title": "\ud83c\udf10 MiOS \u2014 Cloud Native Operating System",
       "type": "documentation",
       "metadata": {
         "proprietor": "Kabu.ki",
         "infrastructure": "Self-Building Infrastructure (Personal Property)",
         "license": "Licensed as personal property to Kabu.ki"
       },
-      "content_preview": "# \ud83c\udf10 MiOS \u2014 Universal AI Integration\n> **Proprietor:** Kabu.ki\n> **Infrastructure:** Self-Building Infrastructure (Personal Property)\n> **License:** Licensed as personal property to Kabu.ki\n---\n# Cosign verification keys\n\nKeys in this directory are referenced by `/etc/containers/policy.json`.\n\n- `mios-cosign.pub` - MiOS signing key (placeholder; replace with\n  your cosign keyless identity's cert once published, OR switch policy.json to\n  use `fulcio.url`/`rekorURL` with keyless verification).\n- `...",
-      "full_content": "# \ud83c\udf10 MiOS \u2014 Universal AI Integration\n> **Proprietor:** Kabu.ki\n> **Infrastructure:** Self-Building Infrastructure (Personal Property)\n> **License:** Licensed as personal property to Kabu.ki\n---\n# Cosign verification keys\n\nKeys in this directory are referenced by `/etc/containers/policy.json`.\n\n- `mios-cosign.pub` - MiOS signing key (placeholder; replace with\n  your cosign keyless identity's cert once published, OR switch policy.json to\n  use `fulcio.url`/`rekorURL` with keyless verification).\n- `ublue-cosign.pub`   - Universal Blue signing key (fetched from\n  https://github.com/ublue-os/main/raw/main/cosign.pub at build time by\n  `scripts/42-cosign-policy.sh`).\n\nIf a key is missing and policy.json references it, `bootc switch`/`podman pull`\nwill fail closed. To bootstrap without signing, edit policy.json to replace the\nsigstoreSigned entry with `insecureAcceptAnything` temporarily.\n\n---\n### \ud83d\udcda Bootc Ecosystem & Resources\n- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)\n- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)\n- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)\n- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)\n- **Sole Proprietor:** Kabu.ki\n---\n"
+      "content_preview": "# \ud83c\udf10 MiOS \u2014 Cloud Native Operating System\n> **Proprietor:** Kabu.ki\n> **Infrastructure:** Self-Building Infrastructure (Personal Property)\n> **License:** Licensed as personal property to Kabu.ki\n---\n# Cosign verification keys\n\nKeys in this directory are referenced by `/etc/containers/policy.json`.\n\n- `mios-cosign.pub` - MiOS signing key (placeholder; replace with\n  your cosign keyless identity's cert once published, OR switch policy.json to\n  use `fulcio.url`/`rekorURL` with keyless verification)...",
+      "full_content": "# \ud83c\udf10 MiOS \u2014 Cloud Native Operating System\n> **Proprietor:** Kabu.ki\n> **Infrastructure:** Self-Building Infrastructure (Personal Property)\n> **License:** Licensed as personal property to Kabu.ki\n---\n# Cosign verification keys\n\nKeys in this directory are referenced by `/etc/containers/policy.json`.\n\n- `mios-cosign.pub` - MiOS signing key (placeholder; replace with\n  your cosign keyless identity's cert once published, OR switch policy.json to\n  use `fulcio.url`/`rekorURL` with keyless verification).\n- `ublue-cosign.pub`   - Universal Blue signing key (fetched from\n  https://github.com/ublue-os/main/raw/main/cosign.pub at build time by\n  `scripts/42-cosign-policy.sh`).\n\nIf a key is missing and policy.json references it, `bootc switch`/`podman pull`\nwill fail closed. To bootstrap without signing, edit policy.json to replace the\nsigstoreSigned entry with `insecureAcceptAnything` temporarily.\n\n---\n### \ud83d\udcda Bootc Ecosystem & Resources\n- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)\n- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)\n- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)\n- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)\n- **Sole Proprietor:** Kabu.ki\n---\n"
     }
   ]
 }
