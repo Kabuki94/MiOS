@@ -49,9 +49,11 @@ mask_filter() {
 
     local sed_script=""
     for secret in "${MASK_LIST[@]}"; do
-        # Escape special characters for sed
-        local escaped_secret=$(echo "$secret" | sed 's/[^^$*/\.\[]/\\&/g')
-        sed_script+="s/$escaped_secret/[MASKED]/g;"
+        # Escape characters that are special to sed's regex and the delimiter
+        # We use '|' as the delimiter for 's' because it's less common in hashes
+        # than '/', but we still must escape it if it appears in the secret.
+        local escaped_secret=$(echo "$secret" | sed 's/[^^$*/\.\[|]/\\&/g')
+        sed_script+="s|$escaped_secret|[MASKED]|g;"
     done
     sed -u "$sed_script"
 }
@@ -90,8 +92,8 @@ scurl() {
     if [[ "$url" =~ github\.com|ghcr\.io ]]; then
         if [[ -n "${GH_TOKEN:-}" || -n "${GITHUB_TOKEN:-}" || -n "${GHCR_TOKEN:-}" ]]; then
             local token="${GH_TOKEN:-${GITHUB_TOKEN:-${GHCR_TOKEN:-}}}"
-            # Use -H for Bearer token to avoid process list exposure of -u
-            args+=("-H" "Authorization: Bearer $token")
+            # Use -H for token auth to avoid process list exposure of -u
+            args+=("-H" "Authorization: token $token")
             add_mask "$token"
         fi
     fi

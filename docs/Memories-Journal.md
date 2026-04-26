@@ -2448,3 +2448,15 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 - Copied and pushed to public `Kabuki94/MiOS-bootstrap` main (6b2974c).
 - The live one-liners (`curl ... | bash` and `irm ... | iex`) now serve the fixed behavior.
 - Next pending: merge `f44-ga-rpmfusion-stable` on 2026-04-28; resolve D5 sysext placeholder question.
+
+---
+[2026-04-26T00:00Z] [AI: Claude Code]
+**bootstrap: mios-build.env generation and reload**
+- Both bootstrap scripts now write a config file after user confirms "Proceed?":
+  - Linux: `~/.config/mios/mios-build.env` (chmod 600, respects XDG_CONFIG_HOME)
+  - Windows: `%APPDATA%\MiOS\mios-build.env` (user-only ACL via SetAccessRuleProtection)
+- Stored vars: GHCR_TOKEN, MIOS_USER, MIOS_PASSWORD, MIOS_HOSTNAME; optionally MIOS_GHCR_USER and MIOS_GHCR_PUSH_TOKEN if non-empty
+- On next run: scripts detect the file, offer "[Y/n] Load previous build variables?", auto-populate env vars and skip all prompts that have values
+- Bash uses `printf '%q'` for shell-safe quoting of all values; PS1 writes plain KEY=VALUE (no newlines in credentials assumption)
+- Also added `/dev/tty` redirect to all bash `read` calls so interactive prompts work correctly under `curl | bash`
+- Committed to private Kabuki94/MiOS (9bdae88) and public Kabuki94/MiOS-bootstrap (206e88c)
