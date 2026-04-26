@@ -26,7 +26,7 @@
       ".windsurfrules"
     ]
   },
-  "last_rag_sync": "2026-04-26T21:14:02.687887",
+  "last_rag_sync": "2026-04-26T21:16:14.761215",
   "version": "2.1.0"
 }
 ```
@@ -85,8 +85,9 @@ MiOS is optimized for OpenAI API standards and industry-standard AI scrapers:
 
 1. **`llms.txt` Standard:** High-density context ingestion point at root and `.well-known/`.
 2. **Function Calling Schemas:** All automated tools (`tools/*.py`) and build scripts (`scripts/*.sh`) are documented with clear input/output types compatible with JSON-based function calling.
-3. **API Proxies:** Integrated with proxies (e.g., LiteLLM) to bridge Google ADK agents to OpenAI's `/v1/chat/completions` endpoint.
-4. **Seed Context:** New agents initialized in this workspace should immediately ingest `AI.md` and `artifacts/repo-rag-snapshot.json.gz` to establish full structural awareness.
+3. **API Proxies:** Native bridge to OpenAI `/v1/chat/completions` protocol via `tools/openai-proxy.py` (Linux) or `GCE-Research/app/openai_proxy.py` (ADK sub-project).
+4. **Seed Context:** New agents initialized in this workspace should immediately ingest `AI.md` and the latest RAG snapshot at `.claude/shared-tmp/latest-context.json.gz` to establish full structural awareness.
+
 
 ## Build & Test
 
@@ -284,7 +285,7 @@ To ensure all Markdown files are machine-parsable and referencable, they must in
       "path/to/impacted/file"
     ]
   },
-  "last_rag_sync": "2026-04-26T21:14:02.687887",
+  "last_rag_sync": "2026-04-26T21:16:14.761215",
   "version": "2.1.0"
 }
 ```

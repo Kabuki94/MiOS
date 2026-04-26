@@ -8,6 +8,9 @@ dev:
 dev-backend:
 	uv run adk api_server app --allow_origins="*"
 
+dev-openai:
+	make dev-backend & uv run python app/openai_proxy.py
+
 dev-frontend:
 	npm --prefix frontend run dev
 

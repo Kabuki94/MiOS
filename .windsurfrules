@@ -5,11 +5,29 @@
 {
   "summary": "Single source of truth for AI agent architecture, laws, and conventions in MiOS. Indexes directory maps, instruction patterns, and research presets. Native OpenAI API protocol compatible.",
   "logic_type": "documentation",
-  "tags": ["MiOS", "AI", "Agent Hub", "Index", "OpenAI"],
+  "tags": [
+    "MiOS",
+    "AI",
+    "Agent Hub",
+    "Index",
+    "OpenAI"
+  ],
   "relations": {
-    "depends_on": [".env.mios", "ai-context.json"],
-    "impacts": ["GEMINI.md", "CLAUDE.md", "AGENTS.md", ".cursorrules", ".clinerules", ".windsurfrules"]
-  }
+    "depends_on": [
+      ".env.mios",
+      "ai-context.json"
+    ],
+    "impacts": [
+      "GEMINI.md",
+      "CLAUDE.md",
+      "AGENTS.md",
+      ".cursorrules",
+      ".clinerules",
+      ".windsurfrules"
+    ]
+  },
+  "last_rag_sync": "2026-04-26T21:14:02.687887",
+  "version": "2.1.0"
 }
 ```
 
@@ -67,8 +85,9 @@ MiOS is optimized for OpenAI API standards and industry-standard AI scrapers:
 
 1. **`llms.txt` Standard:** High-density context ingestion point at root and `.well-known/`.
 2. **Function Calling Schemas:** All automated tools (`tools/*.py`) and build scripts (`scripts/*.sh`) are documented with clear input/output types compatible with JSON-based function calling.
-3. **API Proxies:** Integrated with proxies (e.g., LiteLLM) to bridge Google ADK agents to OpenAI's `/v1/chat/completions` endpoint.
-4. **Seed Context:** New agents initialized in this workspace should immediately ingest `AI.md` and `artifacts/repo-rag-snapshot.json.gz` to establish full structural awareness.
+3. **API Proxies:** Native bridge to OpenAI `/v1/chat/completions` protocol via `tools/openai-proxy.py` (Linux) or `GCE-Research/app/openai_proxy.py` (ADK sub-project).
+4. **Seed Context:** New agents initialized in this workspace should immediately ingest `AI.md` and the latest RAG snapshot at `.claude/shared-tmp/latest-context.json.gz` to establish full structural awareness.
+
 
 ## Build & Test
 
@@ -254,11 +273,20 @@ To ensure all Markdown files are machine-parsable and referencable, they must in
 {
   "summary": "Brief description of the file's purpose.",
   "logic_type": "documentation | automation | configuration",
-  "tags": ["tag1", "tag2"],
+  "tags": [
+    "tag1",
+    "tag2"
+  ],
   "relations": {
-    "depends_on": ["path/to/dependency"],
-    "impacts": ["path/to/impacted/file"]
-  }
+    "depends_on": [
+      "path/to/dependency"
+    ],
+    "impacts": [
+      "path/to/impacted/file"
+    ]
+  },
+  "last_rag_sync": "2026-04-26T21:14:02.687887",
+  "version": "2.1.0"
 }
 ```
 <!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->

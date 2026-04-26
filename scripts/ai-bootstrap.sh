@@ -56,3 +56,16 @@ else
 fi
 
 echo "✅ Workspace initialization complete."
+
+# 6. Seed Artifacts for Agents
+echo "🌱 Seeding latest MiOS Artifacts for initialized agents..."
+if [[ -f "artifacts/repo-rag-snapshot.json.gz" ]]; then
+    # Shared scratchpad for cross-agent IPC
+    mkdir -p .claude/shared-tmp/
+    cp artifacts/repo-rag-snapshot.json.gz .claude/shared-tmp/latest-context.json.gz
+    # Sub-project local context
+    cp artifacts/repo-rag-snapshot.json.gz GCE-Research/latest-context.json.gz
+    echo "✅ Context seeded to .claude/shared-tmp/ and GCE-Research/"
+else
+    echo "⚠️ Warning: artifacts/repo-rag-snapshot.json.gz not found. Skip seeding."
+fi
