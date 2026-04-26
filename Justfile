@@ -2,14 +2,17 @@
 # Requires: podman, just
 # Usage: just build | just iso | just all
 
-IMAGE_NAME := "ghcr.io/kabuki94/mios"
+IMAGE_NAME := env_var_or_default("MIOS_IMAGE_NAME", "ghcr.io/kabuki94/mios")
 VERSION := `cat VERSION 2>/dev/null || echo "v2.1.0"`
 LOCAL := "localhost/mios:latest"
-BIB := "quay.io/centos-bootc/bootc-image-builder:latest"
+BIB := env_var_or_default("MIOS_BIB_IMAGE", "quay.io/centos-bootc/bootc-image-builder:latest")
 
 # Build OCI image locally
 build: artifact
-    podman build --no-cache -t {{LOCAL}} .
+    podman build --no-cache \
+        --build-arg BASE_IMAGE={{env_var_or_default("MIOS_BASE_IMAGE", "ghcr.io/ublue-os/ucore-hci:stable-nvidia")}} \
+        --build-arg MIOS_FLATPAKS={{env_var_or_default("MIOS_FLATPAKS", "")}} \
+        -t {{LOCAL}} .
     @echo "✓ Built: {{LOCAL}}"
 
 # Refresh all AI manifests, UKB, and Wiki documentation

@@ -16,14 +16,14 @@ reqpart --add-boot
 part / --grow --fstype ext4
 
 # ostreecontainer directive pulls the OCI image and deploys it
-ostreecontainer --url ghcr.io/kabuki94/mios:latest --no-signature-verification
+ostreecontainer --url INJ_IMAGE --no-signature-verification
 
 # Create default user (injected at ISO generation time by mios-build-local.ps1)
 user --name=INJ_U --groups=wheel --iscrypted --password=INJ_HASH
 
 %post --erroronfail --log=/root/anaconda-post.log
 # Ensure update origin points to GHCR (not localhost from BIB build)
-bootc switch --mutate-in-place --transport registry ghcr.io/kabuki94/mios:latest 2>/dev/null || true
+bootc switch --mutate-in-place --transport registry INJ_IMAGE 2>/dev/null || true
 
 # Set graphical target
 systemctl set-default graphical.target

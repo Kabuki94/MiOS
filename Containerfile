@@ -4,7 +4,8 @@
 # ============================================================================
 # One image. Every role. Every surface. Every GPU vendor.
 #
-# Base:     ghcr.io/ublue-os/ucore-hci:stable-nvidia
+# Base:     Controlled by MIOS_BASE_IMAGE in .env.mios
+#           Default: ghcr.io/ublue-os/ucore-hci:stable-nvidia
 #           Already ships signed NVIDIA kmods (kmod-nvidia-open) matched to
 #           the ucore-hci kernel.
 # AMD:      Mesa + ROCm in-image (PACKAGES.md packages-gpu-amd-compute)
@@ -108,9 +109,15 @@ CMD ["/sbin/init"]
 ARG MIOS_USER=mios
 ARG MIOS_PASSWORD_HASH=
 ARG MIOS_HOSTNAME=mios
+ARG MIOS_FLATPAKS=
 
 # Build context mounted read-only
 COPY --from=ctx /ctx /ctx
+
+# Inject flatpaks into the install list if provided
+RUN if [[ -n "${MIOS_FLATPAKS}" ]]; then \
+        echo "${MIOS_FLATPAKS}" | tr ',' '\n' > /ctx/system_files/usr/share/mios/flatpak-list; \
+    fi
 
 # Pre-pull images for Logically Bound Images (LBI)
 # This ensures bootc-image-builder can resolve them during disk assembly.

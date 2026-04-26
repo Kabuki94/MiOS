@@ -38,13 +38,26 @@ Set-StrictMode -Version Latest
 # ══════════════════════════════════════════════════════════════════════════════
 #  CONFIGURATION
 # ══════════════════════════════════════════════════════════════════════════════
+# Source .env.mios if present
+if (Test-Path ".env.mios") {
+    Write-Phase "0.1" "Loading Unified Environment"
+    Get-Content ".env.mios" | ForEach-Object {
+        if ($_ -match '^([^#\s][^=]+)="?([^"]*)"?$') {
+            $name = $matches[1].Trim()
+            $val = $matches[2].Trim()
+            [Environment]::SetEnvironmentVariable($name, $val)
+        }
+    }
+}
+
 $v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "v2.1.0" }
-$ImageName      = "mios"
+$ImageName      = if ($env:MIOS_IMAGE_NAME) { ($env:MIOS_IMAGE_NAME -split '/')[-1] -replace ':.*$','' } else { "mios" }
 $ImageTag       = "latest"
-$DefUser        = if ($env:MIOS_USER)     { $env:MIOS_USER }     else { "mios" }
-$DefPass        = if ($env:MIOS_PASSWORD) { $env:MIOS_PASSWORD } else { "mios" }
+$DefUser        = if ($env:MIOS_DEFAULT_USER) { $env:MIOS_DEFAULT_USER } else { "mios" }
+$DefPass        = if ($env:MIOS_DEFAULT_USER_PASSWORD) { $env:MIOS_DEFAULT_USER_PASSWORD } else { "mios" }
 $DefHostname    = if ($env:MIOS_HOSTNAME) { $env:MIOS_HOSTNAME } else { "mios" }
-$DefRegistry    = "ghcr.io/kabuki94/mios"
+$DefRegistry    = if ($env:MIOS_IMAGE_NAME) { $env:MIOS_IMAGE_NAME -replace ':.*$','' } else { "ghcr.io/kabuki94/mios" }
+$BibImage       = if ($env:MIOS_BIB_IMAGE) { $env:MIOS_BIB_IMAGE } else { "quay.io/centos-bootc/bootc-image-builder:latest" }
 $BuilderMachine = "mios-builder"
 $LocalImage     = "localhost/${ImageName}:${ImageTag}"
 $MiosDocsDir      = Join-Path ([Environment]::GetFolderPath("MyDocuments")) "MiOS"
@@ -434,6 +447,7 @@ function Get-BIBArgs {
     if ($Type -eq "anaconda-iso" -and $hasIsoToml) {
         $isoContent = Get-Content $isoToml -Raw
         $isoContent = $isoContent.Replace('INJ_U', $U)
+        $isoContent = $isoContent.Replace('INJ_IMAGE', $GhcrImage)
         if (-not $script:passHash) { $script:passHash = Get-SHA512Hash -SecretText $P }
         if ($script:passHash) {
             $isoContent = $isoContent.Replace('INJ_HASH', $script:passHash)
