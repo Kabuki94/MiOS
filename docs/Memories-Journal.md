@@ -2403,3 +2403,25 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   4. **Documentation Sync:** Updated `README.md` and `docs/Knowledge-WINDOWS-BUILD-WORKFLOW.md` to use the new `Kabuki94/mios-bootstrap` URLs.
 * **RATIONALE:** Direct `raw.githubusercontent.com` access to private files is impossible without a token. By moving the token-collection "bridge" to a public repository, we restore the one-liner convenience while maintaining security (tokens are never stored, only passed in memory/headers).
 * **RESULT:** Cross-platform authenticated installation flow is restored. Ready for public bootstrap repository creation.
+
+---
+
+### [2026-04-26 00:30:00 UTC] [AI: Claude Code]
+* **TYPE:** ACTION — Full Audit + Phase 1 Defect Fixes
+* **AUDIT FINDINGS (2b19fc5 baseline):**
+  - NEW: `bootstrap/bootstrap.sh + bootstrap.ps1` — two-repo PAT bridge flow (PUBLIC `mios-bootstrap` repo not yet created on GitHub — user action required)
+  - NEW: `tools/mios-sysext-pack.sh` + Containerfile sysext step — overlayfs fix via monolithic SquashFS (currently a no-op; `system_files/usr/lib/extensions/` not populated)
+  - NEW: 5 new Justfile targets: sysext, pxe-on/off, install-to-root, ukify
+  - NEW: QEMU boot-validation CI job + SBOM (SPDX + CycloneDX) in build.yml
+  - `deep-search-6418`: Google ADK research agent (references GCP — policy exception or cleanup needed)
+  - `f44-ga-rpmfusion-stable` branch staged and ready for April 28
+* **DEFECTS FOUND AND FIXED (commit f8b83f2):**
+  1. `.env`: `AI_COSIGN_PIN=v2.1.0` → `v2.6.3` (mass-rebrand corruption)
+  2. `install.sh:38`: banner "MiOS — MiOS" typo fixed
+  3. `install.sh:104`: LUKS passphrase CLI-arg exposure → temp file + shred pattern
+  4. `docs/PACKAGES.md`: duplicate `dracut-live` removed from virt section
+  5. `Containerfile`: redundant `dnf install dracut-live squashfs-tools` layer removed
+* **OPEN ITEMS DEFERRED TO USER:**
+  - D5: sysext step no-op — needs clarification on whether GPU sysext source dirs will be populated or step should be removed
+  - I1: Create `Kabuki94/mios-bootstrap` PUBLIC GitHub repo and commit the two bootstrap scripts
+  - April 28: Merge `f44-ga-rpmfusion-stable`, trigger build
