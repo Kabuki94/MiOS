@@ -30,8 +30,8 @@ if os.getenv("GOOGLE_API_KEY"):
 else:
     # Vertex AI mode: Use GCP credentials (DEFAULT)
     os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "True"
-    os.environ["GOOGLE_CLOUD_PROJECT"] = "cloudws-os"
-    os.environ.setdefault("GOOGLE_CLOUD_LOCATION", "us-central1")
+    os.environ["GOOGLE_CLOUD_PROJECT"] = "976341856950"
+    os.environ["GOOGLE_CLOUD_LOCATION"] = "us-east1"
 
 
 @dataclass
@@ -44,8 +44,8 @@ class ResearchConfiguration:
         max_search_iterations (int): Maximum search iterations allowed.
     """
 
-    critic_model: str = "gemini-1.5-flash-002"
-    worker_model: str = "gemini-1.5-flash-002"
+    critic_model: str = "gemini-1.5-flash"
+    worker_model: str = "gemini-1.5-flash"
     max_search_iterations: int = 5
 
 

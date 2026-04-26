@@ -10,12 +10,12 @@ def main():
             "service_account": "vertex-express@cloudws-os.iam.gserviceaccount.com"
         }
 
-        print("🚀 Launching Vertex AI Prompt Optimization job...")
+        print(f"🚀 Launching Vertex AI Prompt Optimization job with config: {config}")
         job = client.prompts.launch_optimization_job(
             method=types.PromptOptimizerMethod.VAPO,
             config=config
         )
-
+        print(f"⏳ Job requested. Waiting for initial state...")
         print(f"✅ Job launched successfully!")
         print(f"Job Name: {job.name}")
         print(f"State: {job.state}")

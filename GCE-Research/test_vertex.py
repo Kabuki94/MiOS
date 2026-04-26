@@ -8,7 +8,7 @@ def test_models():
     print(f"Default Project: {project_id}")
     
     # Force project for this test
-    project_id = "cloudws-os"
+    project_id = "mios-kabu-ki-io"
     location = "us-east1"
     
     vertexai.init(project=project_id, location=location)
