@@ -1,0 +1,7 @@
+# MiOS — Waydroid / GNOME 50 compatibility requirements
+# Ensures NVIDIA drivers are initialized for Wayland and Waydroid gralloc compatibility.
+kargs = [
+    "nvidia-drm.modeset=1",
+    "nvidia-drm.fbdev=1"
+]
+match-architectures = ["x86_64"]

@@ -60,9 +60,11 @@ if ! file /usr/bin/ollama | grep -q "ELF"; then
 fi
 
 # Start ollama serve in background
-# We need to set OLLAMA_MODELS to the target path
-export OLLAMA_MODELS="/var/lib/ollama"
-mkdir -p "$OLLAMA_MODELS"
+# We bake models into /usr/share to ensure they are captured by bootc/composefs
+# and then link them into /var/lib/ollama at runtime.
+BAKE_PATH="/usr/share/ollama/models"
+mkdir -p "$BAKE_PATH"
+export OLLAMA_MODELS="$BAKE_PATH"
 
 /usr/bin/ollama serve &
 OLLAMA_PID=$!

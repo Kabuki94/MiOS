@@ -1,0 +1,9 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'us-central1-docker.pkg.dev/cloudws-os/mios-repo/mios:v2.1.0', '-f', 'Containerfile', '.']
+  env:
+  - 'DOCKER_BUILDKIT=1'
+images:
+- 'us-central1-docker.pkg.dev/cloudws-os/mios-repo/mios:v2.1.0'
+options:
+  machineType: 'E2_HIGHCPU_32'

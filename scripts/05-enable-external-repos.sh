@@ -147,6 +147,14 @@ else
     log "ublue-os/packages COPR already present — skipping"
 fi
 
+# ── Waydroid (Aleasto) ───────────────────────────────────────────────────
+if ! [ -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:aleasto:waydroid.repo ]; then
+    log "enabling aleasto/waydroid COPR (GNOME 50 fix)"
+    $DNF_BIN "${DNF_SETOPT[@]}" copr enable -y aleasto/waydroid
+else
+    log "aleasto/waydroid COPR already present — skipping"
+fi
+
 log "external repos enabled; refreshing metadata"
 $DNF_BIN "${DNF_SETOPT[@]}" makecache -y
 

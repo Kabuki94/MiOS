@@ -7,10 +7,15 @@ VERSION := `cat VERSION 2>/dev/null || echo "v2.1.0"`
 LOCAL := "localhost/mios:latest"
 BIB := "quay.io/centos-bootc/bootc-image-builder:latest"
 
-# Build OCI image
+# Build OCI image locally
 build:
     podman build --no-cache -t {{LOCAL}} .
     @echo "✓ Built: {{LOCAL}}"
+
+# Build OCI image on Google Cloud (using GCS context)
+cloud-build:
+    gcloud builds submit --project cloudws-os --gcs-source-staging-dir gs://mios-vertex-autogen-cloudws-os/build-context --tag us-central1-docker.pkg.dev/cloudws-os/mios-repo/mios:{{VERSION}} .
+    @echo "✓ Cloud Build complete: us-central1-docker.pkg.dev/cloudws-os/mios-repo/mios:{{VERSION}}"
 
 # Rechunk for optimal Day-2 updates (5-10x smaller deltas)
 rechunk: build
