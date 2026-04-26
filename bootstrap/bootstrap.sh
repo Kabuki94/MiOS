@@ -1,7 +1,7 @@
 #!/bin/bash
 # MiOS Public Bootstrap — Linux / WSL2
-# Repository: Kabuki94/mios-bootstrap
-# Usage: curl -fsSL https://raw.githubusercontent.com/Kabuki94/mios-bootstrap/main/bootstrap.sh | bash
+# Repository: Kabuki94/MiOS-bootstrap
+# Usage: curl -fsSL https://raw.githubusercontent.com/Kabuki94/MiOS-bootstrap/main/bootstrap.sh | bash
 set -euo pipefail
 
 PRIVATE_INSTALLER="https://raw.githubusercontent.com/Kabuki94/mios/main/install.sh"

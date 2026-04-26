@@ -1,6 +1,6 @@
 # MiOS Public Bootstrap — Windows (PowerShell 5.1+)
-# Repository: Kabuki94/mios-bootstrap
-# Usage: irm https://raw.githubusercontent.com/Kabuki94/mios-bootstrap/main/bootstrap.ps1 | iex
+# Repository: Kabuki94/MiOS-bootstrap
+# Usage: irm https://raw.githubusercontent.com/Kabuki94/MiOS-bootstrap/main/bootstrap.ps1 | iex
 
 $ErrorActionPreference = "Stop"
 $PrivateInstaller = "https://raw.githubusercontent.com/Kabuki94/mios/main/install.ps1"

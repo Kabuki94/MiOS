@@ -9,7 +9,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
         $args += " -File `"$($MyInvocation.MyCommand.Path)`""
     } else {
         # Handle irm | iex scenario by relaunching the bootstrap command
-        $command = "irm https://raw.githubusercontent.com/Kabuki94/mios-bootstrap/main/bootstrap.ps1 | iex"
+        $command = "irm https://raw.githubusercontent.com/Kabuki94/MiOS-bootstrap/main/bootstrap.ps1 | iex"
         $args += " -Command `"$command`""
     }
 
