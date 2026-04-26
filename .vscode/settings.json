@@ -504,6 +504,8 @@
     "xwrapper"
   ],
 
+  "editor.fontFamily": "'Geist Mono', monospace",
+  "editor.fontSize": 10,
   "editor.formatOnSave": false,
   "editor.insertSpaces": true,
   "editor.tabSize": 4,
