@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>MiOS Omni-Agent To-Do</title>
   <style>
     /* MiOS Dark Theme (Libadwaita / GNOME inspired) */
@@ -230,7 +229,7 @@
     <div class="subtitle">Unified task tracking for Users and AI Agents</div>
     
     <form id="todo-form">
-      <input type="text" id="todo-input" placeholder="Enter a new task..." autocomplete="off" required />
+      <input type="text" id="todo-input" placeholder="Enter a new task..." autocomplete="off" required="">
       <button type="submit">Add</button>
     </form>
     
@@ -238,34 +237,37 @@
     <ul id="todo-list">
       <!-- TASK_START -->
       <li data-status="done">
-        <label><input type="checkbox" checked /> <span class="task-text">Migrate to USR-OVER-ETC</span></label>
+        <label><input type="checkbox" checked=""> <span class="task-text">Migrate to USR-OVER-ETC</span></label>
         <button class="delete">✖</button>
       </li>
       <li data-status="pending">
-        <label><input type="checkbox" /> <span class="task-text">Prepare for Fedora 44 GA (April 28)</span></label>
+        <label><input type="checkbox"> <span class="task-text">Prepare for Fedora 44 GA (April 28)</span></label>
         <button class="delete">✖</button>
       </li>
       <li data-status="done">
-        <label><input type="checkbox" checked/> <span class="task-text">bootc v1.14.0 feature adoption review (disk space checks & export features)</span></label>
+        <label><input type="checkbox" checked=""> <span class="task-text">bootc v1.14.0 feature adoption review (disk space checks &amp; export features)</span></label>
         <button class="delete">✖</button>
       </li>
       <li data-status="pending">
-        <label><input type="checkbox" /> <span class="task-text">Post-rebase GNOME 50.1 / Mutter VRR check (F44)</span></label>
+        <label><input type="checkbox"> <span class="task-text">Post-rebase GNOME 50.1 / Mutter VRR check (F44)</span></label>
         <button class="delete">✖</button>
       </li>
       <li data-status="pending">
-        <label><input type="checkbox" /> <span class="task-text">Cockpit weekly cadence check (&gt;= 362 regressions)</span></label>
+        <label><input type="checkbox"> <span class="task-text">Cockpit weekly cadence check (&gt;= 362 regressions)</span></label>
         <button class="delete">✖</button>
       </li>
       <li data-status="pending">
-        <label><input type="checkbox" /> <span class="task-text">ublue-os/cayo stability check (MiOS-3 base migration)</span></label>
+        <label><input type="checkbox"> <span class="task-text">ublue-os/cayo stability check (MiOS-3 base migration)</span></label>
         <button class="delete">✖</button>
       </li>
       <li data-status="pending">
-        <label><input type="checkbox" /> <span class="task-text">Monitor Waydroid #1883 for upstream progress</span></label>
+        <label><input type="checkbox"> <span class="task-text">Monitor Waydroid #1883 for upstream progress</span></label>
         <button class="delete">✖</button>
       </li>
-      <!-- TASK_END -->
+      <li data-status="pending">
+        <label><input type="checkbox"> <span class="task-text">security pass and checks.</span></label>
+        <button class="delete">✖</button>
+        </li><!-- TASK_END -->
     </ul>
 
     <div class="agent-context">
@@ -371,5 +373,5 @@
       }
     });
   </script>
-</body>
-</html>
+
+</body></html>
