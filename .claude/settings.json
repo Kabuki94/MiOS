@@ -67,7 +67,7 @@
       "Edit(docs/PACKAGES.md)",
       "Edit(VERSION)",
       "Edit(CHANGELOG.md)",
-      "Edit(.ai-context/knowledge-base.md)",
+      "Edit(docs/memory/**)",
       "Edit(.github/workflows/build-sign.yml)",
       "Edit(.github/workflows/build-artifacts.yml)",
       "Write(/etc/**)",
@@ -99,8 +99,8 @@
   },
   "_comment": "Claude Code project settings for MiOS. This file is checked into the repo so every dev who opens the project inherits the same tool permissions. User-specific overrides go in .claude/settings.local.json (which is gitignored).",
   "_notes": [
-    "Permissions follow the CLAUDE.md §4 deliverable contract: Claude Code may freely inspect the repo but must ask before mutating anything that lands in a build artifact or a signed image.",
-    "The deny list covers the files CLAUDE.md §8 says must not be touched without explicit human review: VERSION, CHANGELOG.md, docs/PACKAGES.md, the historical audit log, and signing/artifact workflows.",
+    "Permissions follow the AI.md §4 deliverable contract: Claude Code may freely inspect the repo but must ask before mutating anything that lands in a build artifact or a signed image.",
+    "The deny list covers the files AI.md says must not be touched without explicit human review: VERSION, CHANGELOG.md, docs/PACKAGES.md, the historical audit log, and signing/artifact workflows.",
     "Slash commands live in .claude/commands/. Sub-agents live in .claude/agents/. Both are checked in so the whole team (currently: Kabu) gets the same workflow."
   ]
 }

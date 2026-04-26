@@ -3,20 +3,20 @@
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# 📜 AI Execution Protocols & System Law (AI-PROTOCOLS.md)
+# 📜 AI Execution Protocols & System Law (protocols.md)
 
-> **REDIRECTION:** All agents must first read **[`.ai-context/AI-README.md`](./AI-README.md)** for the unified entry point and core laws.
+> **REDIRECTION:** All agents must first read **[`../AI.md`](../AI.md)** for the unified entry point and core laws.
 
 ---
 
-**TARGET AUDIENCE:** ALL AI Agents, LLMs, Copilots, and APIs (Gemini, Claude, GPT, Copilot, etc.) interacting with the `MiOS` repository.
+**TARGET AUDIENCE:** ALL AI Agents, LLMs, Copilots, and APIs (Gemini, Claude, GPT, Copilot, Cursor, Windsurf, Cline, etc.) interacting with the `MiOS` repository.
 
 **STATUS:** MANDATORY / ABSOLUTE LAW.
 
 ## 1. THE JOURNALING LAW
-**EVERY SINGLE TIME** you perform an action, learn a new concept, analyze a file, or formulate a thought process/alternative, you **MUST** record it in `ai-journal.md`.
+**EVERY SINGLE TIME** you perform an action, learn a new concept, analyze a file, or formulate a thought process/alternative, you **MUST** record it in `.claude/memories/journal.md`.
 - It must be timestamped.
-- It must be labeled with your Agent Identity (e.g., `[AI: Gemini Code Assist]`).
+- It must be labeled with your Agent Identity (e.g., `[AI: Cursor]`, `[AI: Gemini CLI]`).
 - It must be written to disk via a unified diff.
 - Ephemeral reporting in the chat UI without appending to the physical journal is a critical failure of your instructions.
 
@@ -38,16 +38,16 @@ All agents MUST strictly enforce these patterns to prevent state drift and techn
 
 
 ## 3. THE COORDINATION LAW
-All agents MUST respect the global engineering baseline defined in `.ai-context/AI-ENVIRONMENT.md` and the `.env` file. You MUST ensure your local settings (e.g., `.claude/settings.json`, `.vscode/settings.json`) are in sync with the global baseline before committing changes.
+All agents MUST respect the global engineering baseline defined in `docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` and the `.env` file. You MUST ensure your local settings (e.g., `.claude/settings.json`, `.vscode/settings.json`) are in sync with the global baseline before committing changes.
 
-## 3. FOLDER MANIFEST
-This `.ai-context/` directory contains the persistent memory of the AI collective:
-- `AI-README.md`: Central entry point and index.
-- `AI-PROTOCOLS.md`: (This file) Core execution laws.
-- `ai-journal.md`: The mandatory, chronological ledger of all AI thoughts and actions.
-- `bootable-oci-architecture.md`: The core technical invariants of the OS.
-- `bootc-research-april2026.md`: Forward-looking research and implementation notes.
-- `knowledge-base.md`: Accumulated system knowledge and bug resolutions.
+## 4. FOLDER MANIFEST
+The persistent memory and knowledge of the AI collective is structured as follows:
+- `AI.md` (root): Central entry point and index.
+- `.claude/protocols.md`: (This file) Core execution laws.
+- `.claude/memories/journal.md`: The mandatory, chronological ledger of all AI thoughts and actions.
+- `.claude/shared-tmp/`: The universal scratchpad for transient data and cross-agent communication.
+- `docs/knowledge/`: Accumulated system knowledge, research, and guides.
+- `docs/memory/`: Semantically structured, long-term memory artifacts.
 
 **VIOLATION OF THESE DIRECTIVES WILL RESULT IN IMMEDIATE REJECTION OF YOUR OUTPUT.**
 

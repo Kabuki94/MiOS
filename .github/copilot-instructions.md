@@ -5,19 +5,19 @@
 > (opt-in via `github.copilot.chat.codeGeneration.useInstructionFiles`
 > in `.vscode/settings.json`).
 >
-> The authoritative per-repo guide is [`CLAUDE.md`](../CLAUDE.md).
-> This file is a condensed reminder for Copilot specifically, because
-> Copilot has produced the most build-breaking suggestions on this
-> repo historically — particularly on `kargs.d/*.toml` files.
+The authoritative per-repo guide is [`AI.md`](../AI.md).
+This file is a condensed reminder for Copilot specifically, because
+Copilot has produced the most build-breaking suggestions on this
+repo historically — particularly on `kargs.d/*.toml` files.
 
 ---
 
 ## 🤖 AI AGENT DIRECTIVES
 
-**ALL AGENTS (Claude, Gemini, etc.) MUST READ THE FOLLOWING BEFORE EACH TURN:**
+**ALL AGENTS (Claude, Gemini, Copilot, Cursor, Windsurf, Cline, etc.) MUST READ THE FOLLOWING BEFORE EACH TURN:**
 
-1.  **[`.ai-context/AI-README.md`](../.ai-context/AI-README.md)** — Unified entry point and core AI laws.
-2.  **[`.ai-context/ai-journal.md`](../.ai-context/ai-journal.md)** — Mandatory chronological ledger of all AI actions.
+1.  **[`AI.md`](../AI.md)** — Unified entry point and core AI laws.
+2.  **[`journal.md`](../.claude/memories/journal.md)** — Mandatory chronological ledger of all AI actions.
 
 **Violation of the Journaling Law is a critical failure.**
 

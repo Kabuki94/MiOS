@@ -1,1 +1,1 @@
-../../docs/Memories-Upstream-Research-Plan.md
+../../docs/memory/2026-04-26-Artifact-MEM-002-Research-Plan.md
