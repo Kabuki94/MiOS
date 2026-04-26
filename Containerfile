@@ -153,7 +153,7 @@ RUN mkdir -p /usr/lib/mios/logs \
 # MANDATORY CLEANUP for bootc container lint
 # Purge all logs and temporary files that violate /var immutability rules.
 # (Main logs are preserved in /usr/lib/mios/logs)
-RUN rm -rf /var/log/dnf5.log* /var/log/hawkey.log /var/cache/dnf /var/cache/libdnf5 /tmp/*
+RUN rm -rf /var/log/* /var/tmp/* /var/cache/dnf/* /var/cache/libdnf5/* /tmp/* /run/*
 
 # Install bootc bash completions so `bootc <TAB>` works on deployed systems
 RUN bootc completion bash > /etc/bash_completion.d/bootc
