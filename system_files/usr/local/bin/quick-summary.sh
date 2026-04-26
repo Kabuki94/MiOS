@@ -34,7 +34,7 @@ main() {
     echo -e "${BOLD}${CYAN}"
     cat << 'EOF'
 ╔══════════════════════════════════════════════════════════╗
-║           QUICK SYSTEM SUMMARY - CLOUD-WS                ║
+║           QUICK SYSTEM SUMMARY - MiOS-Build                ║
 ╚══════════════════════════════════════════════════════════╝
 EOF
     echo -e "${NC}\n"
@@ -178,7 +178,7 @@ EOF
     done
     
     # Recommendations
-    print_header "CLOUD-WS READINESS"
+    print_header "MiOS-Build READINESS"
     
     local ready=true
     local warnings=0

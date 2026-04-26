@@ -1881,7 +1881,7 @@ generate_install_report() {
     # Generate report file
     cat > "$REPORT_FILE" << REPORT
 ================================================================================
-CLOUD-WS INSTALLATION REPORT
+MiOS-Build INSTALLATION REPORT
 ================================================================================
 Date: $(date)
 Session: $SESSION_ID
@@ -3250,7 +3250,7 @@ generate_diagnostic_report() {
     
     {
         echo "================================================================================"
-        echo " CLOUD-WS DIAGNOSTIC REPORT"
+        echo " MiOS-Build DIAGNOSTIC REPORT"
         echo " Generated: $(date)"
         echo " Session: $SESSION_ID"
         echo "================================================================================"
@@ -4166,7 +4166,7 @@ run_full_profile() {
     
     {
         echo "================================================================================"
-        echo " CLOUD-WS SYSTEM PROFILE"
+        echo " MiOS-Build SYSTEM PROFILE"
         echo " Generated: $(date)"
         echo "================================================================================"
         echo ""

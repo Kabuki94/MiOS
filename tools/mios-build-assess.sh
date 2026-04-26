@@ -24,7 +24,7 @@ print_banner() {
     echo -e "${BOLD}${CYAN}"
     cat << 'EOF'
 ╔═══════════════════════════════════════════════════════════════╗
-║         CLOUD-WS HARDWARE ASSESSMENT TOOL                     ║
+║         MiOS-Build HARDWARE ASSESSMENT TOOL                     ║
 ║         Complete System Analysis & Compatibility Check        ║
 ╚═══════════════════════════════════════════════════════════════╝
 EOF
@@ -150,7 +150,7 @@ generate_compatibility_report() {
     
     {
         echo "╔═══════════════════════════════════════════════════════════════╗"
-        echo "║         CLOUD-WS COMPATIBILITY REPORT                         ║"
+        echo "║         MiOS-Build COMPATIBILITY REPORT                         ║"
         echo "╚═══════════════════════════════════════════════════════════════╝"
         echo ""
         echo "Generated: $(date)"
