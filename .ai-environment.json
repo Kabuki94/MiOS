@@ -51,7 +51,7 @@
   ],
   "initialization_commands": [
     "python3 tools/generate-ai-manifest.py",
-    "cd deep-search-6418 && make install"
+    "cd GCE-Research && make install"
   ],
-  "last_refresh": "2026-04-26T14:36:21.232043"
+  "last_refresh": "2026-04-26T14:49:16.512132"
 }

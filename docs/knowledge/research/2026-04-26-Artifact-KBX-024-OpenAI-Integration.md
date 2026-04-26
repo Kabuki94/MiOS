@@ -20,7 +20,7 @@ To enable OpenAI and other AI systems to natively understand the project archite
 
 ## 🔌 Standard Agent Deployment (ADK Architecture)
 
-While MiOS itself is an Operating System, the repository hosts agent implementations (e.g., `deep-search-6418`) built on the **Google Agent Starter Pack (ADK)**. These can be deployed to industry standards using the following pattern:
+While MiOS itself is an Operating System, the repository hosts agent implementations (e.g., `GCE-Research`) built on the **Google Agent Starter Pack (ADK)**. These can be deployed to industry standards using the following pattern:
 
 ### 1. OpenAI-Compatible API Layer
 Standard deployments for self-hosted agents utilize an OpenAI-compatible translation layer (e.g., LiteLLM or vLLM). 

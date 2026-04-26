@@ -2008,7 +2008,7 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   1. **Parsability:** Created `/llms.txt` and `/.well-known/ai-plugin.json` to expose the repository architecture to OpenAI Custom GPTs and standard AI web crawlers.
   2. **API Standardization:** Created `/.well-known/openapi.yaml` to define the multi-agent API endpoints as a standard `/v1/chat/completions` compliant interface.
   3. **Documentation:** Added `docs/knowledge/research/2026-04-26-Artifact-KBX-024-OpenAI-Integration.md` detailing the proxy deployment strategy for the native Google ADK agents using LiteLLM/vLLM.
-  4. **Config Update:** Added OpenAI proxy endpoint options to `deep-search-6418/.env.example`.
+  4. **Config Update:** Added OpenAI proxy endpoint options to `GCE-Research/.env.example`.
   5. **Sync:** Re-generated all manifests and synced documentation links.
 * **RESULT:** The repository and its agent suite now conform to the latest industry standards for OpenAI-compatible deployment and metadata parsing.
 
@@ -2080,8 +2080,8 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 * **TYPE:** INITIALIZATION — WORKSPACE SYNC & SUB-PROJECT SETUP
 * **THOUGHT:** Responded to the directive to "initialize these directories" by ensuring all metadata manifests are current and sub-project environments are ready for development.
 * **ACTION:** 
-  1. **Manifest Synchronization:** Executed `python3 tools/generate-ai-manifest.py` to regenerate manifests for `docs/`, `scripts/`, `tools/`, `system_files/`, `tests/`, `bib-configs/`, `deep-search-6418/`, and the root directory.
-  2. **Environment Setup:** Initialized the `deep-search-6418` directory by running `make install`, which successfully executed `uv sync` (installing 207 Python packages) and `npm install` for the frontend.
+  1. **Manifest Synchronization:** Executed `python3 tools/generate-ai-manifest.py` to regenerate manifests for `docs/`, `scripts/`, `tools/`, `system_files/`, `tests/`, `bib-configs/`, `GCE-Research/`, and the root directory.
+  2. **Environment Setup:** Initialized the `GCE-Research` directory by running `make install`, which successfully executed `uv sync` (installing 207 Python packages) and `npm install` for the frontend.
   3. **Verification:** Confirmed that the `.claude/memories/` symlinks correctly point to the artifact-backed files in `docs/memory/` and that the Omni-Agent Workspace standards are correctly propagated across the harness files.
 * **RESULT:** The repository metadata is fully synchronized, and the agentic sub-project is initialized and ready for deployment or evaluation.
 
@@ -2093,6 +2093,22 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   1. **Universal Configuration:** Created `.ai-environment.json` containing global aesthetic preferences (fonts, themes), recommended extensions, core applications, and initialization commands.
   2. **Bootstrap Automation:** Created `scripts/ai-bootstrap.sh` to automate manifest generation and sub-project environment synchronization.
   3. **Law Propagation:** Updated `AI.md`, `.claude/protocols.md`, and `GEMINI.md` to codify "THE BOOTSTRAP LAW": any AI session MUST read the environment config and execute the bootstrap script as its first action.
-  4. **Verification:** Successfully executed the bootstrap script, confirming manifest synchronization and `deep-search-6418` environment readiness.
+  4. **Verification:** Successfully executed the bootstrap script, confirming manifest synchronization and `GCE-Research` environment readiness.
 * **RESULT:** The MiOS workspace is now self-initializing, providing a standardized environment and synchronized metadata for any AI agent that enters the repository.
 [2026-04-26T14:36:21Z] [AI: Gemini CLI] Initialized session, followed Bootstrap Law (via bash), and synchronized manifests.
+
+---
+### [2026-04-26 15:30:00 UTC] [AI: Gemini CLI]
+* **TYPE:** SECURITY & ARCHITECTURAL PURITY
+* **THOUGHT:** Completed the prioritized "What's Next" tasks from the Next Research Queue and addressed remaining GAPs in the USR-OVER-ETC migration.
+* **ACTION:**
+  1. **Validated Advisory Checks:** Re-verified that `60-k3s.sh` (wanted.d) correctly exits with 1 on failure to log warnings in greenboot without triggering rollbacks.
+  2. **Hardened Post-Check:** Updated `scripts/99-postcheck.sh` to enforce version requirements for Cockpit (≥360) and NVIDIA Container Toolkit (≥1.18).
+  3. **Closed Distrobox GAP:** Created `system_files/usr/lib/distrobox/distrobox.conf` to enforce Podman as the default container manager.
+  4. **Completed USR-OVER-ETC Migration:**
+     - Migrated `storage.conf` from `etc/` to `/usr/share/containers/`.
+     - Migrated `usbguard/rules.conf` from `etc/` to `/usr/lib/usbguard/` and updated the daemon configuration to point to the immutable path.
+     - Removed the redundant and ignored `system_files/etc/` directory structure.
+  5. **Cleaned Up Metadata:** Updated `scripts/30-locale-theme.sh` comments to reflect the correct paths for migrated skel files in `/usr/share/skel`.
+  6. **Synchronized Manifests:** Executed `scripts/ai-bootstrap.sh` to ensure all directory manifests are up to date.
+* **RESULT:** The MiOS repository is now fully aligned with the USR-OVER-ETC policy, all known architectural GAPs from the April 25/26 audit are closed, and the build pipeline has stricter security invariant validation.

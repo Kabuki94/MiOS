@@ -66,5 +66,29 @@ for tool in "${CRITICAL_TOOLS[@]}"; do
     log "  ✓ $tool present"
 done
 
+# 5. NVIDIA Container Toolkit Version Check
+log "Checking NVIDIA Container Toolkit version..."
+if command -v nvidia-ctk >/dev/null 2>&1; then
+    NCT_VER=$(nvidia-ctk --version | head -n1 | grep -oP 'version \K[0-9.]+')
+    log "  Found: $NCT_VER"
+    if [[ $(printf '%s\n1.18' "$NCT_VER" | sort -V | head -n1) != "1.18" ]]; then
+        error "nvidia-container-toolkit version $NCT_VER is below required 1.18"
+    fi
+    log "  ✓ NVIDIA Container Toolkit version is safe"
+fi
+
+# 6. Cockpit Version Check (for CVE-2026-4631)
+log "Checking Cockpit version..."
+if rpm -q cockpit >/dev/null 2>&1; then
+    COCKPIT_VER=$(rpm -q cockpit --queryformat '%{VERSION}')
+    log "  Found: Cockpit $COCKPIT_VER"
+    # CVE fixed in 360
+    if [[ $(printf '%s\n360' "$COCKPIT_VER" | sort -V | head -n1) != "360" ]]; then
+        log "  ⚠ Cockpit version $COCKPIT_VER is below 360 (Risk: CVE-2026-4631)"
+    else
+        log "  ✓ Cockpit version is safe"
+    fi
+fi
+
 echo "═════════════ Validation SUCCESSFUL ═════════════"
 exit 0

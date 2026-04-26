@@ -12,7 +12,7 @@
     "system_files": "system_files/manifest.json",
     "tests": "tests/manifest.json",
     "bib_configs": "bib-configs/manifest.json",
-    "deep_search": "deep-search-6418/manifest.json",
+    "deep_search": "GCE-Research/manifest.json",
     "root": "root-manifest.json"
   },
   "standard_formats": {

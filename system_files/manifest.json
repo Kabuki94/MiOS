@@ -1,21 +1,7 @@
 {
-  "generated_at": "2026-04-26T14:36:17.304400",
+  "generated_at": "2026-04-26T14:49:13.664414",
   "source_directory": "system_files",
   "entries": [
-    {
-      "path": "system_files/etc/greenboot/check/required.d/30-network.sh",
-      "last_modified": "2026-04-26T14:01:27.323723",
-      "title": "30-network.sh",
-      "type": "source_code",
-      "full_content": "#!/bin/bash\n# \ud83c\udf10 MiOS \u2014 Cloud Native Operating System\n# Greenboot health check: Network reachability\n\nset -e\n\necho \"Starting network health check...\"\n\n# Wait up to 30s for DNS resolution of ghcr.io (our primary registry)\nTIMEOUT=30\nINTERVAL=2\nELAPSED=0\n\nwhile [ $ELAPSED -lt $TIMEOUT ]; do\n    if getent hosts ghcr.io > /dev/null; then\n        echo \"Network check passed: ghcr.io resolved.\"\n        exit 0\n    fi\n    sleep $INTERVAL\n    ELAPSED=$((ELAPSED + INTERVAL))\n    echo \"Waiting for network... ($ELAPSED/$TIMEOUT)\"\ndone\n\necho \"Network check failed: ghcr.io did not resolve within $TIMEOUT seconds.\"\nexit 1\n"
-    },
-    {
-      "path": "system_files/etc/greenboot/check/wanted.d/60-k3s.sh",
-      "last_modified": "2026-04-26T14:01:27.323723",
-      "title": "60-k3s.sh",
-      "type": "source_code",
-      "full_content": "#!/bin/bash\n# \ud83c\udf10 MiOS \u2014 Cloud Native Operating System\n# Greenboot health check: K3s status (optional)\n\n# Check if k3s is enabled\nif ! systemctl is-enabled k3s.service > /dev/null 2>&1; then\n    echo \"K3s is not enabled, skipping check.\"\n    exit 0\nfi\n\necho \"Starting K3s health check...\"\n\n# Wait up to 60s for K3s to be ready\nTIMEOUT=60\nINTERVAL=5\nELAPSED=0\n\nwhile [ $ELAPSED -lt $TIMEOUT ]; do\n    if kubectl get nodes > /dev/null 2>&1; then\n        echo \"K3s check passed: nodes are reachable.\"\n        exit 0\n    fi\n    sleep $INTERVAL\n    ELAPSED=$((ELAPSED + INTERVAL))\n    echo \"Waiting for K3s... ($ELAPSED/$TIMEOUT)\"\ndone\n\necho \"K3s check failed (not triggering rollback as this is a wanted check).\"\nexit 1 # We exit 1 so greenboot logs this as a warning in wanted.d\n"
-    },
     {
       "path": "system_files/usr/local/bin/mios-build-assess.sh",
       "last_modified": "2026-04-26T14:01:27.348724",
@@ -352,7 +338,7 @@
     },
     {
       "path": "system_files/usr/lib/greenboot/check/wanted.d/60-k3s.sh",
-      "last_modified": "2026-04-26T14:01:27.332723",
+      "last_modified": "2026-04-26T14:41:23.913818",
       "title": "60-k3s.sh",
       "type": "source_code",
       "full_content": "#!/bin/bash\n# MiOS greenboot \u2014 advisory K3s readiness check (wanted.d = no rollback on fail)\n# Logs a warning if K3s is enabled but not healthy after boot.\n# Lives in wanted.d so desktop/hybrid roles (where K3s is disabled) never fail.\nset -euo pipefail\n\nTIMEOUT=60\n\n# Skip entirely if K3s is not enabled for this role\nif ! systemctl is-enabled --quiet k3s 2>/dev/null; then\n    echo \"[mios-greenboot] K3s not enabled on this role \u2014 skipping check.\"\n    exit 0\nfi\n\necho \"[mios-greenboot] K3s enabled \u2014 waiting up to ${TIMEOUT}s for active state...\"\n\n# Wait for K3s to reach active state\ndeadline=$(( $(date +%s) + TIMEOUT ))\nwhile true; do\n    if systemctl is-active --quiet k3s 2>/dev/null; then\n        echo \"[mios-greenboot] K3s is active.\"\n        break\n    fi\n    if [[ $(date +%s) -ge $deadline ]]; then\n        echo \"[mios-greenboot] WARNING: K3s did not become active within ${TIMEOUT}s.\" >&2\n        exit 1\n    fi\n    sleep 3\ndone\n\n# Verify kubeconfig is accessible (k3s writes it to /etc/rancher/k3s/k3s.yaml)\nif [[ ! -r /etc/rancher/k3s/k3s.yaml ]]; then\n    echo \"[mios-greenboot] WARNING: K3s kubeconfig not readable.\" >&2\n    exit 1\nfi\n\n# Quick node Ready check (non-fatal on transient NotReady during first boot)\nif kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml get nodes --no-headers 2>/dev/null \\\n        | grep -q \"Ready\"; then\n    echo \"[mios-greenboot] K3s node is Ready.\"\n    exit 0\nelse\n    echo \"[mios-greenboot] WARNING: K3s node not yet in Ready state.\" >&2\n    exit 1\nfi\n"

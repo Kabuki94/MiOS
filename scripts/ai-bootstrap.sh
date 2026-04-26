@@ -14,12 +14,12 @@ else
     echo "⚠️ Warning: tools/generate-ai-manifest.py not found."
 fi
 
-# 2. Initialize deep-search-6418
-if [[ -d "deep-search-6418" ]]; then
-    echo "🧪 Initializing deep-search-6418 (Agent Starter Pack)..."
-    (cd deep-search-6418 && make install)
+# 2. Initialize GCE-Research
+if [[ -d "GCE-Research" ]]; then
+    echo "🧪 Initializing GCE-Research (Agent Starter Pack)..."
+    (cd GCE-Research && make install)
 else
-    echo "⚠️ Warning: deep-search-6418 directory not found."
+    echo "⚠️ Warning: GCE-Research directory not found."
 fi
 
 # 3. Persistence: Refresh environment configs and dotfiles

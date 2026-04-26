@@ -18,7 +18,7 @@ def parse_markdown_metadata(content):
 
 def generate_json_manifest(target_dir, output_file, recursive=True, ignore_dirs=None):
     if ignore_dirs is None:
-        ignore_dirs = {".git", ".venv", "output", "__pycache__", "deep-search-6418"}
+        ignore_dirs = {".git", ".venv", "output", "__pycache__", "GCE-Research"}
     
     manifest = {
         "generated_at": datetime.now().isoformat(),
@@ -107,7 +107,7 @@ if __name__ == "__main__":
         ("system_files", "system_files/manifest.json", True),
         ("tests", "tests/manifest.json", True),
         ("bib-configs", "bib-configs/manifest.json", True),
-        ("deep-search-6418", "deep-search-6418/manifest.json", True),
+        ("GCE-Research", "GCE-Research/manifest.json", True),
         (".", "root-manifest.json", False) # Non-recursive for root
     ]
     

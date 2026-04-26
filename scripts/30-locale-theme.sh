@@ -21,7 +21,7 @@ echo "  MiOS v2.1.0 — Universal Dark Theme"
 echo "═══════════════════════════════════════════════════════════════════"
 
 # ═══ SKEL .bashrc (MUST come BEFORE useradd -m) ═══
-# v2.1.0: Delivered via system_files/etc/skel/.bashrc overlay.
+# v2.1.0: Delivered via system_files/usr/share/skel/.bashrc overlay.
 echo "[30-locale-theme] Using /etc/skel/.bashrc from overlay..."
 
 # ═══ GTK3: adw-gtk3-dark for visual consistency with libadwaita ═══

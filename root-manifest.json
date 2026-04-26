@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-26T14:36:18.235399",
+  "generated_at": "2026-04-26T14:49:14.523764",
   "source_directory": ".",
   "entries": [
     {
@@ -18,7 +18,7 @@
     },
     {
       "path": ".ai-environment.json",
-      "last_modified": "2026-04-26T14:14:04.793327",
+      "last_modified": "2026-04-26T14:49:10.249393",
       "title": ".ai-environment.json",
       "type": "structured_data",
       "structured_data": {
@@ -74,9 +74,9 @@
         ],
         "initialization_commands": [
           "python3 tools/generate-ai-manifest.py",
-          "cd deep-search-6418 && make install"
+          "cd GCE-Research && make install"
         ],
-        "last_refresh": "2026-04-26T14:14:04.794573"
+        "last_refresh": "2026-04-26T14:48:55.617549"
       }
     },
     {
@@ -284,7 +284,7 @@
     },
     {
       "path": "ai-context.json",
-      "last_modified": "2026-04-26T14:01:27.206715",
+      "last_modified": "2026-04-26T14:48:27.124566",
       "title": "ai-context.json",
       "type": "structured_data",
       "structured_data": {
@@ -301,7 +301,7 @@
           "system_files": "system_files/manifest.json",
           "tests": "tests/manifest.json",
           "bib_configs": "bib-configs/manifest.json",
-          "deep_search": "deep-search-6418/manifest.json",
+          "deep_search": "GCE-Research/manifest.json",
           "root": "root-manifest.json"
         },
         "standard_formats": {
