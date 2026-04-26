@@ -22,6 +22,13 @@ for dir in "${SOURCE_DIRS[@]}"; do
     rsync -a "$dir/" "$TMP_STAGE/"
 done
 
+# Check if staging directory has any files (including hidden ones)
+if [ -z "$(ls -A "$TMP_STAGE")" ]; then
+    echo "[mios-sysext-pack] No files found in source directories. Skipping image creation."
+    rm -rf "$TMP_STAGE"
+    exit 0
+fi
+
 # Compile the final monolithic squashfs image
 echo "  -> Compiling SquashFS image: $OUTPUT_IMG"
 mksquashfs "$TMP_STAGE" "$OUTPUT_IMG" -comp zstd -Xcompression-level 19 -b 1048576 -noappend -no-progress

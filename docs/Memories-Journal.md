@@ -2485,3 +2485,13 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 **RESULT:** All T1/T2 items confirmed complete. `f44-ga-rpmfusion-stable` branch remains staged for April 28 merge. One pending action: pre-production Cockpit CVE-2026-4631 mitigation decision (Kabu).
 
 **CURRENT STATE:** main branch clean, working tree clean. No pending commits from this session.
+
+### [2026-04-26 03:15:00 UTC] [AI: Gemini CLI]
+* **TYPE:** ACTION — Defect Resolution & Policy Alignment
+* **THOUGHT:** Addressed technical debt and policy violations identified in the previous research pass.
+* **ACTION:** 
+  1. **Fixed `60-k3s.sh` health check:** Updated `system_files/etc/greenboot/check/wanted.d/60-k3s.sh` to exit `1` on failure instead of `0`. This allows greenboot to correctly log warnings for failing "wanted" checks without triggering unwanted rollbacks.
+  2. **Hardened `sysext` packaging:** Modified `tools/mios-sysext-pack.sh` to skip image creation if the source directory is empty. This prevents the generation of 0-byte SquashFS "bloat" when no system extensions are present.
+  3. **No-GCP Policy Enforcement:** Cleaned up the `deep-search-6418` sub-project to comply with the project's strict `no-gcp-support` policy. Removed `deploy.py`, stripped Vertex AI/GCP fallback logic from `config.py`, disabled GCS telemetry in `telemetry.py`, and removed GCP-dependent Makefile targets.
+  4. **Verification:** Confirmed that `f44-ga-rpmfusion-stable` branch is staged for the April 28 Fedora 44 GA merge. Verified that Cockpit CVE-2026-4631 mitigation (`LoginTo = false`) is already active in `system_files`.
+* **RESULT:** The repository is now technically cleaner and strictly aligned with the owner's non-GCP architectural mandate. Immediate defects are resolved ahead of the April 28 rebase window.

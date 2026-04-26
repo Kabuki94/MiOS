@@ -26,4 +26,4 @@ while [ $ELAPSED -lt $TIMEOUT ]; do
 done
 
 echo "K3s check failed (not triggering rollback as this is a wanted check)."
-exit 0 # We exit 0 because it's a 'wanted' check and we don't want to force rollback yet
+exit 1 # We exit 1 so greenboot logs this as a warning in wanted.d

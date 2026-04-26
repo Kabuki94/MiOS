@@ -31,13 +31,8 @@ if os.getenv("GOOGLE_API_KEY"):
     # AI Studio mode (default): Use API key authentication
     os.environ.setdefault("GOOGLE_GENAI_USE_VERTEXAI", "False")
 else:
-    # Vertex AI mode: Fall back to Google Cloud credentials
-    import google.auth
-
-    _, project_id = google.auth.default()
-    os.environ.setdefault("GOOGLE_CLOUD_PROJECT", project_id or "")
-    os.environ.setdefault("GOOGLE_CLOUD_LOCATION", "global")
-    os.environ.setdefault("GOOGLE_GENAI_USE_VERTEXAI", "True")
+    # Fail if no API key is found, do NOT fall back to Vertex AI
+    raise ValueError("GOOGLE_API_KEY environment variable is required for AI Studio mode. Vertex AI/GCP is disabled by project policy.")
 
 
 @dataclass
