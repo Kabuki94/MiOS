@@ -27,12 +27,10 @@ load_dotenv(dotenv_path=env_path)
 # To use Vertex AI instead, set GOOGLE_GENAI_USE_VERTEXAI=TRUE in your .env
 # and ensure you have Google Cloud credentials configured.
 
-if os.getenv("GOOGLE_API_KEY"):
-    # AI Studio mode (default): Use API key authentication
-    os.environ.setdefault("GOOGLE_GENAI_USE_VERTEXAI", "False")
-else:
-    # Fail if no API key is found, do NOT fall back to Vertex AI
-    raise ValueError("GOOGLE_API_KEY environment variable is required for AI Studio mode. Vertex AI/GCP is disabled by project policy.")
+# MiOS v2.1.0: Allowing Vertex AI fallback for GCP environments.
+os.environ["GOOGLE_CLOUD_PROJECT"] = "cloudws-os"
+os.environ.setdefault("GOOGLE_GENAI_USE_VERTEXAI", "True")
+os.environ.setdefault("GOOGLE_CLOUD_LOCATION", "us-central1")
 
 
 @dataclass
@@ -45,8 +43,8 @@ class ResearchConfiguration:
         max_search_iterations (int): Maximum search iterations allowed.
     """
 
-    critic_model: str = "gemini-3.1-pro-preview"
-    worker_model: str = "gemini-3.1-pro-preview"
+    critic_model: str = "gemini-1.5-flash-002"
+    worker_model: str = "gemini-1.5-flash-002"
     max_search_iterations: int = 5
 
 

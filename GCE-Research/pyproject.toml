@@ -34,10 +34,13 @@ lint = [
     "types-pyyaml>=6.0.12.20240311",
     "types-requests>=2.31.0.20240406",
 ]
+eval = [
+    "google-adk[eval]>=0.1.0",
+]
 
 [tool.ruff]
 # Point back to the Master template in the root
-extend = "../../../pyproject.toml"
+extend = "../pyproject.toml"
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402", "F401"]

@@ -1,0 +1,37 @@
+{
+  "eval_set_id": "mios_research_eval",
+  "name": "MiOS Upstream Research Evaluation",
+  "description": "Evaluation set for MiOS upstream research tasks (Fedora 44, GNOME 50, bootc).",
+  "eval_cases": [
+    {
+      "eval_id": "f44_readiness",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [{"text": "Analyze the current state of Fedora 44 GA readiness and its impact on the bootc ecosystem."}]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "app",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "gnome50_vrr",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [{"text": "Investigate the status of Mutter VRR support for NVIDIA hardware in GNOME 50."}]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "app",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    }
+  ]
+}
