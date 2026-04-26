@@ -106,6 +106,7 @@ CMD ["/sbin/init"]
 # ARG values do NOT persist into the final image (unlike ENV).
 ARG MIOS_USER=mios
 ARG MIOS_PASSWORD_HASH=
+ARG MIOS_HOSTNAME=mios
 
 # Build context mounted read-only
 COPY --from=ctx /ctx /ctx

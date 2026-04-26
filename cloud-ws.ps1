@@ -41,8 +41,9 @@ Set-StrictMode -Version Latest
 $v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "v2.1.0" }
 $ImageName      = "mios"
 $ImageTag       = "latest"
-$DefUser        = "mios"
-$DefPass        = "mios"
+$DefUser        = if ($env:MIOS_USER)     { $env:MIOS_USER }     else { "mios" }
+$DefPass        = if ($env:MIOS_PASSWORD) { $env:MIOS_PASSWORD } else { "mios" }
+$DefHostname    = if ($env:MIOS_HOSTNAME) { $env:MIOS_HOSTNAME } else { "mios" }
 $DefRegistry    = "ghcr.io/kabuki94/mios"
 $BuilderMachine = "mios-builder"
 $LocalImage     = "localhost/${ImageName}:${ImageTag}"
@@ -165,7 +166,7 @@ Write-Phase "0" "Configuration"
 if ($DoCustom) {
     $U = Read-Timed "Username:" $DefUser
     $P = Read-Timed "Password:" $DefPass -Secret
-    $HostIn = Read-Timed "Static Hostname (blank for mios-XXXXX):" "mios"
+    $HostIn = Read-Timed "Static Hostname (blank for mios-XXXXX):" $DefHostname
     $luksIn = Read-Timed "Enable LUKS encryption? (y/N):" "N"
     $UseLuks = $luksIn -match "^[yY]"
     $LuksPass = if ($UseLuks) { Read-Timed "LUKS passphrase:" "mios" -Secret } else { "" }

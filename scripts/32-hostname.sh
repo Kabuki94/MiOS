@@ -11,7 +11,13 @@ set -euo pipefail
 
 echo "[32-hostname] Setting default hostname template..."
 
-# Default hostname for the image — overwritten on first boot by mios-init
-echo "mios" > /etc/hostname
-
-echo "[32-hostname] Hostname will become mios-XXXXX on first boot."
+# Use MIOS_HOSTNAME build-arg if provided by the installer/bootstrap.
+# When set (e.g. "kabu-ws-83427"), it becomes the static hostname.
+# When unset (default "mios"), the first-boot mios-init derives mios-XXXXX
+# from machine-id so every deployment still gets a unique hostname.
+_hn="${MIOS_HOSTNAME:-mios}"
+echo "$_hn" > /etc/hostname
+echo "[32-hostname] Hostname set to: $_hn"
+if [[ "$_hn" == "mios" ]]; then
+    echo "[32-hostname] Will become mios-XXXXX on first boot via mios-init."
+fi

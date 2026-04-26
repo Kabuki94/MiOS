@@ -26,6 +26,18 @@ scurl() {
     curl "${args[@]}" "$@"
 }
 
+# SHA-512 crypt hash — plaintext never touches disk or build logs
+_hash_password() {
+    local pw="$1"
+    if command -v openssl &>/dev/null; then
+        printf '%s' "$pw" | openssl passwd -6 -stdin
+    else
+        MIOS_PW="$pw" python3 -c \
+            "import crypt,os; print(crypt.crypt(os.environ['MIOS_PW'], crypt.mksalt(crypt.METHOD_SHA512)))" \
+            2>/dev/null || echo ""
+    fi
+}
+
 if [[ -n "${GHCR_TOKEN:-}" ]]; then
     echo "  [OK] GitHub token detected."
 fi
@@ -43,10 +55,24 @@ if [ -f /etc/os-release ]; then . /etc/os-release; echo "  OS: $PRETTY_NAME"; fi
 echo "  Target: $DIR"
 echo ""
 
-echo "1) Clone repo + build OCI image locally"
-echo "2) Clone repo only (inspect first)"
-echo "3) Install to bare metal (requires root + target disk)"
-read -rp "Choice [1-3]: " choice
+# Show detected bootstrap config if present
+if [[ -n "${MIOS_USER:-}" || -n "${MIOS_HOSTNAME:-}" ]]; then
+    echo "  Detected bootstrap config:"
+    [[ -n "${MIOS_USER:-}" ]]     && printf "    %-18s %s\n" "Admin user:"     "$MIOS_USER"
+    [[ -n "${MIOS_HOSTNAME:-}" ]] && printf "    %-18s %s\n" "Hostname:"       "$MIOS_HOSTNAME"
+    [[ -n "${MIOS_PASSWORD:-}" ]] && printf "    %-18s %s\n" "Admin password:" "(set — masked)"
+    echo ""
+fi
+
+# Auto-select option 1 when invoked by bootstrap
+if [[ "${MIOS_AUTOINSTALL:-}" == "1" ]]; then
+    choice="1"
+else
+    echo "1) Clone repo + build OCI image locally"
+    echo "2) Clone repo only (inspect first)"
+    echo "3) Install to bare metal (requires root + target disk)"
+    read -rp "Choice [1-3]: " choice
+fi
 
 case "$choice" in
   1)
@@ -56,8 +82,19 @@ case "$choice" in
     cd "$DIR"
     echo ""
     echo "Building OCI image..."
+    _pw_hash=""
+    if [[ -n "${MIOS_PASSWORD:-}" ]]; then
+        echo "  Hashing password (plaintext will not appear in build log)..."
+        _pw_hash=$(_hash_password "$MIOS_PASSWORD")
+        unset MIOS_PASSWORD
+    fi
+    _build_args=(
+        "--build-arg" "MIOS_USER=${MIOS_USER:-mios}"
+        "--build-arg" "MIOS_PASSWORD_HASH=${_pw_hash}"
+        "--build-arg" "MIOS_HOSTNAME=${MIOS_HOSTNAME:-mios}"
+    )
     if command -v podman &>/dev/null; then
-        podman build --no-cache -t localhost/mios:latest .
+        podman build --no-cache "${_build_args[@]}" -t localhost/mios:latest .
         echo ""
         echo "✓ Image built: localhost/mios:latest"
         echo ""
@@ -66,7 +103,7 @@ case "$choice" in
         echo "  Switch live: sudo bootc switch --transport containers-storage localhost/mios:latest"
         echo "  Run locally: podman run -d --name mios-local -p 9090:9090 --systemd=true --privileged localhost/mios:latest"
     elif command -v docker &>/dev/null; then
-        docker build --no-cache -t localhost/mios:latest .
+        docker build --no-cache "${_build_args[@]}" -t localhost/mios:latest .
         echo "✓ Image built: localhost/mios:latest"
     else
         echo "✗ Neither podman nor docker found."
@@ -114,9 +151,19 @@ case "$choice" in
     read -rp "⚠ ALL DATA ON /dev/$disk WILL BE DESTROYED. Type 'yes' to continue: " confirm
     if [ "$confirm" = "yes" ]; then
         echo "Building image..."
+        _pw_hash=""
+        if [[ -n "${MIOS_PASSWORD:-}" ]]; then
+            _pw_hash=$(_hash_password "$MIOS_PASSWORD")
+            unset MIOS_PASSWORD
+        fi
+        _build_args=(
+            "--build-arg" "MIOS_USER=${MIOS_USER:-mios}"
+            "--build-arg" "MIOS_PASSWORD_HASH=${_pw_hash}"
+            "--build-arg" "MIOS_HOSTNAME=${MIOS_HOSTNAME:-mios}"
+        )
         git clone "$REPO" /tmp/mios-build 2>/dev/null || true
         cd /tmp/mios-build
-        podman build --no-cache -t localhost/mios:latest .
+        podman build --no-cache "${_build_args[@]}" -t localhost/mios:latest .
         echo "Installing to /dev/$disk ..."
         _luks_vol=""
         if [ -n "$luks_tmpfile" ]; then
