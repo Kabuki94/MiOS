@@ -2023,6 +2023,15 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 * **THOUGHT:** Completed a comprehensive project-wide audit to eliminate legacy references and ensure absolute brand consistency.
 * **ACTION:** 
   1. **Legacy Cleanup:** Removed broken root-level `PACKAGES.md` symlink.
-  2. **Residual Rebranding:** Replaced all remaining instances of "cloud-ws" / "Cloud-WS" with "mios-build" / "MiOS-Build" (except where it refers to specific hardware assessments) and finalized the transition from "Universal AI Integration" to "Cloud Native Operating System".
+  2. **Residual Rebranding:** Replaced all remaining instances of "mios-build" / "MiOS-Build" with "mios-build" / "MiOS-Build" (except where it refers to specific hardware assessments) and finalized the transition from "Cloud Native Operating System" to "Cloud Native Operating System".
   3. **Verification:** Re-ran the manifest generator and standardization scripts to ensure all metadata, headers, and footers are perfectly synchronized with the final repository state.
 * **RESULT:** The repository is now 100% clean of legacy pathing and naming conventions, following a unified, artifacted architecture.
+
+---
+### ⚖️ Legal & Source Reference
+- **Copyright:** (c) 2026 Kabu.ki
+- **Status:** Personal Property / Private Infrastructure
+- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/docs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
+---
