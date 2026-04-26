@@ -4,8 +4,10 @@ Wants=network-online.target
 After=network-online.target
 
 [Container]
+GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage
 Image=quay.io/ha-core/pacemaker-remote:latest
 Network=host
+HttpProxy=false
 Privileged=true
 Volume=/etc/corosync:/etc/corosync:Z
 Volume=/etc/pacemaker:/etc/pacemaker:Z

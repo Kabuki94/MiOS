@@ -2028,3 +2028,21 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   2. **Refactoring:** Rewrote `docs/knowledge/research/2026-04-26-Artifact-KBX-024-OpenAI-Integration.md` to focus on project-wide context ingestion (via llms.txt) and standard ADK agent deployment protocols.
   3. **Consistency:** Updated Home.md, Sidebar, and root llms.txt to use the corrected "OpenAI Parsability & Agent Standards" terminology.
 * **RESULT:** The repository remains natively parseable by OpenAI systems without claiming non-existent OS features.
+
+---
+### ⚖️ Legal & Source Reference
+- **Copyright:** (c) 2026 Kabu.ki
+- **Status:** Personal Property / Private Infrastructure
+- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/docs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
+---
+### [2026-04-26 14:15:00 UTC] [AI: Gemini CLI]
+* **TYPE:** TECHNICAL GAP CLOSURE — SYSTEM HARDENING & LBI CONSISTENCY
+* **THOUGHT:** Addressed the final set of technical gaps identified in the April-2026 audit, focusing on Quadlet standardization and Logically Bound Image (LBI) robustness.
+* **ACTION:** 
+  1. **Quadlet Standardization:** Added `GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage` to NUT, PCSD, and Ceph RadosGW Quadlets to ensure they correctly leverage the bootc additional image store. Added `HttpProxy=false` to the PCSD Remote Quadlet.
+  2. **LBI Cleanup:** Removed static container files from `system_files/usr/lib/bootc/bound-images.d/`. These are now dynamically managed by the overlay script to ensure all Quadlets are correctly symlinked at build time.
+  3. **Security Expansion:** Added `podman.service` to the CrowdSec acquisition list in `journalctl.yaml` to monitor container-level security events.
+  4. **Validation:** Verified that all other previously identified gaps (kargs lint, FreeIPA SSOT, etc.) are already closed.
+* **RESULT:** The MiOS infrastructure is now fully aligned with the latest bootc LBI patterns and security monitoring standards.

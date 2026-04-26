@@ -7,5 +7,6 @@ journalctl_filter:
   - "_SYSTEMD_UNIT=gnome-remote-desktop.service"
   - "_SYSTEMD_UNIT=libvirtd.service"
   - "_SYSTEMD_UNIT=k3s.service"
+  - "_SYSTEMD_UNIT=podman.service"
 labels:
   type: syslog

@@ -6,6 +6,7 @@ Wants=network-online.target
 Before=podman.service libvirtd.service virtqemud.service virtnetworkd.service
 
 [Container]
+GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage
 HttpProxy=false
 Image=docker.io/library/fedora:40
 ContainerName=mios-nut
