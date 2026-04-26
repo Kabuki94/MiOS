@@ -47,7 +47,8 @@ $DefHostname    = if ($env:MIOS_HOSTNAME) { $env:MIOS_HOSTNAME } else { "mios" }
 $DefRegistry    = "ghcr.io/kabuki94/mios"
 $BuilderMachine = "mios-builder"
 $LocalImage     = "localhost/${ImageName}:${ImageTag}"
-$OutputFolder   = Join-Path $PWD "mios-deploy-out"
+$MiosDocsDir    = Join-Path ([Environment]::GetFolderPath("MyDocuments")) "MiOS"
+$OutputFolder   = Join-Path $MiosDocsDir "deployments"
 $RechunkImage   = "quay.io/centos-bootc/centos-bootc:stream10"
 $Timeout        = 30
 

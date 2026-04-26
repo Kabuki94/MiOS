@@ -15,16 +15,18 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 
     # Pass the token and env to the elevated process if it exists
     $envHash = @{ GHCR_TOKEN = $env:GHCR_TOKEN }
-    if ($env:MIOS_DIR) { $envHash.MIOS_DIR = $env:MIOS_DIR }
-    if ($env:MIOS_BUILDS_DIR) { $envHash.MIOS_BUILDS_DIR = $env:MIOS_BUILDS_DIR }
+    Get-ChildItem Env: | Where-Object { $_.Name -match "^MIOS_" } | ForEach-Object {
+        $envHash[$_.Name] = $_.Value
+    }
 
     Start-Process powershell.exe -ArgumentList "$args" -Verb RunAs -Environment $envHash
     return
 }
 
 $RepoUrl = "https://github.com/Kabuki94/mios"
-$MiosRepoDir = if ($env:MIOS_DIR) { $env:MIOS_DIR } else { Join-Path $HOME "mios\repo" }
-$MiosBuildsDir = if ($env:MIOS_BUILDS_DIR) { $env:MIOS_BUILDS_DIR } else { Join-Path $HOME "mios\builds" }
+$MiosAppDir = Join-Path $env:LOCALAPPDATA "MiOS"
+$MiosRepoDir = if ($env:MIOS_DIR) { $env:MIOS_DIR } else { Join-Path $MiosAppDir "repo" }
+$MiosBuildsDir = if ($env:MIOS_BUILDS_DIR) { $env:MIOS_BUILDS_DIR } else { Join-Path $MiosAppDir "builds" }
 
 # --- Credential Handling ---
 if (-not $env:GHCR_TOKEN) {
