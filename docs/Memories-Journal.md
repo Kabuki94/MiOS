@@ -2356,3 +2356,16 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   - `deep-search-6418` sub-project backend (uv) + frontend (npm) now initialized and clean
   - Last git commit: `3d45091` "Wiki consolidating."
 * **BASELINE CONFIRMED:** v2.1.0 journal synchronized. Ready for new instructions.
+
+---
+
+### [2026-04-25 23:56:00 UTC] [AI: Claude Code]
+* **TYPE:** ACTION
+* **THOUGHT:** Scanned the full upstream work plan (upstream-work-plan.md + upstream-research-plan.md). All TIER 1 and TIER 2 items are already complete (Gemini + prior Claude session). The one remaining time-sensitive item is the F44 GA readiness change: RPMFusion `rawhide` → `release-44` in `scripts/01-repos.sh`.
+* **ACTION:**
+  1. Created branch `f44-ga-rpmfusion-stable` from `main`.
+  2. Surgically updated `scripts/01-repos.sh` lines 95-102: changed both RPMFusion install URLs from `rpmfusion-{free,nonfree}-release-rawhide.noarch.rpm` to `rpmfusion-{free,nonfree}-release-44.noarch.rpm`.
+  3. Committed with explicit `⚠️ MERGE WINDOW: do NOT merge before 2026-04-28` warning in the message.
+* **RATIONALE:** After F44 GA, the `rawhide` RPMFusion packages begin tracking F45 development. Using them post-GA would silently introduce F45-cycle packages into a declared F44 image, breaking ABI stability. The `release-44` URL only becomes live on GA day — merging before then fails with a 404.
+* **RESULT:** Branch `f44-ga-rpmfusion-stable` at commit `d8af1df` — ready to merge/push as PR on 2026-04-28.
+* **CURRENT BRANCH:** Returning to `main` after journal entry.
