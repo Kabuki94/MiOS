@@ -1,4 +1,17 @@
+<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
 # AI.md — MiOS Universal Agent Hub
+
+```json:knowledge
+{
+  "summary": "Single source of truth for AI agent architecture, laws, and conventions in MiOS. Indexes directory maps, instruction patterns, and research presets. Native OpenAI API protocol compatible.",
+  "logic_type": "documentation",
+  "tags": ["MiOS", "AI", "Agent Hub", "Index", "OpenAI"],
+  "relations": {
+    "depends_on": [".env.mios", "ai-context.json"],
+    "impacts": ["GEMINI.md", "CLAUDE.md", "AGENTS.md", ".cursorrules", ".clinerules", ".windsurfrules"]
+  }
+}
+```
 
 > **Single source of truth** for every AI agent, LLM, copilot, and API operating in this repository.
 > All provider entry files (`CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, `.cursorrules`, `.windsurfrules`,
@@ -8,8 +21,54 @@
 
 MiOS is a **bootc-based, self-building, immutable workstation OS** on Fedora Rawhide.
 One OCI image covers all hardware roles: desktop, k3s/HA, GPU passthrough (VFIO), WSL2.
-Published at `ghcr.io/kabuki94/mios:latest`. Deployed systems update atomically via `sudo bootc upgrade`.
+Published at `$MIOS_IMAGE_NAME:latest`. Deployed systems update atomically via `sudo bootc upgrade`.
 Sole proprietor: **Kabu.ki**. Target: AMD Ryzen 9 9950X3D + NVIDIA RTX 4090, hardware-agnostic by design.
+
+## 🏗️ Repository Directory Map
+
+AI agents MUST use this map for context retrieval and navigation:
+
+| Path | Purpose | Machine-Readable Manifest |
+|---|---|---|
+| `docs/core/` | Architectural Blueprints & Manifests | `docs/manifest.json` |
+| `docs/engineering/` | Technical SSOTs (Packages, Scripts) | `docs/manifest.json` |
+| `docs/knowledge/research/`| Upstream Deep-Dives & Research | `docs/manifest.json` |
+| `docs/knowledge/guides/` | Operational Procedures | `docs/manifest.json` |
+| `scripts/` | Build & Configuration Automation | `scripts/manifest.json` |
+| `system_files/` | Root Filesystem Overlay | `system_files/manifest.json` |
+| `artifacts/` | Build Metadata & RAG Snapshots | `artifacts/manifest.json.gz` |
+| `.claude/memories/` | Shared AI Journal & Brain | `.claude/memories/manifest.json` |
+| `.env.mios` | Unified User Configuration | (Handled by ai-bootstrap.sh) |
+
+## 🧩 Instruction Patterns
+
+All agents MUST adhere to these operational patterns:
+
+1. **Context First:** Always query `ai-context.json` to find the relevant manifest before reading files.
+2. **Journaling:** Append every significant action/discovery to `.claude/memories/journal.md` using the [MiOS Journaling Protocol](docs/knowledge/research/2026-04-26-Artifact-KBX-022-AI-RESEARCH-TEMPLATE.md).
+3. **Surgical Edits:** Use `replace` or `sed` for minimal changes to large files (especially `PACKAGES.md`).
+4. **Validation:** No task is complete without automated verification (`just lint`, `just test`, or custom scripts).
+5. **Secret Redaction:** Never output or commit secrets. Use placeholders like `INJ_PASSWORD` in templates.
+
+## 🔬 Research Presets (Upstream Targeting)
+
+When researching or integrating upstream technologies, use these presets:
+
+- **Target: bootc/fedora-bootc**
+  - Priority Docs: `docs/knowledge/research/2026-04-26-Artifact-KBX-01-bootc-ecosystem-advances-2025-2026.md`
+  - Pattern: Focus on "USR-OVER-ETC" and "NO-MKDIR-IN-VAR" laws.
+- **Target: NVIDIA/GPU Passthrough**
+  - Priority Docs: `docs/knowledge/research/2026-04-26-Artifact-KBX-10-vfio-gpu-passthrough-fedora-2025.md`
+  - Pattern: Verify blacklist/unblacklist logic in `34-gpu-detect.sh`.
+
+## 🔌 Standardized Ingestion Protocol (OpenAI Native)
+
+MiOS is optimized for OpenAI API standards and industry-standard AI scrapers:
+
+1. **`llms.txt` Standard:** High-density context ingestion point at root and `.well-known/`.
+2. **Function Calling Schemas:** All automated tools (`tools/*.py`) and build scripts (`scripts/*.sh`) are documented with clear input/output types compatible with JSON-based function calling.
+3. **API Proxies:** Integrated with proxies (e.g., LiteLLM) to bridge Google ADK agents to OpenAI's `/v1/chat/completions` endpoint.
+4. **Seed Context:** New agents initialized in this workspace should immediately ingest `AI.md` and `artifacts/repo-rag-snapshot.json.gz` to establish full structural awareness.
 
 ## Build & Test
 
@@ -202,3 +261,4 @@ To ensure all Markdown files are machine-parsable and referencable, they must in
   }
 }
 ```
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->

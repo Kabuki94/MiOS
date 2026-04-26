@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-26T20:36:13.351601",
+  "generated_at": "2026-04-26T21:09:23.163772",
   "source_directory": "system_files",
   "entries": [
     {
@@ -385,7 +385,7 @@
     },
     {
       "path": "system_files/usr/share/pki/containers/README.md",
-      "last_modified": "2026-04-26T18:00:12.692300",
+      "last_modified": "2026-04-26T21:02:32.706481",
       "title": "\ud83c\udf10 MiOS \u2014 Cloud Native Operating System",
       "type": "documentation",
       "metadata": {
@@ -393,9 +393,22 @@
         "infrastructure": "Self-Building Infrastructure (Personal Property)",
         "license": "Licensed as personal property to Kabu.ki"
       },
-      "knowledge": {},
-      "content_preview": "# \ud83c\udf10 MiOS \u2014 Cloud Native Operating System\n> **Proprietor:** Kabu.ki\n> **Infrastructure:** Self-Building Infrastructure (Personal Property)\n> **License:** Licensed as personal property to Kabu.ki\n---\n# Cosign verification keys\n\nKeys in this directory are referenced by `/etc/containers/policy.json`.\n\n- `mios-cosign.pub` - MiOS signing key (placeholder; replace with\n  your cosign keyless identity's cert once published, OR switch policy.json to\n  use `fulcio.url`/`rekorURL` with keyless verification)...",
-      "full_content": "# \ud83c\udf10 MiOS \u2014 Cloud Native Operating System\n> **Proprietor:** Kabu.ki\n> **Infrastructure:** Self-Building Infrastructure (Personal Property)\n> **License:** Licensed as personal property to Kabu.ki\n---\n# Cosign verification keys\n\nKeys in this directory are referenced by `/etc/containers/policy.json`.\n\n- `mios-cosign.pub` - MiOS signing key (placeholder; replace with\n  your cosign keyless identity's cert once published, OR switch policy.json to\n  use `fulcio.url`/`rekorURL` with keyless verification).\n- `ublue-cosign.pub`   - Universal Blue signing key (fetched from\n  https://github.com/ublue-os/main/raw/main/cosign.pub at build time by\n  `scripts/42-cosign-policy.sh`).\n\nIf a key is missing and policy.json references it, `bootc switch`/`podman pull`\nwill fail closed. To bootstrap without signing, edit policy.json to replace the\nsigstoreSigned entry with `insecureAcceptAnything` temporarily.\n\n---\n### \ud83d\udcda Bootc Ecosystem & Resources\n- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)\n- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)\n- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)\n- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)\n- **Sole Proprietor:** Kabu.ki\n---\n"
+      "knowledge": {
+        "summary": "> **Proprietor:** Kabu.ki",
+        "logic_type": "documentation",
+        "tags": [
+          "MiOS",
+          "usr"
+        ],
+        "relations": {
+          "depends_on": [
+            ".env.mios"
+          ],
+          "impacts": []
+        }
+      },
+      "content_preview": "<!-- \ud83c\udf10 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->\n# \ud83c\udf10 MiOS \u2014 Cloud Native Operating System\n```json:knowledge\n{\n  \"summary\": \"> **Proprietor:** Kabu.ki\",\n  \"logic_type\": \"documentation\",\n  \"tags\": [\n    \"MiOS\",\n    \"usr\"\n  ],\n  \"relations\": {\n    \"depends_on\": [\n      \".env.mios\"\n    ],\n    \"impacts\": []\n  }\n}\n```\n> **Proprietor:** Kabu.ki\n> **Infrastructure:** Self-Building Infrastructure (Personal Property)\n> **License:** Licensed as personal property to Kabu.ki\n...",
+      "full_content": "<!-- \ud83c\udf10 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->\n# \ud83c\udf10 MiOS \u2014 Cloud Native Operating System\n```json:knowledge\n{\n  \"summary\": \"> **Proprietor:** Kabu.ki\",\n  \"logic_type\": \"documentation\",\n  \"tags\": [\n    \"MiOS\",\n    \"usr\"\n  ],\n  \"relations\": {\n    \"depends_on\": [\n      \".env.mios\"\n    ],\n    \"impacts\": []\n  }\n}\n```\n> **Proprietor:** Kabu.ki\n> **Infrastructure:** Self-Building Infrastructure (Personal Property)\n> **License:** Licensed as personal property to Kabu.ki\n---\n# Cosign verification keys\n\nKeys in this directory are referenced by `/etc/containers/policy.json`.\n\n- `mios-cosign.pub` - MiOS signing key (placeholder; replace with\n  your cosign keyless identity's cert once published, OR switch policy.json to\n  use `fulcio.url`/`rekorURL` with keyless verification).\n- `ublue-cosign.pub`   - Universal Blue signing key (fetched from\n  https://github.com/ublue-os/main/raw/main/cosign.pub at build time by\n  `scripts/42-cosign-policy.sh`).\n\nIf a key is missing and policy.json references it, `bootc switch`/`podman pull`\nwill fail closed. To bootstrap without signing, edit policy.json to replace the\nsigstoreSigned entry with `insecureAcceptAnything` temporarily.\n\n---\n### \ud83d\udcda Bootc Ecosystem & Resources\n- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)\n- **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)\n- **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)\n- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)\n- **Sole Proprietor:** Kabu.ki\n---\n<!-- \u2696\ufe0f MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->\n"
     }
   ]
 }

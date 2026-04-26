@@ -1,39 +1,23 @@
 # MiOS — Cloud Native Operating System
 > Native AI API Scrapping Index (Snapshot v2.1.0)
+> Single Source of Truth: https://github.com/kabuki94/mios/blob/main/AI.md
 
-## 🏛️ Core Foundation
-- [Core-Blueprint](https://github.com/Kabuki94/mios/blob/main/docs/core/2026-04-26-Artifact-COR-001-Blueprint.md)
-- [Core-Infrastructure](https://github.com/Kabuki94/mios/blob/main/docs/core/2026-04-26-Artifact-COR-002-Infrastructure.md)
-- [Core-Manifest](https://github.com/Kabuki94/mios/blob/main/docs/core/2026-04-26-Artifact-COR-003-Manifest.md)
-- [Core-Operations](https://github.com/Kabuki94/mios/blob/main/docs/core/2026-04-26-Artifact-COR-004-Operations.md)
+MiOS is a bootc-based, self-building, immutable workstation OS on Fedora Rawhide. It uses a Unified Knowledge Base (UKB) for high-efficiency RAG and is optimized for OpenAI API standard ingestion.
 
-## 🧠 Shared Memory (Active)
-- [Memory-Journal](https://github.com/Kabuki94/mios/blob/main/docs/memory/2026-04-26-Artifact-MEM-001-Journal.md)
-- [Memory-Work-Plan](https://github.com/Kabuki94/mios/blob/main/docs/memory/2026-04-26-Artifact-MEM-004-Work-Plan.md)
-- [Memory-Research-Plan](https://github.com/Kabuki94/mios/blob/main/docs/memory/2026-04-26-Artifact-MEM-002-Research-Plan.md)
-- [Memory-Research-Strategy](https://github.com/Kabuki94/mios/blob/main/docs/memory/2026-04-26-Artifact-MEM-003-Research-Strategy.md)
+## 🏛️ Essential Context (Seed)
+- [AI-Agent-Hub](https://github.com/Kabuki94/mios/blob/main/AI.md): Mandatory laws, directory map, and instruction patterns.
+- [Repository-Map](https://github.com/Kabuki94/mios/blob/main/ai-context.json): Machine-readable manifest of all project resources.
+- [RAG-Snapshot](https://github.com/Kabuki94/mios/blob/main/artifacts/repo-rag-snapshot.json.gz): Full redacted repository state for immediate ingestion.
+- [Unified-Environment](https://github.com/Kabuki94/mios/blob/main/.env.mios): Consolidated user-adjustable variables.
 
-## 🛠️ Engineering & Operations
-- [Engineering-Packages](https://github.com/Kabuki94/mios/blob/main/docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md)
-- [Engineering-Security](https://github.com/Kabuki94/mios/blob/main/docs/engineering/2026-04-26-Artifact-ENG-002-Security.md)
-- [Engineering-Self-Build](https://github.com/Kabuki94/mios/blob/main/docs/engineering/2026-04-26-Artifact-ENG-003-Self-Build.md)
-- [Engineering-Testing](https://github.com/Kabuki94/mios/blob/main/docs/engineering/2026-04-26-Artifact-ENG-004-Testing.md)
+## 🧠 Shared Memory
+- [Chronological-Journal](https://github.com/Kabuki94/mios/blob/main/.claude/memories/journal.md): Shared chronological brain for all agents.
 
-## 📚 Knowledge Base (Deep Research)
-- [Upstream Research 2026-04-26](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/research/2026-04-26-Artifact-KBX-019-upstream-research-2026-04-26.md)
-- [Bootc Composefs Native](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/research/2026-04-26-Artifact-KBX-018-upstream-bootc-composefs-native.md)
-- [Bootc Ecosystem 2025-2026](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/research/2026-04-26-Artifact-KBX-017-upstream-bootc-ecosystem-2025-2026.md)
-- [Minimal Gnome Strategy](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/research/2026-04-26-Artifact-KBX-012-minimal-gnome-definitive-strategy.md)
-- [VFIO GPU Passthrough](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/research/2026-04-26-Artifact-KBX-010-vfio-gpu-passthrough-fedora-2025.md)
-- [CPU Isolation Guide](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/guides/2026-04-26-Artifact-KBX-101-cpu-isolation-guide.md)
-- [Looking Glass Integration](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/guides/2026-04-26-Artifact-KBX-102-looking-glass-integration.md)
-- [VM CPU Pin Manager](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/guides/2026-04-26-Artifact-KBX-104-vm-cpu-pin-manager-readme.md)
-- [WSL2 Deployment](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/guides/2026-04-26-Artifact-KBX-106-WSL2-DEPLOYMENT.md)
-- [AI Integration](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/research/2026-04-26-Artifact-KBX-021-AI-INTEGRATION.md)
-- [OpenAI & Multi-Agent Standard Deployments](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/research/2026-04-26-Artifact-KBX-024-OpenAI-Integration.md)
+## 🛠️ Engineering
+- [Package-Manifest](https://github.com/Kabuki94/mios/blob/main/docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md): SSOT for all system components.
+- [Build-Pipeline](https://github.com/Kabuki94/mios/blob/main/Containerfile): The OCI build process and stage logic.
 
-## 📜 Historical Audit
-- [Changelog v2.1.0](https://github.com/Kabuki94/mios/blob/main/docs/changelogs/2026-04-26-Artifact-CHL-003-v2.1.0.md)
-- [Changelog Cumulative](https://github.com/Kabuki94/mios/blob/main/docs/changelogs/2026-04-26-Artifact-CHL-001-Cumulative.md)
-- [Research April 2026](https://github.com/Kabuki94/mios/blob/main/docs/audit/2026-04-26-Artifact-ADT-002-Research-April2026.md)
-- [Next Research Queue](https://github.com/Kabuki94/mios/blob/main/docs/audit/2026-04-26-Artifact-ADT-001-Next-Research.md)
+## 🔬 Research Presets
+- [Bootc-Advances](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/research/2026-04-26-Artifact-KBX-01-bootc-ecosystem-advances-2025-2026.md)
+- [GPU-Passthrough](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/research/2026-04-26-Artifact-KBX-10-vfio-gpu-passthrough-fedora-2025.md)
+- [OpenAI-Ingestion](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/research/2026-04-26-Artifact-KBX-024-OpenAI-Integration.md)
