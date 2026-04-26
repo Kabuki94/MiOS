@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-26T14:02:39.291583",
+  "generated_at": "2026-04-26T14:11:43.282254",
   "source_directory": "scripts",
   "entries": [
     {
@@ -158,10 +158,10 @@
     },
     {
       "path": "scripts/ai-bootstrap.sh",
-      "last_modified": "2026-04-26T14:01:27.320722",
+      "last_modified": "2026-04-26T14:11:40.464861",
       "title": "ai-bootstrap.sh",
       "type": "source_code",
-      "full_content": "#!/bin/bash\n# MiOS Omni-Agent Bootstrap Script\n# Synchronizes manifests and initializes sub-project environments.\n\nset -euo pipefail\n\necho \"\ud83d\ude80 Initializing MiOS Omni-Agent Workspace...\"\n\n# 1. Generate Manifests\nif [[ -f \"tools/generate-ai-manifest.py\" ]]; then\n    echo \"\ud83d\udcc4 Generating directory manifests...\"\n    python3 tools/generate-ai-manifest.py\nelse\n    echo \"\u26a0\ufe0f Warning: tools/generate-ai-manifest.py not found.\"\nfi\n\n# 2. Initialize deep-search-6418\nif [[ -d \"deep-search-6418\" ]]; then\n    echo \"\ud83e\uddea Initializing deep-search-6418 (Agent Starter Pack)...\"\n    (cd deep-search-6418 && make install)\nelse\n    echo \"\u26a0\ufe0f Warning: deep-search-6418 directory not found.\"\nfi\n\necho \"\u2705 Workspace initialization complete.\"\n"
+      "full_content": "#!/bin/bash\n# MiOS Omni-Agent Bootstrap Script\n# Synchronizes manifests and initializes sub-project environments.\n\nset -euo pipefail\n\necho \"\ud83d\ude80 Initializing MiOS Omni-Agent Workspace...\"\n\n# 1. Generate Manifests\nif [[ -f \"tools/generate-ai-manifest.py\" ]]; then\n    echo \"\ud83d\udcc4 Generating directory manifests...\"\n    python3 tools/generate-ai-manifest.py\nelse\n    echo \"\u26a0\ufe0f Warning: tools/generate-ai-manifest.py not found.\"\nfi\n\n# 2. Initialize deep-search-6418\nif [[ -d \"deep-search-6418\" ]]; then\n    echo \"\ud83e\uddea Initializing deep-search-6418 (Agent Starter Pack)...\"\n    (cd deep-search-6418 && make install)\nelse\n    echo \"\u26a0\ufe0f Warning: deep-search-6418 directory not found.\"\nfi\n\n# 3. Persistence: Refresh environment configs and dotfiles\necho \"\ud83d\udcbe Persisting environment state...\"\nif [[ -f \"tools/refresh-env.py\" ]]; then\n    python3 tools/refresh-env.py\nelse\n    echo \"\u26a0\ufe0f Warning: tools/refresh-env.py not found.\"\nfi\n\necho \"\u2705 Workspace initialization complete.\"\n"
     },
     {
       "path": "scripts/validate-kargs.py",

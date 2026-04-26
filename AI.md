@@ -16,20 +16,21 @@ This file is the mandatory entry point for Gemini-based agents. It imports the g
 
 ---
 
-## ⚖️ THE FIVE CORE LAWS
+## ⚖️ THE SIX CORE LAWS
 1.  **THE OMNI-AGENT LAW:** All AI instances operate as synchronized mirrors. One brain — never split it.
 2.  **THE JOURNALING LAW:** Record EVERY action and thought in `.claude/memories/journal.md`.
 3.  **THE BOOTSTRAP LAW:** ALWAYS read `.ai-environment.json` and execute `scripts/ai-bootstrap.sh` upon first message.
-4.  **SHARED SCRATCHPAD PROTOCOL:** Use `.claude/shared-tmp/` for transient cross-agent data.
-5.  **SINGLE SOURCE OF TRUTH (SSOT):** Respect the package manifest in `docs/engineering/` and `.env` settings.
+4.  **THE PERSISTENCE LAW:** Automatically refresh environment configs (`.ai-environment.json`, `.env`) and dotfiles at session start/end to clone current state as "latest" for future agents.
+5.  **SHARED SCRATCHPAD PROTOCOL:** Use `.claude/shared-tmp/` for transient cross-agent data.
+6.  **SINGLE SOURCE OF TRUTH (SSOT):** Respect the package manifest in `docs/engineering/` and `.env` settings.
 
 ---
 
 ## 🛠️ INITIALIZATION PROTOCOL
 Upon first interaction, Gemini MUST:
 1.  **Load Context:** Verify the bootstrap chain is loaded.
-2.  **Sync Environment:** Read `.ai-environment.json`.
-3.  **Execute Bootstrap:** Run `bash scripts/ai-bootstrap.sh`.
+2.  **Sync Environment:** Read `.ai-environment.json` and `.env`.
+3.  **Execute Bootstrap:** Run `bash scripts/ai-bootstrap.sh` to initialize AND refresh state.
 4.  **Synchronize Memory:** Read the last 200 lines of `.claude/memories/journal.md`.
 
 ---

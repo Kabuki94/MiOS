@@ -22,4 +22,12 @@ else
     echo "⚠️ Warning: deep-search-6418 directory not found."
 fi
 
+# 3. Persistence: Refresh environment configs and dotfiles
+echo "💾 Persisting environment state..."
+if [[ -f "tools/refresh-env.py" ]]; then
+    python3 tools/refresh-env.py
+else
+    echo "⚠️ Warning: tools/refresh-env.py not found."
+fi
+
 echo "✅ Workspace initialization complete."

@@ -1,31 +1,44 @@
-# MiOS AI Behavioral Manifest (.ai-rules)
-# v2.1.0 Standard — OMNI-AGENT WORKSPACE EDITION
+# 🌐 MiOS — Cloud Native Operating System
+> **Proprietor:** Kabu.ki
+> **Infrastructure:** Self-Building Infrastructure (Personal Property)
+> **License:** Licensed as personal property to Kabu.ki
+---
+# 🌐 MiOS — Omni-Agent Workspace Bootstrap (GEMINI.md)
 
-[meta]
-project = "MiOS"
-basis = "Persistent Memory Architecture"
-shadow = "Omni-Agent (Claude, Gemini, Cursor, Copilot, Windsurf, Cline)"
-shared_workspace = true
+This file is the mandatory entry point for Gemini-based agents. It imports the global laws and codifies the initialization protocol.
 
-[laws]
-shared_journal = ".claude/memories/journal.md"
-shared_scratchpad = ".claude/shared-tmp/"
-packages = "docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md"
+## 🔗 Global Bootstrap Chain
+- @./AI.md
+- @./.claude/protocols.md
+- @./.claude/memory/MEMORY.md
+- @./.claude/memory/project_no_gcp.md
+- @./.claude/memory/gemini-bootstrap.md
 
-[omni_agent_sync]
-# ALL Agents MUST operate as perfect mirrors of the shared context
-sharing_enabled = true
-memory_source = ".claude/memories/"
-scratchpad_path = ".claude/shared-tmp/"
+---
 
-[omni_agent_sync.rules]
-1 = "Read and write to the shared journal ONLY."
-2 = "Store all transient data and cross-agent 'thoughts' in .claude/shared-tmp/."
-3 = "Never duplicate memory files; always reference the core architecture."
-4 = "Ensure all implementations are recorded in the shared context before completion."
+## ⚖️ THE SIX CORE LAWS
+1.  **THE OMNI-AGENT LAW:** All AI instances operate as synchronized mirrors. One brain — never split it.
+2.  **THE JOURNALING LAW:** Record EVERY action and thought in `.claude/memories/journal.md`.
+3.  **THE BOOTSTRAP LAW:** ALWAYS read `.ai-environment.json` and execute `scripts/ai-bootstrap.sh` upon first message.
+4.  **THE PERSISTENCE LAW:** Automatically refresh environment configs (`.ai-environment.json`, `.env`) and dotfiles at session start/end to clone current state as "latest" for future agents.
+5.  **SHARED SCRATCHPAD PROTOCOL:** Use `.claude/shared-tmp/` for transient cross-agent data.
+6.  **SINGLE SOURCE OF TRUTH (SSOT):** Respect the package manifest in `docs/engineering/` and `.env` settings.
 
-[identity]
-name = "Omni-Agent"
-role = "Synchronized Workspace Component"
-specialization = "Surgical Implementation & Cross-Harness Continuity"
-tonality = "Concise, Technical, Symmetrically Aligned"
+---
+
+## 🛠️ INITIALIZATION PROTOCOL
+Upon first interaction, Gemini MUST:
+1.  **Load Context:** Verify the bootstrap chain is loaded.
+2.  **Sync Environment:** Read `.ai-environment.json` and `.env`.
+3.  **Execute Bootstrap:** Run `bash scripts/ai-bootstrap.sh` to initialize AND refresh state.
+4.  **Synchronize Memory:** Read the last 200 lines of `.claude/memories/journal.md`.
+
+---
+
+## 📂 MEMORY OPERATIONS
+- **Episodic Memory:** Add to `.claude/memories/journal.md`.
+- **Semantic Memory:** Create/Update files in `docs/memory/` and symlink to `.claude/memory/`.
+- **Handoff:** Summarize your session in the journal to provide context for the next agent.
+
+---
+*Omni-Agent Specification v2.1.0*

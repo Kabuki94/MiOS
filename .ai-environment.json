@@ -9,7 +9,7 @@
   "aesthetic_preferences": {
     "fonts": {
       "interface": "Inter",
-      "monospace": "JetBrains Mono",
+      "monospace": "'Geist Mono', monospace",
       "size": 10
     },
     "themes": {
@@ -52,5 +52,6 @@
   "initialization_commands": [
     "python3 tools/generate-ai-manifest.py",
     "cd deep-search-6418 && make install"
-  ]
+  ],
+  "last_refresh": "2026-04-26T14:11:46.740300"
 }
