@@ -500,12 +500,25 @@ if ($SelectedTargets -contains 2) {
 
 # ── WSL ──
 if ($SelectedTargets -contains 3) {
-    Write-Step "TARGET 3 — WSL2 tarball..."
-    $wslCid = & podman create $LocalImage 2>$null
-    if ($wslCid) {
-        # Use -o flag to write directly to file — PS 7 can't pipe binary through Set-Content
-        & podman export $wslCid -o $TargetWsl 2>$null
-        & podman rm $wslCid 2>$null
+    Write-Step "TARGET 3 — WSL2 tarball (via native bootc export)..."
+    if ($HelperImage) {
+        & podman run --rm --privileged -v "${MiosDeployDir}:/output:z" $HelperImage bootc container export --format=tar "oci-archive:/output/wsl.oci" --output /output/mios-wsl.tar
+        if ($LASTEXITCODE -ne 0) {
+            # Fallback for older helper images
+            Write-Warn "bootc export failed, falling back to podman export..."
+            $wslCid = & podman create $LocalImage 2>$null
+            if ($wslCid) {
+                & podman export $wslCid -o $TargetWsl 2>$null
+                & podman rm $wslCid 2>$null
+            }
+        }
+    } else {
+        # Fallback if no helper image exists at all
+        $wslCid = & podman create $LocalImage 2>$null
+        if ($wslCid) {
+            & podman export $wslCid -o $TargetWsl 2>$null
+            & podman rm $wslCid 2>$null
+        }
     }
     if (Test-Path $TargetWsl) { Write-OK "WSL: $(Get-FileSize $TargetWsl)" }
     else { Write-Warn "WSL export failed" }
