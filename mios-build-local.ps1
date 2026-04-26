@@ -47,15 +47,18 @@ $DefHostname    = if ($env:MIOS_HOSTNAME) { $env:MIOS_HOSTNAME } else { "mios" }
 $DefRegistry    = "ghcr.io/kabuki94/mios"
 $BuilderMachine = "mios-builder"
 $LocalImage     = "localhost/${ImageName}:${ImageTag}"
-$MiosDocsDir    = Join-Path ([Environment]::GetFolderPath("MyDocuments")) "MiOS"
-$OutputFolder   = Join-Path $MiosDocsDir "deployments"
-$RechunkImage   = "quay.io/centos-bootc/centos-bootc:stream10"
-$Timeout        = 30
+$MiosDocsDir      = Join-Path ([Environment]::GetFolderPath("MyDocuments")) "MiOS"
+$MiosDeployDir    = Join-Path $MiosDocsDir "deployments"
+$MiosManifestsDir = Join-Path $MiosDocsDir "manifests"
+$MiosImagesDir    = Join-Path $MiosDocsDir "images"
+$OutputFolder     = $MiosDeployDir
+$RechunkImage     = "quay.io/centos-bootc/centos-bootc:stream10"
+$Timeout          = 30
 
-$RawImg         = Join-Path $OutputFolder "mios-bootable.raw"
-$TargetVhdx     = Join-Path $OutputFolder "mios-hyperv.vhdx"
-$TargetWsl      = Join-Path $OutputFolder "mios-wsl.tar"
-$TargetIso      = Join-Path $OutputFolder "mios-installer.iso"
+$RawImg         = Join-Path $MiosImagesDir "mios-bootable.raw"
+$TargetVhdx     = Join-Path $MiosDeployDir "mios-hyperv.vhdx"
+$TargetWsl      = Join-Path $MiosDeployDir "mios-wsl.tar"
+$TargetIso      = Join-Path $MiosImagesDir "mios-installer.iso"
 
 # Helper image: prefer MiOS itself, fall back to alpine/python for first build
 $HelperImage    = ""
@@ -710,6 +713,15 @@ if (Test-Path $TargetIso) { $targets += "ISO: $(Get-FileSize $TargetIso)" }
 foreach ($t in $targets) { Write-OK $t }
 Write-Host ""
 Write-OK "Output folder: $OutputFolder"
+
+# ── Copy Manifests ──
+if (-not (Test-Path $MiosManifestsDir)) { New-Item -ItemType Directory -Path $MiosManifestsDir -Force | Out-Null }
+$manifests = @("root-manifest.json", "ai-context.json")
+foreach ($mf in $manifests) {
+    if (Test-Path $mf) { Copy-Item $mf (Join-Path $MiosManifestsDir $mf) -Force -ErrorAction SilentlyContinue }
+}
+Write-OK "Manifests staged in $MiosManifestsDir"
+
 Write-Host ""
 Write-Host "  MiOS is self-replicating: pull → build → push → repeat" -ForegroundColor Cyan
 Write-Host "  On deployed MiOS:  mios-rebuild" -ForegroundColor Cyan
