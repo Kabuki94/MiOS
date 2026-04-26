@@ -1,0 +1,38 @@
+# MiOS — Universal AI Integration
+> Native AI API Scrapping Index (Snapshot v2.1.0)
+
+## 🏛️ Core Foundation
+- [Core-Blueprint](Core-Blueprint.md)
+- [Core-Infrastructure](Core-Infrastructure.md)
+- [Core-Manifest](Core-Manifest.md)
+- [Core-Operations](Core-Operations.md)
+
+## 🧠 Shared Memory (Active)
+- [Memory-Journal](Memory-Journal.md)
+- [Memory-Work-Plan](Memory-Work-Plan.md)
+- [Memory-Research-Plan](Memory-Research-Plan.md)
+- [Memory-Research-Strategy](Memory-Research-Strategy.md)
+
+## 🛠️ Engineering & Operations
+- [Engineering-Packages](Engineering-Packages.md)
+- [Engineering-Security](Engineering-Security.md)
+- [Engineering-Self-Build](Engineering-Self-Build.md)
+- [Engineering-Testing](Engineering-Testing.md)
+
+## 📚 Knowledge Base (Deep Research)
+- [Knowledge-19-upstream-research-2026-04-26](Knowledge-19-upstream-research-2026-04-26.md)
+- [Knowledge-18-upstream-bootc-composefs-native](Knowledge-18-upstream-bootc-composefs-native.md)
+- [Knowledge-17-upstream-bootc-ecosystem-2025-2026](Knowledge-17-upstream-bootc-ecosystem-2025-2026.md)
+- [Knowledge-12-minimal-gnome-definitive-strategy](Knowledge-12-minimal-gnome-definitive-strategy.md)
+- [Knowledge-10-vfio-gpu-passthrough-fedora-2025](Knowledge-10-vfio-gpu-passthrough-fedora-2025.md)
+- [Knowledge-cpu-isolation-guide](Knowledge-cpu-isolation-guide.md)
+- [Knowledge-looking-glass-integration](Knowledge-looking-glass-integration.md)
+- [Knowledge-vm-cpu-pin-manager-readme](Knowledge-vm-cpu-pin-manager-readme.md)
+- [Knowledge-WSL2-DEPLOYMENT](Knowledge-WSL2-DEPLOYMENT.md)
+- [Knowledge-AI-INTEGRATION](Knowledge-AI-INTEGRATION.md)
+
+## 📜 Historical Audit
+- [Audit-Changelog-v2.1.0](Audit-Changelog-v2.1.0.md)
+- [Audit-Changelog-Cumulative](Audit-Changelog-Cumulative.md)
+- [Audit-Historical-Research-April2026](Audit-Historical-Research-April2026.md)
+- [Audit-Historical-Next-Research](Audit-Historical-Next-Research.md)
