@@ -4,8 +4,13 @@
 # Usage: curl -fsSL https://raw.githubusercontent.com/Kabuki94/MiOS-bootstrap/main/bootstrap.sh | bash
 set -euo pipefail
 
+MIOS_BASE_DIR="$HOME/mios"
+MIOS_CONFIG_DIR="$MIOS_BASE_DIR/configs"
+MIOS_REPO_DIR="$MIOS_BASE_DIR/repo"
+MIOS_BUILDS_DIR="$MIOS_BASE_DIR/builds"
+
 PRIVATE_INSTALLER="https://raw.githubusercontent.com/Kabuki94/mios/main/install.sh"
-_ENV_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/mios/mios-build.env"
+_ENV_FILE="$MIOS_CONFIG_DIR/mios-build.env"
 
 _r=$'\033[0m'; _b=$'\033[1m'; _dim=$'\033[2m'; _c=$'\033[36m'; _g=$'\033[32m'; _red=$'\033[31m'; _y=$'\033[33m'
 
@@ -14,6 +19,10 @@ echo "  ${_c}╔═════════════════════�
 echo "  ${_c}║  MiOS — Local Build Configuration                           ║${_r}"
 echo "  ${_c}╚══════════════════════════════════════════════════════════════╝${_r}"
 echo ""
+
+# ── Stage Directories ──────────────────────────────────────────────────────
+echo "  ${_dim}Staging MiOS environment in $MIOS_BASE_DIR...${_r}"
+mkdir -p "$MIOS_CONFIG_DIR" "$MIOS_REPO_DIR" "$MIOS_BUILDS_DIR"
 
 # ── Load saved build config ────────────────────────────────────────────────
 if [[ -f "$_ENV_FILE" ]]; then
@@ -102,7 +111,6 @@ read -rp "  ${_b}Proceed?${_r} [Y/n]: " _ok </dev/tty
 [[ "${_ok,,}" == "n" ]] && { echo "  Aborted."; exit 0; }
 
 # ── Save build config ──────────────────────────────────────────────────────
-mkdir -p "$(dirname "$_ENV_FILE")"
 {
     printf '# MiOS Build Configuration\n'
     printf '# Generated: %s\n' "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
@@ -118,6 +126,8 @@ echo "  ${_g}[OK]${_r} Build config saved → ${_dim}$_ENV_FILE${_r}"
 
 # ── Fetch and execute private installer ───────────────────────────────────
 export MIOS_AUTOINSTALL=1
+export MIOS_DIR="$MIOS_REPO_DIR"
+export MIOS_BUILDS_DIR="$MIOS_BUILDS_DIR"
 echo ""
 echo "  [+] Fetching private installer..."
 _tmp=$(mktemp /tmp/mios-install-XXXXXX.sh)

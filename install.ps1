@@ -13,15 +13,18 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
         $args += " -Command `"$command`""
     }
 
-    # Pass the token to the elevated process if it exists
-    if ($env:GHCR_TOKEN) {
-        Start-Process powershell.exe -ArgumentList "$args" -Verb RunAs -Environment @{ GHCR_TOKEN = $env:GHCR_TOKEN }
-    } else {
-        Start-Process powershell.exe -ArgumentList "$args" -Verb RunAs
-    }
+    # Pass the token and env to the elevated process if it exists
+    $envHash = @{ GHCR_TOKEN = $env:GHCR_TOKEN }
+    if ($env:MIOS_DIR) { $envHash.MIOS_DIR = $env:MIOS_DIR }
+    if ($env:MIOS_BUILDS_DIR) { $envHash.MIOS_BUILDS_DIR = $env:MIOS_BUILDS_DIR }
+
+    Start-Process powershell.exe -ArgumentList "$args" -Verb RunAs -Environment $envHash
     return
 }
+
 $RepoUrl = "https://github.com/Kabuki94/mios"
+$MiosRepoDir = if ($env:MIOS_DIR) { $env:MIOS_DIR } else { Join-Path $HOME "mios\repo" }
+$MiosBuildsDir = if ($env:MIOS_BUILDS_DIR) { $env:MIOS_BUILDS_DIR } else { Join-Path $HOME "mios\builds" }
 
 # --- Credential Handling ---
 if (-not $env:GHCR_TOKEN) {
@@ -49,6 +52,9 @@ Write-Host "  +==============================================================+" 
 Write-Host ("  |  MiOS {0} -- MiOS Builder (Windows) " -f $Ver).PadRight(65) + "|" -ForegroundColor Cyan
 Write-Host "  +==============================================================+" -ForegroundColor Cyan
 Write-Host ""
+Write-Host "  Repo:   $MiosRepoDir" -ForegroundColor Gray
+Write-Host "  Builds: $MiosBuildsDir" -ForegroundColor Gray
+Write-Host ""
 Write-Host "  1) Run preflight check first (recommended)" -ForegroundColor White
 Write-Host "  2) Clone repo + launch build (mios-build-local.ps1)" -ForegroundColor White
 Write-Host "  3) Download build script only" -ForegroundColor White
@@ -67,25 +73,44 @@ switch ($choice) {
         }
     }
     "2" {
-        $dest = Join-Path $PWD "MiOS"
-        if (Test-Path $dest) {
-            Write-Host "  [OK] Repository found at $dest -- updating..." -ForegroundColor Cyan
-            Push-Location $dest
+        if (-not (Test-Path $MiosRepoDir)) { New-Item -ItemType Directory -Path $MiosRepoDir -Force | Out-Null }
+        
+        if (Test-Path (Join-Path $MiosRepoDir ".git")) {
+            Write-Host "  [OK] Repository found at $MiosRepoDir -- updating..." -ForegroundColor Cyan
+            Push-Location $MiosRepoDir
             git pull --rebase 2>&1 | Out-Null
             Pop-Location
-            Write-Host "  [OK] Updated $dest" -ForegroundColor Green
         }
         else {
             Write-Host "  Cloning $RepoUrl ..." -ForegroundColor Cyan
-            git clone $RepoUrl $dest
+            git clone $RepoUrl $MiosRepoDir
             if ($LASTEXITCODE -ne 0) {
                 Write-Host "  [X] Clone failed" -ForegroundColor Red
                 return
             }
-            Write-Host "  [OK] Repository cloned to $dest" -ForegroundColor Green
+            Write-Host "  [OK] Repository cloned to $MiosRepoDir" -ForegroundColor Green
         }
-        Write-Host "  Launching build script..." -ForegroundColor Cyan
-        Push-Location $dest
+
+        # Stage numbered build folder
+        Write-Host "  Staging numbered build folder..." -ForegroundColor Cyan
+        if (-not (Test-Path $MiosBuildsDir)) { New-Item -ItemType Directory -Path $MiosBuildsDir -Force | Out-Null }
+        
+        $buildFolders = Get-ChildItem $MiosBuildsDir -Directory -Filter "build-*"
+        $lastBuild = 0
+        if ($buildFolders) {
+            $lastBuild = ($buildFolders.Name | ForEach-Object { $_ -replace "build-","" } | ForEach-Object { [int]$_ } | Sort-Object | Select-Object -Last 1)
+        }
+        $nextBuild = $lastBuild + 1
+        $buildPath = Join-Path $MiosBuildsDir "build-$nextBuild"
+        New-Item -ItemType Directory -Path $buildPath -Force | Out-Null
+
+        Write-Host "  Copying repository to $buildPath ..." -ForegroundColor Cyan
+        # Copy-Item with -Recurse and -Force. Use a robust way to copy content including hidden files if needed.
+        # But simple Copy-Item repo/* to build/ is usually fine.
+        Get-ChildItem -Path $MiosRepoDir -Recurse | Copy-Item -Destination { Join-Path $buildPath $_.FullName.Substring($MiosRepoDir.Length) } -Force
+
+        Write-Host "  Launching build script from $buildPath ..." -ForegroundColor Cyan
+        Push-Location $buildPath
         & .\mios-build-local.ps1
         Pop-Location
     }

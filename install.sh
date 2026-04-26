@@ -4,7 +4,8 @@
 set -euo pipefail
 
 REPO="https://github.com/Kabuki94/mios.git"
-DIR="${MIOS_DIR:-$HOME/MiOS}"
+DIR="${MIOS_DIR:-$HOME/mios/repo}"
+BUILDS_DIR="${MIOS_BUILDS_DIR:-$HOME/mios/builds}"
 
 # Read version from repo VERSION file, fallback to hardcoded
 VER="v2.1.0"
@@ -47,12 +48,13 @@ _remote_ver=$(scurl "https://raw.githubusercontent.com/Kabuki94/mios/main/VERSIO
 [[ -n "$_remote_ver" ]] && VER="v${_remote_ver}"
 
 echo "╔══════════════════════════════════════════════════════════════╗"
-printf "║  MiOS %-55s║\n" "$VER — Immutable Cloud-Native Workstation OS"
+printf "║  MiOS %-55s║\n" "$VER — Cloud Native Operating System"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo ""
 
 if [ -f /etc/os-release ]; then . /etc/os-release; echo "  OS: $PRETTY_NAME"; fi
-echo "  Target: $DIR"
+echo "  Repo:   $DIR"
+echo "  Builds: $BUILDS_DIR"
 echo ""
 
 # Show detected bootstrap config if present
@@ -78,8 +80,22 @@ case "$choice" in
   1)
     echo ""
     echo "Cloning $REPO ..."
+    mkdir -p "$(dirname "$DIR")"
     git clone "$REPO" "$DIR" 2>/dev/null || { cd "$DIR" && git pull; }
-    cd "$DIR"
+
+    # Stage numbered build folder
+    echo "  Staging numbered build folder..."
+    mkdir -p "$BUILDS_DIR"
+    _last_build=$(ls -d "$BUILDS_DIR"/build-* 2>/dev/null | grep -oE '[0-9]+$' | sort -n | tail -1 || echo 0)
+    _next_build=$((_last_build + 1))
+    _build_path="$BUILDS_DIR/build-$_next_build"
+    mkdir -p "$_build_path"
+    
+    # Copy repo to build folder (clean slate for build)
+    echo "  Copying repository to $_build_path ..."
+    cp -r "$DIR"/. "$_build_path/"
+    cd "$_build_path"
+
     echo ""
     echo "Building OCI image..."
     _pw_hash=""
@@ -99,7 +115,7 @@ case "$choice" in
         echo "✓ Image built: localhost/mios:latest"
         echo ""
         echo "Deploy options:"
-        echo "  Bare metal:  sudo podman run --rm -it --privileged --pid=host localhost/mios:latest bootc install to-disk /dev/sdX"
+        echo "  Bare metal:  sudo podman run --rm -it --privileged --pid=host localhost/mios:latest mios-install /dev/sdX"
         echo "  Switch live: sudo bootc switch --transport containers-storage localhost/mios:latest"
         echo "  Run locally: podman run -d --name mios-local -p 9090:9090 --systemd=true --privileged localhost/mios:latest"
     elif command -v docker &>/dev/null; then
@@ -113,6 +129,7 @@ case "$choice" in
   2)
     echo ""
     echo "Cloning $REPO ..."
+    mkdir -p "$(dirname "$DIR")"
     git clone "$REPO" "$DIR" 2>/dev/null || { cd "$DIR" && git pull; }
     echo ""
     echo "✓ Repository cloned to $DIR"
@@ -173,7 +190,7 @@ case "$choice" in
             -v /var/lib/containers:/var/lib/containers \
             -v /dev:/dev \
             ${_luks_vol} \
-            localhost/mios:latest bootc install to-disk $luks_flag "/dev/$disk"
+            localhost/mios:latest mios-install $luks_flag "/dev/$disk"
         [ -n "$luks_tmpfile" ] && shred -u "$luks_tmpfile" 2>/dev/null || true
         echo ""
         echo "✓ MiOS installed to /dev/$disk. Reboot to start."

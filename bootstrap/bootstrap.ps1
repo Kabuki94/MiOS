@@ -3,8 +3,14 @@
 # Usage: irm https://raw.githubusercontent.com/Kabuki94/MiOS-bootstrap/main/bootstrap.ps1 | iex
 
 $ErrorActionPreference = "Stop"
+
+$MiosBaseDir = Join-Path $HOME "mios"
+$MiosConfigDir = Join-Path $MiosBaseDir "configs"
+$MiosRepoDir = Join-Path $MiosBaseDir "repo"
+$MiosBuildsDir = Join-Path $MiosBaseDir "builds"
+
 $PrivateInstaller = "https://raw.githubusercontent.com/Kabuki94/mios/main/install.ps1"
-$EnvFile = Join-Path $env:APPDATA "MiOS\mios-build.env"
+$EnvFile = Join-Path $MiosConfigDir "mios-build.env"
 
 function Read-Secret {
     param([string]$Prompt)
@@ -76,6 +82,12 @@ Write-Host "  +==============================================================+" 
 Write-Host "  |  MiOS -- Local Build Configuration                          |" -ForegroundColor Cyan
 Write-Host "  +==============================================================+" -ForegroundColor Cyan
 Write-Host ""
+
+# ── Stage Directories ──────────────────────────────────────────────────────
+Write-Host "  Staging MiOS environment in $MiosBaseDir..." -ForegroundColor Gray
+foreach ($d in @($MiosConfigDir, $MiosRepoDir, $MiosBuildsDir)) {
+    if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }
+}
 
 # ── Load saved build config ───────────────────────────────────────────────
 if (Test-Path $EnvFile) {
@@ -164,6 +176,8 @@ Write-Host "  [OK] Build config saved -> $EnvFile" -ForegroundColor Green
 
 # ── Fetch and execute private installer ───────────────────────────────────────
 $env:MIOS_AUTOINSTALL = "1"
+$env:MIOS_DIR = $MiosRepoDir
+$env:MIOS_BUILDS_DIR = $MiosBuildsDir
 $target = "$env:TEMP\mios-install-$(Get-Random).ps1"
 $headers = @{ Authorization = "token $($env:GHCR_TOKEN)" }
 
