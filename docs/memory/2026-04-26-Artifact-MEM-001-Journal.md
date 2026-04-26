@@ -2011,3 +2011,20 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   4. **Config Update:** Added OpenAI proxy endpoint options to `deep-search-6418/.env.example`.
   5. **Sync:** Re-generated all manifests and synced documentation links.
 * **RESULT:** The repository and its agent suite now conform to the latest industry standards for OpenAI-compatible deployment and metadata parsing.
+
+---
+### ⚖️ Legal & Source Reference
+- **Copyright:** (c) 2026 Kabu.ki
+- **Status:** Personal Property / Private Infrastructure
+- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/docs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
+---
+### [2026-04-26 13:00:00 UTC] [AI: Gemini CLI]
+* **TYPE:** RECTIFICATION — BRANDING ALIGNMENT
+* **THOUGHT:** Corrected a branding error where ADK prototypes were mislabeled as an official "MiOS Agent Framework". Removed non-existent feature claims while preserving the core capability for repository parsability and standard agent deployment specs.
+* **ACTION:** 
+  1. **Branding Fix:** Removed `/.well-known/ai-plugin.json` and `/.well-known/openapi.yaml` which incorrectly claimed "MiOS Agents" as a built-in feature.
+  2. **Refactoring:** Rewrote `docs/knowledge/research/2026-04-26-Artifact-KBX-024-OpenAI-Integration.md` to focus on project-wide context ingestion (via llms.txt) and standard ADK agent deployment protocols.
+  3. **Consistency:** Updated Home.md, Sidebar, and root llms.txt to use the corrected "OpenAI Parsability & Agent Standards" terminology.
+* **RESULT:** The repository remains natively parseable by OpenAI systems without claiming non-existent OS features.

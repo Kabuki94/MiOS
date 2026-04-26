@@ -5,38 +5,36 @@
 > **Source Reference:** MiOS-Core-v2.1.0
 ---
 
-# 🤖 OpenAI Compatibility & Multi-Agent Standard Deployments
+# 🤖 OpenAI Parsability & Standard Agent Deployment
 
-This research document outlines how the MiOS multi-agent architecture complies with OpenAI's native standards, enabling self-hosted API key instances and robust integrations with industry-standard AI tooling.
+This document outlines the implementation of industry standards to ensure the MiOS repository is natively parseable by OpenAI-compatible systems and capable of deploying ADK-based agents using standard protocols.
 
-## 🚀 Native Repository Parsability (OpenAI GPTs & Web Crawlers)
+## 🚀 Repository Parsability (LLM Context Ingestion)
 
-To ensure this repository is parsable natively by OpenAI and other compliant AI systems, the following industry-standard configuration files have been established:
+To enable OpenAI and other AI systems to natively understand the project architecture without manual context injection, the following standards have been implemented:
 
-1. **`/llms.txt` (Root-Level)**
-   - Acts as the primary entry point for LLM crawlers.
-   - Provides a comprehensive, machine-readable index mapping to all architectural artifacts within `docs/`.
-   - Replicates the index from `docs/llms.txt` but ensures parsers do not have to "hunt" for it.
+1. **`/llms.txt` (Root & .well-known/)**
+   - Implements the emergent industry standard for machine-readable project summaries.
+   - Provides a curated index of the `docs/` directory, mapping architectural intent directly to AI scrapers.
+   - This allows any OpenAI-compatible tool to ingest the entire "MiOS brain" in a single pass.
 
-2. **`/.well-known/ai-plugin.json`**
-   - Implements the standard OpenAI Plugin configuration.
-   - Allows OpenAI Custom GPTs (or any self-hosted instances utilizing the API key pattern) to ingest the MiOS agent environment securely without custom client code.
+## 🔌 Standard Agent Deployment (ADK Architecture)
 
-3. **`/.well-known/openapi.yaml`**
-   - Describes the REST-based, multi-agent `/v1/chat/completions` compliant endpoint.
-   - By conforming to the `openapi` spec, the repository declares precisely how to connect to deployed MiOS agents using industry-standard endpoints (e.g., `api_server` wrapped by a LiteLLM proxy).
+While MiOS itself is an Operating System, the repository hosts agent implementations (e.g., `deep-search-6418`) built on the **Google Agent Starter Pack (ADK)**. These can be deployed to industry standards using the following pattern:
 
-## 🔌 Multi-Agent Deployment Strategy
+### 1. OpenAI-Compatible API Layer
+Standard deployments for self-hosted agents utilize an OpenAI-compatible translation layer (e.g., LiteLLM or vLLM). 
+- **Endpoint:** `/v1/chat/completions`
+- **Auth:** Standard `OPENAI_API_KEY` header.
+- **Workflow:** Standardizes agentic communication so the backend logic (ADK) can be targeted by any industry-standard UI or orchestration tool (e.g., OpenWebUI, Dify, or LangGraph).
 
-The `deep-search-6418` module currently utilizes Google's Agent Starter Pack (ADK). To adapt this infrastructure for **OpenAI self-hosted API instances**, MiOS employs an API translation layer.
+### 2. Deployment Spec
+Agents in this repository are designed to run as containerized services:
+- **Containerization:** All agents include a `Containerfile` or `Dockerfile` to run as isolated pods on the MiOS node.
+- **Interoperability:** By conforming to the OpenAI REST specification via a proxy, agents can be clustered and addressed as standard API endpoints.
 
-### The "Standard" Pathway:
-- **Proxy Layer (LiteLLM / vLLM):** Deploying a lightweight OpenAI-to-Gemini translation proxy ensures the native ADK framework can still be targeted by standard OpenAI API clients.
-- **Environment Parity:** Multi-agent swarms orchestrated via tools like `LangGraph`, `AutoGen`, or `Swarm` can natively interact with the MiOS agent stack by setting `OPENAI_BASE_URL` to point to the proxy endpoint.
-- **Authentication:** For self-hosted keys, the proxy manages rate-limiting and validates the ingress API Key before passing the authenticated request to the underlying multi-agent engine.
-
-## 📝 Conclusion & Action Items
-By deploying `.well-known` configuration schemas and an `llms.txt` at the root, the entire repository is now structured to natively support direct parsing, context retrieval, and remote execution via any OpenAI-compatible client or custom GPT instance.
+## 📝 Conclusion
+The repository is optimized for **direct AI ingestion** via `llms.txt`. Agent implementations within the repo follow standard ADK patterns and are ready for deployment via OpenAI-compatible API proxies.
 
 ---
 ### ⚖️ Legal & Source Reference
