@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🌐 MiOS — Universal AI Integration
+# 🌐 MiOS — Cloud Native Operating System
 # Greenboot health check: K3s status (optional)
 
 # Check if k3s is enabled

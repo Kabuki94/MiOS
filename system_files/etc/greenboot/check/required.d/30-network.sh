@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🌐 MiOS — Universal AI Integration
+# 🌐 MiOS — Cloud Native Operating System
 # Greenboot health check: Network reachability
 
 set -e

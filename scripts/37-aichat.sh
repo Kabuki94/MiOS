@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🌐 MiOS — Universal AI Integration
+# 🌐 MiOS — Cloud Native Operating System
 # 37-aichat: Install AIChat and AIChat-NG Rust CLI tools
 set -euo pipefail
 # shellcheck source=lib/common.sh

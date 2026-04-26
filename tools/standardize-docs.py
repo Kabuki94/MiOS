@@ -1,7 +1,7 @@
 import os
 import re
 
-HEADER = """# 🌐 MiOS — Universal AI Integration
+HEADER = """# 🌐 MiOS — Cloud Native Operating System
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki

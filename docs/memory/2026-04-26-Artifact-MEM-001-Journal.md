@@ -1,4 +1,4 @@
-# 🌐 MiOS — Universal AI Integration
+# 🌐 MiOS — Cloud Native Operating System
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
@@ -2516,3 +2516,9 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   5. **Navigation Refresh:** Updated `docs/Home.md` and `docs/llms.txt` to reflect the new paths and follow the requested "🌐 MiOS Navigation" style.
   6. **Manifest Sync:** Re-generated all `manifest.json` files using `tools/generate-ai-manifest.py`.
 * **RESULT:** The repository is now clean, and the documentation follows a strict, versioned artifact pattern that is both human-readable and optimized for AI context retrieval.
+
+### [2026-04-26 05:45:00 UTC] [AI: Gemini CLI]
+* **TYPE:** GLOBAL REBRANDING
+* **THOUGHT:** Updated the project title to better reflect its architecture and purpose as a container-native OS.
+* **ACTION:** Replaced all occurrences of "MiOS — Universal AI Integration" with "MiOS — Cloud Native Operating System" across all documentation, scripts, and configuration files.
+* **RESULT:** The MiOS brand is now consistently aligned with its "Cloud Native Operating System" identity throughout the repository.

@@ -1,4 +1,4 @@
-# MiOS — Universal AI Integration
+# MiOS — Cloud Native Operating System
 > Native AI API Scrapping Index (Snapshot v2.1.0)
 
 ## 🏛️ Core Foundation
