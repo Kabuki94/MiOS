@@ -1,44 +1,49 @@
-# 🌐 MiOS — Cloud Native Operating System
-> **Proprietor:** Kabu.ki
-> **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
----
-# 🌐 MiOS — Omni-Agent Workspace Bootstrap (GEMINI.md)
+# MiOS — Windsurf Rules
 
-This file is the mandatory entry point for Gemini-based agents. It imports the global laws and codifies the initialization protocol.
+Read `AI.md` in this directory for the complete architecture, laws, and provider index.
 
-## 🔗 Global Bootstrap Chain
-- @./AI.md
-- @./.claude/protocols.md
-- @./.claude/memory/MEMORY.md
-- @./.claude/memory/project_no_gcp.md
-- @./.claude/memory/gemini-bootstrap.md
+## Project
 
----
+MiOS is a bootc-based immutable workstation OS on Fedora Rawhide. One OCI image covers all roles.
+The root filesystem is STRICTLY read-only at runtime — never suggest `dnf install` on the deployed host.
 
-## ⚖️ THE SIX CORE LAWS
-1.  **THE OMNI-AGENT LAW:** All AI instances operate as synchronized mirrors. One brain — never split it.
-2.  **THE JOURNALING LAW:** Record EVERY action and thought in `.claude/memories/journal.md`.
-3.  **THE BOOTSTRAP LAW:** ALWAYS read `.ai-environment.json` and execute `scripts/ai-bootstrap.sh` upon first message.
-4.  **THE PERSISTENCE LAW:** Automatically refresh environment configs (`.ai-environment.json`, `.env`) and dotfiles at session start/end to clone current state as "latest" for future agents.
-5.  **SHARED SCRATCHPAD PROTOCOL:** Use `.claude/shared-tmp/` for transient cross-agent data.
-6.  **SINGLE SOURCE OF TRUTH (SSOT):** Respect the package manifest in `docs/engineering/` and `.env` settings.
+## Critical rules
 
----
+### kargs.d TOML — only this format is valid:
+```toml
+kargs = ["key=value", "flag"]
+```
+Never: `[kargs]` section header · `delete =` · `kargs.append =` · `[[kargs]]`
 
-## 🛠️ INITIALIZATION PROTOCOL
-Upon first interaction, Gemini MUST:
-1.  **Load Context:** Verify the bootstrap chain is loaded.
-2.  **Sync Environment:** Read `.ai-environment.json` and `.env`.
-3.  **Execute Bootstrap:** Run `bash scripts/ai-bootstrap.sh` to initialize AND refresh state.
-4.  **Synchronize Memory:** Read the last 200 lines of `.claude/memories/journal.md`.
+### Bash
+- `VAR=$((VAR + 1))` always — never `((VAR++))` (exits 1 when result=0, kills script under `set -e`)
+- `set -euo pipefail` required in all scripts
+- Never `dnf install kernel` inside the container; never `--squash-all` on `podman build`
 
----
+### GNOME
+- Never `GTK_THEME=Adwaita:dark` → use `ADW_DEBUG_COLOR_SCHEME=prefer-dark`
+- `xorgxrdp-glamor` only (not bare `xorgxrdp`)
 
-## 📂 MEMORY OPERATIONS
-- **Episodic Memory:** Add to `.claude/memories/journal.md`.
-- **Semantic Memory:** Create/Update files in `docs/memory/` and symlink to `.claude/memory/`.
-- **Handoff:** Summarize your session in the journal to provide context for the next agent.
+### Immutable OS invariants
+- All system config in `system_files/` — no top-level overlay directories
+- Never `mkdir /var/...` in scripts — use `tmpfiles.d`
+- Never `semodule -i` at build time — stage in `/usr/share/selinux/packages/`
+- Never `dnf install` at runtime on the deployed host
 
----
-*Omni-Agent Specification v2.1.0*
+### NVIDIA
+- Blacklisted by default; unblacklisted only on bare metal via `34-gpu-detect.sh`
+- Never ship `nvidia-drm.modeset=1` unconditionally
+
+### Packages
+- `docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` is the SSOT
+- Fenced block format: ` ```packages-<category> `
+
+## Build
+```bash
+just build && just lint
+./tests/smoke-test.sh localhost/mios:dev
+```
+
+## Memory
+Append actions to `.claude/memories/journal.md` with `[AI: Windsurf]` tag.
+Shared scratchpad: `.claude/shared-tmp/`

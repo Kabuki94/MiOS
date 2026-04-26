@@ -1,1 +1,44 @@
-AI.md
+# MiOS — Cursor Rules
+
+Read `AI.md` in this directory for the complete architecture, laws, and provider index.
+
+## Project
+
+MiOS is a bootc-based immutable workstation OS on Fedora Rawhide. One OCI image covers all roles.
+The root filesystem is STRICTLY read-only at runtime — never suggest `dnf install` on the deployed host.
+
+## Most critical rules (Cursor gets these wrong most often)
+
+### kargs.d TOML — only this format is valid:
+```toml
+kargs = ["key=value", "flag"]
+```
+Never: `[kargs]` section header · `delete =` · `kargs.append =` · `[[kargs]]`
+
+### Bash
+- `VAR=$((VAR + 1))` always — never `((VAR++))` (exits 1 when result=0, kills script under `set -e`)
+- Never `dnf install kernel` inside the container
+
+### GNOME
+- Never `GTK_THEME=Adwaita:dark` → use `ADW_DEBUG_COLOR_SCHEME=prefer-dark`
+- `xorgxrdp-glamor` only (not bare `xorgxrdp`)
+
+### System files
+- All system config in `system_files/` overlay — never top-level overlay directories
+- Never `mkdir /var/...` in scripts — use `tmpfiles.d`
+
+### Packages
+- `docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` is the SSOT for all packages
+- Fenced block format: ` ```packages-<category> `
+- Never add packages outside this system
+
+## Build
+```bash
+just build          # Build OCI image
+just lint           # bootc container lint
+./tests/smoke-test.sh localhost/mios:dev
+```
+
+## Memory
+Append actions to `.claude/memories/journal.md` with `[AI: Cursor]` tag.
+Shared scratchpad: `.claude/shared-tmp/`

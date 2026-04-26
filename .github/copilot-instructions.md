@@ -162,4 +162,4 @@ and redeliver complete replacement files.
 
 ---
 
-*See `CLAUDE.md`. When this file disagrees with `CLAUDE.md`, `CLAUDE.md` wins.*
+*When this file disagrees with `AI.md`, `AI.md` wins.*

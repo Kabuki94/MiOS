@@ -1,0 +1,18 @@
+# Aider configuration for MiOS
+# https://aider.chat/docs/config/aider_conf.html
+
+model: claude-sonnet-4-6
+edit-format: diff
+auto-commits: false
+dirty-commits: false
+
+# Load project context at session start
+read:
+  - AI.md
+  - .claude/memory/MEMORY.md
+
+# Never auto-commit — changes need human review before pushing
+# Use push-to-github.ps1 for releases
+
+# Ignore generated/binary outputs
+aiderignore: .aiderignore

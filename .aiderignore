@@ -1,0 +1,6 @@
+output/
+deep-search-6418/.venv/
+deep-search-6418/frontend/node_modules/
+.claude/memories/journal.md
+docs/memory/
+artifacts/
