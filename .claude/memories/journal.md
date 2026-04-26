@@ -1,1 +1,1 @@
-../../docs/Memories-Journal.md
+/home/corey_dl_taylor/mios/docs/memory/2026-04-26-Artifact-MEM-001-Journal.md
