@@ -1,0 +1,22 @@
+{
+  "project": "mios-dev-20260426",
+  "output_path": "gs://mios-dev-20260426-vertex/results/run-1/",
+  "target_model": "gemini-1.5-flash",
+  "optimizer_model": "gemini-1.5-pro",
+  "prompt_template": "You are an expert in immutable, bootc-based operating systems. Your task is to conduct deep research into the provided query, leveraging the full context of the MiOS repository. Synthesize information from documentation, scripts, and architectural mandates to provide comprehensive, actionable solutions and analysis.\n\nQuery: {{input}}",
+  "train_input_data_path": "gs://mios-dev-20260426-vertex/data/train.csv",
+  "test_input_data_path": "gs://mios-dev-20260426-vertex/data/test.csv",
+  "data_vars": [
+    "input",
+    "target"
+  ],
+  "label_variable": "target",
+  "eval_metrics_types": [
+    "exact_match"
+  ],
+  "eval_metrics_weights": [
+    1.0
+  ],
+  "num_steps": 10,
+  "population_size": 4
+}
