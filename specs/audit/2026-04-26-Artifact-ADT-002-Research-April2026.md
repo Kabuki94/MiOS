@@ -549,7 +549,7 @@ Cosign v3 enables `--new-bundle-format` (protobuf) by default, incompatible with
 
 **Cayo (future base image — watch):**
 
-`ublue-os/cayo` is the bootc-native HCI successor to ucore-hci. It is composefs-native from inception, designed to work with `bootc container ukify` for UKI Secure Boot, and targets the F44/F45 timeframe for production readiness. MiOS-2 should evaluate cayo as a MiOS-3 base migration candidate when it reaches stable status.
+`ublue-os/cayo` is the bootc-native HCI successor to ucore-hci. It is composefs-native from inception, designed to work with `bootc container ukify` for UKI Secure Boot, and targets the F44/F45 timeframe for production readiness. MiOS-2 should evaluate cayo as a MiOS-DEV base migration candidate when it reaches stable status.
 <!-- FINDINGS END -->
 
 ---

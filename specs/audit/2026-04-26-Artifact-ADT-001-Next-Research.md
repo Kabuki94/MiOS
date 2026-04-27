@@ -95,7 +95,7 @@ Order reflects decreasing urgency.
 - Confirm `45-nvidia-cdi-refresh.sh` ≥1.18 requirement satisfied (v1.19.0 > 1.18 ✅)
 
 ### 6. ublue-os/cayo stability check (monthly)
-- Monitor ublue-os/cayo for MiOS-3 base migration candidacy. This monitoring is crucial for evaluating its suitability as a future base image.
+- Monitor ublue-os/cayo for MiOS-DEV base migration candidacy. This monitoring is crucial for evaluating its suitability as a future base image.
 - Still not production-stable as of April 2026
 
 ### 7. Waydroid #1883 (monthly)

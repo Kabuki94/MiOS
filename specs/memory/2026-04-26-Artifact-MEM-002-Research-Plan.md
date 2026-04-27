@@ -87,7 +87,7 @@
 | `cockpit.socket` race with `libvirtd.socket` | Add `After=libvirtd.socket` to `cockpit.socket.d/10-mios.conf` |
 | `libvirtd` 45s shutdown timeout too short | Already fixed in `libvirtd.service.d/10-mios.conf` (TimeoutStopSec=120) |
 | `uBlue COPR repos disabled before generic installs` (Apr 2026 commit) | If MiOS re-enables COPR repos, wrap with explicit enable/disable |
-| `ublue-os/cayo` — composefs-native HCI successor to ucore-hci | Monitor for MiOS-3 base migration (no action now) |
+| `ublue-os/cayo` — composefs-native HCI successor to ucore-hci | Monitor for MiOS-DEV base migration (no action now) |
 
 ### 2.4 Cosign / Signing (CRITICAL — DO NOT UPGRADE)
 | Finding | MiOS Action |

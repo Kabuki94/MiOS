@@ -47,7 +47,7 @@ MiOS v0.1.3 (running) → builds → MiOS v0.1.4 (OCI image)
                                         ↓
                               MiOS v0.1.4 (running via bootc upgrade)
                                         ↓
-                                  builds → MiOS-3 / MiOS-NXT ...
+                                  builds → MiOS-DEV / MiOS-NXT ...
 ```
 
 ## Build Modes
