@@ -3,7 +3,7 @@ set -euo pipefail
 
 # This script runs on boot to copy the embedded build log to the mios user's home directory.
 
-SOURCE_LOG="/usr/share/mios/build-logs/latest-build.log"
+SOURCE_LOG="/usr/lib/mios/logs/build.log"
 DEST_DIR="/home/mios/logs"
 DEST_LOG="${DEST_DIR}/last-build.log"
 

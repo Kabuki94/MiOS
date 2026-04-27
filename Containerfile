@@ -112,10 +112,6 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     /ctx/automation/37-ollama-prep.sh && \
     /ctx/automation/50-enable-log-copy-service.sh
 
-# Preserve build logs
-RUN mkdir -p /usr/lib/mios/logs \
- && cp -v /var/log/dnf5.log* /var/log/hawkey.log /usr/lib/mios/logs/ 2>/dev/null || true
-
 # MANDATORY CLEANUP for bootc container lint
 RUN rm -rf /var/log/* /var/tmp/* /var/cache/dnf/* /var/cache/libdnf5/* /tmp/* \
  && find /run -mindepth 1 -maxdepth 1 ! -name 'secrets' -exec rm -rf {} + 2>/dev/null || true

@@ -25,7 +25,14 @@ fi
 echo "✓ Bootstrap repository: ${BOOTSTRAP_REPO}"
 echo ""
 
-# Create Linux FS native structure
+# 1. Generate Unified Knowledge (compaction and mapping)
+echo "▶ Generating Unified Knowledge Hub and UKB snapshot..."
+if [[ -f "${SCRIPT_DIR}/generate-unified-knowledge.py" ]]; then
+    python3 "${SCRIPT_DIR}/generate-unified-knowledge.py"
+    echo "✓ Knowledge Hub and UKB generated"
+fi
+
+# 2. Create Linux FS native structure
 echo "▶ Creating Linux filesystem native structure..."
 
 # /var/log - Build logs and runtime logs
@@ -96,8 +103,11 @@ echo "✓ Snapshots copied"
 
 # Copy documentation to /usr/share/doc
 echo "▶ Copying documentation to /usr/share/doc/mios..."
-for doc in INDEX.md README.md AI-AGENT-GUIDE.md SELF-BUILD.md SECURITY.md llms.txt; do
-    if [[ -f "${REPO_ROOT}/${doc}" ]]; then
+for doc in Knowledge-Hub.md INDEX.md README.md AI-AGENT-GUIDE.md SELF-BUILD.md SECURITY.md llms.txt; do
+    if [[ -f "${REPO_ROOT}/specs/${doc}" ]]; then
+        cp -v "${REPO_ROOT}/specs/${doc}" \
+            "${BOOTSTRAP_REPO}/usr/share/doc/mios/${MIOS_VERSION}/"
+    elif [[ -f "${REPO_ROOT}/${doc}" ]]; then
         cp -v "${REPO_ROOT}/${doc}" \
             "${BOOTSTRAP_REPO}/usr/share/doc/mios/${MIOS_VERSION}/"
     fi
@@ -420,6 +430,7 @@ All documentation follows Linux Filesystem Hierarchy Standard:
 
 \`\`\`
 /usr/share/doc/mios/${MIOS_VERSION}/
+├── Knowledge-Hub.md    # 🧠 Unified Knowledge Hub
 ├── INDEX.md
 ├── README.md  
 ├── AI-AGENT-GUIDE.md
@@ -429,6 +440,10 @@ All documentation follows Linux Filesystem Hierarchy Standard:
 ├── ai-integration/     # 6 AI integration guides
 └── engineering/        # Engineering specs
 \`\`\`
+
+## 🧠 Knowledge Hub
+
+- [**Unified Knowledge Hub**](Knowledge-Hub) — Navigable index of all MiOS knowledge, memories, and research.
 
 ## 📚 Core Documentation
 

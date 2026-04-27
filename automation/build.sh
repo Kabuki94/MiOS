@@ -8,7 +8,9 @@ source "${SCRIPT_DIR}/lib/common.sh"
 register_common_masks
 
 export PACKAGES_MD="${PACKAGES_MD:-/ctx/PACKAGES.md}"
-BUILD_LOG="/tmp/mios-build-internal.log"
+BUILD_LOG_DIR="/usr/lib/mios/logs"
+mkdir -p "$BUILD_LOG_DIR"
+BUILD_LOG="${BUILD_LOG_DIR}/build.log"
 STATE_DIR="/tmp/mios-build-state"
 mkdir -p "$STATE_DIR"
 
@@ -100,7 +102,16 @@ fi
 
 # ── Cleanup ─────────────────────────────────────────────────────────────────
 log_ts "==> Final build cleanup..."
-rm -rf /var/cache/dnf/* /var/cache/libdnf5/* /tmp/*
+rm -rf /var/cache/dnf/* /var/cache/libdnf5/*
+
+# ── Artifact Unification: Snapshot Repository State ─────────────────────────
+# Capture the entire repo state from /ctx into the artifacts folder
+if [[ -d "/ctx" ]]; then
+    log_ts "==> Creating repository artifact snapshot..."
+    ARTIFACT_DIR="/usr/lib/mios/artifacts"
+    mkdir -p "$ARTIFACT_DIR"
+    tar -cJf "${ARTIFACT_DIR}/repo-snapshot.tar.xz" -C /ctx . 2>/dev/null || true
+fi
 
 TOTAL_ELAPSED=$(( SECONDS - TOTAL_START ))
 MIN=$(( TOTAL_ELAPSED / 60 ))
