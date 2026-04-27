@@ -1,10 +1,62 @@
 #!/bin/bash
 set -euo pipefail
-echo "MiOS v2.1.0 — Checking for updates..."
-ORIGIN=$(bootc status 2>/dev/null | grep -i "image:" | head -1 | awk '{print $NF}' || echo "")
+
+JSON_MODE=false
+CHECK_ONLY=false
+
+for arg in "$@"; do
+    case $arg in
+        --json) JSON_MODE=true ;;
+        --check-only) CHECK_ONLY=true ;;
+    esac
+done
+
+if [[ "$JSON_MODE" == "false" ]]; then
+    echo "MiOS v2.1.0 — Checking for updates..."
+fi
+
+ORIGIN=$(bootc status 2>/dev/null | grep -i "image:" | head -1 | awk '{print $NF}' || echo "unknown")
+
 if echo "$ORIGIN" | grep -q "localhost"; then
-    echo "WARNING: Update origin is localhost — switching to GHCR..."
-    sudo bootc switch ghcr.io/kabuki94/mios:latest
+    if [[ "$JSON_MODE" == "true" ]]; then
+        echo '{"status": "error", "error": "origin_localhost", "message": "Update origin is localhost - switch to GHCR required"}'
+        exit 1
+    else
+        echo "WARNING: Update origin is localhost — switching to GHCR..."
+        sudo bootc switch ghcr.io/kabuki94/mios:latest
+    fi
+fi
+
+if [[ "$CHECK_ONLY" == "true" ]]; then
+    # We don't have a standard 'check' command in bootc that returns a clean status without staging,
+    # so we report the current image origin and status.
+    STAGED=$(bootc status 2>/dev/null | grep -A 5 "Staged" || echo "")
+    if [[ "$JSON_MODE" == "true" ]]; then
+        if [[ -n "$STAGED" ]]; then
+            echo "{\"status\": \"staged\", \"current_image\": \"$ORIGIN\", \"message\": \"An update is already staged and pending reboot.\"}"
+        else
+            echo "{\"status\": \"up_to_date\", \"current_image\": \"$ORIGIN\"}"
+        fi
+    else
+        echo "Current image: $ORIGIN"
+        if [[ -n "$STAGED" ]]; then
+            echo "Notice: An update is already staged."
+        fi
+    fi
+    exit 0
+fi
+
+if [[ "$JSON_MODE" == "true" ]]; then
+    # Run upgrade and capture output
+    UPGRADE_OUT=$(sudo bootc upgrade 2>&1 || true)
+    if echo "$UPGRADE_OUT" | grep -q "Staging update"; then
+        echo "{\"status\": \"staged\", \"current_image\": \"$ORIGIN\", \"message\": \"New update staged successfully. Reboot required.\"}"
+    elif echo "$UPGRADE_OUT" | grep -q "No update available"; then
+        echo "{\"status\": \"up_to_date\", \"current_image\": \"$ORIGIN\"}"
+    else
+        echo "{\"status\": \"error\", \"message\": \"$(echo $UPGRADE_OUT | tr '\n' ' ')\"}"
+        exit 1
+    fi
 else
     echo "Current image: $ORIGIN"
     sudo bootc upgrade

@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "mios_update",
+        "description": "Check for and apply MiOS system updates via bootc. Can return current image status or stage new updates.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "json": {
+              "type": "boolean",
+              "description": "Return output in machine-readable JSON format. Mandatory for AI API calls.",
+              "default": true
+            },
+            "check_only": {
+              "type": "boolean",
+              "description": "Only check for updates without staging or applying them.",
+              "default": false
+            }
+          },
+          "required": ["json"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mios_status",
+        "description": "Get detailed system and service status information for the MiOS node.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "json": {
+              "type": "boolean",
+              "description": "Return output in machine-readable JSON format.",
+              "default": true
+            }
+          }
+        }
+      }
+    }
+  ]
+}

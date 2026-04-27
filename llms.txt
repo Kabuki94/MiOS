@@ -17,6 +17,9 @@ MiOS is a bootc-based, self-building, immutable workstation OS on Fedora Rawhide
 - [Package-Manifest](https://github.com/Kabuki94/mios/blob/main/docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md): SSOT for all system components.
 - [Build-Pipeline](https://github.com/Kabuki94/mios/blob/main/Containerfile): The OCI build process and stage logic.
 
+## 🔌 Programmable Interface
+- [AI-Tools](https://github.com/Kabuki94/mios/blob/main/.well-known/ai-tools.json): OpenAI-compatible function calling schemas for MiOS CLI tools.
+
 ## 🔬 Research Presets
 - [Bootc-Advances](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/research/2026-04-26-Artifact-KBX-01-bootc-ecosystem-advances-2025-2026.md)
 - [GPU-Passthrough](https://github.com/Kabuki94/mios/blob/main/docs/knowledge/research/2026-04-26-Artifact-KBX-10-vfio-gpu-passthrough-fedora-2025.md)

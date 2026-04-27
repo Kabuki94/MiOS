@@ -14,6 +14,7 @@
     "bib_configs": "bib-configs/manifest.json",
     "research_presets": "docs/knowledge/research/manifest.json",
     "deep_search": "GCE-Research/manifest.json",
+    "ai_tools": ".well-known/ai-tools.json",
     "root": "root-manifest.json"
   },
   "standard_formats": {
