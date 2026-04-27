@@ -10,7 +10,7 @@
     "home",
     "navigation"
   ],
-  "last_rag_sync": "2026-04-27T04:00:15.767508",
+  "last_rag_sync": "2026-04-27T04:24:46.740043",
   "version": "0.1.1"
 }
 ```
@@ -25,6 +25,7 @@
 - 🌐 MiOS — Cloud Native Operating System ([Infrastructure Topology](https://github.com/Kabuki94/mios/blob/main/specs/core/2026-04-26-Artifact-COR-002-Infrastructure.md))
 - 🌐 MiOS — Cloud Native Operating System ([Repository Manifest](https://github.com/Kabuki94/mios/blob/main/specs/core/2026-04-26-Artifact-COR-003-Manifest.md))
 - 🌐 MiOS — Cloud Native Operating System ([Operational Standards](https://github.com/Kabuki94/mios/blob/main/specs/core/2026-04-26-Artifact-COR-004-Operations.md))
+- 🌐 MiOS — Cloud Native Operating System ([AI-Native Patterns](https://github.com/Kabuki94/mios/blob/main/specs/core/2026-04-27-Artifact-COR-005-AI-Native-Patterns.md))
 
 ## Engineering
 - 🌐 MiOS — Cloud Native Operating System ([Package Management](https://github.com/Kabuki94/mios/blob/main/specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md))
@@ -32,8 +33,9 @@
 - 🌐 MiOS — Cloud Native Operating System ([Self-Build Pipeline](https://github.com/Kabuki94/mios/blob/main/specs/engineering/2026-04-26-Artifact-ENG-003-Self-Build.md))
 - 🌐 MiOS — Cloud Native Operating System ([Validation Testing](https://github.com/Kabuki94/mios/blob/main/specs/engineering/2026-04-26-Artifact-ENG-004-Testing.md))
 
-## Shared Memory
+## Shared Memory (Flattened)
 - 🌐 MiOS — Cloud Native Operating System ([Cognitive Journal](https://github.com/Kabuki94/mios/blob/main/specs/memory/2026-04-26-Artifact-MEM-001-Journal.md))
+- 🌐 MiOS — Cloud Native Operating System ([Historical Knowledge Flattening](https://github.com/Kabuki94/mios/blob/main/artifacts/repo-rag-snapshot.json.gz))
 - 🌐 MiOS — Cloud Native Operating System ([Research Plan](https://github.com/Kabuki94/mios/blob/main/specs/memory/2026-04-26-Artifact-MEM-002-Research-Plan.md))
 - 🌐 MiOS — Cloud Native Operating System ([Research Strategy](https://github.com/Kabuki94/mios/blob/main/specs/memory/2026-04-26-Artifact-MEM-003-Research-Strategy.md))
 - 🌐 MiOS — Cloud Native Operating System ([Work Plan](https://github.com/Kabuki94/mios/blob/main/specs/memory/2026-04-26-Artifact-MEM-004-Work-Plan.md))
