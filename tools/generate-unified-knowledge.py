@@ -27,12 +27,34 @@ def parse_metadata(content, file_path):
         "tags": []
     }
     
-    # Extract markdown title
+    # 1. Extract markdown title
     title_match = re.search(r'^#\s+(.+)$', content, re.MULTILINE)
     if title_match:
         meta["title"] = title_match.group(1).strip()
 
-    # Extract json:knowledge block
+    # 2. Extract script description for non-markdown files
+    if not file_path.endswith(".md"):
+        # Skip shebang lines and look for MiOS vX.Y.Z headers or descriptions
+        lines = content.split('\n')
+        for line in lines:
+            if line.startswith("#!"): continue
+            if not line.strip().startswith("#"): continue
+            
+            # Look for MiOS vX.Y.Z headers
+            desc_match = re.search(r'#\s*MiOS\s+v[0-9.]+\s*—\s*(.+)$', line)
+            if desc_match:
+                meta["title"] = desc_match.group(1).strip()
+                break
+            
+            # Fallback to first non-empty comment line (ignoring decoratives like === or ---)
+            fallback_match = re.search(r'#\s*([^#=─*?\n!/]+)$', line)
+            if fallback_match:
+                candidate = fallback_match.group(1).strip()
+                if candidate:
+                    meta["title"] = candidate
+                    break
+
+    # 3. Extract json:knowledge block
     kb_match = re.search(r'```json:knowledge\s*\n(.*?)\n```', content, re.DOTALL)
     if kb_match:
         try:

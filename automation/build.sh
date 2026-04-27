@@ -23,7 +23,9 @@ exec > >(mask_filter >> "$BUILD_LOG") 2>&1
 
 log_ts() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
 
-VERSION_STR="$(cat "${SCRIPT_DIR}/../VERSION" 2>/dev/null || cat /ctx/VERSION 2>/dev/null || echo 'v0.1.3')"
+# v0.1.3: VERSION file already contains "MiOSv", so don't prefix with another 'v'
+VERSION_RAW="$(cat "${SCRIPT_DIR}/../VERSION" 2>/dev/null || cat /ctx/VERSION 2>/dev/null || echo '0.1.3')"
+VERSION_STR="${VERSION_RAW#v}" # Strip leading v if present to avoid vv
 
 # ── Status Card Rendering ───────────────────────────────────────────────────
 render_status_card() {
@@ -37,7 +39,7 @@ render_status_card() {
 
     {
         echo "┌───────────────────────────────────────────────────────────────────────────┐"
-        printf "│ %-30s MiOS v%-10s [%3d/%-3d] │\n" "BUILDING: $phase" "$VERSION_STR" "$current" "$total"
+        printf "│ %-35s %-15s [%3d/%-3d] │\n" "BUILDING: $phase" "$VERSION_STR" "$current" "$total"
         echo "├───────────────────────────────────────────────────────────────────────────┤"
         printf "│  STATUS:  %-10s |  SUCCESS: %-4d |  WARN: %-4d |  FAIL: %-4d  │\n" \
             "$( [[ $fail_count -eq 0 ]] && echo "HEALTHY" || echo "DEGRADED" )" \
@@ -47,7 +49,7 @@ render_status_card() {
 }
 
 # Print minimal start message
-echo "==> MiOS v${VERSION_STR}: Build starting..." >&3
+echo "==> MiOS ${VERSION_STR}: Build starting..." >&3
 
 if [[ ! -f "$PACKAGES_MD" ]]; then
     echo "FATAL: $PACKAGES_MD not found." >&3
@@ -55,16 +57,36 @@ if [[ ! -f "$PACKAGES_MD" ]]; then
 fi
 
 # ── Execute numbered scripts ────────────────────────────────────────────────
-CONTAINERFILE_SCRIPTS="08-system-files-overlay.sh 18-apply-boot-fixes.sh 19-k3s-selinux.sh 20-fapolicyd-trust.sh 21-moby-engine.sh 22-freeipa-client.sh 23-uki-render.sh 25-firewall-ports.sh 26-gnome-remote-desktop.sh 37-ai-agnostic.sh 37-flatpak-env.sh 37-ollama-prep.sh"
+# ONLY skip the overlay script which must run separately to stage the FS.
+# All other scripts should run within the orchestrator for unified logging.
+CONTAINERFILE_SCRIPTS="08-system-files-overlay.sh"
 
 TOTAL_START=$SECONDS
 ALL_SCRIPTS=("$SCRIPT_DIR"/[0-9][0-9]-*.sh)
-TOTAL_SCRIPTS=${#ALL_SCRIPTS[@]}
+
+# Calculate true total scripts to be executed
+TOTAL_SCRIPTS=0
+for script in "${ALL_SCRIPTS[@]}"; do
+    SCRIPT_NAME="$(basename "$script")"
+    if ! echo "$CONTAINERFILE_SCRIPTS" | grep -qF "$SCRIPT_NAME"; then
+        TOTAL_SCRIPTS=$((TOTAL_SCRIPTS + 1))
+    fi
+done
+
 ITER=0
+
+# Ensure 31-user runs first to provision environment
+if [[ -f "$SCRIPT_DIR/31-user.sh" ]]; then
+    ITER=$((ITER + 1))
+    render_status_card "31-user.sh" "$ITER" "$TOTAL_SCRIPTS"
+    bash "$SCRIPT_DIR/31-user.sh" >> "$BUILD_LOG" 2>&1 || touch "$STATE_DIR/31-user.sh.fail"
+    [[ ! -f "$STATE_DIR/31-user.sh.fail" ]] && touch "$STATE_DIR/31-user.sh.ok"
+fi
 
 for script in "${ALL_SCRIPTS[@]}"; do
     SCRIPT_NAME="$(basename "$script")"
-    if echo "$CONTAINERFILE_SCRIPTS" | grep -qF "$SCRIPT_NAME"; then
+    # Skip list including 31-user which we ran manually first
+    if echo "$CONTAINERFILE_SCRIPTS 31-user.sh" | grep -qF "$SCRIPT_NAME"; then
         continue
     fi
     ITER=$((ITER + 1))
@@ -125,7 +147,7 @@ echo ""
 echo "╔═══════════════════════════════════════════════════════════════════════════╗"
 echo "║                          MiOS BUILD SUMMARY                               ║"
 echo "╠═══════════════════════════════════════════════════════════════════════════╣"
-echo "  Version:    v${VERSION_STR}"
+echo "  Version:    ${VERSION_STR}"
 echo "  Duration:   ${MIN}m ${SEC}s"
 echo "  Steps:      ${ITER} executed"
 

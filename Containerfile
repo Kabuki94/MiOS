@@ -98,19 +98,7 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     set -e; \
     chmod +x /ctx/automation/build.sh /ctx/automation/*.sh 2>/dev/null || true; \
     chmod +x /usr/libexec/mios/copy-build-log.sh; \
-    /ctx/automation/build.sh && \
-    /ctx/automation/18-apply-boot-fixes.sh && \
-    /ctx/automation/19-k3s-selinux.sh && \
-    /ctx/automation/20-fapolicyd-trust.sh && \
-    /ctx/automation/21-moby-engine.sh && \
-    /ctx/automation/22-freeipa-client.sh && \
-    /ctx/automation/23-uki-render.sh && \
-    /ctx/automation/25-firewall-ports.sh && \
-    /ctx/automation/26-gnome-remote-desktop.sh && \
-    /ctx/automation/37-ai-agnostic.sh && \
-    /ctx/automation/37-flatpak-env.sh && \
-    /ctx/automation/37-ollama-prep.sh && \
-    /ctx/automation/50-enable-log-copy-service.sh
+    /ctx/automation/build.sh
 
 # MANDATORY CLEANUP for bootc container lint
 RUN rm -rf /var/log/* /var/tmp/* /var/cache/dnf/* /var/cache/libdnf5/* /tmp/* \

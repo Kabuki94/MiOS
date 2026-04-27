@@ -99,6 +99,26 @@ just build rechunk
 # Build + all disk images
 just all
 
+### Mode 4: Appliance (Ignition Builder)
+
+For fully automated, hardware-native builds on a fresh machine, you can use the Fedora CoreOS (FCOS) or Fedora Server Ignition builder:
+
+```bash
+# Configuration located in:
+# config/ignition/mios-builder.bu
+# config/ignition/build-mios-iso.sh
+```
+
+1.  **Customize**: Edit `mios-builder.bu` to add your SSH key and password hash.
+2.  **Compile**: Use Butane to convert the `.bu` file to an Ignition `.ign` file.
+3.  **Deploy**: Provision a fresh FCOS or Fedora Server instance with the resulting Ignition file.
+
+Upon first boot, the appliance will:
+1.  Connect to the network.
+2.  Install dependencies (`git`, `podman`, `just`).
+3.  Automatically clone and bootstrap the MiOS build environment.
+4.  Build a live MiOS installer ISO at `/usr/src/mios/output/mios-installer.iso`.
+
 # Individual targets
 just raw       # RAW disk image
 just iso       # Anaconda ISO

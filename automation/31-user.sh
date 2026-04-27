@@ -4,6 +4,15 @@
 # and BEFORE any service that references the user.
 set -euo pipefail
 
+# Warning reporting helper
+report_warn() {
+    local msg="$1"
+    echo "[31-user] WARNING: $msg"
+    if [[ -n "${MIOS_BUILD_STATE:-}" ]]; then
+        touch "${MIOS_BUILD_STATE}/$(basename "$0").warn"
+    fi
+}
+
 echo "——————————————————————?"
 echo "  MiOS v0.1.3 — User & Authentication"
 echo "——————————————————————?"
@@ -12,7 +21,7 @@ echo "——————————————————————?"
 echo "[31-user] Configuring PAM via authselect..."
 if command -v authselect &>/dev/null; then
     authselect select local --force 2>/dev/null || {
-        echo "[31-user] WARNING: authselect failed — using system_files overlay fallback"
+        report_warn "authselect failed — using system_files overlay fallback"
     }
 fi
 

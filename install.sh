@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # MiOS Bootstrap Installer
 # Deploys the MiOS repository as a Linux filesystem-native integrated build environment
 # Supports curl-to-bash bootstrapping.
@@ -37,24 +37,13 @@ check_root() {
     fi
 }
 
-check_prerequisites() {
-    info "Checking prerequisites..."
-    local pkgs=(git podman just rsync)
-    local missing=()
-    for pkg in "${pkgs[@]}"; do
-        command -v "$pkg" >/dev/null 2>&1 || missing+=("$pkg")
-    done
-
-    if [[ ${#missing[@]} -gt 0 ]]; then
-        info "Installing missing prerequisites: ${missing[*]}..."
-        if command -v dnf &>/dev/null; then
-            dnf install -y "${missing[@]}"
-        elif command -v apt-get &>/dev/null; then
-            apt-get update && apt-get install -y "${missing[@]}"
-        else
-            error "Unknown package manager. Please install: ${missing[*]}"
-            exit 1
-        fi
+run_preflight() {
+    info "Running preflight checks..."
+    # If mios-preflight exists in source, run it. Otherwise, assume pre-installed.
+    if [[ -f "${MIOS_SRC_DIR}/tools/preflight.sh" ]]; then
+        bash "${MIOS_SRC_DIR}/tools/preflight.sh"
+    elif command -v mios-preflight &>/dev/null; then
+        mios-preflight
     fi
 }
 
@@ -62,6 +51,11 @@ bootstrap_source() {
     if [[ ! -d "${MIOS_SRC_DIR}/.git" ]]; then
         info "Bootstrapping MiOS source to ${MIOS_SRC_DIR}..."
         mkdir -p "$(dirname "${MIOS_SRC_DIR}")"
+        # Ensure git is present for initial clone
+        command -v git >/dev/null 2>&1 || {
+            info "Installing git for initial bootstrap..."
+            if command -v dnf &>/dev/null; then dnf install -y git; elif command -v apt-get &>/dev/null; then apt-get update && apt-get install -y git; fi
+        }
         git clone https://github.com/Kabuki94/MiOS-bootstrap.git "${MIOS_SRC_DIR}"
     else
         info "MiOS source already exists, updating..."
@@ -77,6 +71,7 @@ install_mios() {
     echo ""
 
     bootstrap_source
+    run_preflight
 
     info "Creating FHS directory structure..."
     mkdir -p "${MIOS_SHARE_DIR}" "${MIOS_ETC_DIR}" "${MIOS_BIN_DIR}" "${MIOS_TMPFILES_DIR}"
@@ -172,7 +167,6 @@ uninstall_mios() {
 main() {
     [[ "${1:-}" == "--uninstall" ]] && { check_root; uninstall_mios; exit 0; }
     check_root
-    check_prerequisites
     install_mios
 }
 

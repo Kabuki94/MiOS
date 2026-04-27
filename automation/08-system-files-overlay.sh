@@ -15,12 +15,23 @@ source "$(dirname "$0")/lib/common.sh"
 
 CTX="${CTX:-/ctx}"
 
+# Warning reporting helper
+report_warn() {
+    local msg="$1"
+    log "  WARN: $msg"
+    if [[ -n "${MIOS_BUILD_STATE:-}" ]]; then
+        touch "${MIOS_BUILD_STATE}/$(basename "$0").warn"
+    fi
+}
+
 log "08-overlay: starting Rootfs-Native overlay"
 
 # --- Stage 1: /usr (everything except /usr/local) --------------------------
 if [[ -d "${CTX}/usr" ]]; then
     log "  stage 1: overlay usr content (excluding /usr/local)"
     tar -C "${CTX}/usr" -cf - --exclude='./local' . | tar -C /usr --no-overwrite-dir -xf -
+else
+    report_warn "/ctx/usr not found"
 fi
 
 # --- Stage 2: /usr/local via /var/usrlocal ---------------------------------
@@ -40,6 +51,8 @@ fi
 if [[ -d "${CTX}/etc" ]]; then
     log "  stage 3: overlay etc content"
     tar -C "${CTX}/etc" -cf - . | tar -C /etc --no-overwrite-dir -xf -
+else
+    report_warn "/ctx/etc not found"
 fi
 
 # --- Stage 4: /var (Mutable System State Templates) ------------------------
@@ -102,10 +115,18 @@ fi
 # 4. Management binary symlinks
 log "  Path: creating management symlinks"
 ln -sf /usr/libexec/mios/motd /usr/bin/mios-motd
+ln -sf /usr/libexec/mios/dash /usr/bin/mios-dash
 ln -sf /usr/libexec/mios/mios-toggle-headless /usr/bin/mios-toggle-headless
 ln -sf /usr/libexec/mios/mios-test /usr/bin/mios-test
 ln -sf /usr/libexec/mios/mios-podman-gc /usr/bin/mios-podman-gc
 ln -sf /usr/libexec/mios/assess /usr/bin/mios-assess
+ln -sf /usr/libexec/mios/preflight /usr/bin/mios-preflight
+ln -sf /usr/libexec/mios/cpu-isolate /usr/bin/mios-cpu-isolate
+ln -sf /usr/libexec/mios/sb-audit /usr/bin/mios-sb-audit
+ln -sf /usr/libexec/mios/sb-keygen /usr/bin/mios-sb-keygen
+ln -sf /usr/libexec/mios/tpm-enroll /usr/bin/mios-tpm-enroll
+ln -sf /usr/libexec/mios/role-apply /usr/bin/mios-role
+ln -sf /usr/bin/systemd-sysext /usr/bin/mios-sysext
 
 # 5. Unified logging/artifacting (USR-OVER-ETC pattern)
 log "  Path: ensuring unified state directories exist in /usr"

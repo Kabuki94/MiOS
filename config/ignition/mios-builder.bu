@@ -1,0 +1,76 @@
+variant: fcos
+version: 1.5.0
+passwd:
+  users:
+    - name: mios
+      password_hash: "$6$rounds=4096$salt$hash" # REPLACE_ME: Generated via 'openssl passwd -6'
+      ssh_authorized_keys:
+        - "ssh-rsa YOUR_KEY" # REPLACE_ME: Add your SSH public key
+      groups:
+        - wheel
+        - sudo
+        - docker
+
+storage:
+  files:
+    - path: /usr/local/bin/build-mios-iso
+      mode: 0755
+      contents:
+        inline: |
+          #!/bin/bash
+          # MiOS Builder — Automatic ISO Generator
+          set -euo pipefail
+          LOG_FILE="/var/log/mios-builder.log"
+          exec > >(tee -a "$LOG_FILE") 2>&1
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "MiOS Builder — Starting Automatic Build"
+          echo "Timestamp: $(date -u)"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "▶ Waiting for network connectivity..."
+          until ping -c 1 github.com &>/dev/null; do
+              echo "  - Network not ready, retrying..."
+              sleep 5
+          done
+          echo "✓ Network connected"
+          echo "▶ Checking prerequisites..."
+          for pkg in git podman rsync; do
+              if ! command -v "$pkg" &>/dev/null; then
+                  echo "  - Installing $pkg..."
+                  dnf install -y "$pkg"
+              fi
+          done
+          if ! command -v just &>/dev/null; then
+              echo "▶ Installing 'just' task runner..."
+              curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+          fi
+          echo "▶ Bootstrapping MiOS..."
+          curl -sL https://raw.githubusercontent.com/Kabuki94/MiOS-bootstrap/main/install.sh | bash
+          MIOS_SRC="/usr/src/mios"
+          cd "$MIOS_SRC"
+          echo "▶ Building MiOS Live ISO..."
+          systemctl enable --now podman.socket
+          just iso
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ MiOS Build Complete"
+          echo "Artifact: ${MIOS_SRC}/output/mios-installer.iso"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+systemd:
+  units:
+    - name: mios-builder.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=MiOS Automatic ISO Builder
+        After=network-online.target
+        Wants=network-online.target
+        ConditionPathExists=!/var/lib/mios-build-complete
+
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/local/bin/build-mios-iso
+        ExecStartPost=/usr/bin/touch /var/lib/mios-build-complete
+        RemainAfterExit=yes
+
+        [Install]
+        WantedBy=multi-user.target
