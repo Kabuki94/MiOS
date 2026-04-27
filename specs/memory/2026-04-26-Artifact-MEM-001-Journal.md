@@ -1294,7 +1294,7 @@ System completed a research and gap-audit pass. The findings below are verified 
     3) **Pattern 3 (Persistence Skeleton):** Consolidated K3s (`/var/lib/rancher`) and Ceph (`/var/lib/ceph`) directory management into `usr/lib/tmpfiles.d/mios-infra.conf`.
     4) **Pattern 5 (Boot Shielding):** Optimized `01-repos.sh` to use `upgrade --refresh` with strict `excludepkgs="shim-*,kernel*"` to prevent bootloader regressions.
     5) **Pattern 6 (Atomic Stack):** Implemented **Logically Bound Images** by symlinking Quadlets into `/usr/lib/bootc/bound-images.d/`, ensuring `bootc upgrade` pulls the entire stack atomically.
-*   **SUGGESTED ALTERNATIVE:** N/A - These changes represent the current industry-standard "Golden Patterns" for ublue-os derivatives.
+*   **SUGGESTED ALTERNATIVE:** N/A - These changes represent the current "Golden Patterns" for ublue-os derivatives.
 
 
 ---
@@ -2020,7 +2020,7 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 ---
 ### [2026-04-26 12:30:00 UTC] [AI: Agent CLI]
 * **TYPE:** OPENAI & MULTI-AGENT COMPATIBILITY
-* **THOUGHT:** Researched and implemented industry-standard configurations to make the repository natively parseable by OpenAI and ensure the multi-agent system can be deployed as an OpenAI-compatible self-hosted API key instance.
+* **THOUGHT:** Researched and implemented configurations to make the repository natively parseable by OpenAI and ensure the multi-agent system can be deployed as an OpenAI-compatible self-hosted API key instance.
 * **ACTION:** 
   1. **Parsability:** Created `/llms.txt` and `/.well-known/ai-plugin.json` to expose the repository architecture to OpenAI Custom GPTs and standard AI web crawlers.
   2. **API Standardization:** Created `/.well-known/openapi.yaml` to define the multi-agent API endpoints as a standard `/v1/chat/completions` compliant interface.
@@ -2086,7 +2086,7 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 * **TYPE:** ARCHITECTURE — OMNI-AGENT WORKSPACE STANDARDIZATION
 * **THOUGHT:** Addressed a directive to fix the initialization phases for all AI APIs and IDE harnesses to align with up-to-date industry specifications. The previous rules were fragmented, used legacy "Cognitive Sync" terminology specific only to Agent/System, and contained broken paths referencing the old `.ai-context/` directory.
 * **ACTION:**
-  1. **Omni-Agent Unification:** Rewrote the core `INDEX.md` file to implement the "Omni-Agent Workspace" standard, explicitly defining synchronization protocols for System, Agent, Cursor, Copilot, Windsurf, and Cline.
+  1. **Omni-Agent Unification:** Rewrote the core `INDEX.md` file to implement the "Agent Workspace" standard, explicitly defining synchronization protocols for System, Agent, Cursor, Copilot, Windsurf, and Cline.
   2. **Harness Propagation:** Mirrored the unified `INDEX.md` payload across all standard initialization files (`AGENT.md`, `SYSTEM.md`, `.cursorrules`, `.clinerules`, `.windsurfrules`, `.ai/foundationrules`, `.ai/agent-staterules`, and `.ai-rules`) to ensure identical baseline behavior and a Single Source of Truth (SSOT).
   3. **Path Remediation:** Fixed broken references to the defunct `.ai-context/` directory in `.github/copilot-instructions.md`, `.ai/foundation/protocols.md`, and `.ai/foundation/settings.json`, repointing them to `specs/memory/` and `.ai/foundation/memories/journal.md`.
   4. **Configuration Update:** Updated `.ai/agent-state/settings.json` and `.ai/foundation/settings.json` to reflect the modern "Omni-Agent" terminology and corrected legacy deny-list permissions.
@@ -2099,7 +2099,7 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 * **ACTION:** 
   1. **Manifest Synchronization:** Executed `python3 tools/generate-ai-manifest.py` to regenerate manifests for `specs/`, `automation/`, `tools/`, ``, `evals/`, `bib-configs/`, `agents/research/`, and the root directory.
   2. **Environment Setup:** Initialized the `agents/research` directory by running `make install`, which successfully executed `uv sync` (installing 207 Python packages) and `npm install` for the frontend.
-  3. **Verification:** Confirmed that the `.ai/foundation/memories/` symlinks correctly point to the artifact-backed files in `specs/memory/` and that the Omni-Agent Workspace standards are correctly propagated across the harness files.
+  3. **Verification:** Confirmed that the `.ai/foundation/memories/` symlinks correctly point to the artifact-backed files in `specs/memory/` and that the Agent Workspace standards are correctly propagated across the harness files.
 * **RESULT:** The repository metadata is fully synchronized, and the agentic sub-project is initialized and ready for deployment or evaluation.
 
 ---

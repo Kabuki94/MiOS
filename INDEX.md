@@ -82,7 +82,7 @@ When researching or integrating upstream technologies, use these presets:
 
 ## 🔌 Standardized Ingestion Protocol (OpenAI Native)
 
-MiOS is optimized for OpenAI API standards and industry-standard AI scrapers:
+MiOS is optimized for OpenAI API standards and AI scrapers:
 
 1. **`llms.txt` Standard:** High-density context ingestion point at root and `.well-known/`.
 2. **Function Calling Schemas:** All automated tools (`tools/*.py`) and build scripts (`automation/*.sh`) are documented with clear input/output types compatible with JSON-based function calling.
@@ -279,7 +279,7 @@ Complete replacement files only — no patches, no diffs, no "paste this into X"
 
 ## Universal Knowledge Base (UKB) — RAG Protocols
 
-MiOS maintains a **Unified Knowledge Base** for high-efficiency RAG and offline agent bootstrapping.
+MiOS uses a Unified Knowledge Base (UKB) for RAG and agent bootstrapping.
 
 1. **RAG Snapshot:** `artifacts/repo-rag-snapshot.json.gz` contains a flattened, secret-redacted map of the entire repository, including environment configs and hidden dotfiles.
 2. **Auto-Wiki:** The `specs/` folder is synchronized via `tools/sync-wiki.py` to reflect the current state of scripts and packages.

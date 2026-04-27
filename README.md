@@ -92,7 +92,7 @@ The core build logic that executes all numbered scripts in sequence. This is typ
 
 ## 🚀 Developer Workflow
 
-MiOS is optimized for high-efficiency development:
+MiOS is optimized for development:
 
 1. **Self-Initializing:** `./automation/ai-bootstrap.sh` synchronizes all manifests and sub-projects.
 2. **Unified Environment:** All user overrides live in `.env.mios` and `user/identity.env`.

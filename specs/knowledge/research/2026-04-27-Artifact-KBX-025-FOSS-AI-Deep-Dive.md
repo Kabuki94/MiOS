@@ -35,7 +35,7 @@ As of April 2026, the Free and Open Source (FOSS) AI ecosystem has achieved **st
 ## 🏛️ The Three Pillars of FOSS AI (2026)
 
 ### 1. Model Context Protocol (MCP) — "The Universal Interface"
-MCP has become the industry-standard protocol for connecting models to tools and data.
+MCP has become the protocol for connecting models to tools and data.
 - **Why it wins:** It eliminates vendor lock-in. A single MCP server (like the MiOS System Tool Server) can be consumed by System, Agent, or a local Llama 4 instance without modification.
 - **MiOS Integration:** MiOS is evolving its `ai-tools.json` into a native MCP server to allow system tools to be called by any agent.
 

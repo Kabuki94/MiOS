@@ -43,7 +43,7 @@ While MiOS itself is an Operating System, the repository hosts agent implementat
 Standard deployments for self-hosted agents utilize an OpenAI-compatible translation layer (e.g., LiteLLM or vLLM). 
 - **Endpoint:** `/v1/chat/completions`
 - **Auth:** Standard `OPENAI_API_KEY` header.
-- **Workflow:** Standardizes agentic communication so the backend logic (ADK) can be targeted by any industry-standard UI or orchestration tool (e.g., OpenWebUI, Dify, or LangGraph).
+- **Workflow:** Standardizes agentic communication so the backend logic (ADK) can be targeted by any UI or orchestration tool (e.g., OpenWebUI, Dify, or LangGraph).
 
 ### 2. Deployment Spec
 Agents in this repository are designed to run as containerized services:

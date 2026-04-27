@@ -3,7 +3,7 @@
 
 ```json:knowledge
 {
-  "summary": "Primary entry point for Agent CLI in MiOS. Initializes context via import chain.",
+  "summary": "Entry point for Agent CLI. Initializes context via import chain.",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -22,7 +22,7 @@
 }
 ```
 
-> **MANDATORY ENTRY POINT:** This repository is managed via the **MiOS Omni-Agent Workspace**. 
+> **MANDATORY ENTRY POINT:** This repository is managed via the **MiOS Agent Workspace**. 
 > All agents share identical context, memories, and workspace.
 
 ## 🚀 Context Initialization Chain

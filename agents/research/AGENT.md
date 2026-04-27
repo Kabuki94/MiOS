@@ -28,7 +28,7 @@ This sub-project is a component of the **MiOS repository**. All AI agents MUST a
 
 ## Universal Knowledge Base (UKB)
 
-MiOS maintains a **Unified Knowledge Base** for high-efficiency RAG.
+MiOS maintains a **Unified Knowledge Base** for RAG.
 - **Root Snapshot:** `artifacts/repo-rag-snapshot.json.gz` contains the full redacted repository state.
 - **Manifests:** Use `ai-context.json` at the repo root to locate category-specific manifests.
 - **Bootstrapping:** Run `./automation/ai-bootstrap.sh` from the repo root to refresh all manifests and the UKB.

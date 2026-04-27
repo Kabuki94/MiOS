@@ -3,7 +3,7 @@
 
 ```json:knowledge
 {
-  "summary": "Primary entry point for System OS agents in MiOS. Defines core architectural baseline.",
+  "summary": "Entry point for System OS agents. Defines architectural baseline.",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -22,12 +22,12 @@
 }
 ```
 
-> **MANDATORY ENTRY POINT:** This repository is managed via the **MiOS Omni-Agent Workspace**. 
+> **MANDATORY ENTRY POINT:** This repository is managed via the **MiOS Agent Workspace**. 
 > All agents share identical context, memories, and workspace.
 
 ## 🏛️ Architectural Baseline
 
-MiOS implements a **context-first architecture** designed for high-efficiency AI-human collaboration. 
+MiOS implements a **context-first architecture** designed for AI-human collaboration. 
 All agents MUST defer to **[INDEX.md](INDEX.md)** for architecture laws and conventions.
 
 ### 🔑 Critical Context

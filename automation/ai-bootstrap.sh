@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-echo "🚀 Initializing MiOS Omni-Agent Workspace..."
+echo "🚀 Initializing MiOS Agent Workspace..."
 
 # 0. Load Unified Environment
 if [[ -f ".env.mios" ]]; then
