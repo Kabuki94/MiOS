@@ -34,6 +34,11 @@ jobs:
           python-version: "3.12"
           cache: "pip"
 
+      - name: Debug - List Files
+        run: |
+          ls -R automation/
+          ls -R usr/lib/bootc/kargs.d/
+
       - name: Validate kargs.d files
         run: |
           python3 automation/validate-kargs.py --github \
