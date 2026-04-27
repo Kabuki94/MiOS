@@ -1,4 +1,34 @@
 #!/bin/bash
+set -euo pipefail
+
+JSON_MODE=false
+for arg in "$@"; do
+    if [[ "$arg" == "--json" ]]; then JSON_MODE=true; fi
+done
+
+if [[ "$JSON_MODE" == "true" ]]; then
+    # Build a clean JSON object
+    SERVICES=()
+    for svc in gdm cockpit.socket sshd libvirtd.socket virtnetworkd.socket virtqemud.socket \
+               firewalld tuned k3s gnome-remote-desktop avahi-daemon; do
+        if systemctl is-active --quiet "$svc" 2>/dev/null; then
+            SERVICES+=("\"$svc\": \"active\"")
+        elif systemctl is-enabled --quiet "$svc" 2>/dev/null; then
+            SERVICES+=("\"$svc\": \"enabled\"")
+        fi
+    done
+
+    # Join services into JSON string
+    SVCS_JSON=$(IFS=,; echo "${SERVICES[*]}")
+
+    printf '{"hostname": "%s", "uptime": "%s", "kernel": "%s", "services": {%s}}\n' \
+        "$(hostname)" \
+        "$(uptime -p 2>/dev/null || uptime)" \
+        "$(uname -r)" \
+        "$SVCS_JSON"
+    exit 0
+fi
+
 echo "MiOS v2.1.0 — System Status"
 echo "════════════════════════════════"
 echo ""
