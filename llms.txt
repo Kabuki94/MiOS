@@ -1,4 +1,4 @@
-# MiOS — Cloud Native Operating System
+# MiOS
 > AI Ingestion Index (Snapshot v0.1.1)
 > Single Source of Truth: https://github.com/kabuki94/mios/blob/main/INDEX.md
 

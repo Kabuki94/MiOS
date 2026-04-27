@@ -1,4 +1,4 @@
-# MiOS — Cloud Native Operating System
+# MiOS
 > Native AI API Scrapping Index (Snapshot v2.1.0)
 > Single Source of Truth: https://github.com/kabuki94/mios/blob/main/INDEX.md
 

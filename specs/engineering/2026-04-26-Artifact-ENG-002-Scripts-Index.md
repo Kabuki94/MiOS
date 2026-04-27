@@ -129,11 +129,11 @@ This file provides a machine-readable and human-readable index of all automation
 
 ## `37-aichat.sh`
 - **Path:** `automation/37-aichat.sh`
-- **Description:** 🌐 MiOS — Cloud Native Operating System
+- **Description:** 🌐 MiOS
 
 ## `37-ollama-prep.sh`
 - **Path:** `automation/37-ollama-prep.sh`
-- **Description:** 🌐 MiOS — Cloud Native Operating System
+- **Description:** 🌐 MiOS
 
 ## `37-selinux.sh`
 - **Path:** `automation/37-selinux.sh`

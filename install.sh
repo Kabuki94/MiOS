@@ -48,7 +48,7 @@ _remote_ver=$(scurl "https://raw.githubusercontent.com/Kabuki94/mios/main/VERSIO
 [[ -n "$_remote_ver" ]] && VER="v${_remote_ver}"
 
 echo "╔══════════════════════════════════════════════════════════════╗"
-printf "║  MiOS %-55s║\n" "$VER — Cloud Native Operating System"
+printf "║  MiOS %-55s║\n" "$VER"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo ""
 

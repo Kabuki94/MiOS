@@ -1,5 +1,5 @@
 <!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
-# 🌐 MiOS — Cloud Native Operating System
+# 🌐 MiOS
 ```json:knowledge
 {
   "summary": "Deep-dive research into the 2026 FOSS AI API landscape, highlighting structural parity with proprietary providers and the dominance of the Model Context Protocol (MCP).",

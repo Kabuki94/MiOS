@@ -1,7 +1,8 @@
 import os
 import re
 
-HEADER = """# 🌐 MiOS — Cloud Native Operating System
+HEADER = """<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
+# 🌐 MiOS
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki

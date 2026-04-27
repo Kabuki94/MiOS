@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🌐 MiOS — Cloud Native Operating System
+# 🌐 MiOS
 # 37-ollama-prep: Embed default LLM models during build
 set -euo pipefail
 
