@@ -2187,3 +2187,11 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
   4. **Protocol Documentation:** Updated AI.md with UKB/RAG protocols.
 * **RESULT:** MiOS is now architecturally 'Self-Documenting'. Any OpenAI-compatible agent can ingest the UKB snapshot for immediate full-repo context.
 <!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->
+
+### [2026-04-26 23:05:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Investigated build failure in `scripts/10-gnome.sh` reported by user.
+*   **LEARNING:** `set -o pipefail` combined with `VAR=$(pipeline)` is a "hidden" build killer if the first command in the pipe fails (common with GitHub API calls). Always wrap in subshells or disable pipefail for external API lookups.
+*   **LEARNING:** Flatpak commands in bootc Containerfile builds MUST use `--system` to avoid environment-dependent failures.
+*   **ACTION:** Fixed `scripts/10-gnome.sh`, `scripts/37-aichat.sh`, and `scripts/13-ceph-k3s.sh` version detection logic.
+*   **ACTION:** Added missing `--system` flags to Flatpak remotes in `10-gnome.sh`.
+*   **ACTION:** Corrected Bibata fallback version string to prevent broken URLs.

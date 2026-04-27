@@ -70,11 +70,12 @@ fc-cache -f /usr/share/fonts/geist 2>/dev/null || true
 # ═════════════════════════════════════════════════════════════════════════════
 echo "[10-gnome] Installing Bibata-Modern-Classic cursor (MANDATORY)..."
 BIBATA_VER=""
-BIBATA_FALLBACK="v2.0.7"
+BIBATA_FALLBACK="2.0.7"
 
 # Try GitHub API for latest release tag (strips leading 'v')
-BIBATA_VER=$(scurl -sL -H "Accept: application/vnd.github+json" "https://api.github.com/repos/ful1e5/Bibata_Cursor/releases/latest" \
-    | grep -m1 '"tag_name"' | sed 's/.*"v\?\([^"]*\)".*/\1/' 2>/dev/null || true)
+# v2.1.0: Wrap in subshell + || true to prevent pipefail from killing the script if API is down
+BIBATA_VER=$( (scurl -sL -H "Accept: application/vnd.github+json" "https://api.github.com/repos/ful1e5/Bibata_Cursor/releases/latest" \
+    | grep -m1 '"tag_name"' | sed 's/.*"v\?\([^"]*\)".*/\1/') 2>/dev/null || true)
 
 # Fallback if API fails (rate limit, network issue)
 if [ -z "$BIBATA_VER" ]; then
@@ -84,10 +85,6 @@ else
     echo "[10-gnome]   Latest release: v${BIBATA_VER}"
 fi
 
-BIBATA_URL="https://github.com/ful1e5/Bibata_Cursor/releases/download/v${BIBATA_VER}/Bibata-Modern-Classic.tar.xz"
-
-mkdir -p /usr/share/icons
-BIBATA_OK=0
 BIBATA_URL="https://github.com/ful1e5/Bibata_Cursor/releases/download/v${BIBATA_VER}/Bibata-Modern-Classic.tar.xz"
 BIBATA_DIR="/usr/share/icons/Bibata-Modern-Classic"
 mkdir -p /usr/share/icons
@@ -154,9 +151,9 @@ chmod +x /usr/local/bin/phosh-session-wrapper 2>/dev/null || true
 # ═════════════════════════════════════════════════════════════════════════════
 echo "[10-gnome] Configuring Flatpak remotes..."
 flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-flatpak remote-add --if-not-exists flathub-beta https://flathub.org/beta-repo/flathub-beta.flatpakrepo
-flatpak remote-add --if-not-exists gnome-nightly https://nightly.gnome.org/gnome-nightly.flatpakrepo 2>/dev/null || true
-flatpak remote-modify --disable fedora 2>/dev/null || true
+flatpak remote-add --system --if-not-exists flathub-beta https://flathub.org/beta-repo/flathub-beta.flatpakrepo
+flatpak remote-add --system --if-not-exists gnome-nightly https://nightly.gnome.org/gnome-nightly.flatpakrepo 2>/dev/null || true
+flatpak remote-modify --system --disable fedora 2>/dev/null || true
 
 # ═════════════════════════════════════════════════════════════════════════════
 # Essential Flatpaks

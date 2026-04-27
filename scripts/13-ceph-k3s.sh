@@ -29,7 +29,8 @@ echo "[13-ceph-k3s] Resolving latest K3s release tag..."
 # Retry 3 times for flaky networks
 K3S_TAG=""
 for i in 1 2 3; do
-    K3S_TAG=$(scurl -sL -o /dev/null -w "%{url_effective}" https://github.com/k3s-io/k3s/releases/latest | grep -oE '[^/]+$' || true)
+    # v2.1.0: Wrap in subshell + || true to prevent pipefail from killing the script if API is down
+    K3S_TAG=$( (scurl -sL -o /dev/null -w "%{url_effective}" https://github.com/k3s-io/k3s/releases/latest | grep -oE '[^/]+$') 2>/dev/null || true)
     if [[ -n "$K3S_TAG" && "$K3S_TAG" != "latest" ]]; then break; fi
     sleep 2
 done
