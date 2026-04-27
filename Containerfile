@@ -73,6 +73,18 @@ RUN podman pull docker.io/postgres:15 || true \
  && podman pull docker.io/guacamole/guacd:latest || true \
  && podman pull quay.io/ceph/ceph:latest || true
 
+ # Install essential security packages
+ RUN dnf install -y \
+ policycoreutils-python-utils \
+ selinux-policy-targeted \
+ firewalld \
+ audit \
+ fapolicyd \
+ crowdsec \
+ usbguard \
+ kernel-devel \
+ && dnf clean all
+
 # ---------------------------------------------------------------------------
 # Overlay rootfs content onto the system.
 # ---------------------------------------------------------------------------
