@@ -59,7 +59,7 @@ jobs:
       - name: Read VERSION
         id: version
         run: |
-          VERSION=$(cat VERSION 2>/dev/null || echo "v2.1.0")
+          VERSION=$(cat VERSION 2>/dev/null || echo "v0.1.3")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Maximize build space
@@ -98,7 +98,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest
-            type=raw,value=v${{ steps.version.outputs.version }}
+            type=raw,value=${{ steps.version.outputs.version }}
             type=sha,prefix=
             type=schedule,pattern={{date 'YYYYMMDD'}}
 
