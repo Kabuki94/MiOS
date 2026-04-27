@@ -93,20 +93,22 @@ iso: build
         --security-opt label=type:unconfined_t \
         -v ./output:/output \
         -v /var/lib/containers/storage:/var/lib/containers/storage \
-        -v ./config/artifacts/iso.toml:/config.to
+        -v ./config/artifacts/iso.toml:/config.toml:ro \
+        {{BIB}} build --type iso --rootfs ext4 {{LOCAL}}
+    @echo "✓ ISO image in output/"
 
-# Log artifacts to MiOS-bootstrap repository
+# Log artifacts to MiOS-bootstrap repository (Linux FS native)
 log-bootstrap:
-    @echo "▶️ Logging artifacts to MiOS-bootstrap repository..."
-    ./tools/log-to-bootstrap.sh
+    @echo "▶️ Logging artifacts to MiOS-bootstrap repository (Linux FS native)..."
+    ./tools/prepare-bootstrap-native.sh
     @echo "✓ Artifacts logged to bootstrap repository"
 
 # Complete build with bootstrap logging (recommended for releases)
 build-and-log: build-logged
-    @echo "▶️ Running bootstrap artifact logging..."
-    ./tools/log-to-bootstrap.sh
+    @echo "▶️ Running bootstrap artifact logging (Linux FS native)..."
+    ./tools/prepare-bootstrap-native.sh
     @echo "✅ Build complete with artifacts logged to bootstrap"
 
-# Full pipeline: build → rechunk → log to bootstrap
+# Full pipeline: build → rechunk → log to bootstrap (Linux FS native)
 all-bootstrap: build rechunk log-bootstrap
-    @echo "✅ Full pipeline complete (build → rechunk → bootstrap)"
+    @echo "✅ Full pipeline complete (build → rechunk → bootstrap Linux FS native)"

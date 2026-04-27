@@ -393,3 +393,122 @@ echo "  git commit -m \"Restructure to Linux filesystem native layout - unified 
 echo "  git push"
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Sync to GitHub Wiki if it exists
+echo ""
+echo "▶ Syncing to GitHub Wiki (if available)..."
+WIKI_REPO="${BOOTSTRAP_REPO}.wiki"
+
+if [[ -d "${WIKI_REPO}/.git" ]]; then
+    echo "✓ Wiki repository found: ${WIKI_REPO}"
+    
+    # Copy all docs from /usr/share/doc to Wiki
+    rsync -av "${BOOTSTRAP_REPO}/usr/share/doc/mios/${MIOS_VERSION}/" "${WIKI_REPO}/" \
+        --exclude=".git" 2>/dev/null || true
+    
+    # Create Wiki Home page
+    cat > "${WIKI_REPO}/Home.md" << WIKIHOME
+# MiOS Bootstrap - Linux Filesystem Native
+
+**Version:** ${MIOS_VERSION}  
+**Updated:** $(date -u +%Y-%m-%d)  
+**Architecture:** Linux FS Native (FHS 3.0)
+
+## 📁 Documentation Structure
+
+All documentation follows Linux Filesystem Hierarchy Standard:
+
+\`\`\`
+/usr/share/doc/mios/${MIOS_VERSION}/
+├── INDEX.md
+├── README.md  
+├── AI-AGENT-GUIDE.md
+├── SELF-BUILD.md
+├── SECURITY.md
+├── llms.txt
+├── ai-integration/     # 6 AI integration guides
+└── engineering/        # Engineering specs
+\`\`\`
+
+## 📚 Core Documentation
+
+- [INDEX](INDEX) — AI agent hub, architecture laws
+- [README](README) — Project overview
+- [AI-AGENT-GUIDE](AI-AGENT-GUIDE) — AI coding agent guide  
+- [SELF-BUILD](SELF-BUILD) — Build instructions
+- [SECURITY](SECURITY) — Security hardening
+
+## 🤖 AI Integration
+
+- [AI Integration Index](ai-integration/2026-04-27-Artifact-AI-000-Index)
+- [RAG Integration](ai-integration/2026-04-27-Artifact-AI-001-RAG-Integration)
+- [Quick Reference](ai-integration/2026-04-27-Artifact-AI-002-Quick-Reference)
+- [Prompts Library](ai-integration/2026-04-27-Artifact-AI-003-Prompts-Library)
+- [Knowledge Graph](ai-integration/2026-04-27-Artifact-AI-004-Knowledge-Graph)
+- [Wiki Discovery](ai-integration/2026-04-27-Artifact-AI-005-Wiki-Discovery)
+
+## 🔧 Engineering
+
+- [FHS Compliance Audit](engineering/2026-04-27-Artifact-ENG-006-FHS-Compliance-Audit)
+- [Bootstrap Integration](engineering/2026-04-27-Artifact-ENG-007-Bootstrap-Integration)
+
+## 🌐 Linux FS Native Locations
+
+- **Artifacts:** \`/var/lib/mios/artifacts/${MIOS_VERSION}/\`
+- **Build Logs:** \`/var/log/mios/builds/${MIOS_VERSION}/\`
+- **Documentation:** \`/usr/share/doc/mios/${MIOS_VERSION}/\`
+- **Knowledge:** \`/usr/share/mios/knowledge/\`
+- **Configuration:** \`/etc/mios/\`
+
+## 📦 Quick Start
+
+\`\`\`bash
+# Extract complete repository (509 KB, 99.95% compression)
+cd /var/lib/mios/artifacts/${MIOS_VERSION}
+tar -xJf mios-complete-rag-*.tar.xz -C ~/mios
+
+# Initialize FOSS AI
+ollama pull llama3.1:8b
+cat /usr/share/mios/knowledge/mios-knowledge-graph.json | \\
+  ollama run llama3.1:8b "Initialize MiOS context"
+\`\`\`
+
+## 📊 Statistics
+
+- **Compressed:** 509 KB XZ (99.95% from 928 MB)
+- **Files:** 722 preserved
+- **FHS:** 100% compliant
+- **APIs:** Ollama, llama.cpp, LocalAI, vLLM
+
+---
+
+**Repository:** https://github.com/mios-project/MiOS-bootstrap  
+**License:** Personal Property - MiOS Project
+WIKIHOME
+
+    # Auto-commit Wiki changes
+    cd "${WIKI_REPO}"
+    git add .
+    if git diff --cached --quiet; then
+        echo "✓ Wiki already up to date"
+    else
+        git commit -m "Auto-sync Wiki from Linux FS native structure - ${MIOS_VERSION} - $(date -u +%Y-%m-%d)" || true
+        echo "✓ Wiki updated (commit created)"
+        echo ""
+        echo "Push Wiki updates:"
+        echo "  cd ${WIKI_REPO}"
+        echo "  git push"
+    fi
+    cd - > /dev/null
+else
+    echo "⚠️  Wiki repository not found at: ${WIKI_REPO}"
+    echo ""
+    echo "Clone Wiki repository:"
+    echo "  git clone https://github.com/mios-project/MiOS-bootstrap.wiki ${WIKI_REPO}"
+    echo ""
+    echo "Note: Wiki content is in /usr/share/doc/mios/${MIOS_VERSION}/"
+    echo "      (Standard Linux documentation location)"
+fi
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
