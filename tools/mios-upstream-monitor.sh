@@ -14,7 +14,7 @@ gh_api() {
   if [[ -n "${GH_TOKEN:-}" ]]; then
     auth_header=("-H" "Authorization: token $GH_TOKEN")
   fi
-  curl -sL "${auth_header[@]}" "https://api.github.com/repos/${repo}/${endpoint}"
+  scurl -sL "${auth_header[@]}" "https://api.github.com/repos/${repo}/${endpoint}"
 }
 
 get_latest_tag() {
@@ -31,11 +31,12 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "  MiOS UPSTREAM MONITOR — $(date)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# 1. Fedora Status
-printf '\e[36m[monitor]\e[0m Checking Fedora 44 GA status...\n'
-# Note: In a production tool we'd use a more robust scraping or Bodhi API call.
-F44_STATUS="2026-04-28 (Confirmed GO)"
-echo "  Fedora 44 Target: $F44_STATUS"
+# 1. Fedora Release Status (live Bodhi API)
+printf '\e[36m[monitor]\e[0m Checking Fedora 44 release state (Bodhi)...\n'
+F44_STATUS=$( (scurl -sL "https://bodhi.fedoraproject.org/releases/?name=F44" \
+    | python3 -c "import sys,json; r=json.load(sys.stdin).get('releases',[]); print(r[0].get('state','unknown') if r else 'unknown')") \
+    2>/dev/null || echo "unknown")
+echo "  Fedora 44: $F44_STATUS"
 
 # 2. bootc
 printf '\e[36m[monitor]\e[0m Checking bootc (containers/bootc)...\n'
@@ -62,9 +63,4 @@ printf '\e[36m[monitor]\e[0m Checking Waydroid CDI Issue #1883...\n'
 WAYDROID_STATUS=$(gh_api "waydroid/waydroid" "issues/1883" | grep -Po '"state": "\K.*?(?=")' || echo "Unknown")
 echo "  Issue Status: $WAYDROID_STATUS"
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Action Items (from latest audit):"
-echo "  - Fedora 44 GA is April 28 (2 days). Merge f44-ga branch then."
-echo "  - bootc v1.15.1 is out (critical for VROC/kargs)."
-echo "  - Cockpit 361 is out (confirmed CVE-2026-4631 fix)."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

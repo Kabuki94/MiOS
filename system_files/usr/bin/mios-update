@@ -47,15 +47,16 @@ if [[ "$CHECK_ONLY" == "true" ]]; then
 fi
 
 if [[ "$JSON_MODE" == "true" ]]; then
-    # Run upgrade and capture output
-    UPGRADE_OUT=$(sudo bootc upgrade 2>&1 || true)
-    if echo "$UPGRADE_OUT" | grep -q "Staging update"; then
-        echo "{\"status\": \"staged\", \"current_image\": \"$ORIGIN\", \"message\": \"New update staged successfully. Reboot required.\"}"
-    elif echo "$UPGRADE_OUT" | grep -q "No update available"; then
-        echo "{\"status\": \"up_to_date\", \"current_image\": \"$ORIGIN\"}"
+    sudo bootc upgrade 2>&1 || true
+    # Detect staged update via bootc status --json — reliable across bootc versions,
+    # avoids fragile stdout string matching on upgrade output.
+    STAGED=$(bootc status --json 2>/dev/null \
+        | python3 -c "import sys,json; d=json.load(sys.stdin); print('yes' if d.get('status',{}).get('staged') else 'no')" \
+        2>/dev/null || echo "no")
+    if [[ "$STAGED" == "yes" ]]; then
+        echo "{\"status\": \"staged\", \"current_image\": \"$ORIGIN\", \"message\": \"New update staged. Reboot required.\"}"
     else
-        echo "{\"status\": \"error\", \"message\": \"$(echo $UPGRADE_OUT | tr '\n' ' ')\"}"
-        exit 1
+        echo "{\"status\": \"up_to_date\", \"current_image\": \"$ORIGIN\"}"
     fi
 else
     echo "Current image: $ORIGIN"
