@@ -89,6 +89,20 @@ if [[ -d "${REPO_ROOT}/artifacts/ai-rag" ]]; then
     echo "✓ Artifacts copied"
 fi
 
+# Copy SBOMs to /var/lib/mios/artifacts
+echo "▶ Copying SBOMs to /var/lib/mios/artifacts..."
+if [[ -d "${REPO_ROOT}/usr/lib/mios/artifacts/sbom" ]]; then
+    mkdir -p "${BOOTSTRAP_REPO}/var/lib/mios/artifacts/${MIOS_VERSION}/sbom"
+    cp -v "${REPO_ROOT}"/usr/lib/mios/artifacts/sbom/* \
+        "${BOOTSTRAP_REPO}/var/lib/mios/artifacts/${MIOS_VERSION}/sbom/" 2>/dev/null || true
+    echo "✓ SBOMs copied"
+elif [[ -d "${REPO_ROOT}/artifacts/sbom" ]]; then
+    mkdir -p "${BOOTSTRAP_REPO}/var/lib/mios/artifacts/${MIOS_VERSION}/sbom"
+    cp -v "${REPO_ROOT}"/artifacts/sbom/* \
+        "${BOOTSTRAP_REPO}/var/lib/mios/artifacts/${MIOS_VERSION}/sbom/" 2>/dev/null || true
+    echo "✓ SBOMs copied"
+fi
+
 # Copy repository snapshots to /var/lib/mios/snapshots
 echo "▶ Copying snapshots to /var/lib/mios/snapshots..."
 if [[ -f "${REPO_ROOT}/artifacts/repo-rag-snapshot.json.xz" ]]; then

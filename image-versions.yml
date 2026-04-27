@@ -27,7 +27,7 @@ ucore_hci_stable_nvidia_digest: sha256:3f4474648ab2835bdb8a29f1afe8805de96a32bc0
 image-builder-cli:
   # next-gen image builder (with SBOM support)
   # renovate: datasource=docker depName=ghcr.io/osautomation/image-builder-cli
-  image_builder_cli_digest: sha256:placeholder-digest
+  image_builder_cli_digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
 rechunk:
   # bootc-base-imagectl — image rechunking for efficient Day-2 updates
   # Run after build, before push:

@@ -117,6 +117,16 @@ build-and-log: build-logged
 all-bootstrap: build rechunk log-bootstrap
     @echo "✅ Full pipeline complete (build → rechunk → bootstrap Linux FS native)"
 
+# Generate SBOM for the local image
+sbom:
+    @echo "▶️ Generating SBOM for {{LOCAL}}..."
+    @mkdir -p artifacts/sbom
+    podman run --rm \
+        -v ./artifacts/sbom:/out \
+        -v /var/lib/containers/storage:/var/lib/containers/storage \
+        anchore/syft:latest scan {{LOCAL}} -o cyclonedx-json > artifacts/sbom/mios-sbom.json
+    @echo "✅ SBOM generated: artifacts/sbom/mios-sbom.json"
+
 # ============================================================================
 # User-Space Management
 # ============================================================================
