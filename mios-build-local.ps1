@@ -23,61 +23,6 @@
 
 $ErrorActionPreference = "Stop"
 
-# --- Auto-Elevation ---
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host "  Relaunching as Administrator..." -ForegroundColor Cyan
-    Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Path)`"" -Verb RunAs
-    return
-}
-
-# ── Self-Build defaults (initialized early — referenced throughout) ──
-$SelfBuild = $false
-$BibImage = "quay.io/centos-bootc/bootc-image-builder:latest"
-Set-StrictMode -Version Latest
-
-# ══════════════════════════════════════════════════════════════════════════════
-#  CONFIGURATION
-# ══════════════════════════════════════════════════════════════════════════════
-# Source .env.mios if present
-if (Test-Path ".env.mios") {
-    Write-Phase "0.1" "Loading Unified Environment"
-    Get-Content ".env.mios" | ForEach-Object {
-        if ($_ -match '^([^#\s][^=]+)="?([^"]*)"?$') {
-            $name = $matches[1].Trim()
-            $val = $matches[2].Trim()
-            [Environment]::SetEnvironmentVariable($name, $val)
-        }
-    }
-}
-
-$v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "v0.1.1" }
-$ImageName      = if ($env:MIOS_IMAGE_NAME) { ($env:MIOS_IMAGE_NAME -split '/')[-1] -replace ':.*$','' } else { "mios" }
-$ImageTag       = "latest"
-$DefUser        = if ($env:MIOS_DEFAULT_USER) { $env:MIOS_DEFAULT_USER } else { "mios" }
-$DefPass        = if ($env:MIOS_DEFAULT_USER_PASSWORD) { $env:MIOS_DEFAULT_USER_PASSWORD } else { "mios" }
-$DefHostname    = if ($env:MIOS_HOSTNAME) { $env:MIOS_HOSTNAME } else { "mios" }
-$DefRegistry    = if ($env:MIOS_IMAGE_NAME) { $env:MIOS_IMAGE_NAME -replace ':.*$','' } else { "ghcr.io/kabuki94/mios" }
-$BibImage       = if ($env:MIOS_BIB_IMAGE) { $env:MIOS_BIB_IMAGE } else { "quay.io/centos-bootc/bootc-image-builder:latest" }
-$BuilderMachine = "mios-builder"
-$LocalImage     = "localhost/${ImageName}:${ImageTag}"
-$MiosDocsDir      = Join-Path ([Environment]::GetFolderPath("MyDocuments")) "MiOS"
-$MiosDeployDir    = Join-Path $MiosDocsDir "deployments"
-$MiosManifestsDir = Join-Path $MiosDocsDir "manifests"
-$MiosImagesDir    = Join-Path $MiosDocsDir "images"
-$OutputFolder     = $MiosDeployDir
-$RechunkImage     = "quay.io/centos-bootc/centos-bootc:stream10"
-$Timeout          = 30
-
-$RawImg         = Join-Path $MiosImagesDir "mios-bootable.raw"
-$TargetVhdx     = Join-Path $MiosDeployDir "mios-hyperv.vhdx"
-$TargetWsl      = Join-Path $MiosDeployDir "mios-wsl.tar"
-$TargetIso      = Join-Path $MiosImagesDir "mios-installer.iso"
-
-# Helper image: prefer MiOS itself, fall back to alpine/python for first build
-$HelperImage    = ""
-$FallbackHash   = "docker.io/library/alpine:latest"
-$FallbackConvert = "docker.io/library/alpine:latest"
-
 # ══════════════════════════════════════════════════════════════════════════════
 #  UI HELPERS
 # ══════════════════════════════════════════════════════════════════════════════
@@ -145,6 +90,61 @@ function Get-SHA512Hash {
 }
 
 function Clear-BIBTemp { foreach ($d in "image","vpc","qcow2","bootiso") { Get-ChildItem $OutputFolder -Directory -Filter $d -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue } }
+
+# --- Auto-Elevation ---
+if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Host "  Relaunching as Administrator..." -ForegroundColor Cyan
+    Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Path)`"" -Verb RunAs
+    return
+}
+
+# ── Self-Build defaults (initialized early — referenced throughout) ──
+$SelfBuild = $false
+$BibImage = "quay.io/centos-bootc/bootc-image-builder:latest"
+Set-StrictMode -Version Latest
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  CONFIGURATION
+# ══════════════════════════════════════════════════════════════════════════════
+# Source .env.mios if present
+if (Test-Path ".env.mios") {
+    Write-Phase "0.1" "Loading Unified Environment"
+    Get-Content ".env.mios" | ForEach-Object {
+        if ($_ -match '^([^#\s][^=]+)="?([^"]*)"?$') {
+            $name = $matches[1].Trim()
+            $val = $matches[2].Trim()
+            [Environment]::SetEnvironmentVariable($name, $val)
+        }
+    }
+}
+
+$v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "v0.1.1" }
+$ImageName      = if ($env:MIOS_IMAGE_NAME) { ($env:MIOS_IMAGE_NAME -split '/')[-1] -replace ':.*$','' } else { "mios" }
+$ImageTag       = "latest"
+$DefUser        = if ($env:MIOS_DEFAULT_USER) { $env:MIOS_DEFAULT_USER } else { "mios" }
+$DefPass        = if ($env:MIOS_DEFAULT_USER_PASSWORD) { $env:MIOS_DEFAULT_USER_PASSWORD } else { "mios" }
+$DefHostname    = if ($env:MIOS_HOSTNAME) { $env:MIOS_HOSTNAME } else { "mios" }
+$DefRegistry    = if ($env:MIOS_IMAGE_NAME) { $env:MIOS_IMAGE_NAME -replace ':.*$','' } else { "ghcr.io/kabuki94/mios" }
+$BibImage       = if ($env:MIOS_BIB_IMAGE) { $env:MIOS_BIB_IMAGE } else { "quay.io/centos-bootc/bootc-image-builder:latest" }
+$BuilderMachine = "mios-builder"
+$LocalImage     = "localhost/${ImageName}:${ImageTag}"
+$MiosDocsDir      = Join-Path ([Environment]::GetFolderPath("MyDocuments")) "MiOS"
+$MiosDeployDir    = Join-Path $MiosDocsDir "deployments"
+$MiosManifestsDir = Join-Path $MiosDocsDir "manifests"
+$MiosImagesDir    = Join-Path $MiosDocsDir "images"
+$OutputFolder     = $MiosDeployDir
+$RechunkImage     = "quay.io/centos-bootc/centos-bootc:stream10"
+$Timeout          = 30
+
+$RawImg         = Join-Path $MiosImagesDir "mios-bootable.raw"
+$TargetVhdx     = Join-Path $MiosDeployDir "mios-hyperv.vhdx"
+$TargetWsl      = Join-Path $MiosDeployDir "mios-wsl.tar"
+$TargetIso      = Join-Path $MiosImagesDir "mios-installer.iso"
+
+# Helper image: prefer MiOS itself, fall back to alpine/python for first build
+$HelperImage    = ""
+$FallbackHash   = "docker.io/library/alpine:latest"
+$FallbackConvert = "docker.io/library/alpine:latest"
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  BANNER + WORKFLOW MENU
