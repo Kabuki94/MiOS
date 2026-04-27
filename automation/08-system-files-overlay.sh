@@ -105,6 +105,13 @@ ln -sf /usr/libexec/mios/motd /usr/bin/mios-motd
 ln -sf /usr/libexec/mios/mios-toggle-headless /usr/bin/mios-toggle-headless
 ln -sf /usr/libexec/mios/mios-test /usr/bin/mios-test
 ln -sf /usr/libexec/mios/mios-podman-gc /usr/bin/mios-podman-gc
+ln -sf /usr/libexec/mios/assess /usr/bin/mios-assess
+
+# 5. Unified logging/artifacting (USR-OVER-ETC pattern)
+log "  Path: ensuring unified state directories exist in /usr"
+mkdir -p /usr/lib/mios/logs /usr/lib/mios/artifacts /usr/lib/mios/backups /usr/lib/mios/snapshots
+# NOTE: Symlinks from /var -> /usr are now managed via usr/lib/tmpfiles.d/mios-infra.conf
+# to ensure compatibility with bootc container lint.
 
 log "08-overlay: relabeling overlaid files"
 restorecon -RFv /usr/ 2>/dev/null || true

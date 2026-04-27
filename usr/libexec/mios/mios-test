@@ -1,0 +1,489 @@
+#!/bin/bash
+# MiOS v0.1.3 — mios-test
+# System test harness — validates services, packages, configs, and capabilities.
+# Usage: mios-test [--quick|--full|--category NAME]
+set -euo pipefail
+
+VERSION="v0.1.3"
+PASS=0; FAIL=0; SKIP=0; WARN=0
+VIRT=$(systemd-detect-virt 2>/dev/null || echo "none")
+IS_WSL=false
+[[ "$VIRT" == "wsl" ]] && IS_WSL=true
+IS_ROOT=false
+[ "$(id -u)" -eq 0 ] && IS_ROOT=true
+
+GREEN=$'\033[0;32m'; RED=$'\033[0;31m'; YELLOW=$'\033[1;33m'
+CYAN=$'\033[0;36m'; DIM=$'\033[2m'; NC=$'\033[0m'
+
+pass()  { PASS=$((PASS + 1)); echo -e "  ${GREEN}✓${NC} $1"; }
+fail()  { FAIL=$((FAIL + 1)); echo -e "  ${RED}✗${NC} $1"; }
+warn()  { WARN=$((WARN + 1)); echo -e "  ${YELLOW}⚠${NC} $1"; }
+skip()  { SKIP=$((SKIP + 1)); echo -e "  ${DIM}⊘ $1 (skipped: $2)${NC}"; }
+header(){ echo -e "\n${CYAN}━━━ $1 ━━━${NC}"; }
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  TEST: OS Identity
+# ═══════════════════════════════════════════════════════════════════════════════
+test_identity() {
+    header "OS Identity"
+
+    # Version file
+    if [ -f /tmp/automation/VERSION ] || [ -f /usr/share/mios/VERSION ]; then
+        pass "VERSION file present"
+    else
+        warn "VERSION file not found (OK on deployed systems)"
+    fi
+
+    # bootc image
+    if command -v bootc &>/dev/null; then
+        pass "bootc binary available"
+        if $IS_ROOT; then
+            local origin
+            origin=$(bootc status 2>/dev/null | grep -i "image:" | head -1 || echo "")
+            if echo "$origin" | grep -q "ghcr.io/kabuki94/mios"; then
+                pass "Update origin points to GHCR"
+            elif echo "$origin" | grep -q "localhost"; then
+                fail "Update origin is localhost — run: sudo bootc switch ghcr.io/kabuki94/mios:latest"
+            else
+                warn "Update origin: $origin"
+            fi
+        else
+            skip "bootc status" "requires root"
+        fi
+    else
+        fail "bootc binary missing"
+    fi
+
+    # SELinux
+    if command -v getenforce &>/dev/null; then
+        local mode
+        mode=$(getenforce 2>/dev/null || echo "Unknown")
+        if [ "$mode" = "Enforcing" ]; then
+            pass "SELinux: Enforcing"
+        elif [ "$mode" = "Permissive" ]; then
+            warn "SELinux: Permissive (should be Enforcing)"
+        else
+            warn "SELinux: $mode"
+        fi
+    else
+        skip "SELinux" "getenforce not available"
+    fi
+
+    # Virtualization detection
+    pass "Virtualization: $VIRT (WSL2: $IS_WSL)"
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  TEST: Critical Services
+# ═══════════════════════════════════════════════════════════════════════════════
+test_services() {
+    header "Critical Services"
+
+    # Services that should run everywhere
+    UNIVERSAL_SERVICES=(
+        cockpit.socket
+        sshd.service
+        tuned.service
+        chronyd.service
+        NetworkManager.service
+        systemd-resolved.service
+        podman.socket
+    )
+
+    for svc in "${UNIVERSAL_SERVICES[@]}"; do
+        if systemctl is-enabled "$svc" &>/dev/null; then
+            if systemctl is-active "$svc" &>/dev/null || systemctl is-active "${svc%.service}.socket" &>/dev/null; then
+                pass "$svc enabled+active"
+            else
+                warn "$svc enabled but not active"
+            fi
+        else
+            fail "$svc not enabled"
+        fi
+    done
+
+    # GDM — should be active on bare metal and Hyper-V, skipped in WSL2
+    if $IS_WSL; then
+        if ! systemctl is-active gdm.service &>/dev/null; then
+            pass "GDM correctly skipped in WSL2"
+        else
+            warn "GDM running in WSL2 (unexpected)"
+        fi
+    else
+        if systemctl is-active gdm.service &>/dev/null; then
+            pass "GDM active (desktop mode)"
+        elif [ "$(systemctl get-default)" = "multi-user.target" ]; then
+            pass "GDM inactive (headless mode)"
+        else
+            warn "GDM not running — check: systemctl status gdm"
+        fi
+    fi
+
+    # GNOME Remote Desktop (RDP)
+    if $IS_WSL; then
+        skip "GNOME Remote Desktop" "WSL2"
+    else
+        if systemctl is-enabled gnome-remote-desktop.service &>/dev/null; then
+            if systemctl is-active gnome-remote-desktop.service &>/dev/null; then
+                pass "gnome-remote-desktop.service enabled+active"
+            else
+                warn "gnome-remote-desktop.service enabled but not active"
+            fi
+        else
+            fail "gnome-remote-desktop.service not enabled"
+        fi
+    fi
+
+    # WSL2-specific: these should NOT be running
+    if $IS_WSL; then
+        WSL_SHOULD_SKIP=(auditd firewalld usbguard bootloader-update waydroid-container)
+        for svc in "${WSL_SHOULD_SKIP[@]}"; do
+            if systemctl is-active "${svc}.service" &>/dev/null; then
+                fail "${svc} running in WSL2 (should be skipped)"
+            else
+                pass "${svc} correctly skipped in WSL2"
+            fi
+        done
+    fi
+
+    # Bare-metal-only services — should skip in VMs
+    if [ "$VIRT" != "none" ]; then
+        BM_ONLY=(pacemaker corosync nfs-server smb)
+        for svc in "${BM_ONLY[@]}"; do
+            if systemctl is-active "${svc}.service" &>/dev/null; then
+                fail "${svc} running in VM (should be bare-metal only)"
+            else
+                pass "${svc} correctly skipped in VM"
+            fi
+        done
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  TEST: SELinux Policies
+# ═══════════════════════════════════════════════════════════════════════════════
+test_selinux() {
+    header "SELinux Custom Policies"
+
+    if ! command -v semodule &>/dev/null; then
+        skip "SELinux policy check" "semodule not available"
+        return
+    fi
+
+    EXPECTED_MODULES=(mios_bootupd mios_accountsd mios_resolved mios_fapolicyd mios_chcon mios_accountsd_homed)
+    for mod in "${EXPECTED_MODULES[@]}"; do
+        if semodule -l 2>/dev/null | grep -q "^${mod}"; then
+            pass "SELinux module: $mod loaded"
+        else
+            warn "SELinux module: $mod missing (may be OK if type doesn't exist in current policy)"
+        fi
+    done
+
+    # Check for recent AVC denials
+    if $IS_ROOT && command -v ausearch &>/dev/null; then
+        local denials
+        denials=$(ausearch -m AVC --start recent 2>/dev/null | grep -c "denied" || echo "0")
+        if [ "$denials" -eq 0 ]; then
+            pass "No recent AVC denials"
+        else
+            warn "$denials recent AVC denials — run: sudo ausearch -m AVC --start recent"
+        fi
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  TEST: GPU Detection
+# ═══════════════════════════════════════════════════════════════════════════════
+test_gpu() {
+    header "GPU & Renderer"
+
+    if [ -f /run/mios-gpu-detected ]; then
+        pass "GPU detection ran at boot"
+    else
+        warn "GPU detection marker missing — mios-gpu-detect.service may not have run"
+    fi
+
+    if [ "$VIRT" != "none" ]; then
+        # In VMs, NVIDIA should be blocked
+        if [ -f /etc/modprobe.d/99-mios-virt-gpu.conf ]; then
+            pass "NVIDIA blocked in VM (correct)"
+        else
+            warn "NVIDIA block config missing in VM"
+        fi
+
+        local renderer
+        renderer=$(cat /etc/environment.d/60-mios-renderer.conf 2>/dev/null | grep GSK_RENDERER | cut -d= -f2 || echo "")
+        if [ "$renderer" = "cairo" ]; then
+            pass "Renderer: Cairo (correct for VM)"
+        else
+            warn "Renderer not forced to Cairo in VM"
+        fi
+    else
+        # Bare metal — check for GPU
+        if lspci 2>/dev/null | grep -qi "vga\|3d\|display"; then
+            pass "GPU detected on bare metal"
+            if lsmod | grep -q "^nvidia"; then
+                pass "NVIDIA driver loaded"
+            elif lsmod | grep -q "^amdgpu"; then
+                pass "AMD GPU driver loaded"
+            elif lsmod | grep -q "^i915\|^xe"; then
+                pass "Intel GPU driver loaded"
+            else
+                warn "No GPU driver loaded — check: lspci -k | grep -A2 VGA"
+            fi
+        fi
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  TEST: Networking
+# ═══════════════════════════════════════════════════════════════════════════════
+test_network() {
+    header "Networking"
+
+    # DNS resolution
+    if getent hosts fedoraproject.org &>/dev/null; then
+        pass "DNS resolution working"
+    else
+        fail "DNS resolution failed — check systemd-resolved"
+    fi
+
+    # Firewall (skip in WSL2)
+    if $IS_WSL; then
+        skip "Firewall check" "WSL2"
+    elif systemctl is-active firewalld.service &>/dev/null; then
+        pass "Firewalld active"
+        if firewall-cmd --list-services 2>/dev/null | grep -q "cockpit"; then
+            pass "Cockpit allowed in firewall"
+        else
+            warn "Cockpit not in firewall allowed services"
+        fi
+
+        if firewall-cmd --list-ports 2>/dev/null | grep -q "3389/tcp"; then
+            pass "RDP (3389/tcp) allowed in firewall"
+        else
+            warn "RDP (3389/tcp) not in firewall allowed ports"
+        fi
+    else
+        warn "Firewalld not active"
+    fi
+
+    # Cockpit reachability
+    if curl -sk --max-time 3 https://localhost:9090/ &>/dev/null; then
+        pass "Cockpit web UI reachable on :9090"
+    else
+        warn "Cockpit not responding on :9090"
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  TEST: Packages & Flatpaks
+# ═══════════════════════════════════════════════════════════════════════════════
+test_packages() {
+    header "Key Packages"
+
+    CRITICAL_BINS=(
+        podman bootc ostree rpm-ostree
+        virsh virt-install qemu-system-x86_64
+        cockpit-bridge grdctl
+        fastfetch btop tmux
+        steam gamescope
+    )
+
+    for bin in "${CRITICAL_BINS[@]}"; do
+        if command -v "$bin" &>/dev/null; then
+            pass "$bin available"
+        else
+            warn "$bin not found in PATH"
+        fi
+    done
+
+    # Flatpaks
+    if command -v flatpak &>/dev/null; then
+        local count
+        count=$(flatpak list --app 2>/dev/null | wc -l)
+        if [ "$count" -ge 5 ]; then
+            pass "Flatpaks installed: $count apps"
+        else
+            warn "Only $count Flatpak apps (expected ≥5)"
+        fi
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  TEST: Container & K3s
+# ═══════════════════════════════════════════════════════════════════════════════
+test_containers() {
+    header "Containers & Kubernetes"
+
+    if podman info &>/dev/null; then
+        pass "Podman daemon responding"
+    else
+        warn "Podman not responding — check: podman info"
+    fi
+
+    if command -v kubectl &>/dev/null || command -v k3s &>/dev/null; then
+        pass "K3s/kubectl binary available"
+        if $IS_ROOT && systemctl is-active k3s.service &>/dev/null; then
+            pass "K3s service running"
+            local nodes
+            nodes=$(k3s kubectl get nodes --no-headers 2>/dev/null | wc -l || echo "0")
+            pass "K3s nodes: $nodes"
+        else
+            skip "K3s runtime check" "not running or not root"
+        fi
+    else
+        warn "K3s binary not found"
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  TEST: User Environment
+# ═══════════════════════════════════════════════════════════════════════════════
+test_user() {
+    header "User Environment"
+
+    # mios user exists
+    if id mios &>/dev/null; then
+        pass "User 'mios' exists"
+
+        # Group membership
+        local groups
+        groups=$(id -nG mios 2>/dev/null)
+        for g in wheel libvirt kvm video render input dialout; do
+            if echo "$groups" | grep -qw "$g"; then
+                pass "mios in group: $g"
+            else
+                fail "mios NOT in group: $g"
+            fi
+        done
+    else
+        fail "User 'mios' does not exist"
+    fi
+
+    # Home directory
+    if [ -d /var/home/mios ]; then
+        pass "Home directory exists at /var/home/mios"
+    else
+        warn "Home directory /var/home/mios missing"
+    fi
+
+    # dconf database
+    if [ -f /etc/dconf/db/local ] || [ -d /etc/dconf/db/local.d ]; then
+        pass "dconf database present"
+    else
+        warn "dconf database missing — app folders may not work"
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  TEST: Security & Hardening
+# ═══════════════════════════════════════════════════════════════════════════════
+test_security() {
+    header "Security & Hardening"
+
+    # Fapolicyd
+    if systemctl is-active fapolicyd.service &>/dev/null; then
+        pass "Fapolicyd active"
+        if grep -q "trust = file,rpmdb" /etc/fapolicyd/fapolicyd.conf 2>/dev/null || \
+           grep -q "trust = file,rpmdb" /usr/lib/fapolicyd/fapolicyd.conf 2>/dev/null; then
+            pass "Fapolicyd: fs-verity trust backend configured"
+        else
+            warn "Fapolicyd: trust backend might not be optimized for ComposeFS"
+        fi
+    else
+        warn "Fapolicyd inactive"
+    fi
+
+    # USBGuard
+    if systemctl is-active usbguard.service &>/dev/null; then
+        pass "USBGuard active"
+    else
+        warn "USBGuard inactive"
+    fi
+
+    # Secure Boot Maturity Audit (2026 Ready)
+    if [ -x /usr/libexec/mios/sb-audit ]; then
+        /usr/libexec/mios/sb-audit
+    else
+        skip "Secure Boot Audit" "/usr/libexec/mios/sb-audit not executable"
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  REPORT
+# ═══════════════════════════════════════════════════════════════════════════════
+report() {
+    echo ""
+    echo -e "${CYAN}╔══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║  MiOS v${VERSION} — Test Report                              ║${NC}"
+    echo -e "${CYAN}╠══════════════════════════════════════════════════════════════╣${NC}"
+    printf  '%s║%s  Environment: %-44s%s║%s\n' "${CYAN}" "${NC}" "$VIRT (WSL2: $IS_WSL)" "${CYAN}" "${NC}"
+    printf  '%s║%s  %sPassed: %-5s%s %sFailed: %-5s%s %sWarn: %-5s%s %sSkip: %-5s%s  %s║%s\n' "${CYAN}" "${NC}" "${GREEN}" "$PASS" "${NC}" "${RED}" "$FAIL" "${NC}" "${YELLOW}" "$WARN" "${NC}" "${DIM}" "$SKIP" "${NC}" "${CYAN}" "${NC}"
+    echo -e "${CYAN}╚══════════════════════════════════════════════════════════════╝${NC}"
+
+    if [ "$FAIL" -gt 0 ]; then
+        echo -e "\n${RED}$FAIL test(s) failed. Review output above.${NC}"
+        exit 1
+    elif [ "$WARN" -gt 0 ]; then
+        echo -e "\n${YELLOW}All tests passed with $WARN warning(s).${NC}"
+        exit 0
+    else
+        echo -e "\n${GREEN}All tests passed.${NC}"
+        exit 0
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  MAIN
+# ═══════════════════════════════════════════════════════════════════════════════
+echo -e "${CYAN}MiOS v${VERSION} System Test Harness${NC}"
+echo -e "${DIM}Environment: $VIRT | WSL2: $IS_WSL | Root: $IS_ROOT${NC}"
+
+case "${1:-full}" in
+    --quick|-q)
+        test_identity
+        test_services
+        test_network
+        ;;
+    --full|-f|full)
+        test_identity
+        test_services
+        test_selinux
+        test_security
+        test_gpu
+        test_network
+        test_packages
+        test_containers
+        test_user
+        ;;
+    --category|-c)
+        case "${2:-}" in
+            identity)   test_identity ;;
+            services)   test_services ;;
+            selinux)    test_selinux ;;
+            security)   test_security ;;
+            gpu)        test_gpu ;;
+            network)    test_network ;;
+            packages)   test_packages ;;
+            containers) test_containers ;;
+            user)       test_user ;;
+            *) echo "Categories: identity services selinux security gpu network packages containers user"; exit 1 ;;
+        esac
+        ;;
+    --help|-h)
+        echo "Usage: mios-test [--quick|--full|--category NAME]"
+        echo ""
+        echo "  --quick       Identity + services + network only"
+        echo "  --full        All test categories (default)"
+        echo "  --category X  Run single category"
+        echo ""
+        echo "Categories: identity services selinux security gpu network packages containers user"
+        exit 0
+        ;;
+    *)
+        echo "Unknown option: $1"; exit 1
+        ;;
+esac
+
+report

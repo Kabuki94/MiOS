@@ -106,12 +106,19 @@ EOF
     success "Installed system configuration"
 
     info "Creating tmpfiles.d configuration..."
-    cat > "${MIOS_TMPFILES_DIR}/mios.conf" <<'EOF'
-d /var/lib/mios 0755 root root -
-d /var/lib/mios/artifacts 0755 root root -
-d /var/lib/mios/snapshots 0755 root root -
-d /var/log/mios 0755 root root -
-d /var/log/mios/builds 0755 root root -
+    cat > "${MIOS_TMPFILES_DIR}/mios.conf" <<EOF
+# MiOS Unified State Folders (USR-OVER-ETC)
+d /usr/lib/mios/artifacts  0755 root root -
+d /usr/lib/mios/backups    0700 root root -
+d /usr/lib/mios/snapshots  0755 root root -
+d /usr/lib/mios/logs       0755 root root -
+
+d /var/lib/mios            0755 root root -
+L+ /var/lib/mios/artifacts - - - - /usr/lib/mios/artifacts
+L+ /var/lib/mios/backups   - - - - /usr/lib/mios/backups
+L+ /var/lib/mios/snapshots - - - - /usr/lib/mios/snapshots
+d /var/log/mios            0755 root root -
+L+ /var/log/mios/builds    - - - - /usr/lib/mios/logs
 EOF
     systemd-tmpfiles --create "${MIOS_TMPFILES_DIR}/mios.conf"
     success "Created /var directories"

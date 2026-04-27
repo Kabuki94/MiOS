@@ -72,6 +72,18 @@ jobs:
           large-packages: true
           swap-storage: true
 
+      - name: Manual aggressive cleanup
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/az
+          sudo rm -rf /usr/share/swift
+          sudo rm -rf /usr/local/.ghcup
+          sudo apt-get clean
+          sudo docker image prune -af
+          df -h
+
       - name: Install Tools
         run: |
           sudo apt-get update && sudo apt-get install -y qemu-utils podman
@@ -126,6 +138,11 @@ jobs:
           fi
           chmod +x evals/smoke-test.sh
           ./evals/smoke-test.sh "$IMAGE"
+
+      - name: Prune Docker before rechunking
+        run: |
+          sudo docker image prune -af
+          df -h
 
       - name: Rechunk image
         id: rechunk

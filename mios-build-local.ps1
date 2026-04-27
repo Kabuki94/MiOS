@@ -27,7 +27,16 @@ $ErrorActionPreference = "Stop"
 #  UI HELPERS
 # ══════════════════════════════════════════════════════════════════════════════
 function Write-Banner { param([string]$T) $w=78; Write-Host "`n$("═"*$w)" -ForegroundColor Cyan; Write-Host ("  $T") -ForegroundColor Cyan; Write-Host "$("═"*$w)`n" -ForegroundColor Cyan }
-function Write-Phase { param([string]$N,[string]$L) Write-Host "`n  [$N] $L" -ForegroundColor Yellow; Write-Host "  $("─"*70)" -ForegroundColor DarkGray }
+function Write-Phase { 
+    param([string]$N,[string]$L) 
+    Write-Host "`n  [$N] $L" -ForegroundColor Yellow; Write-Host "  $("─"*70)" -ForegroundColor DarkGray 
+    # Enable PowerShell Native Progress Bar
+    try {
+        $percent = [int]($N) * 20 # 5 phases = 20% each
+        Write-Progress -Activity "MiOS Build v$Version" -Status "Phase $N: $L" -PercentComplete $percent
+    } catch {}
+}
+
 function Write-Step  { param([string]$M) Write-Host "      » $M" -ForegroundColor DarkCyan }
 function Write-OK    { param([string]$M) Write-Host "      ✓ $M" -ForegroundColor Green }
 function Write-Warn  { param([string]$M) Write-Host "      ⚠ $M" -ForegroundColor Yellow }
@@ -358,7 +367,7 @@ if ($DoPull) {
     # Credentials passed as --build-arg: hash is available as MIOS_PASSWORD_HASH
     # env var inside the container build (consumed by 31-user.sh). Plaintext NEVER
     # written to disk, never appears in the build log or image layer metadata.
-    & podman build --no-cache `
+    & podman build --progress=tty --no-cache `
         --build-arg MAKEFLAGS="-j$cpu" `
         --build-arg MIOS_USER="$U" `
         --build-arg MIOS_PASSWORD_HASH="$passHash" `

@@ -69,6 +69,17 @@ jobs:
           large-packages: true
           swap-storage: true
 
+      - name: Manual aggressive cleanup
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/az
+          sudo rm -rf /usr/share/swift
+          sudo rm -rf /usr/local/.ghcup
+          sudo apt-get clean
+          df -h
+
       - name: Install qemu-utils (for VHDX post-convert)
         if: matrix.artifact == 'vhdx'
         run: |

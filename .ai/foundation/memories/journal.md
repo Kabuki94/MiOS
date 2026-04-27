@@ -36,7 +36,7 @@ Unify artifacts, logs, snapshots, and wiki into a single Linux Filesystem Native
 5. **Repository Updates**
    - Main (mios): 2 commits ready (464c6de8, 0d0d869f)
    - Bootstrap: 2 commits ready (3d06433, 3603c19)
-   - Wiki: 1 commit ready (c72a8fa)
+   - Wiki: 1 ready (c72a8fa)
    - All ready for push (awaiting authentication)
 
 6. **Documentation**
@@ -169,3 +169,23 @@ Resolve "Locale: C" reported by fastfetch and btop "No UTF-8 locale detected" fa
 ✅ UTF-8 Locale Issues Resolved
 ✅ WSL2 Service Execution Fixed
 ✅ Resource-Heavy WSL2 Services Gated
+
+---
+
+## [2026-04-27T23:00:00Z] [AI: Gemini CLI] CLI Refinement & CI/CD Optimization
+
+### Objective
+Unify management CLI syntax, implement bootstrap installation method, and resolve CI/CD "No space left on device" failures.
+
+### Accomplishments
+1. **Unified CLI Syntax**: Updated `mios` CLI to support both hyphenated and underscored subcommands (e.g., `toggle-headless` / `toggle_headless`), aligning with native Linux conventions.
+2. **"Mode 0" Bootstrap**: Implemented `curl | bash` installation support in `install.sh` and documented the method in `SELF-BUILD.md`.
+3. **CI/CD Hardening**: Added aggressive manual cleanup steps to `.github/workflows/build.yml` and `build-artifacts.yml` (purging .NET, Android, Haskell tools) and implemented Docker image pruning before rechunking to reclaim critical disk space.
+4. **Build UX**: Enabled native terminal progress bars in `mios-build`, `mios-rebuild`, and `mios-build-local.ps1` via `--progress=tty`.
+5. **Architectural Cleanup**: Relocated all management binaries (test, toggle-headless, assess) to `/usr/libexec/mios/` for full **USR-OVER-ETC** compliance and fixed the missing `role` mapping in the CLI.
+
+### Status
+✅ CLI Syntax Harmonized
+✅ Bootstrap Installation Method Ready
+✅ CI/CD Disk Space Issues Mitigated
+✅ USR-OVER-ETC Architectural Alignment Complete

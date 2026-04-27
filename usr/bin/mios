@@ -65,10 +65,10 @@ case "$CMD" in
     deploy)      exec /usr/bin/mios-deploy "$@" ;;
     backup)      exec /usr/bin/mios-backup "$@" ;;
     status)      exec /usr/bin/mios-status "$@" ;;
-    assess)      exec /usr/local/bin/mios-build-assess.sh "$@" ;;
-    toggle-headless|toggle_headless) exec /usr/bin/mios-toggle-headless "$@" ;;
+    assess)      exec /usr/libexec/mios/assess "$@" ;;
+    toggle-headless|toggle_headless) exec /usr/libexec/mios/mios-toggle-headless "$@" ;;
     dash)        exec /usr/libexec/mios/dash ;;
-    test)        exec /usr/bin/mios-test "$@" ;;
+    test)        exec /usr/libexec/mios/mios-test "$@" ;;
     vfio-toggle|vfio_toggle) exec /usr/bin/mios-vfio-toggle "$@" ;;
     vfio-check|vfio_check)  exec /usr/bin/mios-vfio-check "$@" ;;
     cpu-isolate|cpu_isolate) exec /usr/libexec/mios/cpu-isolate "$@" ;;
