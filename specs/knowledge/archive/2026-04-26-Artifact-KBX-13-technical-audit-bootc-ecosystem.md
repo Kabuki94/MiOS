@@ -84,7 +84,7 @@ build_files/
 │   └── 19-initramfs.sh         # dracut with --no-hostonly --reproducible
 └── shared/
     └── build-tests.sh          # Verify critical packages installed
-overlay/
+
 ├── usr/lib/bootc/kargs.d/01-nvidia.toml
 ├── usr/lib/systemd/system/mios-flatpak-manager.service
 ├── usr/share/glib-2.0/schemas/zz0-mios.gschema.override

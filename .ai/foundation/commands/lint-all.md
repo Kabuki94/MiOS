@@ -50,17 +50,17 @@ SC2162, SC2010, SC2054** as **fatal** — the CI runner does.
   'automation/mios-test',
   'automation/mios-toggle-headless',
   'automation/mios-grd-setup',
-  'overlay/usr/libexec/mios/libvirtd-firstboot',
-  'overlay/usr/libexec/mios/role-apply',
-  'overlay/usr/libexec/mios/select-cdi-spec',
-  'overlay/usr/libexec/mios/wsl-firstboot',
-  'overlay/usr/libexec/mios-boot-diag',
-  'overlay/usr/libexec/mios-flatpak-install',
-  'overlay/usr/bin/gamescope-session-steam',
-  'overlay/usr/bin/steamos-session-select',
-  'overlay/usr/local/bin/mios-ceph',
-  'overlay/usr/local/bin/mios-ceph-bootstrap',
-  'overlay/usr/local/bin/phosh-session-wrapper'
+  'usr/libexec/mios/libvirtd-firstboot',
+  'usr/libexec/mios/role-apply',
+  'usr/libexec/mios/select-cdi-spec',
+  'usr/libexec/mios/wsl-firstboot',
+  'usr/libexec/mios-boot-diag',
+  'usr/libexec/mios-flatpak-install',
+  'usr/bin/gamescope-session-steam',
+  'usr/bin/steamos-session-select',
+  'usr/local/bin/mios-ceph',
+  'usr/local/bin/mios-ceph-bootstrap',
+  'usr/local/bin/phosh-session-wrapper'
 ) | Where-Object { Test-Path $_ } |
     ForEach-Object { shellcheck -S warning $_ }
 ```

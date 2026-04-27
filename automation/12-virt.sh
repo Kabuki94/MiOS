@@ -40,7 +40,7 @@ install_packages "security"
 
 # Sovereign mode: disable Central API, use local-only decisions
 if [ -d /etc/crowdsec ]; then
-    # acquis.d/journalctl.yaml managed via overlay/ overlay
+    # acquis.d/journalctl.yaml managed via  overlay
 
     # Disable online API for sovereign operation
     if [ -f /etc/crowdsec/config.yaml ]; then
@@ -93,6 +93,6 @@ scurl -sL "$VIRTIO_URL" -o /usr/share/mios/virtio/virtio-win.iso 2>/dev/null || 
 }
 
 # Symlink the immutable ISO into /var/lib/libvirt/images via tmpfiles.d so it survives upgrades
-# Managed via overlay/usr/lib/tmpfiles.d/mios-virtio.conf
+# Managed via usr/lib/tmpfiles.d/mios-virtio.conf
 
 echo "[12-virt] Virtualization stack complete. (LG: refactored to 53-lg; K3s: refactored to 13-ceph-k3s)"

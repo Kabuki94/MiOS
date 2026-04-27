@@ -63,9 +63,9 @@ are blockers.
 
 ### §3.3 — kargs.d TOML
 
-For every `kargs.d/*.toml` and `overlay/usr/lib/bootc/kargs.d/*.toml`:
+For every `kargs.d/*.toml` and `usr/lib/bootc/kargs.d/*.toml`:
 ```powershell
-Get-ChildItem -Recurse -Filter '*.toml' -Path kargs.d,overlay/usr/lib/bootc/kargs.d -ErrorAction SilentlyContinue |
+Get-ChildItem -Recurse -Filter '*.toml' -Path kargs.d,usr/lib/bootc/kargs.d -ErrorAction SilentlyContinue |
   ForEach-Object {
     $p = $_.FullName
     python -c "import tomllib,pathlib; d=tomllib.loads(pathlib.Path(r'$p').read_text()); assert 'kargs' in d, 'missing kargs'; assert isinstance(d['kargs'],list), 'kargs not list'; assert all(isinstance(x,str) for x in d['kargs']), 'non-string entries'; assert 'delete' not in d and 'delete_kargs' not in d, 'delete key present'; print(r'$p' + ' ok')"
@@ -78,8 +78,8 @@ Get-ChildItem -Recurse -Filter '*.toml' -Path kargs.d,overlay/usr/lib/bootc/karg
 Get-ChildItem -Recurse system_files,scripts |
   Select-String -Pattern 'GTK_THEME.*Adwaita:dark'
 
-Test-Path overlay/etc/dconf/profile/user
-Test-Path overlay/etc/dconf/profile/gdm
+Test-Path etc/dconf/profile/user
+Test-Path etc/dconf/profile/gdm
 
 Get-ChildItem -Recurse system_files,scripts |
   Select-String -Pattern 'gnome-session-xsession'
@@ -90,10 +90,10 @@ Select-String -Path specs/PACKAGES.md -Pattern '^\s*xorgxrdp\b(?!-glamor)'
 ### §3.5 — NVIDIA / VM gating
 
 ```powershell
-Test-Path overlay/etc/modprobe.d/mios-nvidia-blacklist.conf
+Test-Path etc/modprobe.d/mios-nvidia-blacklist.conf
 Test-Path automation/34-gpu-detect.sh
 
-Get-ChildItem -Recurse -Filter '*.toml' kargs.d,bib-configs,overlay/usr/lib/bootc/kargs.d |
+Get-ChildItem -Recurse -Filter '*.toml' kargs.d,bib-configs,usr/lib/bootc/kargs.d |
   Select-String -Pattern 'nvidia-drm\.(modeset|fbdev)='
 
 Get-ChildItem -Recurse -Filter '*.service' system_files,systemd |

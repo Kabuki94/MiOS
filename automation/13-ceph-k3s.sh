@@ -7,7 +7,7 @@
 #   - K3s manifests stored in /usr/share/mios/k3s-manifests/ (not /var)
 #     First-boot service copies them to /var/lib/rancher/k3s/server/manifests/
 #     This fixes bootc lint: /var content must use tmpfiles.d entries
-#   - systemctl enables moved to Containerfile STEP D (unit files in overlay/)
+#   - systemctl enables moved to Containerfile STEP D (unit files in )
 set -euo pipefail
 # shellcheck source=lib/common.sh
 source "$(dirname "$0")/lib/common.sh"
@@ -82,7 +82,7 @@ chmod 755 /usr/local/bin/ceph-bootstrap.sh 2>/dev/null || true
 
 # ─── NOTE: Service enables are in Containerfile STEP D ───────────────────────
 # k3s.service, mios-ceph-bootstrap.service, var-home.mount,
-# var-lib-containers.mount all live in overlay/ and are enabled
+# var-lib-containers.mount all live in  and are enabled
 # AFTER the COPY step in the Containerfile.
 
 echo "[13-ceph-k3s] Ceph + K3s stack installed."

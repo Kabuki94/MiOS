@@ -46,7 +46,7 @@ If `$1` collides with an existing script, stop and report the conflict.
 # Contract:
 #   - Idempotent: safe to re-run; existing state must not break.
 #   - Reads /ctx/PACKAGES.md via automation/lib/packages.sh when packages are needed.
-#   - Writes overlays under overlay/ (copied into place by 08-system-files-overlay.sh).
+#   - Writes overlays under  (copied into place by 08-system-files-overlay.sh).
 #   - Emits progress via printf (no plaintext secrets, ever).
 
 set -euo pipefail
@@ -82,7 +82,7 @@ step "done"
 - If you install packages, they must come from `specs/PACKAGES.md` via
   the `packages::` helper in `lib/packages.sh` — never inline the
   package list.
-- Overlays go in `overlay/`, not this script.
+- Overlays go in ``, not this script.
 - systemd units go in `systemd/`, not this script.
 
 ### After creating the file

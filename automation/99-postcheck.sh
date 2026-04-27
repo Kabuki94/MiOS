@@ -30,10 +30,13 @@ log "  ✓ OpenSSH version is safe"
 
 # 2. Cockpit Security Posture
 log "Checking Cockpit configuration..."
-COCKPIT_CONF="/usr/lib/cockpit/cockpit.conf"
-if [[ ! -f "$COCKPIT_CONF" ]]; then
-    # Check etc fallback
+# In Rootfs-Native, config might be in /etc or /usr/lib
+if [[ -f "/etc/cockpit/cockpit.conf" ]]; then
     COCKPIT_CONF="/etc/cockpit/cockpit.conf"
+elif [[ -f "/usr/lib/cockpit/cockpit.conf" ]]; then
+    COCKPIT_CONF="/usr/lib/cockpit/cockpit.conf"
+else
+    COCKPIT_CONF=""
 fi
 
 if [[ -f "$COCKPIT_CONF" ]]; then

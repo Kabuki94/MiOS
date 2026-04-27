@@ -26,7 +26,7 @@ This directory contains **standalone out-of-image tooling** that runs
 *on a booted MiOS host* (or any Fedora/RHEL-family host, in
 most cases). These scripts are **not part of the image build** — the
 image-build scripts live in [`../automation/`](../automation/) and the
-overlays live in [`../overlay/`](../overlay/).
+overlays live in [`../`](../).
 
 Use these tools when you need to configure VFIO passthrough, isolate
 CPUs for VM pinning, profile a host before deploying MiOS to it, or
@@ -138,7 +138,7 @@ on the modular replacement in `../automation/` instead.
 - Nothing in this directory is copied into the image by default.
 - If you want one of these tools inside the image (e.g. `vfio-verify.sh`
   pre-installed for diagnostics), copy it into
-  `../overlay/usr/local/bin/` and reference it from the relevant
+  `../usr/local/bin/` and reference it from the relevant
   `../automation/NN-*.sh` or `../systemd/` unit. Don't symlink from here.
 
 ---

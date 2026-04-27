@@ -184,7 +184,7 @@ if __name__ == "__main__":
         ("artifacts", "artifacts/manifest.json.gz", False),
         ("automation", "automation/manifest.json", True),
         ("tools", "tools/manifest.json", True),
-        ("overlay", "overlay/manifest.json", True),
+        ("overlay", "manifest.json", True),
         ("evals", "evals/manifest.json", True),
         ("bib-configs", "bib-configs/manifest.json", True),
         ("agents/research", "agents/research/manifest.json", True),

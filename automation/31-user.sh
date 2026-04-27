@@ -63,18 +63,18 @@ fi
 # and processed by systemd-sysusers above. Imperative calls removed.
 
 # — SUDOERS —
-# Managed via overlay/usr/lib/sudoers.d/10-mios-wheel
+# Managed via usr/lib/sudoers.d/10-mios-wheel
 chmod 440 /usr/lib/sudoers.d/10-mios-wheel 2>/dev/null || true
 
 # — LOCALE —
-# Managed via overlay/usr/lib/locale.conf
+# Managed via usr/lib/locale.conf
 localedef -i en_US -f UTF-8 en_US.UTF-8 2>/dev/null || true
 
 # — CLOUD-INIT —
-# Managed via overlay/usr/lib/cloud/cloud.cfg.d/10-mios.cfg
+# Managed via usr/lib/cloud/cloud.cfg.d/10-mios.cfg
 
 # — MULTIPATH —
-# Managed via overlay/usr/lib/multipath.conf
+# Managed via usr/lib/multipath.conf
 
 # — FIX HOME DIRECTORY OWNERSHIP —
 echo "[31-user] Fixing home directory ownership..."
@@ -87,6 +87,6 @@ awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd | while read -r u; do
 done
 
 # — NFS STATE DIRECTORY —
-# Managed via overlay/usr/lib/tmpfiles.d/mios-nfs.conf
+# Managed via usr/lib/tmpfiles.d/mios-nfs.conf
 
 echo "[31-user] User & authentication configured."

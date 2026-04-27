@@ -33,12 +33,12 @@ chmod 0644 /etc/nvidia-container-toolkit/cdi-refresh.env
 
 # Toolkit-shipped units (require nvidia-container-toolkit >= 1.18).
 log "enabling nvidia-cdi-refresh units"
-systemctl enable nvidia-cdi-refresh.path    2>/dev/null || log "note: nvidia-cdi-refresh.path not available (NCT < 1.18)"
-systemctl enable nvidia-cdi-refresh.service 2>/dev/null || log "note: nvidia-cdi-refresh.service not available (NCT < 1.18)"
+systemctl enable nvidia-cdi-refresh.path    2>/dev/null || log "note: nvidia-cdi-refresh.path not available"
+systemctl enable nvidia-cdi-refresh.service 2>/dev/null || log "note: nvidia-cdi-refresh.service not available"
 systemctl enable nvidia-persistenced.service 2>/dev/null || true
 
 # MiOS CDI detect shim — handles bare metal vs VM vs no-GPU context.
-# Unit is in overlay/usr/lib/systemd/system/mios-nvidia-cdi.service.
+# Unit is in usr/lib/systemd/system/mios-nvidia-cdi.service.
 if systemctl cat mios-nvidia-cdi.service >/dev/null 2>&1; then
     log "enabling mios-nvidia-cdi.service"
     systemctl enable mios-nvidia-cdi.service

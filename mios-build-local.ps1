@@ -350,7 +350,7 @@ if ($DoPull) {
     # ── Inject hostname (only if custom; restored via git checkout after build) ──
     if ($HostIn -ne "mios") {
         Write-Step "Injecting static hostname: $HostIn ..."
-        Set-Content "overlay/etc/hostname" "$HostIn" -Encoding ascii
+        Set-Content "etc/hostname" "$HostIn" -Encoding ascii
     }
 
     $t0 = Get-Date
@@ -366,7 +366,7 @@ if ($DoPull) {
     if ($LASTEXITCODE -ne 0) { Write-Fatal "podman build failed" }
 
     # Restore hostname if it was temporarily overridden
-    & git checkout overlay/etc/hostname 2>$null | Out-Null
+    & git checkout etc/hostname 2>$null | Out-Null
 
     $buildMin = [math]::Round(((Get-Date) - $t0).TotalMinutes, 1)
     Write-OK "Image built in $buildMin min → $LocalImage"

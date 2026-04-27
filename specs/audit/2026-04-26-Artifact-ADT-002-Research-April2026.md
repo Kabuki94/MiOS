@@ -1446,7 +1446,7 @@ Add this after the system_files overlay step in Containerfile if SELinux context
   ```
 - `47-hardening.sh` already calls `fagenrules --load && fapolicyd-cli --update` at build time
 
-**MiOS fapolicyd status check:** All scripts in `overlay/usr/libexec/mios/` now have 0755 mode (fixed April 2026). Verify fapolicyd trust after the mode fix by regenerating trust DB in next build.
+**MiOS fapolicyd status check:** All scripts in `usr/libexec/mios/` now have 0755 mode (fixed April 2026). Verify fapolicyd trust after the mode fix by regenerating trust DB in next build.
 
 ### CrowdSec / Metabase dashboard (Podman Quadlet)
 
@@ -1527,7 +1527,7 @@ TimeoutStartSec=300
 **MiOS exposure analysis:** ucore-hci `stable-nvidia` currently tracks Fedora 42 stable, which historically ships an older Cockpit. After F44 rebase (April 28, 2026) Cockpit 360+ becomes available. **Action required for Kabu — see NEXT-RESEARCH.md.**
 
 **Mitigations until F44 rebase:**
-1. Disable remote-login: `LoginTo = false` in `/etc/cockpit/cockpit.conf` (or ship via `overlay/usr/lib/cockpit/cockpit.conf`).
+1. Disable remote-login: `LoginTo = false` in `/etc/cockpit/cockpit.conf` (or ship via `usr/lib/cockpit/cockpit.conf`).
 2. Restrict port 9090 with firewalld to trusted management networks.
 3. Confirm OpenSSH ≥ 9.6 in the image (Fedora 42 ships ≥ 9.7 since DRR; verify in `99-postcheck.sh`).
 

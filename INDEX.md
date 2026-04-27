@@ -26,7 +26,7 @@
       ".windsurfrules"
     ]
   },
-  "last_rag_sync": "2026-04-27T02:31:00.470713",
+  "last_rag_sync": "2026-04-27T03:08:57.083830",
   "version": "2.1.0"
 }
 ```
@@ -42,22 +42,22 @@ One OCI image covers all hardware roles: desktop, k3s/HA, GPU passthrough (VFIO)
 Published at `$MIOS_IMAGE_NAME:latest`. Deployed systems update atomically via `sudo bootc upgrade`.
 Sole proprietor: **Kabu.ki**. Target: AMD Ryzen 9 9950X3D + NVIDIA RTX 4090, hardware-agnostic by design.
 
-## 🏗️ Repository Directory Map
+## 🏗️ Repository Directory Map (Rootfs-Native)
 
 AI agents MUST use this map for context retrieval and navigation:
 
 | Path | Purpose | Machine-Readable Manifest |
 |---|---|---|
-| `specs/core/` | Architectural Blueprints & Manifests | `specs/manifest.json` |
-| `specs/engineering/` | Technical SSOTs (Packages, Scripts) | `specs/manifest.json` |
-| `specs/knowledge/research/`| Upstream Deep-Dives & Research | `specs/manifest.json` |
-| `specs/knowledge/guides/` | Operational Procedures | `specs/manifest.json` |
+| `usr/` | System Binaries & Libraries (Immutable) | `usr/manifest.json` |
+| `etc/` | System Configuration (Templates) | `etc/manifest.json` |
+| `var/` | Mutable System State (Templates) | `var/manifest.json` |
+| `home/` | User Home Directories (Persistent) | `home/manifest.json` |
+| `specs/` | Architectural Blueprints & Research | `specs/manifest.json` |
 | `automation/` | Build & Configuration Automation | `automation/manifest.json` |
-| `overlay/` | Root Filesystem Overlay | `overlay/manifest.json` |
-| `user/` | User Identity & Account Configuration | `user/identity.env.example` |
-| `artifacts/` | Build Metadata & RAG Snapshots | `artifacts/manifest.json.gz` |
+| `evals/` | System Validation & Smoke Tests | `evals/manifest.json` |
+| `identity.env.example` | User Identity SSOT | (Direct Read) |
 | `.ai/foundation/memories/` | Shared AI Journal & Brain | `.ai/foundation/memories/manifest.json` |
-| `.env.mios` | Unified System Configuration | (Handled by ai-bootstrap.sh) |
+
 
 ## 🧩 Instruction Patterns
 
@@ -109,9 +109,9 @@ just clean                                 # Remove output/ and local images
 
 The `Containerfile` has two stages:
 
-1. **`ctx` stage** — `scratch` image assembling: `automation/`, `overlay/`,
+1. **`ctx` stage** — `scratch` image assembling: `automation/`, ``,
    `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` (as `/ctx/PACKAGES.md`), `VERSION`, `bib-configs/`, `tools/`
-2. **`main` stage** — applies `overlay/` overlay via `08-system-files-overlay.sh`, then runs
+2. **`main` stage** — applies `` overlay via `08-system-files-overlay.sh`, then runs
    `automation/build.sh` (all `automation/[0-9][0-9]-*.sh` in order)
 
 Scripts `18-`, `19-`, `20-`, `21-`, `22-`, `23-`, `25-`, `26-`, `37-` are called explicitly by the
@@ -133,7 +133,7 @@ Never add packages outside this system.
 
 ### System files overlay
 
-`overlay/` mirrors the root filesystem. **All system config lives here** — no top-level overlay
+`` mirrors the root filesystem. **All system config lives here** — no top-level overlay
 directories. Files are applied by `automation/08-system-files-overlay.sh`, which handles the
 `/usr/local → /var/usrlocal` symlink present on ucore/FCOS bases.
 
@@ -313,7 +313,7 @@ To ensure all Markdown files are machine-parsable and referencable, they must in
       "path/to/impacted/file"
     ]
   },
-  "last_rag_sync": "2026-04-27T02:31:00.470713",
+  "last_rag_sync": "2026-04-27T03:08:57.083830",
   "version": "2.1.0"
 }
 ```

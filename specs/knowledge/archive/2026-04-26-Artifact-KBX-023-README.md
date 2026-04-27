@@ -122,7 +122,7 @@ capture, and the standalone full-system provisioning script.
 
 These documents describe the **out-of-image toolkit** that runs *on the
 booted system*, not the build-time provisioning scripts. Build-time
-logic lives in `../../automation/` and `../../overlay/`.
+logic lives in `../../automation/` and `../../`.
 
 ---
 

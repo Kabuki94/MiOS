@@ -14,7 +14,7 @@
 #
 # CHANGELOG v2.1.0:
 #   - MANDATORY Bibata cursor download — retries 3x, FAILS BUILD if missing
-#   - dconf profiles for user + GDM added to overlay/
+#   - dconf profiles for user + GDM added to 
 #   - Flatpak: 7 apps (added Flatseal + LocalSend)
 #   - adw-gtk3 theme for GTK3 visual consistency
 set -euo pipefail
@@ -35,13 +35,13 @@ install_packages_optional "gnome-core-apps"
 # ═════════════════════════════════════════════════════════════════════════════
 # Localsearch/tracker — disable indexing without removing
 # Removing localsearch breaks Nautilus search + Activities Overview.
-# Hide via autostart overrides in overlay/usr/share/xdg/autostart/
+# Hide via autostart overrides in usr/share/xdg/autostart/
 # ═════════════════════════════════════════════════════════════════════════════
 echo "[10-gnome] Disabling localsearch/tracker indexing (keep package, hide autostart)..."
 
 # ═════════════════════════════════════════════════════════════════════════════
 # Qt Adwaita theming — required for Qt apps to match GNOME look
-# Managed via overlay/usr/lib/environment.d/60-mios-qt-adwaita.conf
+# Managed via usr/lib/environment.d/60-mios-qt-adwaita.conf
 # ═════════════════════════════════════════════════════════════════════════════
 echo "[10-gnome] Setting Qt Adwaita environment variables (managed via overlay)..."
 
@@ -117,8 +117,8 @@ else
 fi
 
 # Comprehensive cursor default — every layer that reads cursor theme
-# Managed via overlay/usr/share/icons/default/index.theme
-# and overlay/usr/share/X11/icons/default/index.theme
+# Managed via usr/share/icons/default/index.theme
+# and usr/share/X11/icons/default/index.theme
 
 # 3. update-alternatives for x-cursor-theme (Fedora cursor resolution)
 if [ -d "$BIBATA_DIR/cursors" ]; then
@@ -135,7 +135,7 @@ ln -sf /usr/share/icons/Bibata-Modern-Classic /usr/share/cursors/xorg-x11/Bibata
 chmod -R a+rX "$BIBATA_DIR" 2>/dev/null || true
 
 # 6. Xresources fallback (oldest X11 cursor method)
-# Managed via overlay/usr/lib/X11/Xresources
+# Managed via usr/lib/X11/Xresources
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -164,7 +164,7 @@ fi
 # ═════════════════════════════════════════════════════════════════════════════
 echo "[10-gnome] Flatpaks will be installed on first boot (mios-flatpak-install.service)..."
 # NOTE: mios-flatpak-install.service is enabled in Containerfile STEP D
-# (unit file lives in overlay/, not available during script execution)
+# (unit file lives in , not available during script execution)
 
 exit 0
 

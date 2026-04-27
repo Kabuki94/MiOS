@@ -30,9 +30,9 @@ just clean                                 # Remove output/ and local images
 
 The `Containerfile` has two stages:
 
-1. **`ctx` stage** — `scratch` image assembling: `automation/`, `overlay/`,
+1. **`ctx` stage** — `scratch` image assembling: `automation/`, ``,
    `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` (as `/ctx/PACKAGES.md`), `VERSION`, `bib-configs/`, `tools/`
-2. **`main` stage** — applies `overlay/` overlay via `08-system-files-overlay.sh`, then runs
+2. **`main` stage** — applies `` overlay via `08-system-files-overlay.sh`, then runs
    `automation/build.sh` (all `automation/[0-9][0-9]-*.sh` in order)
 
 Scripts `18-`, `19-`, `20-`, `21-`, `22-`, `23-`, `25-`, `26-`, `37-` are called explicitly by the
@@ -54,7 +54,7 @@ Never add packages outside this system.
 
 ### System files overlay
 
-`overlay/` mirrors the root filesystem. **All system config lives here** — no top-level overlay
+`` mirrors the root filesystem. **All system config lives here** — no top-level overlay
 directories. Files are applied by `automation/08-system-files-overlay.sh`, which handles the
 `/usr/local → /var/usrlocal` symlink present on ucore/FCOS bases.
 

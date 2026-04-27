@@ -107,25 +107,25 @@ EOF
 
 ## The Flatpak service enable fails because of Containerfile ordering
 
-The `10-gnome.sh` script calling `systemctl enable mios-flatpak-install.service` fails because the unit file lives in `overlay/` which gets `COPY`'d in a later Containerfile step. **`systemctl enable` only creates symlinks — it requires the unit file to exist at that moment.** This is a classic ordering bug with three clean fixes:
+The `10-gnome.sh` script calling `systemctl enable mios-flatpak-install.service` fails because the unit file lives in `` which gets `COPY`'d in a later Containerfile step. **`systemctl enable` only creates symlinks — it requires the unit file to exist at that moment.** This is a classic ordering bug with three clean fixes:
 
-**Option A (simplest):** Move `COPY overlay/ /` before the `RUN automation/` step so unit files exist when `systemctl enable` runs.
+**Option A (simplest):** Move `COPY  /` before the `RUN automation/` step so unit files exist when `systemctl enable` runs.
 
 **Option B (Bluefin-style):** Use a multi-stage build with `--mount=type=bind`:
 ```dockerfile
 FROM scratch AS ctx
-COPY overlay/ /system_files
+COPY  /system_files
 COPY automation/ /scripts
 
 FROM ${BASE_IMAGE}
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
-    cp -r /ctx/overlay/* / && /ctx/automation/10-gnome.sh
+    cp -r /ctx/* / && /ctx/automation/10-gnome.sh
 ```
 
 **Option C (explicit post-COPY enable):** Remove the `systemctl enable` from `10-gnome.sh`, keep the COPY where it is, then add a separate step:
 ```dockerfile
 RUN automation/10-gnome.sh
-COPY overlay/ /
+COPY  /
 RUN systemctl enable mios-flatpak-install.service
 ```
 

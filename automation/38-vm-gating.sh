@@ -24,7 +24,7 @@ echo "[38-vm-gating] Configuring VM-specific service gating..."
 # Do NOT duplicate them here — last writer wins and we want 20's canonical drop-ins.
 
 # ═══ Polkit container workaround ═══
-# Managed via overlay/usr/lib/systemd/system/polkit.service.d/10-mios-container.conf
+# Managed via usr/lib/systemd/system/polkit.service.d/10-mios-container.conf
 
 # ═══ Cockpit socket drop-in permissions ═══
 if [ -f /usr/lib/systemd/system/cockpit.socket.d/listen.conf ]; then
@@ -37,7 +37,7 @@ fi
 echo "[38-vm-gating] Configuring Hyper-V Enhanced Session (gnome-remote-desktop)..."
 
 # 1. Blacklist VMware vsock (conflicts with Hyper-V hv_sock)
-# Managed via overlay/usr/lib/modprobe.d/blacklist-vmw_vsock.conf
+# Managed via usr/lib/modprobe.d/blacklist-vmw_vsock.conf
 
 # 2. Ensure hv_sock loads on boot (required for vsock RDP transport)
 if ! grep -q 'hv_sock' /usr/lib/modules-load.d/mios.conf 2>/dev/null; then
@@ -45,11 +45,11 @@ if ! grep -q 'hv_sock' /usr/lib/modules-load.d/mios.conf 2>/dev/null; then
 fi
 
 # 3. Polkit rule for colord (prevents "not authorized" errors in RDP sessions)
-# Managed via overlay/usr/share/polkit-1/rules.d/45-allow-colord.rules
+# Managed via usr/share/polkit-1/rules.d/45-allow-colord.rules
 
 # 4. Hyper-V Enhanced Session service — uses gnome-remote-desktop
-# Managed via overlay/usr/lib/systemd/system/mios-hyperv-enhanced.service
-# and overlay/usr/libexec/mios-hyperv-enhanced
+# Managed via usr/lib/systemd/system/mios-hyperv-enhanced.service
+# and usr/libexec/mios-hyperv-enhanced
 systemctl enable mios-hyperv-enhanced.service 2>/dev/null || true
 
 # 5. GNOME Remote Desktop — first-boot setup script
@@ -65,6 +65,6 @@ chmod +x /usr/libexec/mios-grd-setup 2>/dev/null || true
 # to be misconfigured on bare metal.
 
 # Ensure systemd-machined doesn't block dbus in WSL2
-# Managed via overlay/usr/lib/systemd/system/systemd-machined.service.d/wsl2-optional.conf
+# Managed via usr/lib/systemd/system/systemd-machined.service.d/wsl2-optional.conf
 
 echo "[38-vm-gating] VM gating + Hyper-V Enhanced Session (gnome-remote-desktop) configured."

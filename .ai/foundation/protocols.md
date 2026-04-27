@@ -48,7 +48,7 @@ This is an **immutable, container-native workstation** built on `bootc` and `Com
 - The root filesystem (`/usr`) is strictly read-only.
 - You cannot use `dnf install` on the deployed host.
 - Persistence is strictly limited to `/etc` and `/var`.
-- System services are declarative (`overlay/`) and rely heavily on Podman Quadlets.
+- System services are declarative (``) and rely heavily on Podman Quadlets.
 - **Update Efficiency:** ALL images MUST be rechunked via `bootc-base-imagectl` in the CI pipeline to ensure minimal Day-2 update sizes.
 
 ### THE IMMUTABLE APPLIANCE LAWS (2026 Golden Patterns)

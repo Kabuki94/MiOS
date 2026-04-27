@@ -17,7 +17,7 @@
       "specs/engineering/2026-04-27-Artifact-ENG-004-AI-Tool-Interface.md"
     ],
     "impacts": [
-      "overlay/usr/bin/mios-update"
+      "usr/bin/mios-update"
     ]
   }
 }

@@ -21,8 +21,7 @@ mkdir -p /etc/ld.so.conf.d
 echo "/usr/lib/wsl/lib" > /etc/ld.so.conf.d/mios-gpu-pv.conf
 
 # 3. Create a detection script for first-boot or deployment
-# This script will attempt to detect if we're in a Hyper-V/WSL environment
-# and provide instructions or automate the driver copy if possible.
+mkdir -p /usr/libexec/mios
 cat > /usr/libexec/mios/gpu-pv-detect <<'EOF'
 #!/usr/bin/bash
 set -euo pipefail

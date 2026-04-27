@@ -166,7 +166,7 @@
 ### 6.1 Configuration
 | Finding | MiOS Action |
 |---------|---------------|
-| `greenboot.conf` with `GREENBOOT_MAX_BOOT_ATTEMPTS=3`, `GREENBOOT_WATCHDOG_CHECK_ENABLED=true` | Create `overlay/etc/greenboot/greenboot.conf` (currently missing) |
+| `greenboot.conf` with `GREENBOOT_MAX_BOOT_ATTEMPTS=3`, `GREENBOOT_WATCHDOG_CHECK_ENABLED=true` | Create `etc/greenboot/greenboot.conf` (currently missing) |
 | `greenboot-rs` v2.1.0+ — same script directories, same systemd integration | No structural changes needed |
 | Rollback via `bootc rollback` for bootc systems | Already integrated via greenboot-rs |
 

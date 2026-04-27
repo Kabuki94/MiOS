@@ -32,7 +32,7 @@ The most significant upstream technical change is the deprecation of the `ostree
 *   **Future State (Fedora 44 / 2026):** `bootc` will use `/sysroot/composefs` directly. The OS boots directly from a Merkle-tree-based filesystem image pointing to a content-addressed object store. 
 *   **Benefits:** Eliminates the `ostree` abstraction layer, guarantees strict read-only immutability, and provides native cryptographic integrity via `fs-verity`.
 
-**MiOS Gap:** We have enabled `composefs.enabled = verity` in `prepare-root.conf`, which is good preparation. However, we must explicitly test our build targets against `--composefs-native` installation flags as `bootc-image-builder` and `bootc install` mature, to ensure our `overlay/` overlays do not violate native composefs assumptions.
+**MiOS Gap:** We have enabled `composefs.enabled = verity` in `prepare-root.conf`, which is good preparation. However, we must explicitly test our build targets against `--composefs-native` installation flags as `bootc-image-builder` and `bootc install` mature, to ensure our `` overlays do not violate native composefs assumptions.
 
 ## 2. Unified Kernel Images (UKI)
 Integrated closely with the composefs-native transition is the shift to **Unified Kernel Images (UKI)**.

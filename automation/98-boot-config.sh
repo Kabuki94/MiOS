@@ -1,13 +1,13 @@
 #!/bin/bash
 # MiOS v2.1.0 — 98-boot-config: Boot console + service configuration
-# Plymouth disable is handled by overlay/usr/lib/bootc/kargs.d/10-mios-console.toml
-# Console verbosity is handled by overlay/usr/lib/bootc/kargs.d/00-mios.toml + 10-mios-verbose.toml
+# Plymouth disable is handled by usr/lib/bootc/kargs.d/10-mios-console.toml
+# Console verbosity is handled by usr/lib/bootc/kargs.d/00-mios.toml + 10-mios-verbose.toml
 set -euo pipefail
 
 echo "[98-boot-config] Configuring boot console output..."
 
 # ── Verify kargs TOML files exist ──────────────────────────────────────────
-# These are static files from overlay/ — if missing, the overlay step failed.
+# These are static files from  — if missing, the overlay step failed.
 if [ -f /usr/lib/bootc/kargs.d/10-mios-console.toml ]; then
     echo "[98-boot-config] Configuring plymouth disable via kernel cmdline..."
 else

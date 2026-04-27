@@ -9,10 +9,10 @@
     "*.ps1": "powershell",
     "Justfile": "makefile",
     "automation/mios-*": "shellscript",
-    "overlay/usr/libexec/mios/*": "shellscript",
-    "overlay/usr/bin/gamescope-session-steam": "shellscript",
-    "overlay/usr/local/bin/mios-ceph": "shellscript",
-    "overlay/etc/greenboot/check/wanted.d/*": "shellscript"
+    "usr/libexec/mios/*": "shellscript",
+    "usr/bin/gamescope-session-steam": "shellscript",
+    "usr/local/bin/mios-ceph": "shellscript",
+    "etc/greenboot/check/wanted.d/*": "shellscript"
   },
 
   "files.eol": "\n",
@@ -638,7 +638,7 @@
     "AI_ARCH_BASELINE": "v2.1.0",
     "AI_DNF_POLICY": "--setopt=install_weak_deps=False",
     "AI_WSL_GATING": "ConditionVirtualization=!wsl",
-    "AI_OVERLAY_PATH": "overlay/",
+    "AI_OVERLAY_PATH": "",
     "AI_PKG_SOURCE": "specs/PACKAGES.md",
     "AI_COSIGN_PIN": "v2.1.0",
     "AI_WORKSPACE_TYPE": "bootable-container",
@@ -648,7 +648,7 @@
     "AI_ARCH_BASELINE": "v2.1.0",
     "AI_DNF_POLICY": "--setopt=install_weak_deps=False",
     "AI_WSL_GATING": "ConditionVirtualization=!wsl",
-    "AI_OVERLAY_PATH": "overlay/",
+    "AI_OVERLAY_PATH": "",
     "AI_PKG_SOURCE": "specs/PACKAGES.md",
     "AI_COSIGN_PIN": "v2.1.0",
     "AI_WORKSPACE_TYPE": "bootable-container",

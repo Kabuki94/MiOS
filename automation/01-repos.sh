@@ -12,27 +12,28 @@ source "${SCRIPT_DIR}/lib/common.sh"
 
 # ── Global DNF config ───────────────────────────────────────────────────────
 echo "[01-repos] Setting install_weak_deps=False globally..."
-# v2.1.0: dnf.conf moved to /usr/lib/dnf/dnf.conf as per USR-OVER-ETC.
 DNF_CONF="/usr/lib/dnf/dnf.conf"
 if [ ! -f "$DNF_CONF" ]; then
-    # Fallback if the file didn't exist in overlay
     DNF_CONF="/etc/dnf/dnf.conf"
 fi
 
-if ! grep -q '^install_weak_deps=False' "$DNF_CONF"; then
-    # Remove any existing settings to avoid duplicates
-    sed -i '/^install_weak_deps=/d' "$DNF_CONF" 2>/dev/null || true
-    echo "install_weak_deps=False" >> "$DNF_CONF"
+if [ -f "$DNF_CONF" ]; then
+    if ! grep -q '^install_weak_deps=False' "$DNF_CONF"; then
+        sed -i '/^install_weak_deps=/d' "$DNF_CONF" 2>/dev/null || true
+        echo "install_weak_deps=False" >> "$DNF_CONF"
+    fi
 fi
 
 
 # ── Protect Base Repos from Third-Party Ties ───────────────────────────────
-echo "[01-repos] Elevating base repos to priority 98 to protect against rpmsphere/third-party ties..."
-for repo in /etc/yum.repos.d/fedora*.repo /etc/yum.repos.d/ublue-os*.repo; do
-    if [ -f "$repo" ] && ! grep -q '^priority=' "$repo"; then
-        sed -i '/^\[.*\]/a priority=98' "$repo"
-    fi
-done
+echo "[01-repos] Elevating base repos to priority 98..."
+if [ -d /etc/yum.repos.d ]; then
+    for repo in /etc/yum.repos.d/fedora*.repo /etc/yum.repos.d/ublue-os*.repo; do
+        if [ -f "$repo" ] && ! grep -q '^priority=' "$repo"; then
+            sed -i '/^\[.*\]/a priority=98' "$repo"
+        fi
+    done
+fi
 
 # ── Fedora 44 repo overlay ─────────────────────────────────────────────────
 echo "[01-repos] Adding Fedora 44 repository..."

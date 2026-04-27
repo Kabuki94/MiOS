@@ -145,7 +145,7 @@ Mirror upstream's cadence: Cirrus CI / GitHub Actions re-runs every 3h, compares
 **Steal these patterns:**
 - `cosign.pub` at repo root → consumers pin via `/etc/containers/policy.json`.
 - `build_files/` script layout: `00-base.sh`, `01-packages.sh`, `02-services.sh`, `03-install-kernel-akmods.sh`. Highly regular and easy to mirror.
-- `overlay/shared/` tree maps 1:1 to `/`. Drop in systemd presets under `overlay/shared/usr/lib/systemd/system-preset/`.
+- `shared/` tree maps 1:1 to `/`. Drop in systemd presets under `shared/usr/lib/systemd/system-preset/`.
 - `justfile` + `ujust` recipes under `/usr/share/ublue-os/just/` — modular, user-facing admin UX.
 
 ### ublue-os/bluefin — dev desktop patterns
@@ -159,9 +159,9 @@ Mirror upstream's cadence: Cirrus CI / GitHub Actions re-runs every 3h, compares
 ### ublue-os/bazzite — gaming patterns (desktop-only subset)
 
 - `spec_files/gamescope/gamescope.spec`: custom-patched Gamescope with `CAP_SYS_NICE`. Bazzite-org fork is the production-quality source.
-- `overlay/desktop/shared/usr/share/wayland-sessions/gamescope-session-steam.desktop`: the session file that launches `gamescope-session-plus steam`.
-- `overlay/desktop/shared/usr/lib/systemd/system/bazzite-libvirtd-setup.service`: pattern for first-boot libvirt enablement (ConditionPathExists, restorecon, state-file). Clone verbatim for MiOS libvirt setup.
-- `overlay/desktop/shared/usr/share/ublue-os/just/82-bazzite-waydroid.just`: `ujust setup-waydroid` recipe — drives `sudo waydroid init` + SELinux context restore. Adopt the recipe layout; Waydroid itself is risky on pure-NVIDIA (see open questions).
+- `desktop/shared/usr/share/wayland-sessions/gamescope-session-steam.desktop`: the session file that launches `gamescope-session-plus steam`.
+- `desktop/shared/usr/lib/systemd/system/bazzite-libvirtd-setup.service`: pattern for first-boot libvirt enablement (ConditionPathExists, restorecon, state-file). Clone verbatim for MiOS libvirt setup.
+- `desktop/shared/usr/share/ublue-os/just/82-bazzite-waydroid.just`: `ujust setup-waydroid` recipe — drives `sudo waydroid init` + SELinux context restore. Adopt the recipe layout; Waydroid itself is risky on pure-NVIDIA (see open questions).
 - Ships `kmod-kvmfr` pre-signed via `ghcr.io/ublue-os/akmods-extra`. **Skip handheld bits** (`jupiter-fan-control`, `hhd`, `bazzite-autologin.service`, ROG/handheld udev overrides) for your workstation target.
 
 ### ublue-os/ucore + bsherman/ucore-hci — HCI patterns
@@ -551,7 +551,7 @@ ARG NV=580
 # ----- ctx stage: package lists, scripts -----
 FROM scratch AS ctx
 COPY build_files/ /build_files/
-COPY overlay/ /overlay/
+COPY  /
 COPY packages/ /packages/
 
 # ----- base stage: shared by both variants -----
@@ -631,9 +631,9 @@ EOF
 
 ### Ensure trust policy is baked in
 ```dockerfile
-COPY overlay/etc/pki/containers/ /etc/pki/containers/
-COPY overlay/etc/containers/policy.json /etc/containers/policy.json
-COPY overlay/etc/containers/registries.d/ /etc/containers/registries.d/
+COPY etc/pki/containers/ /etc/pki/containers/
+COPY etc/containers/policy.json /etc/containers/policy.json
+COPY etc/containers/registries.d/ /etc/containers/registries.d/
 ```
 
 ## Open questions and gaps — what MiOS will need to pioneer
@@ -672,7 +672,7 @@ These are the areas where upstream has no finished pattern; your work here will 
 - Fedora Change Composefs Atomic Desktops: `fedoraproject.org/wiki/Changes/ComposefsAtomicDesktops`
 - Universal Blue main: `github.com/ublue-os/main`
 - Bluefin: `github.com/ublue-os/bluefin` (especially `build_files/base/03-install-kernel-akmods.sh`)
-- Bazzite: `github.com/ublue-os/bazzite` (`overlay/desktop/shared/usr/lib/systemd/system/bazzite-libvirtd-setup.service`, `overlay/desktop/shared/usr/share/ublue-os/just/82-bazzite-waydroid.just`)
+- Bazzite: `github.com/ublue-os/bazzite` (`desktop/shared/usr/lib/systemd/system/bazzite-libvirtd-setup.service`, `desktop/shared/usr/share/ublue-os/just/82-bazzite-waydroid.just`)
 - Bazzite Gamescope session fork: `github.com/bazzite-org/gamescope-session`, `github.com/bazzite-org/gamescope`
 - ucore: `github.com/ublue-os/ucore`
 - ucore-hci (bsherman): `github.com/bsherman/ucore-hci`

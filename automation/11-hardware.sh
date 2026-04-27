@@ -85,7 +85,7 @@ fi
 # Turing+ (RTX 20xx and newer) supports open modules; RTX 50 Blackwell requires
 # them. NVreg_OpenRmEnableUnsupportedGpus=1 lets open modules attempt older
 # cards too (Pascal, Maxwell) where supported.
-# ARCHITECTURAL FIX: Managed via overlay/usr/lib/modprobe.d/nvidia-open.conf
+# ARCHITECTURAL FIX: Managed via usr/lib/modprobe.d/nvidia-open.conf
 # to prevent /etc state drift.
 
 

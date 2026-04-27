@@ -59,13 +59,13 @@
    - `greenboot --check` passes on a test VM boot
 
 ### B. Fix `60-k3s.sh` wanted.d exit code
-- **File:** `overlay/etc/greenboot/check/wanted.d/60-k3s.sh`
+- **File:** `etc/greenboot/check/wanted.d/60-k3s.sh`
 - **Issue:** Script exits `0` on K3s failure — greenboot cannot log the warning
 - **Fix:** Change failure-path `exit 0` to `exit 1` (wanted.d logs non-zero as warning, does NOT trigger rollback)
 - Low risk, cosmetic correctness fix
 
 ### C. Pre-rebase Cockpit mitigation (if current build is in production)
-- Add `LoginTo = false` to `overlay/usr/lib/cockpit/cockpit.conf` to neutralize CVE-2026-4631 until F44 rebase delivers Cockpit ≥ 360
+- Add `LoginTo = false` to `usr/lib/cockpit/cockpit.conf` to neutralize CVE-2026-4631 until F44 rebase delivers Cockpit ≥ 360
 - Decision: Kabu to determine if current F43-based image is deployed in production
 
 ---

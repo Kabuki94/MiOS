@@ -35,9 +35,9 @@ All notable changes to this project will be documented in this file.
 ## [v2.1.0] - 2026-04-22
 
 ### ⚙️ Core OS & Role Engine Consolidation
-* **Unified Role Engine:** Consolidated the asynchronous initialization and role management into the extensionless `overlay/usr/libexec/mios/role-apply` script.
+* **Unified Role Engine:** Consolidated the asynchronous initialization and role management into the extensionless `usr/libexec/mios/role-apply` script.
 * **Formal Role Targets:** Introduced `mios-{desktop,headless,k3s-master,ha-node}.target` for strict role isolation.
-* **Architectural Overlay Purity:** Consolidated all dynamically created systemd units into the `overlay/` overlay. Removed redundant root-level config directories.
+* **Architectural Overlay Purity:** Consolidated all dynamically created systemd units into the `` overlay. Removed redundant root-level config directories.
 * **Next-Gen MOTD:** Enhanced `/usr/libexec/mios/motd` with live Role, MOK (Secure Boot), and Update status indicators.
 * **2026 Flatpak Standard:** Adopted `/usr/share/flatpak/pre-installed.d/` for mandatory application delivery.
 * **Logging Purity:** Audited and fixed malformed UTF-8/encoding issues in all shell scripts.

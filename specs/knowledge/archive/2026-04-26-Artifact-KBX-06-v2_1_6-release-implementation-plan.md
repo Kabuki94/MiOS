@@ -32,7 +32,7 @@ Everything below is copy-pasteable. File paths are given in both repo form (`aut
 
 ## 1. The `/usr/local` CI failure, root cause, and chosen fix
 
-**Hypothesis confirmed.** On ucore-hci / Fedora-CoreOS-lineage bootc images, `/usr/local` is a symbolic link to `/var/usrlocal` (the long-standing OSTree convention: `/usr` is immutable, `/var` is runtime-mutable, so a writable `/usr/local` must be a symlink into `/var`). bootc upstream has since diverged and recommends regular-directory `/usr/local` for **base** images, but derived images in the ublue/ucore stack still ship the symlink. `cp -a /ctx/overlay/usr/local/. /usr/local/` fails with `cannot create directory '/usr/local/': File exists` because the trailing slash forces `cp` to treat the target as a directory name to create — which collides with the existing symlink target.
+**Hypothesis confirmed.** On ucore-hci / Fedora-CoreOS-lineage bootc images, `/usr/local` is a symbolic link to `/var/usrlocal` (the long-standing OSTree convention: `/usr` is immutable, `/var` is runtime-mutable, so a writable `/usr/local` must be a symlink into `/var`). bootc upstream has since diverged and recommends regular-directory `/usr/local` for **base** images, but derived images in the ublue/ucore stack still ship the symlink. `cp -a /ctx/usr/local/. /usr/local/` fails with `cannot create directory '/usr/local/': File exists` because the trailing slash forces `cp` to treat the target as a directory name to create — which collides with the existing symlink target.
 
 **Evaluation of fix patterns:**
 
@@ -60,9 +60,9 @@ RUN set -euo pipefail; \
     # Stage 2: overlay /usr/local content by writing through the symlink into
     # /var/usrlocal. Create the target directory first in case the base image
     # ships the symlink without the dir populated.
-    if [ -d /ctx/overlay/usr/local ]; then \
+    if [ -d /ctx/usr/local ]; then \
         mkdir -p /var/usrlocal; \
-        tar -C /ctx/overlay/usr/local -cf - . \
+        tar -C /ctx/usr/local -cf - . \
           | tar -C /var/usrlocal -xf -; \
     fi; \
     echo "[overlay] system_files applied (2-stage, /var/usrlocal aware)"
@@ -396,7 +396,7 @@ jobs:
             "${IMAGE}@${DIGEST}"
 ```
 
-### 5b. `/etc/containers/policy.json` (shipped in-image via `overlay/`)
+### 5b. `/etc/containers/policy.json` (shipped in-image via ``)
 
 ```json
 {
@@ -460,11 +460,11 @@ Without this entry, `containers/image` does not look for cosign `.sig` attachmen
 #
 # Prereq: the Containerfile must COPY these files into /ctx before this
 # script runs:
-#   overlay/etc/containers/policy.json
-#   overlay/etc/containers/registries.d/ghcr.io-kabuki94.yaml
-#   overlay/sigstore/fulcio_v1.crt.pem   (from sigstore/root-signing)
-#   overlay/sigstore/rekor.pub           (from sigstore/root-signing)
-#   overlay/sigstore/ublue-os.pub        (from ublue-os/main cosign.pub)
+#   etc/containers/policy.json
+#   etc/containers/registries.d/ghcr.io-kabuki94.yaml
+#   sigstore/fulcio_v1.crt.pem   (from sigstore/root-signing)
+#   sigstore/rekor.pub           (from sigstore/root-signing)
+#   sigstore/ublue-os.pub        (from ublue-os/main cosign.pub)
 
 set -euo pipefail
 
@@ -474,19 +474,19 @@ source "$(dirname "$0")/lib/common.sh"
 log "37-cosign-policy: installing sigstore trust roots + policy.json"
 
 install -d -m 0755 /etc/pki/containers
-install -m 0644 /ctx/overlay/sigstore/fulcio_v1.crt.pem \
+install -m 0644 /ctx/sigstore/fulcio_v1.crt.pem \
     /etc/pki/containers/fulcio_v1.crt.pem
-install -m 0644 /ctx/overlay/sigstore/rekor.pub \
+install -m 0644 /ctx/sigstore/rekor.pub \
     /etc/pki/containers/rekor.pub
-install -m 0644 /ctx/overlay/sigstore/ublue-os.pub \
+install -m 0644 /ctx/sigstore/ublue-os.pub \
     /etc/pki/containers/ublue-os.pub
 
 install -d -m 0755 /etc/containers
-install -m 0644 /ctx/overlay/etc/containers/policy.json \
+install -m 0644 /ctx/etc/containers/policy.json \
     /etc/containers/policy.json
 
 install -d -m 0755 /etc/containers/registries.d
-install -m 0644 /ctx/overlay/etc/containers/registries.d/ghcr.io-kabuki94.yaml \
+install -m 0644 /ctx/etc/containers/registries.d/ghcr.io-kabuki94.yaml \
     /etc/containers/registries.d/ghcr.io-kabuki94.yaml
 
 if command -v restorecon >/dev/null 2>&1; then
@@ -860,11 +860,11 @@ log "36-akmod-guards: done (${#SERVICES[@]} drop-ins)"
 | `automation/lib/packages.sh` (edit: `${DNF_SETOPT[@]}` in dnf wrapper) | `scripts__lib__packages.sh` | §2 |
 | `automation/36-akmod-guards.sh` (new) | `scripts__36-akmod-guards.sh` | §7 |
 | `automation/37-cosign-policy.sh` (new) | `scripts__37-cosign-policy.sh` | §5d |
-| `overlay/etc/containers/policy.json` (new) | `system_files__etc__containers__policy.json` | §5b |
-| `overlay/etc/containers/registries.d/ghcr.io-kabuki94.yaml` (new) | `system_files__etc__containers__registries.d__ghcr.io-kabuki94.yaml` | §5c |
-| `overlay/sigstore/fulcio_v1.crt.pem` (new; pinned from sigstore/root-signing) | `system_files__sigstore__fulcio_v1.crt.pem` | §5d prereq |
-| `overlay/sigstore/rekor.pub` (new; pinned from sigstore/root-signing) | `system_files__sigstore__rekor.pub` | §5d prereq |
-| `overlay/sigstore/ublue-os.pub` (new; from ublue-os/main cosign.pub) | `system_files__sigstore__ublue-os.pub` | §5d prereq |
+| `etc/containers/policy.json` (new) | `system_files__etc__containers__policy.json` | §5b |
+| `etc/containers/registries.d/ghcr.io-kabuki94.yaml` (new) | `system_files__etc__containers__registries.d__ghcr.io-kabuki94.yaml` | §5c |
+| `sigstore/fulcio_v1.crt.pem` (new; pinned from sigstore/root-signing) | `system_files__sigstore__fulcio_v1.crt.pem` | §5d prereq |
+| `sigstore/rekor.pub` (new; pinned from sigstore/root-signing) | `system_files__sigstore__rekor.pub` | §5d prereq |
+| `sigstore/ublue-os.pub` (new; from ublue-os/main cosign.pub) | `system_files__sigstore__ublue-os.pub` | §5d prereq |
 | `bib-configs/qcow2.toml` (new/replace) | `bib-configs__qcow2.toml` | §6a |
 | `bib-configs/vhdx.toml` (new/replace) | `bib-configs__vhdx.toml` | §6b |
 | `bib-configs/iso.toml` (new/replace) | `bib-configs__iso.toml` | §6c |
@@ -876,7 +876,7 @@ log "36-akmod-guards: done (${#SERVICES[@]} drop-ins)"
 
 ### 8b. Additional Containerfile edits required (beyond the §1 RUN block)
 
-Add these lines after the existing `COPY overlay/` stage and before the final `bootc container lint` step:
+Add these lines after the existing `COPY ` stage and before the final `bootc container lint` step:
 
 ```dockerfile
 # Ensure dracut-live + squashfs-tools for the ISO artifact build leg
@@ -897,7 +897,7 @@ The push script auto-discovers flatpack files with `__` separators, maps to repo
 1. Re-writing an identical file is a no-op (git sees no diff, no commit created).
 2. The script must NOT attempt a commit if `git status --porcelain` is empty after all writes.
 3. For the `push-to-github.ps1` shim: because this file already exists in the repo, overwrite semantics are `Set-Content -NoNewline -Encoding UTF8` (no BOM) and a post-write `(Get-Content).Replace("`r`n","`n") | Set-Content -NoNewline` to force LF.
-4. For new files in subdirectories (`automation/lib/common.sh`, `overlay/sigstore/*`), create parent directories with `New-Item -ItemType Directory -Force` before writing.
+4. For new files in subdirectories (`automation/lib/common.sh`, `sigstore/*`), create parent directories with `New-Item -ItemType Directory -Force` before writing.
 5. Binary files (`fulcio_v1.crt.pem`, `rekor.pub`, `ublue-os.pub`) must be written via `[System.IO.File]::WriteAllBytes` with a base64-decoded byte array, NOT through `Set-Content` (which would corrupt binary).
 
 ### 8d. Commit message (embedded in the push script's tempfile)
@@ -928,10 +928,10 @@ Outstanding item A (cosign keyless):
 - .github/workflows/build-test.yml: cosign v3 keyless sign+verify with
   sigstore/cosign-installer@v2.1.0, id-token: write, digest capture
   via buildah push --digestfile.
-- overlay/etc/containers/policy.json: strict default-reject with
+- etc/containers/policy.json: strict default-reject with
   sigstoreSigned rules for ghcr.io/kabuki94/mios and
   ghcr.io/ublue-os.
-- overlay/etc/containers/registries.d/ghcr.io-kabuki94.yaml:
+- etc/containers/registries.d/ghcr.io-kabuki94.yaml:
   use-sigstore-attachments: true.
 - automation/37-cosign-policy.sh: install policy + pinned TUF roots.
 
@@ -955,7 +955,7 @@ Outstanding item C (akmod guards):
 1. `bash -n automation/**/*.sh` — syntax check all shell scripts.
 2. `shellcheck automation/**/*.sh` — lint; expect SC1091 on `source "lib/common.sh"` in some scripts (path resolution via `$(dirname "$0")` is fine).
 3. `! grep -rnE '^\s*dnf (install|remove|swap|group)' automation/ | grep -v '"${DNF_SETOPT\[@\]}"'` — every mutating dnf call carries the array.
-4. `jq -e . overlay/etc/containers/policy.json` — policy.json parses.
+4. `jq -e . etc/containers/policy.json` — policy.json parses.
 5. `buildah bud -f Containerfile .` locally (on a machine with ≥ 60 GB free) — CI fix confirmed.
 6. CI run on PR — cosign sign/verify steps gated off for PRs, only build+lint+push run.
 7. First merge to main — cosign sign succeeds, `cosign verify` step passes.

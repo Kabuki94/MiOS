@@ -8,6 +8,6 @@ set -euo pipefail
 echo "[34-gpu-detect] Configuring GPU auto-detect service..."
 
 # Unit and script are delivered via system_files overlay.
-# Enablement is handled via overlay/usr/lib/systemd/system-preset/90-mios.preset
+# Enablement is handled via usr/lib/systemd/system-preset/90-mios.preset
 
 echo "[34-gpu-detect] GPU detection service enabled."

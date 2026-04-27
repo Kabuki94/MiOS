@@ -463,15 +463,15 @@ RUN chmod 755 /usr/local/bin/k3s && \
     ln -sf /usr/local/bin/k3s /usr/local/bin/ctr
 
 # === CONFIGURATION FILES ===
-COPY overlay/etc/modules-load.d/ceph.conf /etc/modules-load.d/ceph.conf
-COPY overlay/etc/rancher/k3s/config.yaml /etc/rancher/k3s/config.yaml
-COPY overlay/etc/systemd/system/var-home.mount /etc/systemd/system/
-COPY overlay/etc/systemd/system/var-lib-containers.mount /etc/systemd/system/
-COPY overlay/etc/systemd/system/ceph-bootstrap.service /etc/systemd/system/
-COPY overlay/usr/local/bin/ceph-bootstrap.sh /usr/local/bin/ceph-bootstrap.sh
+COPY etc/modules-load.d/ceph.conf /etc/modules-load.d/ceph.conf
+COPY etc/rancher/k3s/config.yaml /etc/rancher/k3s/config.yaml
+COPY etc/systemd/system/var-home.mount /etc/systemd/system/
+COPY etc/systemd/system/var-lib-containers.mount /etc/systemd/system/
+COPY etc/systemd/system/ceph-bootstrap.service /etc/systemd/system/
+COPY usr/local/bin/ceph-bootstrap.sh /usr/local/bin/ceph-bootstrap.sh
 
 # === SYSTEMD UNITS ===
-COPY overlay/usr/lib/systemd/system/k3s.service /usr/lib/systemd/system/
+COPY usr/lib/systemd/system/k3s.service /usr/lib/systemd/system/
 RUN chmod 755 /usr/local/bin/ceph-bootstrap.sh && \
     mkdir -p /etc/rancher/k3s /etc/ceph /var/lib/rancher/k3s \
              /var/lib/ceph /var/log/ceph && \
@@ -491,10 +491,10 @@ If the project uses numbered scripts, the integration fits as:
 - **`XX-k3s.sh`** — Download K3s binary, create symlinks, install `container-selinux`, copy systemd unit and config, enable service
 - **`XX-firewall.sh`** — Add firewalld rules for Ceph ports (3300, 6789, 6800-7300, 8443) and K3s ports (6443, 10250, 8472)
 
-### overlay/ directory additions
+###  directory additions
 
 ```
-overlay/
+
 ├── etc/
 │   ├── ceph/
 │   │   └── ceph.conf                          # Placeholder (populated by bootstrap)

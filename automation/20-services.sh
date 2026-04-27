@@ -28,7 +28,7 @@ echo "[20-services] Fixed systemd unit file permissions"
 
 # ─── Service Configuration Note ──────────────────────────────────────────────
 # CORE and OPTIONAL services are now primarily managed via:
-# overlay/usr/lib/systemd/system-preset/90-mios.preset
+# usr/lib/systemd/system-preset/90-mios.preset
 # Role-specific services are managed by mios-role.service at runtime.
 
 # ─── WSL2 & Container Service Gating ─────────────────────────────────────────

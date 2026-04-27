@@ -17,7 +17,7 @@
     ],
     "impacts": []
   },
-  "last_rag_sync": "2026-04-27T02:31:00.470713",
+  "last_rag_sync": "2026-04-27T03:08:57.083830",
   "version": "2.1.0"
 }
 ```
@@ -41,7 +41,7 @@
 4. **SINGLE SOURCE OF TRUTH (SSOT):**
     - **Packages:** `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` is the only manifest.
     - **Environment:** `.env` and `.env.mios` track the baseline.
-5. **USR-OVER-ETC (BOOTC IMMUTABILITY):** Align with upstream `bootc`. System configurations go in `overlay/usr/lib/`. `/etc` is reserved for user overrides only.
+5. **USR-OVER-ETC (BOOTC IMMUTABILITY):** Align with upstream `bootc`. System configurations go in `usr/lib/`. `/etc` is reserved for user overrides only.
 
 ---
 ### ⚖️ Legal & Source Reference

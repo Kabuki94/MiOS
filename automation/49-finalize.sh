@@ -12,6 +12,7 @@ systemctl preset-all 2>/dev/null || true
 systemctl set-default multi-user.target 2>/dev/null || true
 
 # Ensure role directory exists with example config
+mkdir -p /etc/mios
 if [[ ! -f /etc/mios/role.conf ]]; then
     cp -a /usr/share/mios/role.conf.example /etc/mios/role.conf 2>/dev/null || true
 fi

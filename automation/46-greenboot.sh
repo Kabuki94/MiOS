@@ -17,8 +17,8 @@ do
     systemctl enable "$unit" 2>/dev/null || log "note: $unit not installed"
 done
 
-# Make health-check scripts executable (shipped via overlay/)
-# Directory creation and config installation moved to overlay/ overlay.
+# Make health-check scripts executable (shipped via )
+# Directory creation and config installation moved to  overlay.
 chmod +x /etc/greenboot/check/required.d/*.sh 2>/dev/null || true
 chmod +x /etc/greenboot/check/wanted.d/*.sh   2>/dev/null || true
 chmod +x /etc/greenboot/green.d/*.sh          2>/dev/null || true

@@ -4,7 +4,7 @@ validate-kargs.py — MiOS kargs.d schema validator.
 
 Checks every *.toml in:
   kargs.d/                              (repo root drop-ins)
-  overlay/usr/lib/bootc/kargs.d/  (image-baked drop-ins)
+  usr/lib/bootc/kargs.d/  (image-baked drop-ins)
 
 Schema rules (bootc-dev/bootc authoritative):
   - Top-level key `kargs` (required) must be a list of strings.

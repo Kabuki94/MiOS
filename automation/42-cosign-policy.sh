@@ -37,7 +37,7 @@ else
 fi
 
 # 3. Install Sigstore TUF roots and public keys
-# These ship via the overlay/usr/share/pki/containers/ overlay
+# These ship via the usr/share/pki/containers/ overlay
 for f in fulcio_v1.crt.pem rekor.pub ublue-os.pub ublue-cosign.pub mios-cosign.pub; do
     src="${SYSFILES}/usr/share/pki/containers/${f}"
     dst="/usr/share/pki/containers/${f}"

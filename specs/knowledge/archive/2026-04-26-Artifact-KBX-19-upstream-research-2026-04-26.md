@@ -78,7 +78,7 @@ All TIER 1 and TIER 2 upstream implementation items are **complete**. The `f44-g
 
 **Pre-rebase mitigation** (if the current F43-based build is in production):
 ```ini
-# overlay/usr/lib/cockpit/cockpit.conf  (or drop-in)
+# usr/lib/cockpit/cockpit.conf  (or drop-in)
 [WebService]
 LoginTo = false
 ```
@@ -172,7 +172,7 @@ This disables the remote-login endpoint entirely, removing the attack surface wi
 
 ## Defect Found: `60-k3s.sh` Silent Success on K3s Failure
 
-**File:** `overlay/etc/greenboot/check/wanted.d/60-k3s.sh`
+**File:** `etc/greenboot/check/wanted.d/60-k3s.sh`
 
 **Issue:** Script exits `0` even when K3s health check fails (timeout reached, `kubectl get nodes` never succeeded). This prevents greenboot from logging the failure in its `wanted.d` warning log.
 

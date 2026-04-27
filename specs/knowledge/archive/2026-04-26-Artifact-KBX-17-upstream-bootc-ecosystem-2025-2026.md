@@ -46,7 +46,7 @@
 | 12 | **Open NVIDIA kmod default** for MiOS-1 with proprietary escape hatch | upcoming | small | medium | RTX 4090 at 4K/240Hz has documented GSP compositor regression; gate with test. |
 | 13 | **NVIDIA-VM gating** — blacklist nvidia kmods by default, coldplug-detect on bare metal | latent bug | small | low | Project rule already states this; verify 34-gpu-detect.sh implements it. |
 | 14 | **Rechunker retention** + bootc-base-imagectl migration plan | hygiene | small | low | Keep hhd-dev/rechunk short-term; plan migration when F43 stable. |
-| 15 | **Signed `/etc` confext (systemd 258+)** replacing most `overlay/etc/` overlays | v2.5 target | large | medium | Flatcar already ships this (Mar 2026). |
+| 15 | **Signed `/etc` confext (systemd 258+)** replacing most `etc/` overlays | v2.5 target | large | medium | Flatcar already ships this (Mar 2026). |
 
 ---
 
@@ -101,7 +101,7 @@ Key upstream facts:
 Key decisions:
 - Python 3.11+ stdlib `tomllib` — no third-party deps.
 - New workflow `kargs-lint.yml` — additive, does NOT touch `pr-lint.yml`.
-- Covers both `kargs.d/` (repo root) and `overlay/usr/lib/bootc/kargs.d/`.
+- Covers both `kargs.d/` (repo root) and `usr/lib/bootc/kargs.d/`.
 - Forbidden: `[section]` headers, any key with "delete" in name, non-string kargs entries.
 - Modes: human / `--github` (GHA annotations) / `--json`.
 - Space-in-kargs warning (not error): documented suppression note in output.
@@ -246,7 +246,7 @@ MiOS adoptions:
 
 ### Architectural: v2.1.0+
 
-8. Signed `/etc` confext replacing most `overlay/etc/` overlays.
+8. Signed `/etc` confext replacing most `etc/` overlays.
 9. UKI signing via `bootc container ukify` + dracut-ng/ukify.
 10. Migration to `bootc-base-imagectl rechunk` from hhd-dev/rechunk.
 11. MiOS-2: evaluate `ublue-os/cayo` as bootc-native HCI successor.

@@ -21,19 +21,19 @@ echo "  MiOS v2.1.0 — Universal Dark Theme"
 echo "═══════════════════════════════════════════════════════════════════"
 
 # ═══ SKEL .bashrc (MUST come BEFORE useradd -m) ═══
-# v2.1.0: Delivered via overlay/usr/share/skel/.bashrc overlay.
+# v2.1.0: Delivered via usr/share/skel/.bashrc overlay.
 echo "[30-locale-theme] Using /etc/skel/.bashrc from overlay..."
 
 # ═══ GTK3: adw-gtk3-dark for visual consistency with libadwaita ═══
-# v2.1.0: Delivered via overlay/etc/gtk-3.0/settings.ini overlay.
+# v2.1.0: Delivered via etc/gtk-3.0/settings.ini overlay.
 echo "[30-locale-theme] Using GTK3 theme from overlay..."
 
 # ═══ GTK4: libadwaita reads color-scheme, NOT GTK_THEME ═══
-# v2.1.0: Delivered via overlay/etc/gtk-4.0/settings.ini overlay.
+# v2.1.0: Delivered via etc/gtk-4.0/settings.ini overlay.
 echo "[30-locale-theme] Using GTK4 theme from overlay..."
 
 # ═══ System-wide env vars for ALL toolkits ═══
-# v2.1.0: Delivered via overlay/etc/environment.d/ overlay.
+# v2.1.0: Delivered via etc/environment.d/ overlay.
 echo "[30-locale-theme] Using environment.d from overlay..."
 
 # ═══ Flatpak overrides — dark theme + cursor + fonts ═══
@@ -50,10 +50,10 @@ flatpak override --system --filesystem=/etc/gtk-3.0:ro 2>/dev/null || true
 flatpak override --system --filesystem=/etc/gtk-4.0:ro 2>/dev/null || true
 
 # ═══ Skeleton autostart (Bottles from flathub-beta on first login) ═══
-# v2.1.0: Delivered via overlay/etc/skel/.config/autostart/ overlay.
+# v2.1.0: Delivered via etc/skel/.config/autostart/ overlay.
 
 # Ensure skel GTK3 also uses adw-gtk3-dark (for new user sessions)
-# v2.1.0: Delivered via overlay/etc/skel/.config/gtk-3.0/settings.ini overlay.
+# v2.1.0: Delivered via etc/skel/.config/gtk-3.0/settings.ini overlay.
 # ── Compile GSchema overrides (THE correct way to set GNOME defaults) ──
 if [ -f /usr/share/glib-2.0/schemas/90-mios.gschema.override ]; then
     echo "[30-locale-theme] Compiling GSchema overrides..."
