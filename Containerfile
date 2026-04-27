@@ -84,7 +84,7 @@ COPY overlay/      /ctx/overlay/
 # Re-path the COPY so /ctx/PACKAGES.md (the path packages.sh reads) stays stable.
 COPY specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md   /ctx/PACKAGES.md
 COPY VERSION            /ctx/VERSION
-COPY bib-configs/       /ctx/bib-configs/
+COPY config/artifacts/       /ctx/bib-configs/
 COPY tools/             /ctx/tools/
 
 # ----------------------------------------------------------------------------
