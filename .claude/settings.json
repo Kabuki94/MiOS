@@ -50,7 +50,8 @@
       "Bash(GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND=\"ssh -o BatchMode=yes\" git -C \"d:/Documents/Github/MiOS\" status --short)",
       "Bash(echo \"EXIT:$?\")",
       "WebSearch(*)",
-      "WebFetch(*)"
+      "WebFetch(*)",
+      "Bash(git commit -m ' *)"
     ],
     "deny": [
       "Bash(git push:*)",
