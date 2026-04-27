@@ -6,7 +6,7 @@
   "summary": "Centralized index for all MiOS knowledge, context, and memories.",
   "logic_type": "index",
   "rag_compatible": true,
-  "last_sync": "2026-04-27 23:06:52 UTC"
+  "last_sync": "2026-04-27 23:22:45 UTC"
 }
 ```
 
@@ -39,9 +39,9 @@ This hub provides a navigable map of the MiOS ecosystem, compacting research, me
 - [📜 MiOS Scripts Index](specs/engineering/2026-04-26-Artifact-ENG-002-Scripts-Index)
 - [🌐 MiOS](specs/engineering/2026-04-26-Artifact-ENG-002-Security)
 - [🧬 MiOS Technology & Architectural Patterns](specs/engineering/2026-04-27-Artifact-ENG-005-Technology-Patterns)
-- [🌐 MiOS](specs/engineering/2026-04-26-Artifact-ENG-001-Packages)
 - [🌐 MiOS](specs/engineering/2026-04-26-Artifact-ENG-004-Testing)
 - [MiOS Bootstrap Repository Integration](specs/engineering/2026-04-27-Artifact-ENG-007-Bootstrap-Integration)
+- [📦 MiOS Package Manifest](usr/share/mios/PACKAGES)
 
 ### 📜 Historical Context
 *Journals, changelogs, and decision records.*
@@ -75,7 +75,7 @@ This hub provides a navigable map of the MiOS ecosystem, compacting research, me
 - [Runtime path: mios-freeipa-enroll.service runs only when](automation/22-freeipa-client.sh)
 - [49-finalize.sh - final cleanup, systemd preset application, image linting](automation/49-finalize.sh)
 - [----------------------------------------------------------------------------](automation/08-system-files-overlay.sh)
-- [Master build runner](automation/build.sh)
+- [MiOS 0.1.3 — Master build runner](automation/build.sh)
 - [52-bake-kvmfr.sh - compile Looking Glass kvmfr kmod against the ucore-hci](automation/52-bake-kvmfr.sh)
 - [Install SELinux development tools required for compilation](automation/19-k3s-selinux.sh)
 - [MiOS v0.1.3 - 35-gpu-passthrough.sh](automation/35-gpu-passthrough.sh)

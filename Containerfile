@@ -27,9 +27,8 @@ COPY usr/                  /ctx/usr/
 COPY etc/                  /ctx/etc/
 COPY var/                  /ctx/var/
 COPY home/                 /ctx/home/
-# v0.1.3: PACKAGES.md moved to specs/engineering/ during the artifact reorganization.
-# Re-path the COPY so /ctx/PACKAGES.md (the path packages.sh reads) stays stable.
-COPY specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md   /ctx/PACKAGES.md
+# v0.1.3: PACKAGES.md moved to usr/share/mios/ for FHS compliance.
+COPY usr/share/mios/PACKAGES.md                          /ctx/PACKAGES.md
 COPY VERSION            /ctx/VERSION
 COPY config/artifacts/       /ctx/bib-configs/
 COPY tools/             /ctx/tools/

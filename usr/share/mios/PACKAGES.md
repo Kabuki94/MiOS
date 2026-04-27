@@ -1,12 +1,14 @@
 <!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+# 📦 MiOS Package Manifest
+
 ```json:knowledge
 {
-  "summary": "> **Proprietor:** MiOS-DEV",
-  "logic_type": "documentation",
+  "summary": "Unified list of all RPM and Flatpak packages for MiOS build-time layering.",
+  "logic_type": "manifest",
   "tags": [
     "MiOS",
-    "engineering"
+    "engineering",
+    "packaging"
   ],
   "relations": {
     "depends_on": [

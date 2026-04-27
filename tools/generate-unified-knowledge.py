@@ -218,6 +218,9 @@ def generate_unified_knowledge(output_file="artifacts/repo-rag-snapshot.json.gz"
                 elif rel_path.startswith("specs/knowledge/"):
                     category = "research"
                     index_key = "engineering_patterns"
+                elif rel_path == "usr/share/mios/PACKAGES.md":
+                    category = "engineering"
+                    index_key = "engineering_patterns"
                 
                 node = {
                     "path": rel_path,
