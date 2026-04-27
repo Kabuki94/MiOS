@@ -16,7 +16,7 @@
     ],
     "impacts": []
   },
-  "last_rag_sync": "2026-04-27T03:55:40.780286",
+  "last_rag_sync": "2026-04-27T03:56:56.803624",
   "version": "0.1.1"
 }
 ```
@@ -33,7 +33,7 @@
   "baseline": "v0.1.1",
   "kernel": "Fedora Rawhide (OCI-Mode)",
   "build": "just all",
-  "last_sync": "2026-04-27T03:55:40.780286"
+  "last_sync": "2026-04-27T03:56:56.803624"
 }
 ```
 
