@@ -35,6 +35,31 @@
 > All provider entry files (`INDEX.md`, `INDEX.md`, `INDEX.md`, `.cursorrules`, `.windsurfrules`,
 > `.clinerules`, `.github/copilot-instructions.md`) defer to this file for architecture laws and conventions.
 
+## 🌐 Live Documentation (CHECK FIRST)
+
+**IMPORTANT:** This INDEX.md is a snapshot. **ALWAYS check the Wiki for current/updated information:**
+
+- **Wiki Home:** https://github.com/mios-project/MiOS-bootstrap/wiki
+- **Update Frequency:** Every build, push, and local build entry point
+- **Purpose:** PRIMARY source for current tasks, research patterns, artifacts, and build logs
+
+**Key Wiki Pages:**
+- [Home](https://github.com/mios-project/MiOS-bootstrap/wiki/Home) — Latest version, quick start
+- [AI Integration](https://github.com/mios-project/MiOS-bootstrap/wiki/AI-Integration-Index) — Current AI patterns
+- [Quick Reference](https://github.com/mios-project/MiOS-bootstrap/wiki/Quick-Reference) — Essential commands
+- [AI Agent Guide](https://github.com/mios-project/MiOS-bootstrap/wiki/AI-AGENT-GUIDE) — Hard rules, protected files
+- [INDEX](https://github.com/mios-project/MiOS-bootstrap/wiki/INDEX) — This file (Wiki version)
+
+**Bootstrap Repository:** https://github.com/mios-project/MiOS-bootstrap
+- Artifacts: https://github.com/mios-project/MiOS-bootstrap/tree/main/ai-rag-packages
+- Build Logs: https://github.com/mios-project/MiOS-bootstrap/tree/main/build-logs
+
+**Workflow for New Tasks:**
+1. Check Wiki for latest documentation and patterns
+2. Read this INDEX.md for immutable architecture laws
+3. Review relevant Wiki pages for current research
+4. Proceed with task using latest information
+
 ## Project
 
 MiOS is a **bootc-based, self-building, immutable workstation OS** on Fedora Rawhide.

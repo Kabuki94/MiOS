@@ -94,3 +94,19 @@ iso: build
         -v ./output:/output \
         -v /var/lib/containers/storage:/var/lib/containers/storage \
         -v ./config/artifacts/iso.toml:/config.to
+
+# Log artifacts to MiOS-bootstrap repository
+log-bootstrap:
+    @echo "▶️ Logging artifacts to MiOS-bootstrap repository..."
+    ./tools/log-to-bootstrap.sh
+    @echo "✓ Artifacts logged to bootstrap repository"
+
+# Complete build with bootstrap logging (recommended for releases)
+build-and-log: build-logged
+    @echo "▶️ Running bootstrap artifact logging..."
+    ./tools/log-to-bootstrap.sh
+    @echo "✅ Build complete with artifacts logged to bootstrap"
+
+# Full pipeline: build → rechunk → log to bootstrap
+all-bootstrap: build rechunk log-bootstrap
+    @echo "✅ Full pipeline complete (build → rechunk → bootstrap)"

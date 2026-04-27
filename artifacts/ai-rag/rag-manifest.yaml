@@ -5,7 +5,24 @@ project:
   name: MiOS
   version: 0.1.2
   type: bootc-immutable-os
-  url: https://github.com/kabuki94/mios
+  url: https://github.com/mios-project/mios
+
+# IMPORTANT: Always check Wiki for current/updated information
+live_documentation:
+  wiki_url: https://github.com/mios-project/MiOS-bootstrap/wiki
+  bootstrap_repo: https://github.com/mios-project/MiOS-bootstrap
+  update_frequency: "Every build, push, and local build entry point"
+  priority: "Wiki pages are PRIMARY source for current tasks and research patterns"
+
+  # Key Wiki pages for AI agents
+  wiki_pages:
+    home: https://github.com/mios-project/MiOS-bootstrap/wiki/Home
+    ai_integration: https://github.com/mios-project/MiOS-bootstrap/wiki/AI-Integration-Index
+    rag_guide: https://github.com/mios-project/MiOS-bootstrap/wiki/RAG-Integration
+    quick_reference: https://github.com/mios-project/MiOS-bootstrap/wiki/Quick-Reference
+    prompts: https://github.com/mios-project/MiOS-bootstrap/wiki/Prompts-Library
+    index: https://github.com/mios-project/MiOS-bootstrap/wiki/INDEX
+    ai_agent_guide: https://github.com/mios-project/MiOS-bootstrap/wiki/AI-AGENT-GUIDE
 
 knowledge_sources:
   primary:

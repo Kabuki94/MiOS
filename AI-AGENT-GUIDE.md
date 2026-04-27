@@ -2,6 +2,25 @@
 
 This file provides guidance to AI coding agents when working with code in this repository.
 
+## 🌐 Live Documentation (CHECK FIRST)
+
+**IMPORTANT:** This guide is a snapshot. **ALWAYS check the Wiki for current/updated information:**
+
+- **Wiki:** https://github.com/mios-project/MiOS-bootstrap/wiki
+- **Updates:** Every build, push, and local build entry point
+- **Wiki Discovery Guide:** [specs/ai-integration/2026-04-27-Artifact-AI-005-Wiki-Discovery.md](specs/ai-integration/2026-04-27-Artifact-AI-005-Wiki-Discovery.md)
+
+**Essential Wiki Pages:**
+- [Home](https://github.com/mios-project/MiOS-bootstrap/wiki/Home) — Latest version, artifacts
+- [AI Agent Guide](https://github.com/mios-project/MiOS-bootstrap/wiki/AI-AGENT-GUIDE) — This file (Wiki version)
+- [Quick Reference](https://github.com/mios-project/MiOS-bootstrap/wiki/Quick-Reference) — Current commands
+- [Build Logs](https://github.com/mios-project/MiOS-bootstrap/tree/main/build-logs) — Recent build outputs
+
+**Workflow:**
+1. Check Wiki for latest procedures and patterns
+2. Use this guide for immutable laws (they don't change)
+3. Cross-reference for accuracy
+
 ## Project
 
 MiOS is a **bootc-based immutable workstation OS** on Fedora Rawhide. One OCI image covers all hardware roles: desktop, k3s/HA, GPU passthrough (VFIO), WSL2. Published at `ghcr.io/mios-project/mios:latest`. Deployed systems update atomically via `sudo bootc upgrade`. Sole proprietor: **MiOS Project**.

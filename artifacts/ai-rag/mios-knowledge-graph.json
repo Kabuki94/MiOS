@@ -5,7 +5,38 @@
   "base": "Fedora Rawhide + ucore-hci",
   "architecture": "rootfs-native",
   "future": "MiOS-NXT (Hummingbird, SBOM, minimal variants)",
-  
+
+  "live_documentation": {
+    "wiki": "https://github.com/mios-project/MiOS-bootstrap/wiki",
+    "update_frequency": "Every build, push, and local build entry point",
+    "purpose": "ALWAYS check Wiki for current tasks, research patterns, artifacts, and build logs",
+    "primary_source": "Wiki pages reflect latest state - use for current/new tasks",
+    "static_source": "This knowledge graph is snapshot - refer to Wiki for updates"
+  },
+
+  "wiki_pages": {
+    "home": "https://github.com/mios-project/MiOS-bootstrap/wiki/Home",
+    "ai_integration": "https://github.com/mios-project/MiOS-bootstrap/wiki/AI-Integration-Index",
+    "rag_guide": "https://github.com/mios-project/MiOS-bootstrap/wiki/RAG-Integration",
+    "quick_reference": "https://github.com/mios-project/MiOS-bootstrap/wiki/Quick-Reference",
+    "prompts": "https://github.com/mios-project/MiOS-bootstrap/wiki/Prompts-Library",
+    "knowledge_graph": "https://github.com/mios-project/MiOS-bootstrap/wiki/Knowledge-Graph",
+    "index": "https://github.com/mios-project/MiOS-bootstrap/wiki/INDEX",
+    "readme": "https://github.com/mios-project/MiOS-bootstrap/wiki/README",
+    "ai_agent_guide": "https://github.com/mios-project/MiOS-bootstrap/wiki/AI-AGENT-GUIDE",
+    "self_build": "https://github.com/mios-project/MiOS-bootstrap/wiki/SELF-BUILD",
+    "security": "https://github.com/mios-project/MiOS-bootstrap/wiki/SECURITY",
+    "fhs_compliance": "https://github.com/mios-project/MiOS-bootstrap/wiki/engineering/2026-04-27-Artifact-ENG-006-FHS-Compliance-Audit"
+  },
+
+  "artifact_locations": {
+    "bootstrap_repo": "https://github.com/mios-project/MiOS-bootstrap",
+    "ai_rag_packages": "https://github.com/mios-project/MiOS-bootstrap/tree/main/ai-rag-packages",
+    "build_logs": "https://github.com/mios-project/MiOS-bootstrap/tree/main/build-logs",
+    "compressed_artifacts": "509 KB XZ (primary) + 814 KB GZ (legacy)",
+    "update_mechanism": "Automatic via tools/log-to-bootstrap.sh on every build"
+  },
+
   "core_concepts": {
     "bootc": "OCI image → bootable OS, atomic updates, composefs backend",
     "immutability": "/usr read-only, /etc + /var mutable, OSTree/composefs integrity",
