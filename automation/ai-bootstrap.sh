@@ -34,6 +34,9 @@ fi
 # 3. Generate Unified Knowledge Base (RAG Snapshot)
 if [[ -f "tools/generate-unified-knowledge.py" ]]; then
     echo "🧠 Generating Unified Knowledge Base (RAG Snapshot)..."
+    if [[ -f "tools/journal-sync.py" ]]; then
+        python3 tools/journal-sync.py
+    fi
     python3 tools/generate-unified-knowledge.py
 else
     echo "⚠️ Warning: tools/generate-unified-knowledge.py not found."

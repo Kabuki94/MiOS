@@ -10,7 +10,7 @@
     "home",
     "navigation"
   ],
-  "last_rag_sync": "2026-04-27T04:24:46.740043",
+  "last_rag_sync": "2026-04-27T04:47:38.944130",
   "version": "0.1.1"
 }
 ```
@@ -26,15 +26,18 @@
 - 🌐 MiOS ([Repository Manifest](https://github.com/Kabuki94/mios/blob/main/specs/core/2026-04-26-Artifact-COR-003-Manifest.md))
 - 🌐 MiOS ([Operational Standards](https://github.com/Kabuki94/mios/blob/main/specs/core/2026-04-26-Artifact-COR-004-Operations.md))
 - 🌐 MiOS ([AI-Native Patterns](https://github.com/Kabuki94/mios/blob/main/specs/core/2026-04-27-Artifact-COR-005-AI-Native-Patterns.md))
+- 🌐 MiOS ([Linux-Native Memory Standards](https://github.com/Kabuki94/mios/blob/main/specs/core/2026-04-27-Artifact-COR-006-Linux-Native-Memory-Standards.md))
 
 ## Engineering
 - 🌐 MiOS ([Package Management](https://github.com/Kabuki94/mios/blob/main/specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md))
 - 🌐 MiOS ([Security Hardening](https://github.com/Kabuki94/mios/blob/main/specs/engineering/2026-04-26-Artifact-ENG-002-Security.md))
 - 🌐 MiOS ([Self-Build Pipeline](https://github.com/Kabuki94/mios/blob/main/specs/engineering/2026-04-26-Artifact-ENG-003-Self-Build.md))
 - 🌐 MiOS ([Validation Testing](https://github.com/Kabuki94/mios/blob/main/specs/engineering/2026-04-26-Artifact-ENG-004-Testing.md))
+- 🌐 MiOS ([Technology & Patterns](https://github.com/Kabuki94/mios/blob/main/specs/engineering/2026-04-27-Artifact-ENG-005-Technology-Patterns.md))
 
-## Shared Memory (Flattened)
+## Shared Memory (Structured & Linux-Native)
 - 🌐 MiOS ([Cognitive Journal](https://github.com/Kabuki94/mios/blob/main/specs/memory/2026-04-26-Artifact-MEM-001-Journal.md))
+- 🌐 MiOS ([Structured API-Native Store](https://github.com/Kabuki94/mios/blob/main/var/lib/mios/memory/journal/v1.jsonl))
 - 🌐 MiOS ([Historical Knowledge Flattening](https://github.com/Kabuki94/mios/blob/main/artifacts/repo-rag-snapshot.json.gz))
 - 🌐 MiOS ([Research Plan](https://github.com/Kabuki94/mios/blob/main/specs/memory/2026-04-26-Artifact-MEM-002-Research-Plan.md))
 - 🌐 MiOS ([Research Strategy](https://github.com/Kabuki94/mios/blob/main/specs/memory/2026-04-26-Artifact-MEM-003-Research-Strategy.md))
