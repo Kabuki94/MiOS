@@ -39,7 +39,37 @@
 
 ---
 
-## 🚀 Overview
+## 🚀 Quick Deployment - Linux Filesystem Native
+
+MiOS deploys as a **native Linux application** on minimal Fedora Server:
+
+```bash
+# 1. Clone repository
+git clone https://github.com/mios-project/mios.git
+cd mios
+
+# 2. Install to system directories (FHS-compliant)
+sudo ./install.sh
+
+# 3. Initialize user-space configuration
+mios init-user-space
+
+# 4. Build MiOS image
+mios build
+```
+
+**Installs to:**
+- `/usr/share/mios/` - Application data (scripts, templates, source)
+- `/etc/mios/` - System configuration templates
+- `/var/lib/mios/` - Build artifacts and snapshots
+- `/var/log/mios/` - Build logs
+- `~/.config/mios/` - User configuration (XDG-compliant)
+
+**📖 See:** [DEPLOY.md](DEPLOY.md) for complete deployment guide
+
+---
+
+## 🌐 Overview
 MiOS is a container-native, mathematically verifiable workstation operating system. Built for high-performance virtualization (VFIO), hardware agnosticism, and zero-trust security, it transforms the host OS into a cryptographically sealed OCI payload.
 
 ### 🛡️ Core Mandates

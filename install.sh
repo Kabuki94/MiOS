@@ -1,214 +1,147 @@
-#!/bin/bash
-# MiOS — One-line installer for Linux
-# Usage: curl -fsSL https://raw.githubusercontent.com/mios-project/mios/main/install.sh | bash
+#!/usr/bin/env bash
+# MiOS Bootstrap Installer
+# Deploys the MiOS repository as a Linux filesystem-native integrated build environment
+#
+# Usage: sudo ./install.sh [--uninstall]
+
 set -euo pipefail
 
-REPO="https://github.com/mios-project/mios.git"
-DIR="${MIOS_DIR:-$HOME/mios/repo}"
-BUILDS_DIR="${MIOS_BUILDS_DIR:-$HOME/mios/builds}"
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m'
 
-# Read version from repo VERSION file, fallback to hardcoded
-VER="v0.1.1"
+# Installation paths (FHS 3.0)
+INSTALL_PREFIX="${INSTALL_PREFIX:-/usr}"
+MIOS_SHARE_DIR="${INSTALL_PREFIX}/share/mios"
+MIOS_ETC_DIR="/etc/mios"
+MIOS_VAR_LIB_DIR="/var/lib/mios"
+MIOS_VAR_LOG_DIR="/var/log/mios"
+MIOS_BIN_DIR="/usr/local/bin"
+MIOS_TMPFILES_DIR="/etc/tmpfiles.d"
 
-# --- Credential Handling ---
-if [[ -z "${GHCR_TOKEN:-}" ]]; then
-    echo "  Checking for GitHub credentials..."
-    read -rsp "  GitHub Personal Access Token (requires 'repo' scope, press enter to skip): " GHCR_TOKEN
-    echo ""
-    [[ -n "$GHCR_TOKEN" ]] && export GHCR_TOKEN
-fi
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Secure curl helper
-scurl() {
-    local args=("-fsSL")
-    if [[ -n "${GHCR_TOKEN:-}" && ("$1" =~ github\.com || "$1" =~ ghcr\.io) ]]; then
-        args+=("-H" "Authorization: token $GHCR_TOKEN")
-    fi
-    curl "${args[@]}" "$@"
-}
+info() { echo -e "${BLUE}ℹ️  ${NC}$*"; }
+success() { echo -e "${GREEN}✅${NC} $*"; }
+warn() { echo -e "${YELLOW}⚠️  ${NC}$*"; }
+error() { echo -e "${RED}❌${NC} $*" >&2; }
 
-# SHA-512 crypt hash — plaintext never touches disk or build logs
-_hash_password() {
-    local pw="$1"
-    if command -v openssl &>/dev/null; then
-        printf '%s' "$pw" | openssl passwd -6 -stdin
-    else
-        MIOS_PW="$pw" python3 -c \
-            "import crypt,os; print(crypt.crypt(os.environ['MIOS_PW'], crypt.mksalt(crypt.METHOD_SHA512)))" \
-            2>/dev/null || echo ""
+check_root() {
+    if [[ $EUID -ne 0 ]]; then
+        error "This script must be run as root (use sudo)"
+        exit 1
     fi
 }
 
-if [[ -n "${GHCR_TOKEN:-}" ]]; then
-    echo "  [OK] GitHub token detected."
-fi
+check_prerequisites() {
+    local missing=()
+    command -v git >/dev/null 2>&1 || missing+=("git")
+    command -v podman >/dev/null 2>&1 || missing+=("podman")
+    command -v just >/dev/null 2>&1 || missing+=("just")
 
-# Try to fetch version from repo, fallback to hardcoded
-_remote_ver=$(scurl "https://raw.githubusercontent.com/mios-project/mios/main/VERSION" 2>/dev/null || true)
-[[ -n "$_remote_ver" ]] && VER="v${_remote_ver}"
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        error "Missing required packages: ${missing[*]}"
+        echo "Install with: sudo dnf install -y ${missing[*]}"
+        exit 1
+    fi
+}
 
-echo "╔══════════════════════════════════════════════════════════════╗"
-printf "║  MiOS %-55s║\n" "$VER"
-echo "╚══════════════════════════════════════════════════════════════╝"
-echo ""
-
-if [ -f /etc/os-release ]; then . /etc/os-release; echo "  OS: $PRETTY_NAME"; fi
-echo "  Repo:   $DIR"
-echo "  Builds: $BUILDS_DIR"
-echo ""
-
-# Show detected bootstrap config if present
-if [[ -n "${MIOS_USER:-}" || -n "${MIOS_HOSTNAME:-}" ]]; then
-    echo "  Detected bootstrap config:"
-    [[ -n "${MIOS_USER:-}" ]]     && printf "    %-18s %s\n" "Admin user:"     "$MIOS_USER"
-    [[ -n "${MIOS_HOSTNAME:-}" ]] && printf "    %-18s %s\n" "Hostname:"       "$MIOS_HOSTNAME"
-    [[ -n "${MIOS_PASSWORD:-}" ]] && printf "    %-18s %s\n" "Admin password:" "(set — masked)"
+install_mios() {
     echo ""
-fi
-
-# Auto-select option 1 when invoked by bootstrap
-if [[ "${MIOS_AUTOINSTALL:-}" == "1" ]]; then
-    choice="1"
-else
-    echo "1) Clone repo + build OCI image locally"
-    echo "2) Clone repo only (inspect first)"
-    echo "3) Install to bare metal (requires root + target disk)"
-    read -rp "Choice [1-3]: " choice
-fi
-
-case "$choice" in
-  1)
+    echo "╔══════════════════════════════════════════════════════════════╗"
+    echo "║           MiOS Bootstrap Installer (FHS Native)             ║"
+    echo "╚══════════════════════════════════════════════════════════════╝"
     echo ""
-    echo "Cloning $REPO ..."
-    mkdir -p "$(dirname "$DIR")"
-    git clone "$REPO" "$DIR" 2>/dev/null || { cd "$DIR" && git pull; }
 
-    # Stage numbered build folder
-    echo "  Staging numbered build folder..."
-    mkdir -p "$BUILDS_DIR"
-    _last_build=$(ls -d "$BUILDS_DIR"/build-* 2>/dev/null | grep -oE '[0-9]+$' | sort -n | tail -1 || echo 0)
-    _next_build=$((_last_build + 1))
-    _build_path="$BUILDS_DIR/build-$_next_build"
-    mkdir -p "$_build_path"
+    info "Creating FHS directory structure..."
+    mkdir -p "${MIOS_SHARE_DIR}" "${MIOS_ETC_DIR}" "${MIOS_BIN_DIR}" "${MIOS_TMPFILES_DIR}"
+    success "Created system directories"
+
+    info "Installing to ${MIOS_SHARE_DIR}..."
+    rsync -a --exclude='.git' --exclude='output/' --exclude='*.qcow2' --exclude='*.iso' \
+        "${REPO_ROOT}/" "${MIOS_SHARE_DIR}/"
+    success "Installed application data"
+
+    info "Installing configuration to ${MIOS_ETC_DIR}..."
+    cp -r "${REPO_ROOT}/etc/mios/templates" "${MIOS_ETC_DIR}/"
     
-    # Copy repo to build folder (clean slate for build)
-    echo "  Copying repository to $_build_path ..."
-    cp -r "$DIR"/. "$_build_path/"
-    cd "$_build_path"
+    cat > "${MIOS_ETC_DIR}/manifest.json" <<EOF
+{
+  "mios_version": "$(cat ${REPO_ROOT}/VERSION 2>/dev/null || echo 'v0.1.2')",
+  "installed_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "paths": {
+    "share": "${MIOS_SHARE_DIR}",
+    "etc": "${MIOS_ETC_DIR}",
+    "var_lib": "${MIOS_VAR_LIB_DIR}",
+    "var_log": "${MIOS_VAR_LOG_DIR}"
+  }
+}
+EOF
+    success "Installed system configuration"
 
-    echo ""
-    echo "Building OCI image..."
-    _pw_hash=""
-    if [[ -n "${MIOS_PASSWORD:-}" ]]; then
-        echo "  Hashing password (plaintext will not appear in build log)..."
-        _pw_hash=$(_hash_password "$MIOS_PASSWORD")
-        unset MIOS_PASSWORD
-    fi
-    _build_args=(
-        "--build-arg" "MIOS_USER=${MIOS_USER:-mios}"
-        "--build-arg" "MIOS_PASSWORD_HASH=${_pw_hash}"
-        "--build-arg" "MIOS_HOSTNAME=${MIOS_HOSTNAME:-mios}"
-    )
-    if command -v podman &>/dev/null; then
-        podman build --no-cache "${_build_args[@]}" -t localhost/mios:latest .
-        echo ""
-        echo "✓ Image built: localhost/mios:latest"
-        echo ""
-        echo "Deploy options:"
-        echo "  Bare metal:  sudo podman run --rm -it --privileged --pid=host localhost/mios:latest mios-install /dev/sdX"
-        echo "  Switch live: sudo bootc switch --transport containers-storage localhost/mios:latest"
-        echo "  Run locally: podman run -d --name mios-local -p 9090:9090 --systemd=true --privileged localhost/mios:latest"
-    elif command -v docker &>/dev/null; then
-        docker build --no-cache "${_build_args[@]}" -t localhost/mios:latest .
-        echo "✓ Image built: localhost/mios:latest"
-    else
-        echo "✗ Neither podman nor docker found."
-        exit 1
-    fi
-    ;;
-  2)
-    echo ""
-    echo "Cloning $REPO ..."
-    mkdir -p "$(dirname "$DIR")"
-    git clone "$REPO" "$DIR" 2>/dev/null || { cd "$DIR" && git pull; }
-    echo ""
-    echo "✓ Repository cloned to $DIR"
-    echo ""
-    echo "  Inspect:   cd $DIR && ls -la"
-    echo "  Build:     podman build --no-cache -t mios:latest ."
-    echo "  Windows:   Open PowerShell as Admin → .\\mios-build-local.ps1"
-    ;;
-  3)
-    echo ""
-    if [ "$(id -u)" -ne 0 ]; then
-        echo "✗ Must run as root."
-        echo "  sudo bash -c '\$(curl -fsSL https://raw.githubusercontent.com/mios-project/mios/main/install.sh)'"
-        exit 1
-    fi
-    echo "Available disks:"
-    lsblk -d -o NAME,SIZE,MODEL,TRAN | grep -v "^NAME"
-    echo ""
-    read -rp "Target disk (e.g., sda, nvme0n1): " disk
-    read -rp "Enable LUKS encryption? (y/n): " use_luks
-    luks_tmpfile=""
-    luks_flag=""
-    if [ "$use_luks" = "y" ]; then
-        luks_tmpfile=$(mktemp)
-        chmod 600 "$luks_tmpfile"
-        while true; do
-            read -rsp "LUKS passphrase: " lp1; echo
-            read -rsp "Confirm passphrase: " lp2; echo
-            if [ "$lp1" = "$lp2" ]; then
-                printf '%s' "$lp1" > "$luks_tmpfile"
-                luks_flag="--luks-passphrase-file /run/mios-luks.key"
-                break
-            else echo "Passphrases do not match. Try again."; fi
-        done
-    fi
-    read -rp "⚠ ALL DATA ON /dev/$disk WILL BE DESTROYED. Type 'yes' to continue: " confirm
-    if [ "$confirm" = "yes" ]; then
-        echo "Building image..."
-        _pw_hash=""
-        if [[ -n "${MIOS_PASSWORD:-}" ]]; then
-            _pw_hash=$(_hash_password "$MIOS_PASSWORD")
-            unset MIOS_PASSWORD
-        fi
-        _build_args=(
-            "--build-arg" "MIOS_USER=${MIOS_USER:-mios}"
-            "--build-arg" "MIOS_PASSWORD_HASH=${_pw_hash}"
-            "--build-arg" "MIOS_HOSTNAME=${MIOS_HOSTNAME:-mios}"
-        )
-        git clone "$REPO" /tmp/mios-build 2>/dev/null || true
-        cd /tmp/mios-build
-        podman build --no-cache "${_build_args[@]}" -t localhost/mios:latest .
-        echo "Installing to /dev/$disk ..."
-        _luks_vol=""
-        if [ -n "$luks_tmpfile" ]; then
-            _luks_vol="-v ${luks_tmpfile}:/run/mios-luks.key:ro"
-        fi
-        podman run --rm -it --privileged --pid=host \
-            -v /var/lib/containers:/var/lib/containers \
-            -v /dev:/dev \
-            ${_luks_vol} \
-            localhost/mios:latest mios-install $luks_flag "/dev/$disk"
-        [ -n "$luks_tmpfile" ] && shred -u "$luks_tmpfile" 2>/dev/null || true
-        echo ""
-        echo "✓ MiOS installed to /dev/$disk. Reboot to start."
-    else
-        echo "Aborted."
-    fi
-    ;;
-  *)
-    echo "Invalid choice."
+    info "Creating tmpfiles.d configuration..."
+    cat > "${MIOS_TMPFILES_DIR}/mios.conf" <<'EOF'
+d /var/lib/mios 0755 root root -
+d /var/lib/mios/artifacts 0755 root root -
+d /var/lib/mios/snapshots 0755 root root -
+d /var/log/mios 0755 root root -
+d /var/log/mios/builds 0755 root root -
+EOF
+    systemd-tmpfiles --create "${MIOS_TMPFILES_DIR}/mios.conf"
+    success "Created /var directories"
+
+    info "Installing mios command..."
+    cat > "${MIOS_BIN_DIR}/mios" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+MIOS_INSTALL_DIR="/usr/share/mios"
+if [[ ! -d "$MIOS_INSTALL_DIR" ]]; then
+    echo "❌ MiOS not installed" >&2
     exit 1
-    ;;
-esac
+fi
+cd "$MIOS_INSTALL_DIR"
+exec just "$@"
+EOF
+    chmod +x "${MIOS_BIN_DIR}/mios"
+    success "Installed mios command"
 
-echo ""
-echo "MiOS Commands (after deploy):"
-echo "  mios --help        — Quick reference for all commands"
-echo "  mios-update        — Pull latest updates from registry"
-echo "  sudo bootc rollback   — Roll back to previous deployment"
-echo "  mios-rebuild       — Clone from GitHub, build, push"
-echo "  mios-backup        — Backup volumes, K3s state, VMs"
-echo "  mios-vfio-toggle   — GPU passthrough management"
+    chmod -R a+rX "${MIOS_SHARE_DIR}"
+    chown -R root:root "${MIOS_ETC_DIR}"
+
+    echo ""
+    echo "╔══════════════════════════════════════════════════════════════╗"
+    echo "║              ✅ MiOS Installation Complete                   ║"
+    echo "╚══════════════════════════════════════════════════════════════╝"
+    echo ""
+    info "Next steps:"
+    echo "  1. Initialize user-space: ${CYAN}mios init-user-space${NC}"
+    echo "  2. Configure: ${CYAN}mios edit-env${NC}"
+    echo "  3. Build: ${CYAN}mios build${NC}"
+    echo ""
+}
+
+uninstall_mios() {
+    warn "This will remove MiOS from system directories."
+    read -p "Continue? [y/N] " -n 1 -r
+    echo
+    [[ ! $REPLY =~ ^[Yy]$ ]] && exit 0
+
+    [[ -d "${MIOS_SHARE_DIR}" ]] && rm -rf "${MIOS_SHARE_DIR}" && success "Removed ${MIOS_SHARE_DIR}"
+    [[ -d "${MIOS_ETC_DIR}" ]] && rm -rf "${MIOS_ETC_DIR}" && success "Removed ${MIOS_ETC_DIR}"
+    [[ -f "${MIOS_BIN_DIR}/mios" ]] && rm -f "${MIOS_BIN_DIR}/mios" && success "Removed mios command"
+    [[ -f "${MIOS_TMPFILES_DIR}/mios.conf" ]] && rm -f "${MIOS_TMPFILES_DIR}/mios.conf"
+    success "MiOS uninstalled"
+}
+
+main() {
+    [[ "${1:-}" == "--uninstall" ]] && { check_root; uninstall_mios; exit 0; }
+    check_root
+    check_prerequisites
+    install_mios
+}
+
+main "$@"
