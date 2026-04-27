@@ -6,8 +6,13 @@ for arg in "$@"; do
     if [[ "$arg" == "--json" ]]; then JSON_MODE=true; fi
 done
 
+VIRT=$(systemd-detect-virt 2>/dev/null || echo "none")
+BOOTC_MANAGED=true
+if [[ "$VIRT" == "wsl" || "$VIRT" == container* ]] || [[ -f "/.containerenv" || -f "/.dockerenv" ]]; then
+    BOOTC_MANAGED=false
+fi
+
 if [[ "$JSON_MODE" == "true" ]]; then
-    # Build a clean JSON object
     SERVICES=()
     for svc in gdm cockpit.socket sshd libvirtd.socket virtnetworkd.socket virtqemud.socket \
                firewalld tuned k3s gnome-remote-desktop avahi-daemon; do
@@ -17,14 +22,13 @@ if [[ "$JSON_MODE" == "true" ]]; then
             SERVICES+=("\"$svc\": \"enabled\"")
         fi
     done
-
-    # Join services into JSON string
     SVCS_JSON=$(IFS=,; echo "${SERVICES[*]}")
-
-    printf '{"hostname": "%s", "uptime": "%s", "kernel": "%s", "services": {%s}}\n' \
+    printf '{"hostname": "%s", "uptime": "%s", "kernel": "%s", "platform": "%s", "bootc_managed": %s, "services": {%s}}\n' \
         "$(hostname)" \
         "$(uptime -p 2>/dev/null || uptime)" \
         "$(uname -r)" \
+        "$VIRT" \
+        "$BOOTC_MANAGED" \
         "$SVCS_JSON"
     exit 0
 fi
@@ -35,15 +39,20 @@ echo ""
 echo "Hostname:  $(hostname)"
 echo "Uptime:    $(uptime -p 2>/dev/null || uptime)"
 echo "Kernel:    $(uname -r)"
-echo "bootc:     $(bootc status 2>/dev/null | head -3 || echo 'N/A')"
+echo "Platform:  $VIRT"
+if [[ "$BOOTC_MANAGED" == "true" ]]; then
+    echo "bootc:     $(bootc status 2>/dev/null | head -3 || echo 'N/A')"
+else
+    echo "bootc:     N/A — WSL2/container import (not bootc-managed)"
+fi
 echo ""
 echo "Services:"
 for svc in gdm cockpit.socket sshd libvirtd.socket virtnetworkd.socket virtqemud.socket \
            firewalld tuned k3s gnome-remote-desktop avahi-daemon; do
     if systemctl is-active --quiet "$svc" 2>/dev/null; then
-        printf "  ✓ %-30s active\n" "$svc"
+        printf "  + %-30s active\n" "$svc"
     elif systemctl is-enabled --quiet "$svc" 2>/dev/null; then
-        printf "  ○ %-30s enabled (inactive)\n" "$svc"
+        printf "  o %-30s enabled (inactive)\n" "$svc"
     fi
 done
 echo ""

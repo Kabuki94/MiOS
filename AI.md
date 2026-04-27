@@ -200,6 +200,27 @@ Never: `[kargs]` section header · `delete =` · `delete_kargs =` · `kargs.appe
 ### Disk image generation
 
 - Current `bootc-image-builder` uses a single config file mounted at `/config.toml`. ISO-specific settings go under `[customizations.iso]` within that file. Never mount multiple config files simultaneously (BIB crashes: "found config.json and also config.toml"). The `iso.toml` / `bib.toml` naming is obsolete — use `/config.toml` exclusively.
+- `--type vhd` outputs VPC/VHD, **not VHDX** — always post-convert: `qemu-img convert -f raw -O vhdx -o subformat=dynamic disk.raw disk.vhdx`. Hyper-V targets require Gen 2 VMs (UEFI); Gen 1 (BIOS/MBR) is incompatible with bootc's EFI boot chain.
+- No WSL2 tarball output from BIB (issue #172, open since 2024). WSL2 distribution is built via: `podman export $(podman create ghcr.io/kabuki94/mios:latest) -o mios.tar && wsl --import MiOS-OS ...`
+
+### Platform detection & runtime gating
+
+Use `systemd-detect-virt 2>/dev/null || echo "none"` as the single authoritative platform detector in all scripts. Never add secondary detection paths unless systemd is unavailable.
+
+| Platform | `systemd-detect-virt` value | Notes |
+|---|---|---|
+| Bare metal | `none` | Only safe context for `bootc upgrade` |
+| Hyper-V VM | `microsoft` | DMI-distinguished from WSL2 |
+| WSL2 | `wsl` | OCI container import — not bootc-managed |
+| QEMU/KVM | `kvm` or `qemu` | virtio-gpu for display |
+| Podman container | `container-podman` | Matches `container*` glob |
+| Docker container | `container-docker` | Matches `container*` glob |
+
+Fallback when systemd unavailable: `grep -qi microsoft /proc/version` (WSL2); `/.containerenv` (Podman); `/.dockerenv` (Docker).
+
+**WSL2 law:** MiOS in WSL2 runs as a container-import distribution — `bootc upgrade` is non-functional and must be blocked in `wsl` and `container*` contexts. All upgrade scripts gate on `systemd-detect-virt` and print re-import instructions instead.
+
+**bootc status API:** `bootc status --format=json` is the stable parseable interface. Never parse `bootc upgrade` stdout for automation — its text output is not a versioned API and changes across releases.
 
 ## Shared Memory System
 
