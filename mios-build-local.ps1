@@ -33,7 +33,7 @@ function Write-Phase {
     # Enable PowerShell Native Progress Bar
     try {
         $percent = [int]($N) * 20 # 5 phases = 20% each
-        Write-Progress -Activity "MiOS Build v$Version" -Status "Phase $N: $L" -PercentComplete $percent
+        Write-Progress -Activity "MiOS Build v${Version}" -Status "Phase ${N}: ${L}" -PercentComplete $percent
     } catch {}
 }
 
