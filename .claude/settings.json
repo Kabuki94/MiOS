@@ -51,7 +51,8 @@
       "Bash(echo \"EXIT:$?\")",
       "WebSearch(*)",
       "WebFetch(*)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git rm *)"
     ],
     "deny": [
       "Bash(git push:*)",
