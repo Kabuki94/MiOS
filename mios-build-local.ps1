@@ -260,7 +260,7 @@ if ($DoBuild) {
 Write-Phase "1" "Podman Builder Machine"
 $ErrorActionPreference = "Continue"
 
-$builderScript = Join-Path $PWD "scripts\mios-build-builder.ps1"
+$builderScript = Join-Path $PWD "automation\mios-build-builder.ps1"
 if (-not (Test-Path $builderScript)) { Write-Fatal "Missing $builderScript" }
 
 Write-Step "Executing dedicated builder provisioning script..."
