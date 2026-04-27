@@ -37,5 +37,4 @@ jobs:
       - name: Validate kargs.d files
         run: |
           python3 automation/validate-kargs.py --github \
-            kargs.d/ \
             overlay/usr/lib/bootc/kargs.d/
