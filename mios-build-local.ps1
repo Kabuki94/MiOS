@@ -31,7 +31,7 @@ function Write-Banner { param([string]$T) $w=78; Write-Host "`n$("═"*$w)" -For
 function Write-Phase { 
     param([string]$N,[string]$L) 
     Write-Host "`n  [$N] $L" -ForegroundColor Yellow; Write-Host "  $("─"*70)" -ForegroundColor DarkGray 
-    $script:BuildAudit += "PHASE $N: $L"
+    $script:BuildAudit += "PHASE ${N}: ${L}"
     # Enable PowerShell Native Progress Bar
     try {
         $percent = [int]($N) * 20 # 5 phases = 20% each
