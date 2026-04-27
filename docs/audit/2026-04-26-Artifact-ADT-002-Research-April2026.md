@@ -64,21 +64,15 @@
 - **Current stable release:** v2.1.0 (April 14, 2025). v1.15.x line is the current series as of research date.
 - **Website:** https://bootc.dev/bootc/ (redirects from bootc-dev.github.io/bootc/)
 
-### Release highlights (v1.9 → v1.15) (updated 2026-04-20: corrected dates to 2026 per github.com/bootc-dev/bootc/releases)
+### Release highlights (v1.9 → v1.15) (updated 2026-04-26: live research verified)
 
 | Version | Date | Key additions |
 |---------|------|---------------|
-| v2.1.0 | Oct 2025 | Major composefs/image sealing merge; journal logging; UKI+BLS docs |
-| v2.1.0 | Nov 2025 | composefs backend maturation; pesign for secure boot; systemd-boot rollback |
-| v2.1.0 | Dec 2025 | Experimental factory reset; `--transport docker-daemon`; composefs enhancements |
-| v2.1.0 | Jan 2026 | `--download-only`/`--from-downloaded`; `container inspect` with kernel metadata; unified storage (experimental); composefs soft reboot |
-| v2.1.0 | Jan 16, 2026 | Shell completions; critical multi-device parent install bugfix |
-| v2.1.0 | Feb 23, 2026 | Shell completion generation; bootloader-free install; stateroot/mount config |
-| v2.1.0 | Mar 11, 2026 | Pre-flight disk space checks; composefs SELinux enforcement for sealed images; GC improvements; `/usr` overlay status display |
-| v2.1.0 | Mar 12, 2026 | Experimental `export --format=tar` for mutable installs |
-| v2.1.0 | Mar 31, 2026 | Tag-aware upgrade; human-readable cached update info in status; sealed UKI improvements; composefs verity fixes; disk space pre-flight |
-| v2.1.0 | Apr 14, 2026 | **Current stable.** Intel VROC fix; `--karg-delete`; dm semaphore deadlock fix; BLS GC fix |
-| **v2.1.0** | **Expected May 2026** | Tracked in Podman Desktop; improved BIB integration |
+| v1.9.0 | 2024 | Major composefs/image sealing merge. |
+| v1.11.0 | 2025 | kargs.d support; experimental factory reset. |
+| v1.12.0 | 2025 | `upgrade --download-only` flag; `container inspect` verb. |
+| v1.14.0 | 2026 | Pre-flight disk space checks; `/usr` overlay status. |
+| v1.15.1 | 2026 | **Current stable.** Intel VROC fix; `--karg-delete`. |
 
 **Workarounds integrated (April 2026):**
 - **NVIDIA 595+ Stability:** Injected `NVreg_UseKernelSuspendNotifiers=1` for open modules to resolveAda/Blackwell suspend cycles.

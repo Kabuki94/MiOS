@@ -4,8 +4,14 @@
 set -euo pipefail
 # shellcheck source=lib/common.sh
 source "$(dirname "$0")/lib/common.sh"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/lib/packages.sh"
 
-echo "[37-aichat] Installing AIChat and AIChat-NG..."
+echo "[37-aichat] Installing AI-related packages (redis, sqlite)..."
+install_packages "ai"
+
+echo "[37-aichat] Installing AIChat and AIChat-NG binaries..."
+# ... (rest of the script)
 
 # Fetch latest release tags
 # v2.1.0: Wrap in subshell + || true to prevent pipefail from killing the script if API is down

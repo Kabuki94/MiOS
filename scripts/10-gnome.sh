@@ -150,10 +150,14 @@ chmod +x /usr/local/bin/phosh-session-wrapper 2>/dev/null || true
 # Disable filtered Fedora remote, use unfiltered Flathub for full catalog
 # ═════════════════════════════════════════════════════════════════════════════
 echo "[10-gnome] Configuring Flatpak remotes..."
-flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-flatpak remote-add --system --if-not-exists flathub-beta https://flathub.org/beta-repo/flathub-beta.flatpakrepo
-flatpak remote-add --system --if-not-exists gnome-nightly https://nightly.gnome.org/gnome-nightly.flatpakrepo 2>/dev/null || true
-flatpak remote-modify --system --disable fedora 2>/dev/null || true
+if command -v flatpak &>/dev/null; then
+    flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo || true
+    flatpak remote-add --system --if-not-exists flathub-beta https://flathub.org/beta-repo/flathub-beta.flatpakrepo || true
+    flatpak remote-add --system --if-not-exists gnome-nightly https://nightly.gnome.org/gnome-nightly.flatpakrepo 2>/dev/null || true
+    flatpak remote-modify --system --disable fedora 2>/dev/null || true
+else
+    echo "[10-gnome] WARN: flatpak binary not found, skipping remote configuration"
+fi
 
 # ═════════════════════════════════════════════════════════════════════════════
 # Essential Flatpaks
@@ -161,3 +165,6 @@ flatpak remote-modify --system --disable fedora 2>/dev/null || true
 echo "[10-gnome] Flatpaks will be installed on first boot (mios-flatpak-install.service)..."
 # NOTE: mios-flatpak-install.service is enabled in Containerfile STEP D
 # (unit file lives in system_files/, not available during script execution)
+
+exit 0
+
