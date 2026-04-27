@@ -45,12 +45,12 @@
 - [Looking Glass Integration](https://github.com/Kabuki94/mios/blob/main/specs/knowledge/guides/2026-04-26-Artifact-KBX-102-looking-glass-integration.md)
 - [VM CPU Pin Manager](https://github.com/Kabuki94/mios/blob/main/specs/knowledge/guides/2026-04-26-Artifact-KBX-104-vm-cpu-pin-manager-readme.md)
 - [WSL2 Deployment](https://github.com/Kabuki94/mios/blob/main/specs/knowledge/guides/2026-04-26-Artifact-KBX-106-WSL2-DEPLOYMENT.md)
-- [AI Integration](https://github.com/Kabuki94/mios/blob/main/specs/knowledge/research/2026-04-26-Artifact-KBX-021-AI-INTEGRATION.md)
-- [OpenAI Parsability & Agent Standards](https://github.com/Kabuki94/mios/blob/main/specs/knowledge/research/2026-04-26-Artifact-KBX-024-OpenAI-Integration.md)
+- [AI Integration](https://github.com/Kabuki94/mios/blob/main/specs/knowledge/archive/2026-04-26-Artifact-KBX-021-AI-INTEGRATION.md)
+- [OpenAI Parsability & Agent Standards](https://github.com/Kabuki94/mios/blob/main/specs/knowledge/archive/2026-04-26-Artifact-KBX-024-OpenAI-Integration.md)
 
 ### 📜 Historical Audit
 - [Changelog v0.1.1](https://github.com/Kabuki94/mios/blob/main/specs/changelogs/2026-04-26-Artifact-CHL-003-v0.1.1.md)
-- [Changelog Cumulative](https://github.com/Kabuki94/mios/blob/main/specs/changelogs/2026-04-26-Artifact-CHL-001-Cumulative.md)
+- [Changelog Cumulative](https://github.com/Kabuki94/mios/blob/main/specs/changelogs/archive/2026-04-26-Artifact-CHL-001-Cumulative.md)
 - [Research April 2026](https://github.com/Kabuki94/mios/blob/main/specs/audit/2026-04-26-Artifact-ADT-002-Research-April2026.md)
 - [Next Research Queue](https://github.com/Kabuki94/mios/blob/main/specs/audit/2026-04-26-Artifact-ADT-001-Next-Research.md)
 
