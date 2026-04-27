@@ -108,6 +108,7 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     /ctx/automation/25-firewall-ports.sh && \
     /ctx/automation/26-gnome-remote-desktop.sh && \
     /ctx/automation/37-ai-agnostic.sh && \
+    /ctx/automation/37-flatpak-env.sh && \
     /ctx/automation/37-ollama-prep.sh && \
     /ctx/automation/50-enable-log-copy-service.sh
 

@@ -42,6 +42,20 @@ MiOS v0.1.3 (running) → builds → MiOS v0.1.4 (OCI image)
 
 ## Build Modes
 
+### Mode 0: Bootstrap (Initial Install)
+
+If you are starting from a fresh Linux installation (Fedora/Debian/Ubuntu), you can bootstrap the entire MiOS build environment with a single command:
+
+```bash
+curl -sL https://raw.githubusercontent.com/Kabuki94/MiOS-bootstrap/main/install.sh | sudo bash
+```
+
+This will:
+1.  Install system prerequisites (`git`, `podman`, `just`, `rsync`).
+2.  Clone the latest MiOS source to `/usr/src/mios`.
+3.  Symlink the system directories and install the unified `mios` CLI.
+4.  Configure `tmpfiles.d` for persistent state management.
+
 ### Mode 1: CI/CD (GitHub Actions) — Recommended
 
 The GitHub Actions workflow automatically builds, rechunks, signs, and pushes the image on every commit to `main` and on a weekly schedule. This is the recommended approach for production use.

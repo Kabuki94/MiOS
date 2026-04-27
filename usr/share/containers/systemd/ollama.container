@@ -2,6 +2,7 @@
 Description=Ollama LLM Server
 After=network-online.target
 Wants=network-online.target
+ConditionVirtualization=!wsl
 
 [Container]
 GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage

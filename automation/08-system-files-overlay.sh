@@ -93,6 +93,19 @@ elif [ ! -e /home ]; then
     log "  Path: created /home -> /var/home symlink"
 fi
 
+# 3. Standardize /etc/locale.conf -> /usr/lib/locale.conf (USR-OVER-ETC)
+if [[ -f /usr/lib/locale.conf ]]; then
+    ln -sf /usr/lib/locale.conf /etc/locale.conf
+    log "  Locale: symlinked /etc/locale.conf -> /usr/lib/locale.conf"
+fi
+
+# 4. Management binary symlinks
+log "  Path: creating management symlinks"
+ln -sf /usr/libexec/mios/motd /usr/bin/mios-motd
+ln -sf /usr/libexec/mios/mios-toggle-headless /usr/bin/mios-toggle-headless
+ln -sf /usr/libexec/mios/mios-test /usr/bin/mios-test
+ln -sf /usr/libexec/mios/mios-podman-gc /usr/bin/mios-podman-gc
+
 log "08-overlay: relabeling overlaid files"
 restorecon -RFv /usr/ 2>/dev/null || true
 restorecon -RFv /etc/ 2>/dev/null || true

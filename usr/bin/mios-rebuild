@@ -1,13 +1,21 @@
 #!/bin/bash
+# MiOS v0.1.3 — Source Rebuild & Push
+# Synchronizes with latest upstream before building.
 set -euo pipefail
-DIR="${MIOS_DIR:-$HOME/MiOS}"
-echo "MiOS — Rebuilding from source..."
-if [ ! -d "$DIR" ]; then
-    git clone https://github.com/Kabuki94/MiOS-bootstrap.git "$DIR"
-else
-    cd "$DIR" && git pull
+
+MIOS_SRC_DIR="/usr/src/mios"
+if [[ ! -d "${MIOS_SRC_DIR}/.git" ]]; then
+    MIOS_SRC_DIR="${MIOS_DIR:-$HOME/MiOS}"
 fi
-cd "$DIR"
+
+echo "MiOS — Rebuilding from source..."
+if [ ! -d "$MIOS_SRC_DIR" ]; then
+    git clone https://github.com/Kabuki94/MiOS-bootstrap.git "$MIOS_SRC_DIR"
+else
+    cd "$MIOS_SRC_DIR" && git pull
+fi
+
+cd "$MIOS_SRC_DIR"
 if command -v just &>/dev/null; then
     just all
 else

@@ -1,4 +1,17 @@
 #!/bin/bash
+# MiOS v0.1.3 — Local OCI Build
+# Ensures build environment is synced with latest upstream.
 set -euo pipefail
+
+MIOS_SRC_DIR="/usr/src/mios"
+if [[ -d "${MIOS_SRC_DIR}/.git" ]]; then
+    echo "==> Syncing MiOS source at $MIOS_SRC_DIR..."
+    cd "$MIOS_SRC_DIR" && git pull
+else
+    # Fallback to current dir if src doesn't exist
+    MIOS_SRC_DIR="."
+fi
+
 echo "MiOS — Local build..."
+cd "$MIOS_SRC_DIR"
 podman build --no-cache --build-arg MAKEFLAGS="-j$(nproc)" -t localhost/mios:latest .

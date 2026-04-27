@@ -134,3 +134,38 @@ Initialize Gemini CLI in the MiOS workspace and synchronize with the v0.1.3 base
 
 ### Status
 ✅ Initialized & Synchronized
+
+---
+
+## [2026-04-27T21:20:00Z] [AI: Gemini CLI] Stability Checks & WSL2 Hardening
+
+### Objective
+Diagnose and resolve systemd ordering cycles and service failures identified in Fedora CoreOS 44 / WSL2 boot logs.
+
+### Accomplishments
+1. **Dependency Cycle Resolution**: Fixed critical ordering cycle by moving `mios-role.service` from `sysinit.target` to `multi-user.target` and gating it with `ConditionVirtualization=!wsl`.
+2. **WSL2 Journald Stabilization**: Implemented `Storage=volatile` for `journald` on WSL2 via `usr/lib/systemd/journald.conf.d/20-mios-wsl-volatile.conf` to prevent boot-time crashes.
+3. **SSH Initialization**: Added `usr/lib/tmpfiles.d/mios-ssh.conf` to ensure `sshd-keygen` has a valid `/etc/ssh` directory, resolving `sshd-keygen @rsa.service` failures.
+4. **Flatpak venv/env Migration**: Completed migration of Flatpak environment definitions to `/usr/lib/mios/env.d/flatpaks.env` to comply with USR-OVER-ETC laws and user-space environment mandates.
+
+### Status
+✅ Critical Boot Cycles Resolved
+✅ WSL2 Stability Hardening Applied
+✅ USR-OVER-ETC Compliance Verified
+
+---
+
+## [2026-04-27T22:00:00Z] [AI: Gemini CLI] Locale & WSL2 Pathing Fixes
+
+### Objective
+Resolve "Locale: C" reported by fastfetch and btop "No UTF-8 locale detected" failure, and address dbus-daemon-wsl execution errors.
+
+### Accomplishments
+1. **Locale Resolution**: Symlinked `/etc/locale.conf` to `/usr/lib/locale.conf` in `automation/08-system-files-overlay.sh` and explicitly set `LANG=en_US.UTF-8` in `usr/lib/environment.d/50-mios.conf` for system-wide UTF-8 compliance.
+2. **WSL2 Binary Pathing**: Updated `usr/lib/systemd/system/dbus-daemon-wsl.service` to use `/bin/dbus-daemon` (standard symlink path) to resolve `203/EXEC` failures.
+3. **Service Gating**: Added `ConditionVirtualization=!wsl` to `ollama.container` and `mios-sync-upstream.service` to prevent unstable or unnecessary services from running in WSL2 environments.
+
+### Status
+✅ UTF-8 Locale Issues Resolved
+✅ WSL2 Service Execution Fixed
+✅ Resource-Heavy WSL2 Services Gated
