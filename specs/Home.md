@@ -10,7 +10,7 @@
     "home",
     "navigation"
   ],
-  "last_rag_sync": "2026-04-27T02:30:34.494598",
+  "last_rag_sync": "2026-04-27T02:31:00.470713",
   "version": "2.1.0"
 }
 ```

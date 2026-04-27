@@ -13,8 +13,10 @@
     "evals": "evals/manifest.json",
     "config": "config/artifacts/manifest.json",
     "research": "agents/research/manifest.json",
+    "research_data": "agents/research/data/manifest.json",
     "deep_search": "agents/deep-search/manifest.json",
     "ai_tools": ".well-known/ai-tools.json",
+    "user_identity": "user/identity.env.example",
     "root": "root-manifest.json"
   },
   "standard_formats": {

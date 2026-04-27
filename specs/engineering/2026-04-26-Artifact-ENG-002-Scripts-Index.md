@@ -1,6 +1,6 @@
 <!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
 # 📜 MiOS Scripts Index
-> **Generated:** 2026-04-27T02:30:59.559381
+> **Generated:** 2026-04-27T02:55:17.385111
 > **Status:** Automated Sync
 
 ```json:knowledge
@@ -13,7 +13,7 @@
     "index"
   ],
   "version": "2.1.0",
-  "last_rag_sync": "2026-04-27T02:30:34.494598"
+  "last_rag_sync": "2026-04-27T02:31:00.470713"
 }
 ```
 
@@ -218,9 +218,5 @@ This file provides a machine-readable and human-readable index of all automation
 ## `generate-mok-key.sh`
 - **Path:** `automation/generate-mok-key.sh`
 - **Description:** generate-mok-key.sh — one-shot MiOS MOK key generator.
-
-## `smoke-check.sh`
-- **Path:** `automation/smoke-check.sh`
-- **Description:** MiOS v2.1.0 — Post-boot serial log smoke check
 
 <!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->

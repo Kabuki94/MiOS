@@ -45,3 +45,6 @@ Thumbs.db
 
 
 
+
+# User-specific identity
+user/identity.env

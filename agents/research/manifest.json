@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-27T02:30:59.271150",
+  "generated_at": "2026-04-27T02:55:17.107825",
   "source_directory": "agents/research",
   "entries": [
     {
@@ -250,6 +250,13 @@
           }
         ]
       }
+    },
+    {
+      "path": "agents/research/config/launch_vapo.py",
+      "last_modified": "2026-04-27T02:30:38.981617",
+      "title": "launch_vapo.py",
+      "type": "source_code",
+      "full_content": "from vertexai import Client, types\nimport sys\n\ndef main():\n    try:\n        client = Client(project=\"cloudws-os\", location=\"us-central1\")\n\n        config = {\n            \"config_path\": \"gs://mios-vertex-autogen-cloudws-os/configs/config-1.json\",\n            \"service_account\": \"vertex-express@cloudws-os.iam.gserviceaccount.com\"\n        }\n\n        print(f\"\ud83d\ude80 Launching Vertex AI Prompt Optimization job with config: {config}\")\n        job = client.prompts.launch_optimization_job(\n            method=types.PromptOptimizerMethod.VAPO,\n            config=config\n        )\n        print(f\"\u23f3 Job requested. Waiting for initial state...\")\n        print(f\"\u2705 Job launched successfully!\")\n        print(f\"Job Name: {job.name}\")\n        print(f\"State: {job.state}\")\n        \n    except Exception as e:\n        print(f\"\u274c Error launching job: {e}\")\n        sys.exit(1)\n\nif __name__ == \"__main__\":\n    main()\n"
     },
     {
       "path": "agents/research/app/openai_proxy.py",

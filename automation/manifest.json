@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-27T02:30:59.230491",
+  "generated_at": "2026-04-27T02:55:17.059217",
   "source_directory": "automation",
   "entries": [
     {
@@ -176,13 +176,6 @@
       "title": "47-hardening.sh",
       "type": "source_code",
       "full_content": "#!/usr/bin/bash\n# 47-hardening.sh - enable hardening services (USBGuard, auditd).\n# Package installs moved to PACKAGES.md (packages-security).\n# sysctl drop-in shipped via overlay/usr/lib/sysctl.d/99-mios-hardening.conf.\nset -euo pipefail\n\nlog() { printf '[47-hardening] %s\\n' \"$*\"; }\n\n# USBGuard config is at /usr/lib/usbguard/usbguard-daemon.conf (managed via overlay).\nchmod 0600 /usr/lib/usbguard/usbguard-daemon.conf 2>/dev/null || true\nsystemctl enable usbguard.service 2>/dev/null || log \"note: usbguard not installed\"\nsystemctl enable auditd.service   2>/dev/null || log \"note: auditd not installed\"\nsystemctl enable fapolicyd.service 2>/dev/null || log \"note: fapolicyd not installed\"\n\n# Pre-generate fapolicyd trust database for bootc systems\n# fapolicyd config is at /usr/lib/fapolicyd/fapolicyd.conf (managed via overlay).\nif command -v fagenrules &>/dev/null; then\n    log \"Pre-generating fapolicyd trust database...\"\n    # Ensure correct permissions for the fapolicyd directory\n    chown -R fapolicyd:fapolicyd /etc/fapolicyd 2>/dev/null || true\n    fagenrules --load 2>/dev/null || true\n    fapolicyd-cli --update 2>/dev/null || true\nfi\n\nlog \"hardening services wired\""
-    },
-    {
-      "path": "automation/smoke-check.sh",
-      "last_modified": "2026-04-27T02:30:34.635598",
-      "title": "smoke-check.sh",
-      "type": "source_code",
-      "full_content": "#!/usr/bin/env bash\nset -euo pipefail\n# MiOS v2.1.0 \u2014 Post-boot serial log smoke check\n# Usage: smoke-check.sh <serial-log>\n#\n# Analyzes QEMU serial console output for boot health indicators.\n\nSERIAL_LOG=\"${1:-}\"\nERRORS=0\n\nif [[ -z \"$SERIAL_LOG\" || ! -f \"$SERIAL_LOG\" ]]; then\n    echo \"Usage: $0 <serial-log>\"\n    exit 2\nfi\n\necho \"\u2550\u2550\u2550 MiOS Smoke Check \u2550\u2550\u2550\"\n\n# Check: systemd reached target\nif grep -qE \"Reached target (Graphical|Multi-User)\" \"$SERIAL_LOG\"; then\n    echo \"  \u2713 systemd target reached\"\nelse\n    echo \"  \u2717 systemd target NOT reached\"\n    ERRORS=$((ERRORS + 1))\nfi\n\n# Check: no kernel panic\nif grep -qi \"kernel panic\" \"$SERIAL_LOG\"; then\n    echo \"  \u2717 KERNEL PANIC detected\"\n    ERRORS=$((ERRORS + 1))\nelse\n    echo \"  \u2713 no kernel panic\"\nfi\n\n# Check: no systemd emergency\nif grep -qi \"emergency.target\" \"$SERIAL_LOG\"; then\n    echo \"  \u2717 emergency target entered\"\n    ERRORS=$((ERRORS + 1))\nelse\n    echo \"  \u2713 no emergency mode\"\nfi\n\n# Check: failed units (warning, not fatal)\nFAILED_COUNT=$(grep -ci \"Failed to start\" \"$SERIAL_LOG\" 2>/dev/null || echo \"0\")\nif [[ \"$FAILED_COUNT\" -gt 3 ]]; then\n    echo \"  \u26a0 $FAILED_COUNT failed service starts (check log)\"\nelse\n    echo \"  \u2713 failed starts: $FAILED_COUNT (acceptable)\"\nfi\n\n# Check: SELinux denials\nif grep -qi \"avc:.*denied\" \"$SERIAL_LOG\"; then\n    AVC_COUNT=$(grep -ci \"avc:.*denied\" \"$SERIAL_LOG\" 2>/dev/null || echo \"0\")\n    echo \"  \u26a0 $AVC_COUNT SELinux denials (review with audit2allow)\"\nelse\n    echo \"  \u2713 no SELinux denials in serial log\"\nfi\n\necho \"\u2550\u2550\u2550 Result: $ERRORS critical errors \u2550\u2550\u2550\"\nexit \"$ERRORS\""
     },
     {
       "path": "automation/05-enable-external-repos.sh",

@@ -16,7 +16,7 @@
     ],
     "impacts": []
   },
-  "last_rag_sync": "2026-04-27T02:30:34.494598",
+  "last_rag_sync": "2026-04-27T02:31:00.470713",
   "version": "2.1.0"
 }
 ```
@@ -33,7 +33,7 @@
   "baseline": "v2.1.0",
   "kernel": "Fedora Rawhide (OCI-Mode)",
   "build": "just all",
-  "last_sync": "2026-04-27T02:30:34.494598"
+  "last_sync": "2026-04-27T02:31:00.470713"
 }
 ```
 
@@ -80,26 +80,24 @@ The core build logic that executes all numbered scripts in sequence. This is typ
 
 ## 🏗️ Documentation Hub
 
-### 📐 [Strategic Blueprint](specs/blueprint.md)
-Technical specs, filesystem hierarchy, and kernel tuning.
+| Document | Description |
+|----------|-------------|
+| [Strategic Blueprint](specs/core/2026-04-26-Artifact-COR-001-Blueprint.md) | Technical specs, filesystem hierarchy, and kernel tuning. |
+| [Operational Handbook](specs/core/2026-04-26-Artifact-COR-004-Operations.md) | Setup guides (WSL2, Hyper-V), backup steps, and upgrade cycles. |
+| [Security Guide](specs/engineering/2026-04-26-Artifact-ENG-002-Security.md) | Execution whitelisting, integrity checks (fs-verity), and network rules. |
+| [Hardware Support](specs/core/2026-04-26-Artifact-COR-002-Infrastructure.md) | GPU-PV, SR-IOV, VFIO, and Silicon vendor details. |
+| [Windows Workflow](specs/knowledge/guides/WINDOWS-BUILD-WORKFLOW.md) | Primary building environment: Windows 11 + Podman Desktop + WSL2/g. |
+| [Package SSOT](specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md) | Single Source of Truth for all system components. |
+| [AI-Native Standards](specs/knowledge/research/2026-04-27-Artifact-KBX-025-FOSS-AI-Deep-Dive.md) | 2026 FOSS AI integration and ingestion patterns. |
 
-### 🛠️ [Operational Handbook](specs/operations.md)
-Setup guides (WSL2, Hyper-V), backup steps, and upgrade cycles.
+## 🚀 Developer Workflow
 
-### 🔒 [Security Guide](specs/security.md)
-Execution whitelisting, integrity checks (fs-verity), and network rules.
+MiOS is optimized for high-efficiency development:
 
-### 🔌 [Hardware Support](specs/infrastructure.md)
-GPU-PV, SR-IOV, VFIO, and Silicon vendor details.
-
-### 🪟 [Windows Workflow](specs/knowledge/guides/WINDOWS-BUILD-WORKFLOW.md)
-Primary building environment: Windows 11 + Podman Desktop + WSL2/g.
-
-### 🧪 [System Validation](specs/testing.md)
-Automated tests (tmt) and build manifests.
-
-### 📋 [Feature Index](specs/manifest.md)
-A structured list of all system components and features.
+1. **Self-Initializing:** `./automation/ai-bootstrap.sh` synchronizes all manifests and sub-projects.
+2. **Unified Environment:** All user overrides live in `.env.mios` and `user/identity.env`.
+3. **Automated Verification:** `just lint` and `./evals/smoke-test.sh` gate all builds.
+4. **CI/CD:** Automated builds, signing, and pushes via GitHub Actions.
 
 ---
 

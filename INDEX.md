@@ -26,7 +26,7 @@
       ".windsurfrules"
     ]
   },
-  "last_rag_sync": "2026-04-27T02:30:34.494598",
+  "last_rag_sync": "2026-04-27T02:31:00.470713",
   "version": "2.1.0"
 }
 ```
@@ -54,9 +54,10 @@ AI agents MUST use this map for context retrieval and navigation:
 | `specs/knowledge/guides/` | Operational Procedures | `specs/manifest.json` |
 | `automation/` | Build & Configuration Automation | `automation/manifest.json` |
 | `overlay/` | Root Filesystem Overlay | `overlay/manifest.json` |
+| `user/` | User Identity & Account Configuration | `user/identity.env.example` |
 | `artifacts/` | Build Metadata & RAG Snapshots | `artifacts/manifest.json.gz` |
 | `.ai/foundation/memories/` | Shared AI Journal & Brain | `.ai/foundation/memories/manifest.json` |
-| `.env.mios` | Unified User Configuration | (Handled by ai-bootstrap.sh) |
+| `.env.mios` | Unified System Configuration | (Handled by ai-bootstrap.sh) |
 
 ## 🧩 Instruction Patterns
 
@@ -312,7 +313,7 @@ To ensure all Markdown files are machine-parsable and referencable, they must in
       "path/to/impacted/file"
     ]
   },
-  "last_rag_sync": "2026-04-27T02:30:34.494598",
+  "last_rag_sync": "2026-04-27T02:31:00.470713",
   "version": "2.1.0"
 }
 ```
