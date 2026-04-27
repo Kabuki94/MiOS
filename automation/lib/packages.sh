@@ -1,5 +1,5 @@
 #!/bin/bash
-# MiOS v0.1.1 — Package extraction library
+# MiOS v0.1.3 — Package extraction library
 # Parses PACKAGES.md fenced code blocks tagged with ```packages-<category>
 #
 # Usage:

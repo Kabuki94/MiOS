@@ -25,7 +25,7 @@ mios-enroll-mok:
 # Verify signed image before switching
 mios-verify IMAGE="ghcr.io/kabuki94/mios:latest":
     cosign verify \
-      --certificate-identity-regexp 'https://github.com/Kabuki94/mios/.*' \
+      --certificate-identity-regexp 'https://github.com/Kabuki94/MiOS-bootstrap/.*' \
       --certificate-oidc-issuer     https://token.actions.githubusercontent.com \
       {{IMAGE}}
 

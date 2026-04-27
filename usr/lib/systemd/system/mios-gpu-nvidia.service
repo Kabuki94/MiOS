@@ -2,7 +2,7 @@
 Description=MiOS NVIDIA GPU container plumbing
 ConditionVirtualization=!container
 ConditionVirtualization=!wsl
-Documentation=https://github.com/Kabuki94/mios/blob/main/specs/gpu-passthrough.md
+Documentation=https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/gpu-passthrough.md
 ConditionPathExists=/dev/nvidia0
 After=systemd-modules-load.service systemd-udev-settle.service akmods.service
 Wants=systemd-udev-settle.service

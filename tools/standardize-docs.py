@@ -1,21 +1,21 @@
 import os
 import re
 
-HEADER = """<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
+HEADER = """<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 # 🌐 MiOS
-> **Proprietor:** Kabu.ki
+> **Proprietor:** MiOS-DEV
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v0.1.1
+> **License:** Licensed as personal property to MiOS-DEV
+> **Source Reference:** MiOS-Core-v0.1.3
 ---"""
 
 FOOTER = """---
 ### ⚖️ Legal & Source Reference
-- **Copyright:** (c) 2026 Kabu.ki
+- **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
-- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
-- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/specs/Home.md)
-- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
+- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/MiOS-bootstrap)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---"""
 
 def standardize_file(file_path):

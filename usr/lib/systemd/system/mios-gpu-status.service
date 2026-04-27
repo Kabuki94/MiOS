@@ -1,7 +1,7 @@
 [Unit]
 ConditionVirtualization=!container
 Description=MiOS GPU passthrough detection and status
-Documentation=https://github.com/Kabuki94/mios/blob/main/specs/gpu-passthrough.md
+Documentation=https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/gpu-passthrough.md
 DefaultDependencies=yes
 After=systemd-udev-settle.service systemd-modules-load.service local-fs.target
 Wants=systemd-udev-settle.service

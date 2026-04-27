@@ -1,0 +1,8 @@
+{
+  "generated_at": "2026-04-27T19:59:28.754378",
+  "project": "MiOS-DEV",
+  "version": "v0.1.3",
+  "source_directory": "home",
+  "ai_agnostic_hint": "Target http://localhost:8080/v1 for OpenAI-compatible FOSS API access.",
+  "entries": []
+}

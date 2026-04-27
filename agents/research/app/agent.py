@@ -426,7 +426,7 @@ interactive_planner_agent = LlmAgent(
 root_agent = interactive_planner_agent
 
 
-# MiOS v0.1.1: Wrapper to satisfy ADK CLI expectations
+# MiOS v0.1.3: Wrapper to satisfy ADK CLI expectations
 class AgentWrapper:
     def __init__(self, root):
         self.root_agent = root

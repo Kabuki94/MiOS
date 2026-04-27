@@ -15,7 +15,7 @@
                     "fulcio": {
                         "caPath": "/usr/share/pki/containers/fulcio_v1.crt.pem",
                         "oidcIssuer": "https://token.actions.githubusercontent.com",
-                        "subjectEmail": "https://github.com/Kabuki94/mios/.github/workflows/build.yml@refs/heads/main"
+                        "subjectEmail": "https://github.com/Kabuki94/MiOS-bootstrap/.github/workflows/build.yml@refs/heads/main"
                     },
                     "rekorPublicKeyPath": "/usr/share/pki/containers/rekor.pub",
                     "signedIdentity": { "type": "matchRepository" }

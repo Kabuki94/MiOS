@@ -1,8 +1,8 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/mios-project/mios -->
 # 🌐 MiOS
 ```json:knowledge
 {
-  "summary": "> **Proprietor:** MiOS Project",
+  "summary": "> **Proprietor:** MiOS-DEV",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -16,9 +16,9 @@
   }
 }
 ```
-> **Proprietor:** MiOS Project
+> **Proprietor:** MiOS-DEV
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to MiOS Project
+> **License:** Licensed as personal property to MiOS-DEV
 ---
 ---
 description: Run the bcvk-wrapper + smoke-check pipeline against a built image. Uses explicit `wsl -e` so the shell stays embedded in the integrated terminal, not an external WSL popup.
@@ -26,7 +26,7 @@ argument-hint: [image-ref] [timeout-seconds]
 ---
 
 Run the MiOS ephemeral boot smoke test against `$1` (default
-`ghcr.io/mios-project/mios:latest`) with a boot timeout of `$2`
+`ghcr.io/kabuki94/mios:latest`) with a boot timeout of `$2`
 seconds (default 300).
 
 This mirrors `.github/workflows/build-test.yml` so local runs match
@@ -99,6 +99,6 @@ wsl -e bash -c "./automation/smoke-check.sh automation/smoke-serial.log"
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
 - **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
-- **Sole Proprietor:** MiOS Project
+- **Sole Proprietor:** MiOS-DEV
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

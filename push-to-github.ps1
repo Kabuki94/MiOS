@@ -1,12 +1,12 @@
 # ============================================================================
-# push-to-github.ps1 — MiOS release deliverable (v0.1.1 baseline)
+# push-to-github.ps1 — MiOS release deliverable (v0.1.3 baseline)
 # ----------------------------------------------------------------------------
 # Single source of truth for the release pipeline. Per INDEX.md §4 + the
 # /push-version skill, this script is rewritten per release and never split
 # into push-vX.Y.Z.ps1 siblings.
 #
 # Behaviour:
-#   1. Clone github.com/Kabuki94/mios into a temp directory.
+#   1. Clone github.com/Kabuki94/MiOS-bootstrap into a temp directory.
 #   2. Optionally overlay a staged companion directory (-StagedDir) onto the
 #      working tree, preserving layout relative to repo root. Files-only —
 #      directories are walked and replaced file by file. Nothing is deleted.
@@ -24,7 +24,7 @@ param(
     [string]$Version,
     [string]$Message = 'release sync',
     [string]$StagedDir,
-    [string]$Repo = 'github.com/Kabuki94/mios',
+    [string]$Repo = 'github.com/Kabuki94/MiOS-bootstrap',
     [string]$Branch = 'main',
     [switch]$DryRun
 )

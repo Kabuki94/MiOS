@@ -342,14 +342,14 @@ Variables are loaded in order (later overrides earlier):
 
 ## 📚 Documentation
 
-- [User-Space Separation Spec](https://github.com/mios-project/mios/blob/main/specs/engineering/2026-04-27-Artifact-ENG-008-UserSpace-Separation.md)
-- [System Templates](https://github.com/mios-project/mios/tree/main/etc/mios/templates)
-- [Self-Build Guide](https://github.com/mios-project/mios/blob/main/SELF-BUILD.md)
+- [User-Space Separation Spec](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/engineering/2026-04-27-Artifact-ENG-008-UserSpace-Separation.md)
+- [System Templates](https://github.com/Kabuki94/MiOS-bootstrap/tree/main/etc/mios/templates)
+- [Self-Build Guide](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/SELF-BUILD.md)
 
 ---
 
 **Generated:** $(date -u +%Y-%m-%dT%H:%M:%SZ)
-**MiOS Version:** v0.1.2
+**MiOS Version:** v0.1.3
 EOF
 success "Created: README.md"
 

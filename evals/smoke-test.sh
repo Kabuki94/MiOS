@@ -7,7 +7,7 @@
 #
 # Usage:
 #   ./evals/smoke-test.sh [IMAGE]
-#   ./evals/smoke-test.sh ghcr.io/mios-project/mios:latest
+#   ./evals/smoke-test.sh ghcr.io/kabuki94/mios:latest
 #   ./evals/smoke-test.sh localhost/mios:dev
 #
 # Exit codes:

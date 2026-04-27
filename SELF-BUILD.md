@@ -1,8 +1,8 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 # 🌐 MiOS
 ```json:knowledge
 {
-  "summary": "> **Proprietor:** MiOS Project",
+  "summary": "> **Proprietor:** MiOS-DEV",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -16,9 +16,9 @@
   }
 }
 ```
-> **Proprietor:** MiOS Project
+> **Proprietor:** MiOS-DEV
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to MiOS Project
+> **License:** Licensed as personal property to MiOS-DEV
 ---
 # Self-Build Mode Guide
 
@@ -31,11 +31,11 @@ MiOS ships all the tools needed to rebuild itself: Podman, Buildah, bootc, and b
 The build chain is:
 
 ```
-MiOS v0.1.2 (running) → builds → MiOS v0.1.3 (OCI image)
+MiOS v0.1.3 (running) → builds → MiOS v0.1.4 (OCI image)
                                         ↓
                                   Rechunk → Sign → Push to GHCR
                                         ↓
-                              MiOS v0.1.3 (running via bootc upgrade)
+                              MiOS v0.1.4 (running via bootc upgrade)
                                         ↓
                                   builds → MiOS-NXT ...
 ```
@@ -101,7 +101,7 @@ Boot into a running MiOS system and build from source:
 
 ```bash
 # Clone the repo
-git clone https://github.com/mios-project/mios.git
+git clone https://github.com/Kabuki94/MiOS-bootstrap.git
 cd MiOS
 
 # Build the OCI image (rootful Podman required)
@@ -202,7 +202,7 @@ The build process downloads ~2-4 GB of RPM packages from Fedora repos, RPM Fusio
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osautomation/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
-- **Sole Proprietor:** MiOS Project
+- **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
+- **Sole Proprietor:** MiOS-DEV
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

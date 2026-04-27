@@ -1,6 +1,6 @@
 [Unit]
 Description=Sync Latest MiOS Upstream Source
-Documentation=https://github.com/Kabuki94/mios
+Documentation=https://github.com/Kabuki94/MiOS-bootstrap
 ConditionPathExists=!/var/lib/mios-upstream-synced
 After=network-online.target systemd-user-sessions.service
 Wants=network-online.target

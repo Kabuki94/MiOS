@@ -71,7 +71,7 @@ install_mios() {
     
     cat > "${MIOS_ETC_DIR}/manifest.json" <<EOF
 {
-  "mios_version": "$(cat ${REPO_ROOT}/VERSION 2>/dev/null || echo 'v0.1.2')",
+  "mios_version": "$(cat ${REPO_ROOT}/VERSION 2>/dev/null || echo 'v0.1.3')",
   "installed_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "paths": {
     "share": "${MIOS_SHARE_DIR}",

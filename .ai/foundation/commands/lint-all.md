@@ -1,8 +1,8 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/mios-project/mios -->
 # 🌐 MiOS
 ```json:knowledge
 {
-  "summary": "> **Proprietor:** MiOS Project",
+  "summary": "> **Proprietor:** MiOS-DEV",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -16,9 +16,9 @@
   }
 }
 ```
-> **Proprietor:** MiOS Project
+> **Proprietor:** MiOS-DEV
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to MiOS Project
+> **License:** Licensed as personal property to MiOS-DEV
 ---
 ---
 description: Run the full CI lint pipeline locally — PowerShell-native on Windows, no external WSL popups
@@ -110,7 +110,7 @@ Treat **PSAvoidUsingInvokeExpression** and
 integrated WSL (explicit `wsl -e bash -c` so it stays embedded):
 
 ```
-wsl -e bash -c "bootc container lint --image ghcr.io/mios-project/mios:latest 2>&1 | tee automation/bootc-lint.log"
+wsl -e bash -c "bootc container lint --image ghcr.io/kabuki94/mios:latest 2>&1 | tee automation/bootc-lint.log"
 ```
 
 Scan output for:
@@ -160,6 +160,6 @@ inside the integrated terminal.
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
 - **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
-- **Sole Proprietor:** MiOS Project
+- **Sole Proprietor:** MiOS-DEV
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

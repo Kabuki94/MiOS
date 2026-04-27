@@ -1,4 +1,4 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 # AI Agent Wiki Discovery Pattern
 
 ```json:knowledge
@@ -28,7 +28,7 @@
 }
 ```
 
-> **Wiki URL:** https://github.com/mios-project/MiOS-bootstrap/wiki
+> **Wiki URL:** https://github.com/Kabuki94/MiOS-bootstrap/wiki
 > **Update Frequency:** Every build, push, and local build entry point
 > **Purpose:** PRIMARY source for current/new tasks and research patterns
 
@@ -43,7 +43,7 @@ The MiOS Wiki serves as the **live documentation hub** that updates automaticall
 1. **Always Current** — Updates with every build via `tools/log-to-bootstrap.sh`
 2. **Artifact Tracking** — Build logs and compressed artifacts logged automatically
 3. **Research Patterns** — Latest engineering specs and audits available immediately
-4. **Version-Specific** — Documentation organized by MiOS version (v0.1.2, etc.)
+4. **Version-Specific** — Documentation organized by MiOS version (v0.1.3, etc.)
 5. **FOSS-Friendly** — No proprietary APIs required, pure GitHub Wiki
 
 ---
@@ -57,7 +57,7 @@ When an AI agent initializes with MiOS context:
 ```yaml
 # From rag-manifest.yaml
 live_documentation:
-  wiki_url: https://github.com/mios-project/MiOS-bootstrap/wiki
+  wiki_url: https://github.com/Kabuki94/MiOS-bootstrap/wiki
   priority: "Wiki pages are PRIMARY source for current tasks and research patterns"
 ```
 
@@ -65,7 +65,7 @@ live_documentation:
 
 ```json
 "live_documentation": {
-  "wiki": "https://github.com/mios-project/MiOS-bootstrap/wiki",
+  "wiki": "https://github.com/Kabuki94/MiOS-bootstrap/wiki",
   "update_frequency": "Every build, push, and local build entry point",
   "purpose": "ALWAYS check Wiki for current tasks, research patterns, artifacts, and build logs",
   "primary_source": "Wiki pages reflect latest state - use for current/new tasks",
@@ -86,7 +86,7 @@ live_documentation:
 2. Fetch relevant Wiki page (if web access available):
    ```bash
    # Example: Check Wiki for latest AI integration patterns
-   curl -s https://raw.githubusercontent.com/wiki/mios-project/MiOS-bootstrap/AI-Integration-Index.md
+   curl -s https://raw.githubusercontent.com/wiki/Kabuki94/MiOS-bootstrap/AI-Integration-Index.md
    ```
 
 3. If offline: Use static knowledge graph as fallback, but note that information may be outdated
@@ -115,34 +115,34 @@ live_documentation:
 
 | Wiki Page | URL | Purpose | Update Frequency |
 |-----------|-----|---------|------------------|
-| **Home** | https://github.com/mios-project/MiOS-bootstrap/wiki/Home | Landing page with latest version, quick start | Every build |
-| **AI Integration Index** | https://github.com/mios-project/MiOS-bootstrap/wiki/AI-Integration-Index | AI RAG overview, artifact links | Every build |
-| **Quick Reference** | https://github.com/mios-project/MiOS-bootstrap/wiki/Quick-Reference | Essential commands, file hierarchy | Every build |
-| **AI Agent Guide** | https://github.com/mios-project/MiOS-bootstrap/wiki/AI-AGENT-GUIDE | Hard rules, immutable laws, protected files | As needed |
-| **INDEX** | https://github.com/mios-project/MiOS-bootstrap/wiki/INDEX | Architecture laws, directory map | Every build |
+| **Home** | https://github.com/Kabuki94/MiOS-bootstrap/wiki/Home | Landing page with latest version, quick start | Every build |
+| **AI Integration Index** | https://github.com/Kabuki94/MiOS-bootstrap/wiki/AI-Integration-Index | AI RAG overview, artifact links | Every build |
+| **Quick Reference** | https://github.com/Kabuki94/MiOS-bootstrap/wiki/Quick-Reference | Essential commands, file hierarchy | Every build |
+| **AI Agent Guide** | https://github.com/Kabuki94/MiOS-bootstrap/wiki/AI-AGENT-GUIDE | Hard rules, immutable laws, protected files | As needed |
+| **INDEX** | https://github.com/Kabuki94/MiOS-bootstrap/wiki/INDEX | Architecture laws, directory map | Every build |
 
 ### Documentation Pages
 
 | Wiki Page | URL | Purpose |
 |-----------|-----|---------|
-| **README** | https://github.com/mios-project/MiOS-bootstrap/wiki/README | Project overview |
-| **SELF-BUILD** | https://github.com/mios-project/MiOS-bootstrap/wiki/SELF-BUILD | Build modes (CI/CD, Windows, Linux, self-build) |
-| **SECURITY** | https://github.com/mios-project/MiOS-bootstrap/wiki/SECURITY | Security hardening patterns |
-| **llms.txt** | https://github.com/mios-project/MiOS-bootstrap/wiki/llms.txt | AI ingestion index |
+| **README** | https://github.com/Kabuki94/MiOS-bootstrap/wiki/README | Project overview |
+| **SELF-BUILD** | https://github.com/Kabuki94/MiOS-bootstrap/wiki/SELF-BUILD | Build modes (CI/CD, Windows, Linux, self-build) |
+| **SECURITY** | https://github.com/Kabuki94/MiOS-bootstrap/wiki/SECURITY | Security hardening patterns |
+| **llms.txt** | https://github.com/Kabuki94/MiOS-bootstrap/wiki/llms.txt | AI ingestion index |
 
 ### AI Integration Pages
 
 | Wiki Page | URL | Purpose |
 |-----------|-----|---------|
-| **RAG Integration** | https://github.com/mios-project/MiOS-bootstrap/wiki/RAG-Integration | Complete FOSS AI RAG setup |
-| **Prompts Library** | https://github.com/mios-project/MiOS-bootstrap/wiki/Prompts-Library | Task-specific AI prompts |
-| **Knowledge Graph** | https://github.com/mios-project/MiOS-bootstrap/wiki/Knowledge-Graph | Structured knowledge documentation |
+| **RAG Integration** | https://github.com/Kabuki94/MiOS-bootstrap/wiki/RAG-Integration | Complete FOSS AI RAG setup |
+| **Prompts Library** | https://github.com/Kabuki94/MiOS-bootstrap/wiki/Prompts-Library | Task-specific AI prompts |
+| **Knowledge Graph** | https://github.com/Kabuki94/MiOS-bootstrap/wiki/Knowledge-Graph | Structured knowledge documentation |
 
 ### Engineering Specs
 
 | Wiki Page | URL | Purpose |
 |-----------|-----|---------|
-| **FHS Compliance Audit** | https://github.com/mios-project/MiOS-bootstrap/wiki/engineering/2026-04-27-Artifact-ENG-006-FHS-Compliance-Audit | Linux filesystem compliance |
+| **FHS Compliance Audit** | https://github.com/Kabuki94/MiOS-bootstrap/wiki/engineering/2026-04-27-Artifact-ENG-006-FHS-Compliance-Audit | Linux filesystem compliance |
 
 ---
 
@@ -156,7 +156,7 @@ ollama run llama3.1:8b
 
 >>> /set system """
 You are a MiOS expert. IMPORTANT: Always check the MiOS Wiki for current information:
-https://github.com/mios-project/MiOS-bootstrap/wiki
+https://github.com/Kabuki94/MiOS-bootstrap/wiki
 
 Key pages to reference:
 - Home: Latest version and quick start
@@ -178,7 +178,7 @@ import json
 
 def fetch_wiki_page(page_name):
     """Fetch Wiki page content"""
-    url = f"https://raw.githubusercontent.com/wiki/mios-project/MiOS-bootstrap/{page_name}.md"
+    url = f"https://raw.githubusercontent.com/wiki/Kabuki94/MiOS-bootstrap/{page_name}.md"
     response = requests.get(url)
     return response.text if response.status_code == 200 else None
 
@@ -213,10 +213,10 @@ from langchain.embeddings import HuggingFaceEmbeddings
 
 # Wiki pages to index
 wiki_pages = [
-    "https://raw.githubusercontent.com/wiki/mios-project/MiOS-bootstrap/Home.md",
-    "https://raw.githubusercontent.com/wiki/mios-project/MiOS-bootstrap/AI-Integration-Index.md",
-    "https://raw.githubusercontent.com/wiki/mios-project/MiOS-bootstrap/Quick-Reference.md",
-    "https://raw.githubusercontent.com/wiki/mios-project/MiOS-bootstrap/AI-AGENT-GUIDE.md",
+    "https://raw.githubusercontent.com/wiki/Kabuki94/MiOS-bootstrap/Home.md",
+    "https://raw.githubusercontent.com/wiki/Kabuki94/MiOS-bootstrap/AI-Integration-Index.md",
+    "https://raw.githubusercontent.com/wiki/Kabuki94/MiOS-bootstrap/Quick-Reference.md",
+    "https://raw.githubusercontent.com/wiki/Kabuki94/MiOS-bootstrap/AI-AGENT-GUIDE.md",
 ]
 
 # Load and split Wiki content
@@ -243,8 +243,8 @@ import requests
 
 # Fetch latest Wiki content
 def get_wiki_context():
-    wiki_home = requests.get("https://raw.githubusercontent.com/wiki/mios-project/MiOS-bootstrap/Home.md").text
-    wiki_quick_ref = requests.get("https://raw.githubusercontent.com/wiki/mios-project/MiOS-bootstrap/Quick-Reference.md").text
+    wiki_home = requests.get("https://raw.githubusercontent.com/wiki/Kabuki94/MiOS-bootstrap/Home.md").text
+    wiki_quick_ref = requests.get("https://raw.githubusercontent.com/wiki/Kabuki94/MiOS-bootstrap/Quick-Reference.md").text
     return f"# MiOS Wiki Context\n\n{wiki_home}\n\n{wiki_quick_ref}"
 
 # Initialize vLLM
@@ -277,13 +277,13 @@ outputs = llm.generate(prompts, SamplingParams(temperature=0.7, max_tokens=512))
 
 2. **Artifact Logging:**
    - `tools/log-to-bootstrap.sh` runs
-   - Copies artifacts to `MiOS-bootstrap/ai-rag-packages/v0.1.2/`
-   - Copies docs to `MiOS-bootstrap/wiki/v0.1.2/`
-   - Copies build logs to `MiOS-bootstrap/build-logs/v0.1.2/`
+   - Copies artifacts to `MiOS-bootstrap/ai-rag-packages/v0.1.3/`
+   - Copies docs to `MiOS-bootstrap/wiki/v0.1.3/`
+   - Copies build logs to `MiOS-bootstrap/build-logs/v0.1.3/`
 
 3. **Wiki Sync:**
    - Script detects `MiOS-bootstrap.wiki` repository
-   - Syncs all docs from `wiki/v0.1.2/` to Wiki repo
+   - Syncs all docs from `wiki/v0.1.3/` to Wiki repo
    - Auto-generates `Home.md` with latest version
    - Creates individual Wiki pages for AI integration docs
    - Auto-commits changes with timestamp
@@ -318,7 +318,7 @@ outputs = llm.generate(prompts, SamplingParams(temperature=0.7, max_tokens=512))
 
 ```bash
 # Fetch latest AI Agent Guide
-curl -s https://raw.githubusercontent.com/wiki/mios-project/MiOS-bootstrap/AI-AGENT-GUIDE.md | grep -A 20 "Protected Files"
+curl -s https://raw.githubusercontent.com/wiki/Kabuki94/MiOS-bootstrap/AI-AGENT-GUIDE.md | grep -A 20 "Protected Files"
 ```
 
 **Step 2: Load Static Knowledge (if needed)**
@@ -344,14 +344,14 @@ cat mios-knowledge-graph.json | jq '.immutable_laws'
 
 ```bash
 # Fetch from bootstrap repo
-curl -s https://raw.githubusercontent.com/mios-project/MiOS-bootstrap/main/build-logs/v0.1.2/latest-build.log | tail -100
+curl -s https://raw.githubusercontent.com/Kabuki94/MiOS-bootstrap/main/build-logs/v0.1.3/latest-build.log | tail -100
 ```
 
 **Step 2: Check Wiki for Recent Patterns**
 
 ```bash
 # Check if Wiki has updated troubleshooting guide
-curl -s https://raw.githubusercontent.com/wiki/mios-project/MiOS-bootstrap/AI-AGENT-GUIDE.md | grep -A 30 "Troubleshooting"
+curl -s https://raw.githubusercontent.com/wiki/Kabuki94/MiOS-bootstrap/AI-AGENT-GUIDE.md | grep -A 30 "Troubleshooting"
 ```
 
 **Step 3: Apply Fix Based on Latest Info**
@@ -487,7 +487,7 @@ class MiOSAgent:
 
     def fetch_wiki_page(self, page_name):
         """Fetch Wiki page content"""
-        url = f"https://raw.githubusercontent.com/wiki/mios-project/MiOS-bootstrap/{page_name}.md"
+        url = f"https://raw.githubusercontent.com/wiki/Kabuki94/MiOS-bootstrap/{page_name}.md"
         response = requests.get(url, timeout=5)
         response.raise_for_status()
         return response.text
@@ -504,8 +504,8 @@ print(context[:500])  # Preview context
 
 ## References
 
-- **Wiki Home:** https://github.com/mios-project/MiOS-bootstrap/wiki
-- **Bootstrap Repo:** https://github.com/mios-project/MiOS-bootstrap
+- **Wiki Home:** https://github.com/Kabuki94/MiOS-bootstrap/wiki
+- **Bootstrap Repo:** https://github.com/Kabuki94/MiOS-bootstrap
 - **Logging Script:** [tools/log-to-bootstrap.sh](../../tools/log-to-bootstrap.sh)
 - **Knowledge Graph:** [artifacts/ai-rag/mios-knowledge-graph.json](../../artifacts/ai-rag/mios-knowledge-graph.json)
 - **RAG Manifest:** [artifacts/ai-rag/rag-manifest.yaml](../../artifacts/ai-rag/rag-manifest.yaml)
@@ -513,4 +513,4 @@ print(context[:500])  # Preview context
 
 ---
 
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

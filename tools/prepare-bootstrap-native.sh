@@ -6,7 +6,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 BOOTSTRAP_REPO="${BOOTSTRAP_REPO:-${HOME}/MiOS-bootstrap}"
-MIOS_VERSION=$(cat "${REPO_ROOT}/VERSION" 2>/dev/null || echo "v0.1.2")
+MIOS_VERSION=$(cat "${REPO_ROOT}/VERSION" 2>/dev/null || echo "v0.1.3")
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "MiOS Bootstrap - Linux Filesystem Native Preparation"
@@ -18,7 +18,7 @@ if [[ ! -d "${BOOTSTRAP_REPO}/.git" ]]; then
     echo "❌ MiOS-bootstrap repository not found at: ${BOOTSTRAP_REPO}"
     echo ""
     echo "Clone it first:"
-    echo "  git clone https://github.com/mios-project/MiOS-bootstrap ${BOOTSTRAP_REPO}"
+    echo "  git clone https://github.com/Kabuki94/MiOS-bootstrap ${BOOTSTRAP_REPO}"
     exit 1
 fi
 
@@ -322,14 +322,14 @@ Contains:
 
 ## 🔗 References
 
-- **Main Repository:** https://github.com/mios-project/mios
-- **Bootstrap (this repo):** https://github.com/mios-project/MiOS-bootstrap
+- **Main Repository:** https://github.com/Kabuki94/MiOS-bootstrap
+- **Bootstrap (this repo):** https://github.com/Kabuki94/MiOS-bootstrap
 - **FHS 3.0:** https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.html
 
 ---
 
 **Architecture:** Linux Filesystem Native  
-**License:** Personal Property - MiOS Project
+**License:** Personal Property - MiOS-DEV
 README
 
 echo "✓ README generated: ${BOOTSTRAP_REPO}/README.md"
@@ -482,8 +482,8 @@ cat /usr/share/mios/knowledge/mios-knowledge-graph.json | \\
 
 ---
 
-**Repository:** https://github.com/mios-project/MiOS-bootstrap  
-**License:** Personal Property - MiOS Project
+**Repository:** https://github.com/Kabuki94/MiOS-bootstrap  
+**License:** Personal Property - MiOS-DEV
 WIKIHOME
 
     # Auto-commit Wiki changes
@@ -504,7 +504,7 @@ else
     echo "⚠️  Wiki repository not found at: ${WIKI_REPO}"
     echo ""
     echo "Clone Wiki repository:"
-    echo "  git clone https://github.com/mios-project/MiOS-bootstrap.wiki ${WIKI_REPO}"
+    echo "  git clone https://github.com/Kabuki94/MiOS-bootstrap.wiki ${WIKI_REPO}"
     echo ""
     echo "Note: Wiki content is in /usr/share/doc/mios/${MIOS_VERSION}/"
     echo "      (Standard Linux documentation location)"

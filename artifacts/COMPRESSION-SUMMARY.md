@@ -1,7 +1,7 @@
 # MiOS Artifacts Compression Summary
 
 **Date:** 2026-04-27
-**MiOS Version:** v0.1.2
+**MiOS Version:** v0.1.3
 
 ## Overview
 
@@ -235,7 +235,7 @@ TIMESTAMP=$(date -u +%Y%m%dT%H%M%SZ)
 tar -cJf artifacts/ai-rag/mios-complete-rag-${TIMESTAMP}.tar.xz \
   --exclude='.git' \
   --exclude='agents/research/.venv' \
-  --exclude='MiOSv0.1.1' \
+  --exclude='MiOSv0.1.3' \
   --exclude='artifacts' \
   --exclude='*.log' \
   --exclude='output/' \
@@ -276,5 +276,5 @@ xz -t artifacts/manifest.json.xz
 
 ---
 
-**Repository:** https://github.com/mios-project/mios
-**License:** Personal Property - MiOS Project
+**Repository:** https://github.com/Kabuki94/MiOS-bootstrap
+**License:** Personal Property - MiOS-DEV

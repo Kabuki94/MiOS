@@ -1,8 +1,8 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 # 🌐 MiOS
 ```json:knowledge
 {
-  "summary": "> **Proprietor:** MiOS Project",
+  "summary": "> **Proprietor:** MiOS-DEV",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -16,17 +16,17 @@
   }
 }
 ```
-> **Proprietor:** MiOS Project
+> **Proprietor:** MiOS-DEV
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to MiOS Project
-> **Source Reference:** MiOS-Core-v0.1.1
+> **License:** Licensed as personal property to MiOS-DEV
+> **Source Reference:** MiOS-Core-v0.1.3
 ---
 
 # 🪟 Windows 11 Build & Deployment Workflow
-> **Proprietor:** MiOS Project
+> **Proprietor:** MiOS-DEV
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to MiOS Project
-> **Source Reference:** MiOS-Core-v0.1.1
+> **License:** Licensed as personal property to MiOS-DEV
+> **Source Reference:** MiOS-Core-v0.1.3
 ---
 
 ## 🚀 Overview
@@ -83,7 +83,7 @@ The `mios-build-local.ps1` script is the primary master orchestrator. It manages
 ## 🏗️ Building in WSL2/g
 If you prefer to work entirely within a WSL2 environment:
 
-1.  **Clone the Repo:** `git clone https://github.com/mios-project/mios.git`
+1.  **Clone the Repo:** `git clone https://github.com/Kabuki94/MiOS-bootstrap.git`
 2.  **Use the Justfile:**
     ```bash
     just build    # OCI Image only
@@ -109,10 +109,10 @@ Every Windows-side action is logged with high-resolution timestamps.
 
 ---
 ### ⚖️ Legal & Source Reference
-- **Copyright:** (c) 2026 MiOS Project
+- **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
-- **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
-- **Documentation:** [MiOS Navigation Hub](https://github.com/mios-project/mios/blob/main/specs/Home.md)
-- **Artifact Hub:** [ai-context.json](https://github.com/mios-project/mios/blob/main/ai-context.json)
+- **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

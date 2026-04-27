@@ -23,7 +23,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     return
 }
 
-$RepoUrl = "https://github.com/Kabuki94/mios"
+$RepoUrl = "https://github.com/Kabuki94/MiOS-bootstrap"
 $MiosAppDir = Join-Path $env:LOCALAPPDATA "MiOS"
 $MiosRepoDir = if ($env:MIOS_DIR) { $env:MIOS_DIR } else { Join-Path $MiosAppDir "repo" }
 $MiosBuildsDir = if ($env:MIOS_BUILDS_DIR) { $env:MIOS_BUILDS_DIR } else { Join-Path $MiosAppDir "builds" }
@@ -46,7 +46,7 @@ function Invoke-SecureWebRequest {
 }
 
 # Read version from repo VERSION file, fallback to hardcoded
-$Ver = "v0.1.1"
+$Ver = "v0.1.3"
 try { $Ver = "v" + (Invoke-SecureWebRequest -Uri "$RepoUrl/raw/main/VERSION").Content.Trim() } catch { Write-Verbose "Failed to fetch version: $_" }
 
 Write-Host ""

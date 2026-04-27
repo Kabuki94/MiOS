@@ -1,8 +1,8 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 # 🌐 MiOS
 ```json:knowledge
 {
-  "summary": "> **Proprietor:** MiOS Project",
+  "summary": "> **Proprietor:** MiOS-DEV",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -16,10 +16,10 @@
   }
 }
 ```
-> **Proprietor:** MiOS Project
+> **Proprietor:** MiOS-DEV
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to MiOS Project
-> **Source Reference:** MiOS-Core-v0.1.2
+> **License:** Licensed as personal property to MiOS-DEV
+> **Source Reference:** MiOS-Core-v0.1.3
 ---
 
 # Self-Build Mode Guide
@@ -30,14 +30,22 @@ MiOS is a self-replicating OS — the published image can be used as the builder
 
 MiOS ships all the tools needed to rebuild itself: Podman, Buildah, bootc, and bootc-image-builder (BIB) are all baked into the image. This means you can boot a running MiOS system and use it to build the next version, without needing a separate build environment.
 
+MiOS-DEV implements an autonomous documentation and artifact cycle triggered on every build entry point:
+
+1. **Entry Point Build**: A build is triggered (Cloud, Local, or platform-agnostic).
+2. **Log Generation**: The master build runner (`automation/build.sh`) captures a deep technical log.
+3. **Repo Snapshot**: The `artifact` target refreshes the UKB, RAG snapshot, and machine-readable manifests.
+4. **Artifacting**: All build-time intelligence is packed into `.json.gz` and `.tar.gz` blobs in `artifacts/`.
+5. **Wiki Push**: Documentation, task lists, and research results are automatically pushed to the [Repository Wiki](https://github.com/Kabuki94/MiOS-bootstrap/wiki) for real-time AI retrieval.
+
 The build chain is:
 
 ```
-MiOS v0.1.2 (running) → builds → MiOS v0.1.3 (OCI image)
+MiOS v0.1.3 (running) → builds → MiOS v0.1.4 (OCI image)
                                         ↓
                                   Rechunk → Sign → Push to GHCR
                                         ↓
-                              MiOS v0.1.3 (running via bootc upgrade)
+                              MiOS v0.1.4 (running via bootc upgrade)
                                         ↓
                                   builds → MiOS-3 / MiOS-NXT ...
 ```
@@ -103,7 +111,7 @@ Boot into a running MiOS system and build from source:
 
 ```bash
 # Clone the repo
-git clone https://github.com/mios-project/mios.git
+git clone https://github.com/Kabuki94/MiOS-bootstrap.git
 cd MiOS
 
 # Build the OCI image (rootful Podman required)
@@ -164,10 +172,10 @@ The build process downloads ~2-4 GB of RPM packages from Fedora repos, RPM Fusio
 
 ---
 ### ⚖️ Legal & Source Reference
-- **Copyright:** (c) 2026 MiOS Project
+- **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
-- **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
-- **Documentation:** [MiOS Navigation Hub](https://github.com/mios-project/mios/blob/main/specs/Home.md)
-- **Artifact Hub:** [ai-context.json](https://github.com/mios-project/mios/blob/main/ai-context.json)
+- **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

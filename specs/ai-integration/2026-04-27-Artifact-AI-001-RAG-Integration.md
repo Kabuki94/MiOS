@@ -1,6 +1,6 @@
 # MiOS AI RAG Integration Guide
 
-**Version:** 0.1.2  
+**Version:** 0.1.3  
 **Target:** FOSS AI APIs (Ollama, llama.cpp, LocalAI, vLLM)  
 **Compression Ratio:** 928MB → 752KB context bundle (99.92% reduction)
 
@@ -238,12 +238,32 @@ context_window: 4096      # Model context size (adjust per model)
 
 ---
 
+## 🧩 Unified AI API Redirects
+
+MiOS implements an agnostic API layer to prevent provider lock-in. All agents should target the local proxy or use the standardized environment variables.
+
+### Agnostic Targets
+| Agnostic Target | Standard Protocol | Redirect (Gemini) | Redirect (Claude) |
+|-----------------|-------------------|-------------------|-------------------|
+| `http://localhost:8080/v1` | OpenAI v1 (Local) | Vertex AI API | Anthropic API |
+| `MIOS_AI_KEY` | - | `GOOGLE_API_KEY` | `ANTHROPIC_API_KEY` |
+| `MIOS_AI_MODEL` | - | `gemini-2.0-pro` | `claude-3-5-sonnet` |
+
+### FHS Paths for AI Config
+- **User:** `${XDG_CONFIG_HOME:-$HOME/.config}/mios/ai/`
+- **System:** `/usr/lib/mios/ai/`
+- **Runtime:** `/run/mios/ai/active-redirects`
+
+See **[Unified Redirects](2026-04-27-Artifact-AI-006-Unified-Redirects.md)** for deep-dive implementation details.
+
+---
+
 ## 🧠 AI Agent Initialization
 
 ### System Prompt Template
 
 ```markdown
-You are an expert in MiOS v0.1.2, a bootc-based immutable Linux distribution.
+You are an expert in MiOS v0.1.3, a bootc-based immutable Linux distribution.
 
 **CRITICAL: Always read INDEX.md first for architecture laws.**
 
@@ -275,7 +295,7 @@ A: Steps:
 1. Edit specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md
 2. Find packages-networking or packages-web section
 3. Add 'nginx' alphabetically
-4. Update CHANGELOG v0.1.2
+4. Update CHANGELOG v0.1.3
 5. Verify automation/build.sh calls install_packages for that category
 6. No Containerfile changes needed (PACKAGES.md is SSOT)
 ```

@@ -1,7 +1,7 @@
 #!/bin/bash
-# MiOS v0.1.1 — Unified management CLI
+# MiOS v0.1.3 — Unified management CLI
 set -euo pipefail
-VERSION="v0.1.1"
+VERSION="v0.1.3"
 CMD="${1:-help}"
 shift 2>/dev/null || true
 

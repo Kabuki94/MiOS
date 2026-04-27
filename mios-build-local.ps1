@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    MiOS v0.1.1 — MiOS Builder (Windows)
+    MiOS v0.1.3 — MiOS Builder (Windows)
 
 .DESCRIPTION
     Secure build orchestrator with workflow selection.
@@ -653,7 +653,7 @@ if (Test-Path $TargetWsl) {
         $wslCPUs = $cpu
         # Build .wslconfig content without here-string (avoids PS parser edge cases)
         $wslLines = @(
-            "# MiOS v0.1.1 — WSL2 Configuration",
+            "# MiOS v0.1.3 — WSL2 Configuration",
             "[wsl2]",
             "memory=${wslRAM}GB",
             "processors=${wslCPUs}",

@@ -1,4 +1,4 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 # 🌐 MiOS
 
 ```json:knowledge
@@ -17,20 +17,20 @@
     "impacts": []
   },
   "last_rag_sync": "2026-04-27T15:03:21.271935",
-  "version": "MiOSv0.1.2"
+  "version": "MiOSv0.1.3"
 }
 ```
 
-> **Proprietor:** MiOS Project
+> **Proprietor:** MiOS-DEV
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to MiOS Project
+> **License:** Licensed as personal property to MiOS-DEV
 ---
 # 🌐 MiOS: Immutable Cloud-Native Workstation
 
 ```json
 {
   "status": "Production Stable",
-  "baseline": "v0.1.2",
+  "baseline": "v0.1.3",
   "kernel": "Fedora Rawhide (OCI-Mode)",
   "build": "just all",
   "last_sync": "2026-04-27T15:03:21.271935"
@@ -45,7 +45,7 @@ MiOS deploys as a **native Linux application** on minimal Fedora Server:
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/mios-project/mios.git
+git clone https://github.com/Kabuki94/MiOS-bootstrap.git
 cd mios
 
 # 2. Install to system directories (FHS-compliant)
@@ -129,6 +129,13 @@ MiOS is optimized for development:
 3. **Automated Verification:** `just lint` and `./evals/smoke-test.sh` gate all builds.
 4. **CI/CD:** Automated builds, signing, and pushes via GitHub Actions.
 
+### 🔄 Self-Updating Build Lifecycle
+
+MiOS-DEV implements an autonomous documentation cycle on every build entry point:
+`build >> log >> snapshot >> artifact >> repo wiki push`
+
+Documentation, task lists, and research results are automatically pushed to the [Repository Wiki](https://github.com/Kabuki94/MiOS-bootstrap/wiki) for real-time AI retrieval.
+
 ---
 
 ## 🛠️ Quick Start
@@ -148,7 +155,7 @@ just test
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osautomation/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
-- **Sole Proprietor:** MiOS Project
+- **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
+- **Sole Proprietor:** MiOS-DEV
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

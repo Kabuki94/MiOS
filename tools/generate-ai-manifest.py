@@ -4,18 +4,21 @@ import re
 import gzip
 from datetime import datetime
 
+# MiOS-DEV Architectural Law Alignment (v0.1.3)
+# 1. USR-OVER-ETC: Templates in /usr/lib/mios, overrides in /etc
+# 2. NO-MKDIR-IN-VAR: Declarative tmpfiles.d only
+# 3. UNIFIED-AI-REDIRECTS: Agnostic API variables (MIOS_AI_*)
+
 def parse_markdown_metadata(content):
     """Simple parser to extract title and metadata from Markdown."""
     title_match = re.search(r'^#\s+(.+)$', content, re.MULTILINE)
     title = title_match.group(1).strip() if title_match else "Untitled"
     
-    # Extract blockquotes/metadata lines like "> **Key:** Value"
     metadata = {}
     meta_matches = re.findall(r'^>\s+\*\*(.+?):\*\*\s+(.+)$', content, re.MULTILINE)
     for key, value in meta_matches:
         metadata[key.strip().lower().replace(" ", "_")] = value.strip()
     
-    # Extract json:knowledge block
     knowledge_block = {}
     kb_match = re.search(r'```json:knowledge\s*\n(.*?)\n```', content, re.DOTALL)
     if kb_match:
@@ -32,7 +35,10 @@ def generate_json_manifest(target_dir, output_file, recursive=True, ignore_dirs=
     
     manifest = {
         "generated_at": datetime.now().isoformat(),
+        "project": "MiOS-DEV",
+        "version": "v0.1.3",
         "source_directory": target_dir,
+        "ai_agnostic_hint": "Target http://localhost:8080/v1 for OpenAI-compatible FOSS API access.",
         "entries": []
     }
     
@@ -43,7 +49,6 @@ def generate_json_manifest(target_dir, output_file, recursive=True, ignore_dirs=
         if not recursive and root != target_dir:
             continue
             
-        # Filter out ignored directories
         dirs[:] = [d for d in dirs if d not in ignore_dirs]
         
         for file in files:
@@ -59,7 +64,6 @@ def generate_json_manifest(target_dir, output_file, recursive=True, ignore_dirs=
                     "last_modified": datetime.fromtimestamp(os.path.getmtime(file_path)).isoformat()
                 }
 
-                # Handle different file types
                 if file.endswith(".md"):
                     with open(file_path, 'r', encoding='utf-8') as f:
                         content = f.read()
@@ -100,6 +104,13 @@ def generate_json_manifest(target_dir, output_file, recursive=True, ignore_dirs=
                             manifest["entries"].append(entry)
                         except UnicodeDecodeError:
                             continue
+                elif file.endswith((".tar.gz", ".gz")):
+                    entry.update({
+                        "title": file,
+                        "type": "archived_blob",
+                        "description": "Historical knowledge or large binary data compressed for context efficiency."
+                    })
+                    manifest["entries"].append(entry)
             except (FileNotFoundError, PermissionError, OSError):
                 continue
     
@@ -113,6 +124,8 @@ def generate_gzipped_manifest(target_dir, output_file, recursive=True, ignore_di
     
     manifest = {
         "generated_at": datetime.now().isoformat(),
+        "project": "MiOS-DEV",
+        "version": "v0.1.3",
         "source_directory": target_dir,
         "entries": []
     }
@@ -169,6 +182,13 @@ def generate_gzipped_manifest(target_dir, output_file, recursive=True, ignore_di
                             manifest["entries"].append(entry)
                         except json.JSONDecodeError:
                             continue
+                elif file.endswith((".tar.gz", ".gz")):
+                    entry.update({
+                        "title": file,
+                        "type": "archived_blob",
+                        "description": "Historical knowledge blob."
+                    })
+                    manifest["entries"].append(entry)
             except (FileNotFoundError, PermissionError, OSError, UnicodeDecodeError):
                 continue
     
@@ -177,17 +197,20 @@ def generate_gzipped_manifest(target_dir, output_file, recursive=True, ignore_di
     print(f"Generated {output_file}")
 
 if __name__ == "__main__":
-    # Categories to manifest
+    # Categories to manifest - Refined for MiOS v0.1.3 Consolidated Structure
     targets = [
-        ("specs", "specs/manifest.json", False), # Non-recursive for flat specs (Wiki)
+        ("specs", "specs/manifest.json", True), # Recursive to pick up tarballs in knowledge/changelogs
         (".ai/foundation/memories", ".ai/foundation/memories/manifest.json", False),
-        ("artifacts", "artifacts/manifest.json.gz", False),
+        ("artifacts", "artifacts/manifest.json.gz", True),
         ("automation", "automation/manifest.json", True),
         ("tools", "tools/manifest.json", True),
-        ("overlay", "manifest.json", True),
+        ("config", "config/manifest.json", True), # Replaces bib-configs
         ("evals", "evals/manifest.json", True),
-        ("bib-configs", "bib-configs/manifest.json", True),
-        ("agents/research", "agents/research/manifest.json", True),
+        ("usr", "usr/manifest.json", True), # Native system tree mapping
+        ("etc", "etc/manifest.json", True),
+        ("var", "var/manifest.json", True),
+        ("home", "home/manifest.json", True),
+        ("agents", "agents/manifest.json", True), # Unified agents tree
         (".", "root-manifest.json", False) # Non-recursive for root
     ]
     

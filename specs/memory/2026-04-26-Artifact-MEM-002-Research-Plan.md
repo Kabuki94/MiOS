@@ -1,8 +1,8 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 # 🌐 MiOS
 ```json:knowledge
 {
-  "summary": "> **Proprietor:** MiOS Project",
+  "summary": "> **Proprietor:** MiOS-DEV",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -16,10 +16,10 @@
   }
 }
 ```
-> **Proprietor:** MiOS Project
+> **Proprietor:** MiOS-DEV
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to MiOS Project
-> **Source Reference:** MiOS-Core-v0.1.1
+> **License:** Licensed as personal property to MiOS-DEV
+> **Source Reference:** MiOS-Core-v0.1.3
 ---
 
 # MiOS Upstream Research Plan
@@ -30,14 +30,14 @@
 
 ---
 
-## 1. bootc Upstream (bootc-dev/bootc v0.1.1)
+## 1. bootc Upstream (bootc-dev/bootc v0.1.3)
 
 ### 1.1 New Commands — Implement via MOTD / tooling
 | Finding | MiOS Action |
 |---------|---------------|
 | `bootc upgrade --download-only` / `--from-downloaded` staged-update pattern | Document in MOTD; add greenboot check that verifies `bootc status --booted` |
 | `bootc completion bash` — shell completions | Add `RUN bootc completion bash > /etc/bash_completion.d/bootc` in Containerfile |
-| `bootc usroverlay --readonly` (v0.1.1) | Document in DIAGNOSTICS.md as inspection tool |
+| `bootc usroverlay --readonly` (v0.1.3) | Document in DIAGNOSTICS.md as inspection tool |
 | `bootc status --booted` | Use in greenboot health checks |
 | `bootc rollback` NOT supported on composefs-native | Stay on OSTree backend (already doing this via `prepare-root.conf enabled=verity` over OSTree, not composefs-native backend) |
 
@@ -68,11 +68,11 @@
 ### 2.1 NVIDIA
 | Finding | MiOS Action |
 |---------|---------------|
-| ucore-hci now on NVIDIA v0.1.1 open modules | Inherited via base image — no action |
+| ucore-hci now on NVIDIA v0.1.3 open modules | Inherited via base image — no action |
 | RTX 50xx requires open modules exclusively | Already handled by `34-gpu-detect.sh` |
 | `NVreg_UseKernelSuspendNotifiers=1` — only set if specific suspend issues appear | Do NOT add unconditionally — journal this finding |
-| CDI is default mode in nvidia-container-toolkit v0.1.1 | Already enabled via `nvidia-cdi-refresh.path/.service` — correct |
-| DO NOT use nvidia-container-toolkit v0.1.1 (CDI regression) | Tracked in research notes |
+| CDI is default mode in nvidia-container-toolkit v0.1.3 | Already enabled via `nvidia-cdi-refresh.path/.service` — correct |
+| DO NOT use nvidia-container-toolkit v0.1.3 (CDI regression) | Tracked in research notes |
 
 ### 2.2 MOK / Secure Boot
 | Finding | MiOS Action |
@@ -92,8 +92,8 @@
 ### 2.4 Cosign / Signing (CRITICAL — DO NOT UPGRADE)
 | Finding | MiOS Action |
 |---------|---------------|
-| Cosign v3 `--new-bundle-format` BREAKS rpm-ostree/bootc (rpm-ostree#5509) | Stay on cosign v0.1.1 — already pinned correctly |
-| `cosign-installer@v0.1.1` with `cosign-release: v0.1.1` — correct pattern | Already correct in `build.yml` — no change |
+| Cosign v3 `--new-bundle-format` BREAKS rpm-ostree/bootc (rpm-ostree#5509) | Stay on cosign v0.1.3 — already pinned correctly |
+| `cosign-installer@v0.1.3` with `cosign-release: v0.1.3` — correct pattern | Already correct in `build.yml` — no change |
 | Always pass `--new-bundle-format=false` when signing | Already in `build.yml` signing steps — correct |
 
 ---
@@ -146,13 +146,13 @@
 
 ## 5. K3s on bootc
 
-### 5.1 K3s v0.1.1 Changes
+### 5.1 K3s v0.1.3 Changes
 | Finding | MiOS Action |
 |---------|---------------|
 | containerd 2.0 config schema changed → `config-v3.toml.tmpl` | Add K3s containerd v3 config template to system_files |
 | `k3s-selinux` RPM must be installed BEFORE k3s binary | Verify `19-k3s-selinux.sh` order |
 | NVIDIA auto-detected by K3s v1.34+ in `$PATH` | No action needed |
-| Airgap `.cache.json` for conditional image import (v0.1.1+) | Add to k3s-manifests if airgap deployment is needed |
+| Airgap `.cache.json` for conditional image import (v0.1.3+) | Add to k3s-manifests if airgap deployment is needed |
 
 ### 5.2 Greenboot K3s Health Check
 | Finding | MiOS Action |
@@ -167,7 +167,7 @@
 | Finding | MiOS Action |
 |---------|---------------|
 | `greenboot.conf` with `GREENBOOT_MAX_BOOT_ATTEMPTS=3`, `GREENBOOT_WATCHDOG_CHECK_ENABLED=true` | Create `etc/greenboot/greenboot.conf` (currently missing) |
-| `greenboot-rs` v0.1.1+ — same script directories, same systemd integration | No structural changes needed |
+| `greenboot-rs` v0.1.3+ — same script directories, same systemd integration | No structural changes needed |
 | Rollback via `bootc rollback` for bootc systems | Already integrated via greenboot-rs |
 
 ---
@@ -208,7 +208,7 @@
 ### 9.1 BIB Action
 | Finding | MiOS Action |
 |---------|---------------|
-| `ublue-os/bootc-image-builder-action` is in maintenance mode; upstream is `osautomation/bootc-image-builder-action@v0.1.1` | Evaluate migration — note in research doc; do not rush |
+| `ublue-os/bootc-image-builder-action` is in maintenance mode; upstream is `osautomation/bootc-image-builder-action@v0.1.3` | Evaluate migration — note in research doc; do not rush |
 
 ### 9.2 bootc Shell Completions
 | Finding | MiOS Action |
@@ -230,7 +230,7 @@
 ## Summary: Items Already Correct (No Action)
 - `prepare-root.conf` `enabled = verity` + `readonly = true` ✅
 - All kargs.d files use flat `kargs = [...]` ✅ (except 30-security.toml missing match-architectures)
-- Cosign v0.1.1 pinned, `--new-bundle-format=false` in all signing steps ✅
+- Cosign v0.1.3 pinned, `--new-bundle-format=false` in all signing steps ✅
 - `crowdsec-dashboard.container`, `mios-guacamole.container`, `guacamole-postgres.container`, `guacd.container` all have `GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage` ✅
 - `libvirtd.service.d/10-mios.conf` has `After=libvirtd.socket` + `TimeoutStopSec=120` ✅
 - `kernel.yama.ptrace_scope = 2` (more restrictive than F44's planned `= 1`) ✅
@@ -242,10 +242,10 @@
 
 ---
 ### ⚖️ Legal & Source Reference
-- **Copyright:** (c) 2026 MiOS Project
+- **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
-- **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
-- **Documentation:** [MiOS Navigation Hub](https://github.com/mios-project/mios/blob/main/specs/Home.md)
-- **Artifact Hub:** [ai-context.json](https://github.com/mios-project/mios/blob/main/ai-context.json)
+- **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

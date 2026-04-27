@@ -1,4 +1,4 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 # 📜 MiOS Scripts Index
 > **Generated:** 2026-04-27T15:18:21.949050
 > **Status:** Automated Sync
@@ -21,11 +21,11 @@ This file provides a machine-readable and human-readable index of all automation
 
 ## `01-repos.sh`
 - **Path:** `automation/01-repos.sh`
-- **Description:** MiOS v0.1.1 — 01-repos: Fedora 44 overlay on ucore (base kernel preserved)
+- **Description:** MiOS v0.1.3 — 01-repos: Fedora 44 overlay on ucore (base kernel preserved)
 
 ## `02-kernel.sh`
 - **Path:** `automation/02-kernel.sh`
-- **Description:** MiOS v0.1.1 — 02-kernel: Kernel extras + development headers
+- **Description:** MiOS v0.1.3 — 02-kernel: Kernel extras + development headers
 
 ## `05-enable-external-repos.sh`
 - **Path:** `automation/05-enable-external-repos.sh`
@@ -33,23 +33,23 @@ This file provides a machine-readable and human-readable index of all automation
 
 ## `08-system-files-overlay.sh`
 - **Path:** `automation/08-system-files-overlay.sh`
-- **Description:** automation/08-system-files-overlay.sh - MiOS v0.1.1
+- **Description:** automation/08-system-files-overlay.sh - MiOS v0.1.3
 
 ## `10-gnome.sh`
 - **Path:** `automation/10-gnome.sh`
-- **Description:** MiOS v0.1.1 — 10-gnome: GNOME 50 desktop — PURE BUILD-UP
+- **Description:** MiOS v0.1.3 — 10-gnome: GNOME 50 desktop — PURE BUILD-UP
 
 ## `11-hardware.sh`
 - **Path:** `automation/11-hardware.sh`
-- **Description:** MiOS v0.1.1 — 11-hardware: GPU drivers (Mesa + AMD ROCm + Intel + NVIDIA)
+- **Description:** MiOS v0.1.3 — 11-hardware: GPU drivers (Mesa + AMD ROCm + Intel + NVIDIA)
 
 ## `12-virt.sh`
 - **Path:** `automation/12-virt.sh`
-- **Description:** MiOS v0.1.1 — 12-virt: Virtualization, containers, orchestration, gaming
+- **Description:** MiOS v0.1.3 — 12-virt: Virtualization, containers, orchestration, gaming
 
 ## `13-ceph-k3s.sh`
 - **Path:** `automation/13-ceph-k3s.sh`
-- **Description:** MiOS v0.1.1 — 13-ceph-k3s: Ceph distributed storage + K3s Kubernetes
+- **Description:** MiOS v0.1.3 — 13-ceph-k3s: Ceph distributed storage + K3s Kubernetes
 
 ## `18-apply-boot-fixes.sh`
 - **Path:** `automation/18-apply-boot-fixes.sh`
@@ -65,7 +65,7 @@ This file provides a machine-readable and human-readable index of all automation
 
 ## `20-services.sh`
 - **Path:** `automation/20-services.sh`
-- **Description:** MiOS v0.1.1 — 20-services: Enable systemd services + bare-metal/VM gating
+- **Description:** MiOS v0.1.3 — 20-services: Enable systemd services + bare-metal/VM gating
 
 ## `21-moby-engine.sh`
 - **Path:** `automation/21-moby-engine.sh`
@@ -89,43 +89,43 @@ This file provides a machine-readable and human-readable index of all automation
 
 ## `30-locale-theme.sh`
 - **Path:** `automation/30-locale-theme.sh`
-- **Description:** MiOS v0.1.1 — 30-locale-theme: Unified dark theme for EVERY window type
+- **Description:** MiOS v0.1.3 — 30-locale-theme: Unified dark theme for EVERY window type
 
 ## `31-user.sh`
 - **Path:** `automation/31-user.sh`
-- **Description:** MiOS v0.1.1 — 31-user: PAM, user creation, groups, sudoers
+- **Description:** MiOS v0.1.3 — 31-user: PAM, user creation, groups, sudoers
 
 ## `32-hostname.sh`
 - **Path:** `automation/32-hostname.sh`
-- **Description:** MiOS v0.1.1 — 32-hostname: Unique per-instance hostname
+- **Description:** MiOS v0.1.3 — 32-hostname: Unique per-instance hostname
 
 ## `33-firewall.sh`
 - **Path:** `automation/33-firewall.sh`
-- **Description:** MiOS v0.1.1 — 33-firewall: Firewall configuration script
+- **Description:** MiOS v0.1.3 — 33-firewall: Firewall configuration script
 
 ## `34-gpu-detect.sh`
 - **Path:** `automation/34-gpu-detect.sh`
-- **Description:** MiOS v0.1.1 — 34-gpu-detect: Bridge to GPU detection service
+- **Description:** MiOS v0.1.3 — 34-gpu-detect: Bridge to GPU detection service
 
 ## `35-gpu-passthrough.sh`
 - **Path:** `automation/35-gpu-passthrough.sh`
-- **Description:** MiOS v0.1.1 - 35-gpu-passthrough.sh
+- **Description:** MiOS v0.1.3 - 35-gpu-passthrough.sh
 
 ## `35-gpu-pv-shim.sh`
 - **Path:** `automation/35-gpu-pv-shim.sh`
-- **Description:** automation/35-gpu-pv-shim.sh - MiOS v0.1.1
+- **Description:** automation/35-gpu-pv-shim.sh - MiOS v0.1.3
 
 ## `35-init-service.sh`
 - **Path:** `automation/35-init-service.sh`
-- **Description:** MiOS v0.1.1 — 35-init-service: Bridge to Unified Role Engine
+- **Description:** MiOS v0.1.3 — 35-init-service: Bridge to Unified Role Engine
 
 ## `36-akmod-guards.sh`
 - **Path:** `automation/36-akmod-guards.sh`
-- **Description:** automation/36-akmod-guards.sh - MiOS v0.1.1
+- **Description:** automation/36-akmod-guards.sh - MiOS v0.1.3
 
 ## `36-tools.sh`
 - **Path:** `automation/36-tools.sh`
-- **Description:** MiOS v0.1.1 — 36-tools: CLI tools and consolidated mios command
+- **Description:** MiOS v0.1.3 — 36-tools: CLI tools and consolidated mios command
 
 ## `37-aichat.sh`
 - **Path:** `automation/37-aichat.sh`
@@ -137,15 +137,15 @@ This file provides a machine-readable and human-readable index of all automation
 
 ## `37-selinux.sh`
 - **Path:** `automation/37-selinux.sh`
-- **Description:** MiOS v0.1.1 — 37-selinux: Build-time SELinux policy fixes
+- **Description:** MiOS v0.1.3 — 37-selinux: Build-time SELinux policy fixes
 
 ## `38-vm-gating.sh`
 - **Path:** `automation/38-vm-gating.sh`
-- **Description:** MiOS v0.1.1 — 38-vm-gating: VM service gating + Hyper-V Enhanced Session
+- **Description:** MiOS v0.1.3 — 38-vm-gating: VM service gating + Hyper-V Enhanced Session
 
 ## `39-desktop-polish.sh`
 - **Path:** `automation/39-desktop-polish.sh`
-- **Description:** MiOS v0.1.1 — 39-desktop-polish: Desktop entries, Cockpit webapp, MOTD
+- **Description:** MiOS v0.1.3 — 39-desktop-polish: Desktop entries, Cockpit webapp, MOTD
 
 ## `40-composefs-verity.sh`
 - **Path:** `automation/40-composefs-verity.sh`
@@ -189,11 +189,11 @@ This file provides a machine-readable and human-readable index of all automation
 
 ## `98-boot-config.sh`
 - **Path:** `automation/98-boot-config.sh`
-- **Description:** MiOS v0.1.1 — 98-boot-config: Boot console + service configuration
+- **Description:** MiOS v0.1.3 — 98-boot-config: Boot console + service configuration
 
 ## `99-cleanup.sh`
 - **Path:** `automation/99-cleanup.sh`
-- **Description:** MiOS v0.1.1 — 99-cleanup: Final image cleanup (mirrors ucore/cleanup.sh)
+- **Description:** MiOS v0.1.3 — 99-cleanup: Final image cleanup (mirrors ucore/cleanup.sh)
 
 ## `99-postcheck.sh`
 - **Path:** `automation/99-postcheck.sh`
@@ -205,11 +205,11 @@ This file provides a machine-readable and human-readable index of all automation
 
 ## `bcvk-wrapper.sh`
 - **Path:** `automation/bcvk-wrapper.sh`
-- **Description:** MiOS v0.1.1 — Ephemeral QEMU boot test
+- **Description:** MiOS v0.1.3 — Ephemeral QEMU boot test
 
 ## `build.sh`
 - **Path:** `automation/build.sh`
-- **Description:** MiOS v0.1.1 — Master build runner
+- **Description:** MiOS v0.1.3 — Master build runner
 
 ## `enroll-mok.sh`
 - **Path:** `automation/enroll-mok.sh`
@@ -219,4 +219,4 @@ This file provides a machine-readable and human-readable index of all automation
 - **Path:** `automation/generate-mok-key.sh`
 - **Description:** generate-mok-key.sh — one-shot MiOS MOK key generator.
 
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

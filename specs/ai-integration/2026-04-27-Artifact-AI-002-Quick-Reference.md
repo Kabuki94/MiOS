@@ -34,7 +34,9 @@ mios/
 ## Immutable Laws (NEVER Break)
 1. **USR-OVER-ETC**: Static config → /usr/lib/, not /etc/
 2. **NO-MKDIR-IN-VAR**: Use tmpfiles.d, never mkdir /var/foo
-3. **BOOTC-CONTAINER-LINT**: Final validation step (mandatory)
+3. **MANAGED-SELINUX**: semodule -i in RUN layer (primary)
+4. **BOOTC-CONTAINER-LINT**: Final validation step (mandatory)
+5. **UNIFIED-AI-REDIRECTS**: Agnostic API variables, local proxy
 
 ## Package Management
 - **SSOT**: specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md
@@ -48,7 +50,7 @@ systemd-detect-virt  # Returns: none, microsoft, wsl, kvm, container-*
 
 ## Version Roadmap
 - **MiOS-1**: Fedora bootc + akmod NVIDIA
-- **MiOS-2 (current)**: v0.1.2, ucore-hci base, pre-signed kmods
+- **MiOS-2 (current)**: v0.1.3, ucore-hci base, pre-signed kmods
 - **MiOS-NXT (future)**: Hummingbird, SBOM, ARM64, minimal variants
 
 ## MiOS-NXT Preview
@@ -60,7 +62,7 @@ systemd-detect-virt  # Returns: none, microsoft, wsl, kvm, container-*
 
 ### Add Package
 1. Edit PACKAGES.md → Add to appropriate category
-2. Update CHANGELOG v0.1.2
+2. Update CHANGELOG v0.1.3
 3. Verify automation/build.sh calls install_packages {category}
 
 ### Create Script
@@ -74,7 +76,7 @@ systemd-detect-virt  # Returns: none, microsoft, wsl, kvm, container-*
 3. Check kargs.d TOML (no [kargs] section!)
 
 ## Key URLs
-- Repo: https://github.com/mios-project/mios
-- Image: ghcr.io/mios-project/mios:latest
+- Repo: https://github.com/Kabuki94/MiOS-bootstrap
+- Image: ghcr.io/kabuki94/mios:latest
 - Docs: INDEX.md (in repo)
 

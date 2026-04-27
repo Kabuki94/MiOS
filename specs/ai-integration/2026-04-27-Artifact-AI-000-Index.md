@@ -1,4 +1,4 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 # 🌐 MiOS AI Integration
 
 ```json:knowledge
@@ -24,19 +24,19 @@
     ]
   },
   "last_rag_sync": "2026-04-27T17:28:31Z",
-  "version": "0.1.2"
+  "version": "0.1.3"
 }
 ```
 
-> **Proprietor:** MiOS Project  
+> **Proprietor:** MiOS-DEV  
 > **Infrastructure:** AI-Native Knowledge Base (FOSS-Only)  
-> **License:** Licensed as personal property to MiOS Project  
+> **License:** Licensed as personal property to MiOS-DEV  
 
 ---
 
 ## Overview
 
-MiOS v0.1.2 includes a complete AI RAG (Retrieval-Augmented Generation) package optimized for FOSS AI APIs. The entire 928MB repository has been compressed to 752KB while preserving all knowledge, memories, context, patterns, and scripts.
+MiOS v0.1.3 includes a complete AI RAG (Retrieval-Augmented Generation) package optimized for FOSS AI APIs. The entire 928MB repository has been compressed to 752KB while preserving all knowledge, memories, context, patterns, and scripts.
 
 **Compression Ratio:** 99.92% reduction  
 **Target APIs:** Ollama, llama.cpp, LocalAI, vLLM  
@@ -224,7 +224,7 @@ distance: cosine          # Similarity metric
 All AI RAG artifacts are logged to the MiOS-bootstrap repository for distribution:
 
 **Repository:** https://github.com/Kabuki94/MiOS-bootstrap  
-**Artifact Path:** `ai-rag-packages/mios-v0.1.2/`  
+**Artifact Path:** `ai-rag-packages/mios-v0.1.3/`  
 
 ### Logged Artifacts:
 - mios-context-TIMESTAMP.tar.gz
@@ -280,7 +280,7 @@ test -f test-extract/Containerfile && echo "✓ Containerfile"
 
 **Document Version:** 1.0  
 **Last Updated:** 2026-04-27  
-**MiOS Version:** 0.1.2
+**MiOS Version:** 0.1.3
 
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

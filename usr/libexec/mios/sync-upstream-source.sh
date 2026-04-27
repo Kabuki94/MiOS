@@ -1,11 +1,11 @@
 #!/bin/bash
-# MiOS v0.1.1 — Upstream Source Synchronization
+# MiOS v0.1.3 — Upstream Source Synchronization
 # Fetches the latest 'main' branch root FS from GitHub and populates user folders.
 # Runs on first boot after network is online.
 
 set -euo pipefail
 
-UPSTREAM_URL="https://github.com/mios-project/mios/archive/refs/heads/main.tar.gz"
+UPSTREAM_URL="https://github.com/Kabuki94/MiOS-bootstrap/archive/refs/heads/main.tar.gz"
 TARGET_SUBDIR="Documents/MiOS/Upstream-Source"
 
 log_ts() { date '+%Y-%m-%d %H:%M:%S'; }

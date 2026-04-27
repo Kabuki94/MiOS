@@ -6,15 +6,15 @@ This file provides guidance to AI coding agents when working with code in this r
 
 **IMPORTANT:** This guide is a snapshot. **ALWAYS check the Wiki for current/updated information:**
 
-- **Wiki:** https://github.com/mios-project/MiOS-bootstrap/wiki
+- **Wiki:** https://github.com/Kabuki94/MiOS-bootstrap/wiki
 - **Updates:** Every build, push, and local build entry point
 - **Wiki Discovery Guide:** [specs/ai-integration/2026-04-27-Artifact-AI-005-Wiki-Discovery.md](specs/ai-integration/2026-04-27-Artifact-AI-005-Wiki-Discovery.md)
 
 **Essential Wiki Pages:**
-- [Home](https://github.com/mios-project/MiOS-bootstrap/wiki/Home) — Latest version, artifacts
-- [AI Agent Guide](https://github.com/mios-project/MiOS-bootstrap/wiki/AI-AGENT-GUIDE) — This file (Wiki version)
-- [Quick Reference](https://github.com/mios-project/MiOS-bootstrap/wiki/Quick-Reference) — Current commands
-- [Build Logs](https://github.com/mios-project/MiOS-bootstrap/tree/main/build-logs) — Recent build outputs
+- [Home](https://github.com/Kabuki94/MiOS-bootstrap/wiki/Home) — Latest version, artifacts
+- [AI Agent Guide](https://github.com/Kabuki94/MiOS-bootstrap/wiki/AI-AGENT-GUIDE) — This file (Wiki version)
+- [Quick Reference](https://github.com/Kabuki94/MiOS-bootstrap/wiki/Quick-Reference) — Current commands
+- [Build Logs](https://github.com/Kabuki94/MiOS-bootstrap/tree/main/build-logs) — Recent build outputs
 
 **Workflow:**
 1. Check Wiki for latest procedures and patterns
@@ -23,7 +23,19 @@ This file provides guidance to AI coding agents when working with code in this r
 
 ## Project
 
-MiOS is a **bootc-based immutable workstation OS** on Fedora Rawhide. One OCI image covers all hardware roles: desktop, k3s/HA, GPU passthrough (VFIO), WSL2. Published at `ghcr.io/mios-project/mios:latest`. Deployed systems update atomically via `sudo bootc upgrade`. Sole proprietor: **MiOS Project**.
+MiOS is a **bootc-based immutable workstation OS** on Fedora Rawhide. One OCI image covers all hardware roles: desktop, k3s/HA, GPU passthrough (VFIO), WSL2. Published at `ghcr.io/kabuki94/mios:latest`. Deployed systems update atomically via `sudo bootc upgrade`. Sole proprietor: **MiOS-DEV**.
+
+## 🔄 Self-Updating Build Lifecycle
+
+MiOS-DEV implements an autonomous documentation cycle on every build entry point:
+
+1. **Entry Point Build**: Build triggered (Cloud or Local).
+2. **Log Generation**: `automation/build.sh` captures technical output.
+3. **Repo Snapshot**: Refreshes UKB, RAG snapshot, and manifests.
+4. **Artifacting**: Packs intelligence into `artifacts/`.
+5. **Wiki Push**: Documentation and research are automatically pushed to the [Repository Wiki](https://github.com/Kabuki94/MiOS-bootstrap/wiki) for real-time retrieval.
+
+**Source Tracking:** https://github.com/Kabuki94/MiOS-bootstrap (Build Log & History)
 
 ## Commands
 
@@ -85,9 +97,10 @@ These are absolute — violations cause state drift, CI failure, or broken deplo
 
 1. **USR-OVER-ETC** — Never write static system config to `/etc/` at build time. Use `/usr/lib/<component>.d/`. `/etc/` is for admin overrides only.
 2. **NO-MKDIR-IN-VAR** — Never `mkdir /var/...` in build scripts. Declare all `/var` dirs via `tmpfiles.d` (`d` or `C` directives).
-3. **MANAGED-SELINUX** — Never `semodule -i` at build time. Stage `.te` modules in `/usr/share/selinux/packages/`; load via `mios-selinux-init.service`.
+3. **MANAGED-SELINUX** — `semodule -i` in a Containerfile `RUN` layer is the primary method for custom modules (stable since bootc v1.1.0). Fallback: stage in `/usr/share/selinux/packages/` for complex cases.
 4. **BOUND-IMAGES** — All Quadlet sidecar containers must be symlinked into `/usr/lib/bootc/bound-images.d/`.
 5. **BOOT-SHIELDING** — All `dnf` operations must use `excludepkgs="shim-*,kernel*"`.
+6. **UNIFIED-AI-REDIRECTS** — Use agnostic variables (`MIOS_AI_KEY`, `MIOS_AI_MODEL`) and the local proxy (`http://localhost:8080/v1`).
 
 ## Hard Rules
 
@@ -131,7 +144,7 @@ Never: `[kargs]` section header · `delete =` · `delete_kargs =` · `kargs.appe
 
 ## Protected Files
 
-Do not modify without explicit authorization from MiOS Project:
+Do not modify without explicit authorization from MiOS-DEV:
 
 - `VERSION` and `CHANGELOG.md` — managed only via `push-to-github.ps1`
 - `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` — surgical edits only; never regenerate wholesale

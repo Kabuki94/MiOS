@@ -1,6 +1,6 @@
 [Unit]
 Description=MiOS first-boot provisioning
-Documentation=https://github.com/Kabuki94/mios
+Documentation=https://github.com/Kabuki94/MiOS-bootstrap
 After=multi-user.target
 Wants=mios-cdi-detect.service mios-libvirtd-setup.service mios-grd-setup.service mios-deploy-artifacts.service mios-sync-upstream.service
 

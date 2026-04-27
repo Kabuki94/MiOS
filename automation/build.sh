@@ -1,9 +1,9 @@
 #!/bin/bash
-# MiOS v0.1.1 — Master build runner
+# MiOS v0.1.3 — Master build runner
 # Executes all numbered scripts in order, then cleans up.
 # Called from Containerfile RUN layer via bind mount.
 #
-# CHANGELOG v0.1.1:
+# CHANGELOG v0.1.3:
 #   - Standardized versioning across the entire stack.
 #   - FIX: install_weakdeps=False (was True in v1.3 — contradicted docs)
 #   - FIX: Safe arithmetic: VAR=$((VAR + 1)) not ((VAR++)) (set -e compat)
@@ -27,7 +27,7 @@ log_ts() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
 }
 
-VERSION_STR="$(cat "${SCRIPT_DIR}/../VERSION" 2>/dev/null || cat /ctx/VERSION 2>/dev/null || echo 'v0.1.1')"
+VERSION_STR="$(cat "${SCRIPT_DIR}/../VERSION" 2>/dev/null || cat /ctx/VERSION 2>/dev/null || echo 'v0.1.3')"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  MiOS v${VERSION_STR} — Building OS Image"
@@ -51,7 +51,7 @@ export container=podman
 # ── Execute numbered scripts ────────────────────────────────────────────────
 # Scripts 18/19/20-fapolicyd/21/22 are called explicitly by the Containerfile
 # AFTER this script completes. Skip them here to prevent double-execution.
-CONTAINERFILE_SCRIPTS="08-system-files-overlay.sh 18-apply-boot-fixes.sh 19-k3s-selinux.sh 20-fapolicyd-trust.sh 21-moby-engine.sh 22-freeipa-client.sh 23-uki-render.sh 25-firewall-ports.sh 26-gnome-remote-desktop.sh 37-ollama-prep.sh"
+CONTAINERFILE_SCRIPTS="08-system-files-overlay.sh 18-apply-boot-fixes.sh 19-k3s-selinux.sh 20-fapolicyd-trust.sh 21-moby-engine.sh 22-freeipa-client.sh 23-uki-render.sh 25-firewall-ports.sh 26-gnome-remote-desktop.sh 37-ai-agnostic.sh 37-ollama-prep.sh"
 
 TOTAL_START=$SECONDS
 SCRIPT_COUNT=0

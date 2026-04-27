@@ -1,8 +1,8 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 # 🌐 MiOS
 ```json:knowledge
 {
-  "summary": "> **Proprietor:** MiOS Project",
+  "summary": "> **Proprietor:** MiOS-DEV",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -16,10 +16,10 @@
   }
 }
 ```
-> **Proprietor:** MiOS Project
+> **Proprietor:** MiOS-DEV
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to MiOS Project
-> **Source Reference:** MiOS-Core-v0.1.1
+> **License:** Licensed as personal property to MiOS-DEV
+> **Source Reference:** MiOS-Core-v0.1.3
 ---
 
 # NEXT-RESEARCH — agenda for 2026-04-28 and beyond
@@ -36,7 +36,7 @@
 2. **ucore-hci F43 confirmed current** — no F44 tag yet; expected 24–48h post-GA.
 3. **bootc v1.15.1 confirmed latest** — Intel VROC support and `--karg-delete` added.
 4. **Cockpit v361 confirmed latest** — includes CVE-2026-4631 fix.
-5. **NVIDIA CTK version corrected** — latest is v1.19.0 (v1.x series). Prior "v0.1.1" reference was erroneous. CDI stable.
+5. **NVIDIA CTK version corrected** — latest is v1.19.0 (v1.x series). Prior "v0.1.3" reference was erroneous. CDI stable.
 6. **BIB action N/A for MiOS** — MiOS uses `quay.io/centos-bootc/bootc-image-builder:latest` directly; ublue-os action deprecation does not apply.
 7. **Renovate already migrated** — `minimumReleaseAge` already in `renovate.json`. No action.
 8. **CrowdSec v1.7.7 confirmed** — no v2.x exists. Monthly cadence maintained.
@@ -122,10 +122,10 @@ Order reflects decreasing urgency.
 
 ---
 ### ⚖️ Legal & Source Reference
-- **Copyright:** (c) 2026 MiOS Project
+- **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
-- **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
-- **Documentation:** [MiOS Navigation Hub](https://github.com/mios-project/mios/blob/main/specs/Home.md)
-- **Artifact Hub:** [ai-context.json](https://github.com/mios-project/mios/blob/main/ai-context.json)
+- **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

@@ -1,4 +1,4 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 # Linux Filesystem Hierarchy Standard (FHS) Compliance Audit
 
 ```json:knowledge
@@ -29,7 +29,7 @@
 ```
 
 > **Audit Date:** 2026-04-27
-> **MiOS Version:** v0.1.2
+> **MiOS Version:** v0.1.3
 > **Auditor:** AI Agent
 > **Compliance Standard:** FHS 3.0 + bootc-specific extensions
 
@@ -328,9 +328,9 @@ All `/var` directories declared in 15 tmpfiles.d configs:
 
 ### 3. MANAGED-SELINUX ✅
 
-**Law:** `semodule -i` in Containerfile RUN layer (primary method) or stage in `/usr/share/selinux/packages/` for runtime loading.
+**Law:** `semodule -i` in Containerfile RUN layer (primary method) for custom modules (bootc v1.1.0+ resolved instability). Fallback: stage in `/usr/share/selinux/packages/` for runtime loading if build-time compilation is impossible.
 
-**Implementation:** SELinux modules loaded at build time via Containerfile (automation/20-selinux.sh)
+**Implementation:** SELinux modules compiled and installed during build (automation/37-selinux.sh and automation/19-k3s-selinux.sh)
 
 ---
 
@@ -433,7 +433,7 @@ find /usr/lib/systemd -type f \( -name "*.service" -o -name "*.timer" \) -exec c
 
 ## Conclusion
 
-MiOS v0.1.2 is **fully compliant** with Linux Filesystem Hierarchy Standard (FHS 3.0) and bootc-specific requirements. The rootfs-native repository architecture correctly mirrors a Linux root filesystem with proper immutable OS patterns.
+MiOS v0.1.3 is **fully compliant** with Linux Filesystem Hierarchy Standard (FHS 3.0) and bootc-specific requirements. The rootfs-native repository architecture correctly mirrors a Linux root filesystem with proper immutable OS patterns.
 
 **Compliance Score:** 100%
 
@@ -451,4 +451,4 @@ MiOS v0.1.2 is **fully compliant** with Linux Filesystem Hierarchy Standard (FHS
 
 ---
 
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

@@ -3,7 +3,7 @@
     "contextFileName": "INDEX.md",
     "_comment": "Agent CLI runtime config. INDEX.md (project root) is the hierarchical bootstrap entry point and imports the shared state. Do not duplicate memory paths here — INDEX.md owns them.",
 
-    "AI_ARCH_BASELINE": "v0.1.1",
+    "AI_ARCH_BASELINE": "v0.1.3",
     "AI_ROLE": "Omni-Agent Workspace Component",
     "AI_BOOTSTRAP_FILE": "INDEX.md",
     "AI_ENGINE": "Shared Architecture",

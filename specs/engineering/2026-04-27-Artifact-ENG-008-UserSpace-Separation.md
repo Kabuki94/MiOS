@@ -1,7 +1,7 @@
 # ENG-008: User-Space Separation and XDG Compliance
 
 **Date:** 2026-04-27
-**Version:** MiOS v0.1.2
+**Version:** MiOS v0.1.3
 **Status:** Implementation
 **Author:** AI Agent (Claude)
 
@@ -180,7 +180,7 @@ Replaces `.env` - TOML format for better structure:
 # This file overrides system defaults in /usr/share/mios/config/default.env.toml
 
 [mios]
-version = "v0.1.2"
+version = "v0.1.3"
 user = "your-username"
 
 [build]
@@ -212,7 +212,7 @@ bib = "quay.io/centos-bootc/bootc-image-builder:latest"
 
 # Output image name and tags
 output_name = "localhost/mios"
-output_tags = ["latest", "v0.1.2", "custom"]
+output_tags = ["latest", "v0.1.3", "custom"]
 
 [registry]
 # Container registry settings

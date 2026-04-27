@@ -4,7 +4,7 @@
 
 ### 1. ✅ Proprietary Name Removal
 - Replaced all proprietary names across the repository
-- Updated GitHub URLs: `kabuki94/mios` → `mios-project/mios`
+- Updated GitHub URLs: `Kabuki94/MiOS-bootstrap` → `Kabuki94/MiOS-bootstrap`
 - Renamed `CLAUDE.md` → `AI-AGENT-GUIDE.md`
 - Removed Google Cloud, Anthropic, Gemini references
 - Made repository vendor-neutral
@@ -37,8 +37,8 @@
 - Auto-generates `Home.md` with latest version
 - Creates individual Wiki pages for AI integration docs
 - Auto-commits with timestamp
-- Bootstrap repo: https://github.com/mios-project/MiOS-bootstrap
-- Wiki: https://github.com/mios-project/MiOS-bootstrap/wiki
+- Bootstrap repo: https://github.com/Kabuki94/MiOS-bootstrap
+- Wiki: https://github.com/Kabuki94/MiOS-bootstrap/wiki
 
 ### 6. ✅ AI Agent Wiki Discovery Integration
 - Updated knowledge graph with Wiki references
@@ -91,11 +91,11 @@ All FOSS AI agents now configured to:
 5. Prioritize static for: immutable laws, core architecture
 
 ### Key Wiki Pages
-- Home: https://github.com/mios-project/MiOS-bootstrap/wiki/Home
-- AI Integration: https://github.com/mios-project/MiOS-bootstrap/wiki/AI-Integration-Index
-- Quick Reference: https://github.com/mios-project/MiOS-bootstrap/wiki/Quick-Reference
-- AI Agent Guide: https://github.com/mios-project/MiOS-bootstrap/wiki/AI-AGENT-GUIDE
-- INDEX: https://github.com/mios-project/MiOS-bootstrap/wiki/INDEX
+- Home: https://github.com/Kabuki94/MiOS-bootstrap/wiki/Home
+- AI Integration: https://github.com/Kabuki94/MiOS-bootstrap/wiki/AI-Integration-Index
+- Quick Reference: https://github.com/Kabuki94/MiOS-bootstrap/wiki/Quick-Reference
+- AI Agent Guide: https://github.com/Kabuki94/MiOS-bootstrap/wiki/AI-AGENT-GUIDE
+- INDEX: https://github.com/Kabuki94/MiOS-bootstrap/wiki/INDEX
 
 ## 📊 Statistics
 
@@ -145,7 +145,7 @@ cd ~/MiOS-bootstrap.wiki && git push
 ### For AI Agents
 ```python
 # Check Wiki first
-wiki_url = "https://github.com/mios-project/MiOS-bootstrap/wiki"
+wiki_url = "https://github.com/Kabuki94/MiOS-bootstrap/wiki"
 wiki_content = fetch_wiki_page("Home")
 
 # Fallback to static
@@ -155,12 +155,12 @@ if not wiki_content:
 
 ## 📚 References
 
-- Main Repo: https://github.com/mios-project/mios
-- Bootstrap: https://github.com/mios-project/MiOS-bootstrap
-- Wiki: https://github.com/mios-project/MiOS-bootstrap/wiki
+- Main Repo: https://github.com/Kabuki94/MiOS-bootstrap
+- Bootstrap: https://github.com/Kabuki94/MiOS-bootstrap
+- Wiki: https://github.com/Kabuki94/MiOS-bootstrap/wiki
 
 ---
 
 **Status:** ✅ All objectives complete
-**Version:** v0.1.2
+**Version:** v0.1.3
 **Date:** 2026-04-27

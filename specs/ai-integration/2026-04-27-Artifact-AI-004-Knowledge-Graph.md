@@ -1,10 +1,10 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 # 🌐 MiOS Knowledge Graph
 
 ```json:knowledge
 {
   "project": "MiOS",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "type": "bootc-immutable-os",
   "base": "Fedora Rawhide + ucore-hci",
   "architecture": "rootfs-native",
@@ -27,9 +27,10 @@
   "immutable_laws": [
     "USR-OVER-ETC: No static config in /etc/ at build time, use /usr/lib/",
     "NO-MKDIR-IN-VAR: All /var dirs via tmpfiles.d, never mkdir in Containerfile",
-    "MANAGED-SELINUX: semodule -i in RUN layer, or stage in /usr/share/selinux/",
+    "MANAGED-SELINUX: semodule -i in RUN layer (primary), stage in /usr/share/selinux/ (fallback)",
     "BOUND-IMAGES: Quadlet containers in /usr/lib/bootc/bound-images.d/",
-    "BOOTC-CONTAINER-LINT: Mandatory final validation, enforces kernel hygiene"
+    "BOOTC-CONTAINER-LINT: Mandatory final validation, enforces kernel hygiene",
+    "UNIFIED-AI-REDIRECTS: Agnostic API variables, local proxy (FOSS-priority)"
   ],
   "build_pipeline": {
     "stages": [
@@ -73,9 +74,9 @@
 }
 ```
 
-> **Proprietor:** MiOS Project
+> **Proprietor:** MiOS-DEV
 > **Type:** Structured Knowledge Graph
-> **Version:** 0.1.2
+> **Version:** 0.1.3
 > **Format:** JSON (machine-readable)
 
 ---
@@ -112,4 +113,4 @@ EOF
 ---
 
 **Last Updated:** 2026-04-27
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

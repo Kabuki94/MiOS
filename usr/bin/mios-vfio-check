@@ -30,7 +30,7 @@ if [[ "$JSON_MODE" == "true" ]]; then
     exit 0
 fi
 
-echo "MiOS v0.1.1 — VFIO Passthrough Readiness Check"
+echo "MiOS v0.1.3 — VFIO Passthrough Readiness Check"
 echo "════════════════════════════════════════════════"
 echo ""
 if dmesg 2>/dev/null | grep -qi "IOMMU enabled"; then

@@ -9,9 +9,9 @@ set -euo pipefail
 echo "==> Applying MiOS system service fixes..."
 
 # 1. Fix USBGuard Permissions
-# Log trace: Permissions for /etc/usbguard/usbguard-daemon.conf should be 0600
-if [ -f /etc/usbguard/usbguard-daemon.conf ]; then
-    chmod 0600 /etc/usbguard/usbguard-daemon.conf
+# Log trace: Permissions for /usr/lib/usbguard/usbguard-daemon.conf should be 0600
+if [ -f /usr/lib/usbguard/usbguard-daemon.conf ]; then
+    chmod 0600 /usr/lib/usbguard/usbguard-daemon.conf
 fi
 
 # 2. Fix 203/EXEC for custom MiOS services

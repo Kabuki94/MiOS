@@ -1,4 +1,4 @@
-# MiOS v0.1.1 — Silicon-specific GPU workarounds
+# MiOS v0.1.3 — Silicon-specific GPU workarounds
 match-architectures = ["x86_64"]
 kargs = [
     "amdgpu.pplib=0",

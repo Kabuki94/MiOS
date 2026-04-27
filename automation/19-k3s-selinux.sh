@@ -38,14 +38,15 @@ cp "$POLICY_DIR"/k3s.* .
 # Compile the policy using the Fedora 44 SELinux Makefile
 make -f /usr/share/selinux/devel/Makefile k3s.pp
 
-# ARCHITECTURAL FIX: Instead of installing at build-time with 'semodule -i',
-# we ship the compiled policy in the immutable /usr tree.
-# This ensures that 'bootc upgrade' doesn't create opaque policy layers.
+# ARCHITECTURAL FIX: Install at build-time with 'semodule -i'.
+# bootc v1.1.0+ resolved historic instability with build-time policy compilation.
+# We also stage the compiled policy in the immutable /usr tree for reference.
 mkdir -p /usr/share/selinux/packages/mios
 install -m 0644 k3s.pp /usr/share/selinux/packages/mios/k3s.pp
+semodule -i k3s.pp
 
 # Clean up
 cd /
 rm -rf /tmp/k3s-selinux
-echo "==> K3s SELinux Policy staged in /usr/share/selinux/packages/mios/"
+echo "==> K3s SELinux Policy staged and installed."
 

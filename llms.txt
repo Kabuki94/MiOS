@@ -1,28 +1,31 @@
-# MiOS
-> AI Ingestion Index (Snapshot v0.1.2)
-> Single Source of Truth: https://github.com/mios-project/mios/blob/main/INDEX.md
+# MiOS-DEV
+> AI Ingestion Index (Snapshot v0.1.3)
+> Single Source of Truth: https://github.com/Kabuki94/MiOS-bootstrap/blob/main/INDEX.md
 
-MiOS is a bootc-based, self-building, immutable workstation OS on Fedora Rawhide. It uses a Unified Knowledge Base (UKB) for RAG and is optimized for OpenAI API standard ingestion.
+MiOS-DEV is a bootc-based, self-building, immutable workstation OS on Fedora Rawhide. It uses a Unified Kernel Image (UKI), SELinux build-time compilation, and a FOSS-priority AI API agnostic layer.
 
-**Version Roadmap:** MiOS-1 (akmod drivers) → MiOS-2/v0.1.x (ucore-hci base) → MiOS-NXT (Hummingbird integration, SBOM, minimal variants).
+## 🏗️ Architecture & Laws
+- [INDEX.md](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/INDEX.md) - Single Source of Truth (Architecture Laws)
+- [AI-AGENT-GUIDE.md](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/AI-AGENT-GUIDE.md) - Instructions for coding agents
+- [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json) - Machine-readable system context map
 
-## 🏛️ Essential Context (Seed)
-- [AI-Agent-Hub](https://github.com/mios-project/mios/blob/main/INDEX.md): Mandatory laws, directory map, and instruction patterns.
-- [Repository-Map](https://github.com/mios-project/mios/blob/main/ai-context.json): Machine-readable manifest of all project resources.
-- [RAG-Snapshot](https://github.com/mios-project/mios/blob/main/artifacts/repo-rag-snapshot.json.gz): Full redacted repository state for immediate ingestion.
-- [Unified-Environment](https://github.com/mios-project/mios/blob/main/.env.mios): Consolidated user-adjustable variables.
+## 📂 Core Manifests (Machine Readable)
+- [Root-Manifest](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/root-manifest.json) - Top-level file map
+- [Automation-Manifest](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/automation/manifest.json) - Build & config scripts
+- [Specs-Manifest](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/manifest.json) - Architectural blueprints & research
+- [Config-Manifest](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/config/manifest.json) - Deployment templates
+- [Usr-Manifest](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/usr/manifest.json) - Linux-native system tree (templates)
 
-## 🧠 Shared Memory
-- [Chronological-Journal](https://github.com/mios-project/mios/blob/main/JOURNAL.md): Shared chronological brain for all agents.
-
-## 🛠️ Engineering
-- [Package-Manifest](https://github.com/mios-project/mios/blob/main/specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md): SSOT for all system components.
-- [Build-Pipeline](https://github.com/mios-project/mios/blob/main/Containerfile): The OCI build process and stage logic.
-
-## 🔌 Programmable Interface
-- [AI-Tools](https://github.com/mios-project/mios/blob/main/.well-known/ai-tools.json): OpenAI-compatible function calling schemas for MiOS CLI tools.
+## 🧬 AI Integration & Redirects
+- [Unified-AI-Redirects](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/ai-integration/2026-04-27-Artifact-AI-006-Unified-Redirects.md) - Agnostic API protocols
+- [RAG-Integration](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/ai-integration/2026-04-27-Artifact-AI-001-RAG-Integration.md) - Knowledge base sync
+- [Prompts-Library](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/ai-integration/2026-04-27-Artifact-AI-003-Prompts-Library.md) - System initialization patterns
 
 ## 🔬 Research Presets
-- [Bootc-Advances](https://github.com/mios-project/mios/blob/main/specs/knowledge/research/2026-04-26-Artifact-KBX-01-bootc-ecosystem-advances-2025-2026.md)
-- [GPU-Passthrough](https://github.com/mios-project/mios/blob/main/specs/knowledge/research/2026-04-26-Artifact-KBX-10-vfio-gpu-passthrough-fedora-2025.md)
-- [OpenAI-Ingestion](https://github.com/mios-project/mios/blob/main/specs/knowledge/research/2026-04-26-Artifact-KBX-024-OpenAI-Integration.md)
+- [Bootc-Advances](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/knowledge/research/2026-04-26-Artifact-KBX-01-bootc-ecosystem-advances-2025-2026.md)
+- [GPU-Passthrough](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/knowledge/research/2026-04-26-Artifact-KBX-10-vfio-gpu-passthrough-fedora-2025.md)
+- [OpenAI-Ingestion](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/knowledge/research/2026-04-26-Artifact-KBX-024-OpenAI-Integration.md)
+
+## ⚖️ License
+Licensed as personal property to MiOS-DEV. Source tracking via https://github.com/Kabuki94/MiOS-bootstrap.
+Deployments via ghcr.io/kabuki94/mios:latest.

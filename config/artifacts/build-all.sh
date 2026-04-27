@@ -2,7 +2,7 @@
 # build-all.sh - emit every deployment artifact from one image
 set -euo pipefail
 
-IMG="${IMG:-ghcr.io/mios-project/mios:latest}"
+IMG="${IMG:-ghcr.io/kabuki94/mios:latest}"
 OUT="${OUT:-$PWD/out}"
 mkdir -p "$OUT"
 

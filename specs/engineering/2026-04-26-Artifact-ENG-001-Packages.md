@@ -1,8 +1,8 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 # 🌐 MiOS
 ```json:knowledge
 {
-  "summary": "> **Proprietor:** MiOS Project",
+  "summary": "> **Proprietor:** MiOS-DEV",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -16,25 +16,25 @@
   }
 }
 ```
-> **Proprietor:** MiOS Project
+> **Proprietor:** MiOS-DEV
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to MiOS Project
-> **Source Reference:** MiOS-Core-v0.1.2
+> **License:** Licensed as personal property to MiOS-DEV
+> **Source Reference:** MiOS-Core-v0.1.3
 ---
 
-# MiOS v0.1.2 — Package Manifest
+# MiOS v0.1.3 — Package Manifest
 
 This file is both documentation and the **single source of truth** for all packages installed in MiOS.
 Build scripts parse the fenced code blocks below using `automation/lib/packages.sh`.
 To add a package, add it to the appropriate section. One package per line.
 
-**CHANGELOG v0.1.2:**
-- Baseline update to v0.1.2 for version consistency
+**CHANGELOG v0.1.3:**
+- Baseline update to v0.1.3 for version consistency
 - Added future roadmap references to MiOS-NXT
 - Prepared for Project Hummingbird minimal base evaluation
 - Added SBOM generation capability planning
 
-**CHANGELOG v0.1.1:**
+**CHANGELOG v0.1.3:**
 - Standardized versioning across the entire stack.
 - Added uupd (unified updater replacing bootc-fetch-apply-updates.timer)
 - Added greenboot + greenboot-default-health-checks (auto-rollback on boot failure)
@@ -53,7 +53,7 @@ To add a package, add it to the appropriate section. One package per line.
        sole source of truth; 40-series scripts handle config+services only
 - Added missing audited tools: strace, lsof, iotop, ntfs-3g, efibootmgr, nm-connection-editor
 
-**CHANGELOG v0.1.1 (previous):**
+**CHANGELOG v0.1.3 (previous):**
 - Added bootupd (unified bootloader updates — Fedora 44 phase 1)
 - Added dnf5-plugins (versionlock support for critical package pinning)
 - Added systemd-boot-unsigned (UKI preparation — future composefs+UKI chain)
@@ -62,7 +62,7 @@ To add a package, add it to the appropriate section. One package per line.
 - Added clevis, clevis-luks (automated LUKS unlock via TPM2/Tang)
 - Moved driverctl from security to utils (better categorization)
 
-**CHANGELOG v0.1.1 (previous):**
+**CHANGELOG v0.1.3 (previous):**
 - Removed htop (use btop instead)
 - Added nvidia-settings to NVIDIA section
 - Added avahi/nss-mdns for .local network discovery
@@ -687,6 +687,7 @@ Redis is used as the Pub/Sub backend for the System OS MCP server.
 ```packages-ai
 aichat
 aichat-ng
+ollama
 redis
 sqlite
 ```
@@ -740,10 +741,10 @@ usbutils
 
 ---
 ### ⚖️ Legal & Source Reference
-- **Copyright:** (c) 2026 MiOS Project
+- **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
-- **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
-- **Documentation:** [MiOS Navigation Hub](https://github.com/mios-project/mios/blob/main/specs/Home.md)
-- **Artifact Hub:** [ai-context.json](https://github.com/mios-project/mios/blob/main/ai-context.json)
+- **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

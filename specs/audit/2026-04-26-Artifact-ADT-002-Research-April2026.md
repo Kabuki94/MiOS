@@ -1,8 +1,8 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 # 🌐 MiOS
 ```json:knowledge
 {
-  "summary": "> **Proprietor:** MiOS Project",
+  "summary": "> **Proprietor:** MiOS-DEV",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -16,10 +16,10 @@
   }
 }
 ```
-> **Proprietor:** MiOS Project
+> **Proprietor:** MiOS-DEV
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to MiOS Project
-> **Source Reference:** MiOS-Core-v0.1.1
+> **License:** Licensed as personal property to MiOS-DEV
+> **Source Reference:** MiOS-Core-v0.1.3
 ---
 
 # MiOS Live Research Notes — April 2026
@@ -61,7 +61,7 @@
 
 - **Repo moved:** `containers/bootc` → **`bootc-dev/bootc`** (github.com/bootc-dev/bootc). All old `containers/bootc` URLs redirect. Update any hardcoded links in docs.
 - **CNCF Sandbox:** bootc accepted January 21, 2025 — largest single CNCF intake batch (13 projects). Stable API/CLI guaranteed going forward.
-- **Current stable release:** v0.1.1 (April 14, 2025). v1.15.x line is the current series as of research date.
+- **Current stable release:** v0.1.3 (April 14, 2025). v1.15.x line is the current series as of research date.
 - **Website:** https://bootc.dev/bootc/ (redirects from bootc-dev.github.io/bootc/)
 
 ### Release highlights (v1.9 → v1.15) (updated 2026-04-26: live research verified)
@@ -76,10 +76,10 @@
 
 **Workarounds integrated (April 2026):**
 - **NVIDIA 595+ Stability:** Injected `NVreg_UseKernelSuspendNotifiers=1` for open modules to resolveAda/Blackwell suspend cycles.
-- **WSL v0.1.1 User Session:** Gated `systemd-networkd-wait-online.service` on `!wsl` to prevent login timeouts.
+- **WSL v0.1.3 User Session:** Gated `systemd-networkd-wait-online.service` on `!wsl` to prevent login timeouts.
 - **WSL 0.0.0.0 Permissions:** Enforced 0755 on `wsl-user-generator` via tmpfiles.d to fix security regression breaking user sessions.
 
-**bootc v0.1.1 notable:** `bootc container lint` expanded — now checks for missing `tmpfiles.d` entries and warns. This is actionable for MiOS: ensure every `/var/lib/<service>` directory that a service needs is declared in `tmpfiles.d/`.
+**bootc v0.1.3 notable:** `bootc container lint` expanded — now checks for missing `tmpfiles.d` entries and warns. This is actionable for MiOS: ensure every `/var/lib/<service>` directory that a service needs is declared in `tmpfiles.d/`.
 
 ### Filesystem semantics (authoritative)
 
@@ -97,7 +97,7 @@
 1. `/usr/lib/bootc/kargs.d/*.toml` — syntax validation (flat `kargs = [...]` only; no section headers)
 2. Multiple kernels in `/usr/lib/modules` — only one kernel per image supported
 3. Files explicitly placed in `/usr/etc` — forbidden path
-4. Missing `tmpfiles.d` entries for `/var` directories (warning, not error, as of v0.1.1)
+4. Missing `tmpfiles.d` entries for `/var` directories (warning, not error, as of v0.1.3)
 5. Non-UTF-8 filenames anywhere in the image
 6. Stale logfiles left in image (warns to clean these in final stage)
 7. kargs.d `match-architectures` value validation (must be Rust std arch names)
@@ -110,7 +110,7 @@
 - **`[root] transient-ro = true`** — privileged processes can remount overlay upper dir as writable in isolated namespaces; regular processes see read-only
 - **State overlays** (`ostree-state-overlay@opt.service`) — writable overlay on specific paths; changes persist across reboots but are overridden by image content on update
 
-### `--karg-delete` (v0.1.1+)
+### `--karg-delete` (v0.1.3+)
 
 New `bootc kargs edit --karg-delete <arg>` command allows removing a kernel argument from the local bootloader config without an image rebuild. Useful for ad-hoc debugging. Does NOT modify kargs.d — local only, lost on next `bootc upgrade`.
 
@@ -124,10 +124,10 @@ New `bootc kargs edit --karg-delete <arg>` command allows removing a kernel argu
 ### greenboot-rs (health check / rollback)
 
 - greenboot Rust rewrite (`greenboot-rs`) approved for Fedora 43 (September 2025)
-- Shell-based greenboot deprecated in favor of greenboot-rs v0.1.1+
+- Shell-based greenboot deprecated in favor of greenboot-rs v0.1.3+
 - Functions: runs health check scripts on every boot; reboots if required checks fail; rolls back to previous deployment after N failed reboots
 - Check scripts: drop scripts into `/etc/greenboot/check/required.d/` (must succeed) or `/etc/greenboot/check/wanted.d/` (advisory only)
-- **MiOS-role consolidation (April 2026):** Successfully merged the asynchronous logic into the extensionless `role-apply` engine. The system now handles initialization, hardware detection (Blackwell), and role application in a single non-blocking pass. Redundant `role-apply.sh` removed. Project baseline promoted to v0.1.1.
+- **MiOS-role consolidation (April 2026):** Successfully merged the asynchronous logic into the extensionless `role-apply` engine. The system now handles initialization, hardware detection (Blackwell), and role application in a single non-blocking pass. Redundant `role-apply.sh` removed. Project baseline promoted to v0.1.3.
 
 ### bootc upgrade / switch / rollback / factory-reset
 
@@ -184,9 +184,9 @@ Fedora 44 ChangeSet confirms: **Konflux becomes the build pipeline for bootc-bas
 
 No action required from MiOS.
 
-### 2026-04-25 update — bootc v0.1.1 still latest; new install-time issues to watch
+### 2026-04-25 update — bootc v0.1.3 still latest; new install-time issues to watch
 
-Confirmed via github.com/bootc-dev/bootc/releases (sweep on 2026-04-25): **v0.1.1 (April 14, 2026) remains the most recent tag**. v0.1.1 / v0.1.1 not cut yet. Open install-time issues filed against `main` (April 2026) that are relevant to MiOS BIB outputs:
+Confirmed via github.com/bootc-dev/bootc/releases (sweep on 2026-04-25): **v0.1.3 (April 14, 2026) remains the most recent tag**. v0.1.3 / v0.1.3 not cut yet. Open install-time issues filed against `main` (April 2026) that are relevant to MiOS BIB outputs:
 
 | Issue | Title | MiOS impact |
 |-------|-------|----------------|
@@ -377,11 +377,11 @@ ucore-hci `stable-nvidia` ships **pre-built, pre-signed NVIDIA open kernel modul
 
 This means MiOS-2 users do NOT need to install akmods at runtime — the modules are pre-compiled and pre-signed in the base image.
 
-**NVIDIA driver version (April 2026):** (updated 2026-04-20: v0.1.1 is the new stable; v0.1.1 superseded)
+**NVIDIA driver version (April 2026):** (updated 2026-04-20: v0.1.3 is the new stable; v0.1.3 superseded)
 
-- **Default driver on `stable-nvidia`:** NVIDIA **v0.1.1** (released March 24, 2026 — the new big recommended stable driver for Linux; includes fix for kernel module build issue with Linux 6.19, which matters for F44)
+- **Default driver on `stable-nvidia`:** NVIDIA **v0.1.3** (released March 24, 2026 — the new big recommended stable driver for Linux; includes fix for kernel module build issue with Linux 6.19, which matters for F44)
 - **LTS branch on `-lts` tags:** NVIDIA **580.x** (Universal Blue now has an explicit LTS stream; akmods-nvidia-lts OCI artifact feeds `-lts` variants)
-- Previous `stable-nvidia` default was v0.1.1 (Dec 2025 – Mar 2026); ucore-hci rolled to 595 within ~1 week of NVIDIA release
+- Previous `stable-nvidia` default was v0.1.3 (Dec 2025 – Mar 2026); ucore-hci rolled to 595 within ~1 week of NVIDIA release
 - RTX 4090 (Ada Lovelace, GA102): fully supported by both open and proprietary modules
 - RTX 50xx (Blackwell): **requires open kernel modules** — proprietary modules are incompatible with Blackwell architecture entirely
 - **kernel-module suspend behavior (595+):** `NVreg_UseKernelSuspendNotifiers=1` opt-in now has `nvidia.ko` handle video-memory preservation internally when open kmods are in use — removes a long-standing suspend/resume quirk. MiOS should NOT set this knob unless specific resume issues appear.
@@ -403,18 +403,18 @@ This means MiOS-2 users do NOT need to install akmods at runtime — the modules
 
 **CDI (Container Device Interface) — current state:**
 
-- `nvidia-container-toolkit v0.1.1` (current as of April 2026): CDI is now the **default mode** (not OCI hook). Read-only rootfs support is confirmed production-ready — critical for bootc.
-- `nvidia-container-toolkit v0.1.1`: introduced `nvidia-cdi-refresh.service` for automatic CDI spec regeneration on toolkit install, kernel module reload, and GPU hotplug
-- **DO NOT use nvidia-container-toolkit v0.1.1** — "unresolvable CDI devices" regression. Use v0.1.1 or v0.1.1+/v0.1.1
+- `nvidia-container-toolkit v0.1.3` (current as of April 2026): CDI is now the **default mode** (not OCI hook). Read-only rootfs support is confirmed production-ready — critical for bootc.
+- `nvidia-container-toolkit v0.1.3`: introduced `nvidia-cdi-refresh.service` for automatic CDI spec regeneration on toolkit install, kernel module reload, and GPU hotplug
+- **DO NOT use nvidia-container-toolkit v0.1.3** — "unresolvable CDI devices" regression. Use v0.1.3 or v0.1.3+/v0.1.3
 - CDI canonical path: `/var/run/cdi/nvidia.yaml` (runtime ephemeral) or `/etc/cdi/nvidia.yaml` (persistent); MiOS uses `/etc/cdi/` (push-239)
 - Remove `oci-nvidia-hook.json` — coexistence with CDI causes dual-injection conflicts (push-239 delivered this fix)
 - GPU access in Podman: `podman run --device nvidia.com/gpu=0` (CDI syntax) replaces old `--runtime=nvidia`
 
 **CVEs requiring attention:**
 
-- **CVE-2025-23266** (Critical) — nvidia-container-toolkit, fixed in v0.1.1+
-- **CVE-2025-23267** (High) — nvidia-container-toolkit, fixed in v0.1.1+
-- MiOS must ship nvidia-container-toolkit ≥ v0.1.1; current pinned version (v0.1.1 target) satisfies this
+- **CVE-2025-23266** (Critical) — nvidia-container-toolkit, fixed in v0.1.3+
+- **CVE-2025-23267** (High) — nvidia-container-toolkit, fixed in v0.1.3+
+- MiOS must ship nvidia-container-toolkit ≥ v0.1.3; current pinned version (v0.1.3 target) satisfies this
 
 ---
 
@@ -583,7 +583,7 @@ Cosign v3 enables `--new-bundle-format` (protobuf) by default, incompatible with
 
 ### greenboot-rs (Rust rewrite, Fedora 43+)
 
-- Shell-based greenboot **deprecated**; greenboot-rs v0.1.1+ is the replacement.
+- Shell-based greenboot **deprecated**; greenboot-rs v0.1.3+ is the replacement.
 - Fully compatible drop-in: same script directories, same systemd integration.
 - Check scripts: `/etc/greenboot/check/required.d/` (fail → reboot) and `/etc/greenboot/check/wanted.d/` (advisory).
 - **MiOS opportunity:** Add health check scripts for:
@@ -807,16 +807,16 @@ Podman **5.6** (shipped late 2025, present in Fedora 43+) introduces a first-cla
 
 **MiOS implication:** `/usr/share/containers/systemd/` (distro-shipped path) is unchanged. The new `podman quadlet install|rm` targets `/etc/containers/systemd/` for admin-installed units — safe to ignore for image-baked Quadlets. Consider adopting `Policy=newer` on `.image` Quadlets for logically-bound images to reduce unnecessary pulls. `Cockpit ≥ 349` can now render/manage Quadlets graphically (new Red Hat Developer article, April 2026).
 
-### 2026-04-25 update — Podman 5.7 → 5.8 chain (current: v0.1.1)
+### 2026-04-25 update — Podman 5.7 → 5.8 chain (current: v0.1.3)
 
-Latest Podman release: **v0.1.1 (April 14, 2026)**. F44 is expected to ship Podman 5.8.x as the default.
+Latest Podman release: **v0.1.3 (April 14, 2026)**. F44 is expected to ship Podman 5.8.x as the default.
 
 | Version | Date | Highlights for MiOS |
 |---------|------|-----------------------|
-| v0.1.1 | 2025-11-11 | New `.artifact` Quadlet type (OCI artifact management); new container keys: `HttpProxy=`, `StopTimeout=`, `BuildArg=`, `IgnoreFile=`; multi-YAML `.kube` files; templated dependencies for volumes/networks; `--replace` flag for `podman quadlet install`; new `podman quadlet cat` alias |
-| v0.1.1 | 2025-12-10 | Bug-fix: FreeBSD + rootless mode |
-| v0.1.1 | early 2026 | **Multi-file Quadlet `---` delimiter + `# FileName=` naming** matured (existing MiOS pattern is forward-compatible); **AppArmor profile config in `.container` files**; entrypoint clearing + healthcheck parser fixes |
-| v0.1.1 | 2026-04-14 | Bug-fix point release; current latest |
+| v0.1.3 | 2025-11-11 | New `.artifact` Quadlet type (OCI artifact management); new container keys: `HttpProxy=`, `StopTimeout=`, `BuildArg=`, `IgnoreFile=`; multi-YAML `.kube` files; templated dependencies for volumes/networks; `--replace` flag for `podman quadlet install`; new `podman quadlet cat` alias |
+| v0.1.3 | 2025-12-10 | Bug-fix: FreeBSD + rootless mode |
+| v0.1.3 | early 2026 | **Multi-file Quadlet `---` delimiter + `# FileName=` naming** matured (existing MiOS pattern is forward-compatible); **AppArmor profile config in `.container` files**; entrypoint clearing + healthcheck parser fixes |
+| v0.1.3 | 2026-04-14 | Bug-fix point release; current latest |
 
 **Action items for MiOS (none breaking):**
 1. After F44 rebase, audit any `.container` files for new lint warnings (5.8 added stricter parsing of `User=`/`Group=`/`DynamicUser=`).
@@ -859,16 +859,16 @@ Verified via Cockpit blog + cockpit-podman releases:
 *Research thread: WSL2 systemd compatibility, known failures, upstream patches*
 
 <!-- FINDINGS BEGIN -->
-### WSL2 kernel / systemd compatibility matrix (April 2026) (updated 2026-04-25: WSL v0.1.1 + v0.1.1 shipped)
+### WSL2 kernel / systemd compatibility matrix (April 2026) (updated 2026-04-25: WSL v0.1.3 + v0.1.3 shipped)
 
 | WSL version | WSL kernel | systemd behavior | Notes |
 |-------------|-----------|-----------------|-------|
-| WSL 2.3.x | v0.1.1.x | Stable | Legacy; cgroupv1 still present |
-| WSL 2.4.x | v0.1.1.x | Mostly stable | auditd fails; journald audit crash |
+| WSL 2.3.x | v0.1.3.x | Stable | Legacy; cgroupv1 still present |
+| WSL 2.4.x | v0.1.3.x | Mostly stable | auditd fails; journald audit crash |
 | WSL 2.6.x | 6.6.x | Active issues | User session failures reported after 0.0.0.0 |
-| WSL v0.1.1 | 6.6 LTS point release | Released 2025-12-11 | Masked `systemd-networkd-wait-online.service` during boot; improved VirtioProxy networking + VirtioFS POSIX. |
-| WSL v0.1.1 | 6.6 LTS point release | Released 2026-03-24 | **CVE-2026-26127 .NET runtime fix.** Masked **both** `NetworkManager-wait-online.service` and `systemd-networkd-wait-online.service`. Added IPv6 over virtio networking. Enabled DNS tunneling for VirtioProxy. **wsl-user-generator: statx syscall support, directory-mount support.** |
-| **WSL v0.1.1** (pre-release) | 6.6 LTS point release | **Released 2026-04-25 (today)** | **CVE-2026-32178 .NET SMTP header-injection fix** (System.Net.Mail CRLF). Improved socket/signal handling. 30+ stability changes. Pre-release channel — stable cadence next. |
+| WSL v0.1.3 | 6.6 LTS point release | Released 2025-12-11 | Masked `systemd-networkd-wait-online.service` during boot; improved VirtioProxy networking + VirtioFS POSIX. |
+| WSL v0.1.3 | 6.6 LTS point release | Released 2026-03-24 | **CVE-2026-26127 .NET runtime fix.** Masked **both** `NetworkManager-wait-online.service` and `systemd-networkd-wait-online.service`. Added IPv6 over virtio networking. Enabled DNS tunneling for VirtioProxy. **wsl-user-generator: statx syscall support, directory-mount support.** |
+| **WSL v0.1.3** (pre-release) | 6.6 LTS point release | **Released 2026-04-25 (today)** | **CVE-2026-32178 .NET SMTP header-injection fix** (System.Net.Mail CRLF). Improved socket/signal handling. 30+ stability changes. Pre-release channel — stable cadence next. |
 
 WSL2 runs Linux 5.15.x or 6.6.x kernel depending on Windows version. The kernel is Microsoft-maintained fork: `github.com/microsoft/WSL2-Linux-Kernel`.
 
@@ -947,7 +947,7 @@ ConditionVirtualization=!wsl
 3. cosign signs the image with the ephemeral key; signature stored in **Rekor** transparency log
 4. Certificate is discarded; verification uses Fulcio root CA + Rekor inclusion proof
 
-**Verification:** `cosign verify --certificate-identity-regexp=... --certificate-oidc-issuer=https://token.actions.githubusercontent.com ghcr.io/mios-project/mios:latest`
+**Verification:** `cosign verify --certificate-identity-regexp=... --certificate-oidc-issuer=https://token.actions.githubusercontent.com ghcr.io/kabuki94/mios:latest`
 
 **GitHub Actions workflow pattern (MiOS `build-sign.yml`):**
 ```yaml
@@ -959,7 +959,7 @@ permissions:
 - name: Sign image
   run: |
     cosign sign --yes \
-      ghcr.io/mios-project/mios@${{ steps.build.outputs.digest }}
+      ghcr.io/kabuki94/mios@${{ steps.build.outputs.digest }}
 ```
 
 **`--yes` flag:** Required in non-interactive CI to skip the Rekor upload confirmation prompt. Without it, the step hangs.
@@ -968,7 +968,7 @@ permissions:
 
 **syft** is the standard tool for generating SBOMs from OCI images:
 ```bash
-syft ghcr.io/mios-project/mios:latest \
+syft ghcr.io/kabuki94/mios:latest \
   -o spdx-json=mios-mios-2-sbom.spdx.json \
   -o cyclonedx-json=mios-mios-2-sbom.cyclonedx.json
 ```
@@ -978,7 +978,7 @@ syft ghcr.io/mios-project/mios:latest \
 **SBOM signing:** After generating SBOM, attach as OCI attestation:
 ```bash
 cosign attest --type spdxjson --predicate mios-sbom.spdx.json \
-  ghcr.io/mios-project/mios@<digest>
+  ghcr.io/kabuki94/mios@<digest>
 ```
 
 ### OCI attestation / SLSA provenance
@@ -1020,22 +1020,22 @@ This enforces signature verification when Podman pulls from `ghcr.io/kabuki94/*`
 3. Sign the digest (not the tag): `cosign sign ghcr.io/image@sha256:<digest>` — tag-based signing is mutable and insecure
 4. Store cosign verification policy in the image itself (`/etc/containers/policy.json`) so verification is enforced at runtime, not just at CI time
 
-### 2026-04-20 update — cosign v0.1.1 and v0.1.1 dual release (updated 2026-04-25: CVE-2026-39395 assignment + impact detail)
+### 2026-04-20 update — cosign v0.1.3 and v0.1.3 dual release (updated 2026-04-25: CVE-2026-39395 assignment + impact detail)
 
-On **April 6, 2026**, sigstore released both **cosign v0.1.1** (v3 line) and **cosign v0.1.1** (v2 line) on the same day. Both releases address **GHSA-w6c6-c85g-mmv6 / CVE-2026-39395** — `cosign verify-blob-attestation` may erroneously report **"Verified OK"** for attestations with malformed payloads or mismatched predicate types. For old-format bundles + detached signatures, this was a logic flaw in error-handling of predicate-type validation. For new-format bundles, predicate-type validation was bypassed completely. Without `--check-claims=true`, an attestation with a valid signature but malformed/unparsable payload would be incorrectly validated.
+On **April 6, 2026**, sigstore released both **cosign v0.1.3** (v3 line) and **cosign v0.1.3** (v2 line) on the same day. Both releases address **GHSA-w6c6-c85g-mmv6 / CVE-2026-39395** — `cosign verify-blob-attestation` may erroneously report **"Verified OK"** for attestations with malformed payloads or mismatched predicate types. For old-format bundles + detached signatures, this was a logic flaw in error-handling of predicate-type validation. For new-format bundles, predicate-type validation was bypassed completely. Without `--check-claims=true`, an attestation with a valid signature but malformed/unparsable payload would be incorrectly validated.
 
-Any MiOS CI pipeline that uses cosign to verify DSSE attestations (e.g., SLSA provenance, SBOM predicates) MUST be on **v0.1.1 or v0.1.1+**.
+Any MiOS CI pipeline that uses cosign to verify DSSE attestations (e.g., SLSA provenance, SBOM predicates) MUST be on **v0.1.3 or v0.1.3+**.
 
-**MiOS status:** Already pinned to v0.1.1 in `42-cosign-policy.sh` (GitHub Actions installer pinned to `sigstore/cosign-installer@v0.1.1` with `cosign-release: 'v0.1.1'` per April 21 implementation). **No action required.**
+**MiOS status:** Already pinned to v0.1.3 in `42-cosign-policy.sh` (GitHub Actions installer pinned to `sigstore/cosign-installer@v0.1.3` with `cosign-release: 'v0.1.3'` per April 21 implementation). **No action required.**
 
 Additional v3.0.x fixes:
-- v0.1.1 — added protobuf-bundle compatibility for more subcommands (still requires `--new-bundle-format=false` for rpm-ostree/bootc consumers)
-- v0.1.1 — fixed GHSA-whqx-f9j3-ch6m (bundle verify path for old bundle / trusted root)
-- v0.1.1 — GHSA-w6c6-c85g-mmv6 DSSE predicate validation fix; OpenBao-managed keys; certificate annotation handling
+- v0.1.3 — added protobuf-bundle compatibility for more subcommands (still requires `--new-bundle-format=false` for rpm-ostree/bootc consumers)
+- v0.1.3 — fixed GHSA-whqx-f9j3-ch6m (bundle verify path for old bundle / trusted root)
+- v0.1.3 — GHSA-w6c6-c85g-mmv6 DSSE predicate validation fix; OpenBao-managed keys; certificate annotation handling
 
-**MiOS guidance unchanged:** stay on **v2.6.x** (current: **v0.1.1**) for signing and signature-verification, because `containers/image` / rpm-ostree / bootc **still do not accept the cosign v3 protobuf bundle format by default** (rpm-ostree issue #5509 is the tracking bug, still open as of April 2026). If the build workflow is pinned to cosign v3, it MUST pass `cosign sign --new-bundle-format=false --yes $DIGEST`. Renovate's `helpers:pinGitHubActionDigests` should be bumping `sigstore/cosign-installer` to a commit that installs v0.1.1 on the `build-sign.yml` workflow.
+**MiOS guidance unchanged:** stay on **v2.6.x** (current: **v0.1.3**) for signing and signature-verification, because `containers/image` / rpm-ostree / bootc **still do not accept the cosign v3 protobuf bundle format by default** (rpm-ostree issue #5509 is the tracking bug, still open as of April 2026). If the build workflow is pinned to cosign v3, it MUST pass `cosign sign --new-bundle-format=false --yes $DIGEST`. Renovate's `helpers:pinGitHubActionDigests` should be bumping `sigstore/cosign-installer` to a commit that installs v0.1.3 on the `build-sign.yml` workflow.
 
-**Action item (NEXT-RESEARCH candidate):** verify the pinned `cosign-installer` version in `.github/workflows/build-sign.yml` currently resolves to cosign v0.1.1 (or a v3.0.x with explicit `--new-bundle-format=false`). If not, flag for Kabu.
+**Action item (NEXT-RESEARCH candidate):** verify the pinned `cosign-installer` version in `.github/workflows/build-sign.yml` currently resolves to cosign v0.1.3 (or a v3.0.x with explicit `--new-bundle-format=false`). If not, flag for Kabu.
 <!-- FINDINGS END -->
 
 ---
@@ -1082,7 +1082,7 @@ kargs = ["quiet"]
 
 **Error message from bootc lint:** `Unexpected runtime error running lint bootc-kargs: Parsing <filename>.toml`
 
-Any of the above formats causes bootc to reject the kargs.d file entirely at lint time. MiOS previously had a `01-mios-vm-boot.toml` using Copilot-format that was deleted in v0.1.1 for this reason.
+Any of the above formats causes bootc to reject the kargs.d file entirely at lint time. MiOS previously had a `01-mios-vm-boot.toml` using Copilot-format that was deleted in v0.1.3 for this reason.
 
 ### Merge / priority order
 
@@ -1121,7 +1121,7 @@ Run as `RUN bootc container lint` in the Containerfile (final stage).
 1. **kargs.d syntax** — validates every `.toml` in `/usr/lib/bootc/kargs.d/`; rejects any file with section headers or non-standard keys
 2. **Multiple kernels** — only ONE kernel in `/usr/lib/modules/` is supported; multiple = error
 3. **`/usr/etc` content** — files explicitly placed here are rejected (it's an internal bootc path)
-4. **Missing tmpfiles.d entries** (v0.1.1+) — warns if `/var` directories exist in image without corresponding `tmpfiles.d` entry
+4. **Missing tmpfiles.d entries** (v0.1.3+) — warns if `/var` directories exist in image without corresponding `tmpfiles.d` entry
 5. **Non-UTF-8 filenames** — any non-UTF-8 filename in image = error
 6. **Stale log files** — warns if log files are left in image (should be cleaned by 99-cleanup.sh)
 7. **`match-architectures` values** — validates arch names against Rust stdlib list
@@ -1138,7 +1138,7 @@ Run as `RUN bootc container lint` in the Containerfile (final stage).
 | `[kargs]` section header in TOML | ERROR — parsing failure | Remove header; use bare `kargs = [...]` |
 | `systemd.show_status` (underscore) | Not a lint error — silently ignored by kernel | Fix to `systemd.show-status` (hyphen) |
 | Two kernels from base + akmod install | ERROR — multiple kernels | Don't install kernel RPMs; only install `kernel-modules-extra` |
-| Files in `/var/lib/myapp/` without tmpfiles.d | WARN (v0.1.1+) | Add `tmpfiles.d/mios-myapp.conf` with `d /var/lib/myapp 0755 myapp myapp -` |
+| Files in `/var/lib/myapp/` without tmpfiles.d | WARN (v0.1.3+) | Add `tmpfiles.d/mios-myapp.conf` with `d /var/lib/myapp 0755 myapp myapp -` |
 <!-- FINDINGS END -->
 
 ---
@@ -1152,20 +1152,20 @@ Run as `RUN bootc container lint` in the Containerfile (final stage).
 
 | Version | Key changes relevant to MiOS |
 |---------|--------------------------------|
-| v0.1.1 | CDI stable; read-only rootfs support confirmed working |
-| **v0.1.1** | **REGRESSION: "unresolvable CDI devices" bug — DO NOT USE** |
-| v0.1.1 | `nvidia-cdi-refresh.service` introduced for automatic CDI spec regeneration |
-| **v0.1.1** | CDI is now default mode (replaces OCI hook); `After=multi-user.target` bug introduced in cdi-refresh.service; NRI plugin server; IGX 2.0 Thor support; read-only rootfs declared stable |
+| v0.1.3 | CDI stable; read-only rootfs support confirmed working |
+| **v0.1.3** | **REGRESSION: "unresolvable CDI devices" bug — DO NOT USE** |
+| v0.1.3 | `nvidia-cdi-refresh.service` introduced for automatic CDI spec regeneration |
+| **v0.1.3** | CDI is now default mode (replaces OCI hook); `After=multi-user.target` bug introduced in cdi-refresh.service; NRI plugin server; IGX 2.0 Thor support; read-only rootfs declared stable |
 
-**As of April 2026:** v0.1.1 (March 12, 2025) is still the latest released version — no post-v0.1.1 line has shipped. MiOS ships nvidia-container-toolkit ≥ v0.1.1 (satisfies CVE-2025-23266/23267 fixes). (updated 2026-04-20: corrected date; no new CVEs or regressions discovered for v0.1.1 in the April-2026 pass.)
+**As of April 2026:** v0.1.3 (March 12, 2025) is still the latest released version — no post-v0.1.3 line has shipped. MiOS ships nvidia-container-toolkit ≥ v0.1.3 (satisfies CVE-2025-23266/23267 fixes). (updated 2026-04-20: corrected date; no new CVEs or regressions discovered for v0.1.3 in the April-2026 pass.)
 
 ### The nvidia-cdi-refresh.service ordering bug (CRITICAL for MiOS)
 
-**Bug introduced:** v0.1.1 (March 12, 2025 — date corrected 2026-04-20 against github.com/NVIDIA/nvidia-container-toolkit/releases; the doc previously said "March 2026")
+**Bug introduced:** v0.1.3 (March 12, 2025 — date corrected 2026-04-20 against github.com/NVIDIA/nvidia-container-toolkit/releases; the doc previously said "March 2026")
 **GitHub issue:** NVIDIA/nvidia-container-toolkit#1735
-**Current upstream state as of 2026-04-20:** v0.1.1 is still the latest tagged release. No v0.1.1 or v1.20.x has shipped. The `After=multi-user.target` ordering issue remains in-tree; MiOS's drop-in workaround in `systemd/nvidia-cdi-refresh.service.d/10-mios-ordering.conf` is still required.
+**Current upstream state as of 2026-04-20:** v0.1.3 is still the latest tagged release. No v0.1.3 or v1.20.x has shipped. The `After=multi-user.target` ordering issue remains in-tree; MiOS's drop-in workaround in `systemd/nvidia-cdi-refresh.service.d/10-mios-ordering.conf` is still required.
 
-**What happened:** v0.1.1 added `After=multi-user.target` to `nvidia-cdi-refresh.service`. This creates an ordering cycle:
+**What happened:** v0.1.3 added `After=multi-user.target` to `nvidia-cdi-refresh.service`. This creates an ordering cycle:
 - Service A wants `multi-user.target`
 - Service A also `Requires=nvidia-cdi-refresh.service`
 - `nvidia-cdi-refresh.service` has `After=multi-user.target`
@@ -1181,7 +1181,7 @@ After=systemd-modules-load.service systemd-udev-settle.service
 Wants=systemd-udev-settle.service
 ```
 
-Empty `After=` clears the inherited `After=multi-user.target`; then re-declares sane minimal ordering. This drop-in was in the repo before v0.1.1 due to anticipation from reading the upstream issue — validated correct.
+Empty `After=` clears the inherited `After=multi-user.target`; then re-declares sane minimal ordering. This drop-in was in the repo before v0.1.3 due to anticipation from reading the upstream issue — validated correct.
 
 ### CDI spec format (current)
 
@@ -1221,7 +1221,7 @@ Old `--runtime=nvidia` / OCI hook approach is deprecated; CDI is now the default
 - **RTX 50xx (Blackwell):** ONLY compatible with open kernel modules (kmod-nvidia-open). Proprietary modules do not support Blackwell architecture.
 - **RTX 40xx (Ada, including RTX 4090):** Both open and proprietary modules work; open modules recommended going forward.
 - **Driver version for RTX 4090 + RTX 50xx:** 570.x series (open modules only from 570+).
-- **ucore-hci `stable-nvidia`:** Ships NVIDIA open modules v0.1.1 as of April 2026.
+- **ucore-hci `stable-nvidia`:** Ships NVIDIA open modules v0.1.3 as of April 2026.
 
 **MiOS implication:** `34-gpu-detect.sh` should detect RTX 4090 (GA102, Ada Lovelace) and ensure open modules are not accidentally blacklisted. The bare-metal detection path is correct; Blackwell compatibility is provided by the ucore-hci base (open module pipeline).
 
@@ -1229,10 +1229,10 @@ Old `--runtime=nvidia` / OCI hook approach is deprecated; CDI is now the default
 
 | CVE | Severity | Fixed in | Description |
 |-----|----------|----------|-------------|
-| CVE-2025-23266 | Critical | v0.1.1+ | Container escape via CDI device injection |
-| CVE-2025-23267 | High | v0.1.1+ | Privilege escalation in OCI hook path |
+| CVE-2025-23266 | Critical | v0.1.3+ | Container escape via CDI device injection |
+| CVE-2025-23267 | High | v0.1.3+ | Privilege escalation in OCI hook path |
 
-MiOS target of nvidia-container-toolkit v0.1.1 satisfies both CVEs.
+MiOS target of nvidia-container-toolkit v0.1.3 satisfies both CVEs.
 <!-- FINDINGS END -->
 
 ---
@@ -1390,7 +1390,7 @@ Knowledge cutoff: August 2025 (confirmed). Items marked [INFERRED] are trajector
 
 - **OCI artifact tracking (v38+):** Renovate added support for non-image OCI objects (Helm charts, Sigstore policy bundles pushed as OCI). Uses same `docker` datasource. Relevant if MiOS begins tracking cosign key bundles or attestations as OCI artifacts.
 
-- **`hostRules` for ghcr.io (2025 change):** GitHub Actions token scoping changed. Renovate running as a GitHub App requires `packages: read` permission on the installation to pull manifests from `ghcr.io`. Verify the Renovate App installation has this scope on the `mios-project/mios` repo.
+- **`hostRules` for ghcr.io (2025 change):** GitHub Actions token scoping changed. Renovate running as a GitHub App requires `packages: read` permission on the installation to pull manifests from `ghcr.io`. Verify the Renovate App installation has this scope on the `Kabuki94/MiOS-bootstrap` repo.
 
 **Action items for this repo's `renovate.json`:**
 
@@ -1422,7 +1422,7 @@ Add this after the system_files overlay step in Containerfile if SELinux context
 
 **Bind-mount + restorecon pattern:** For fixing labels on immutable binaries without a full rebuild, bind-mount the specific file from a writable layer, fix the context, then unmount. This is for emergency use only — prefer fixing the image.
 
-**SELinux enforcing + composefs verity:** Both can be active simultaneously. composefs verity verifies content integrity (cryptographic); SELinux enforces access control (MAC). They do not conflict. bootc v0.1.1 added SELinux enforcement for sealed images.
+**SELinux enforcing + composefs verity:** Both can be active simultaneously. composefs verity verifies content integrity (cryptographic); SELinux enforces access control (MAC). They do not conflict. bootc v0.1.3 added SELinux enforcement for sealed images.
 
 **Sealed image SELinux (bootc v1.14+):** When `composefs.enabled = signed` (not just verity), bootc can enforce SELinux policy from the image itself during the pivot-root stage — before `init` starts. This prevents policy tampering via writable `/etc`. MiOS uses `verity` (not `signed`) — upgrade to `signed` for maximum hardening when Fedora CI is ready for it.
 
@@ -1479,7 +1479,7 @@ TimeoutStartSec=300
 
 **Firewall bouncer:** `crowdsec-firewall-bouncer` works with `nftables` by default in Fedora 44+ (firewalld backend). Ensure `firewalld` is using `nftables` backend (default in F44). No special config needed — mios `20-services.sh` enables `crowdsec-firewall-bouncer`.
 
-**CrowdSec engine version (as of 2026-04-20):** **v0.1.1** (released March 23, 2026). The 1.7.x series switched regex engine to **RE2** — noticeably faster matching, with slightly slower regex *compile* and a small baseline memory uptick (acceptable tradeoff for a workstation/server IDS). Adds a new `kind` attribute on alerts for source identification and a **polling API** that lets the CrowdSec Console send remote decision-management orders to engines. MiOS is not pinning a specific crowdsec version — it inherits whatever Fedora/COPR ships, which is fine; flag if an explicit version pin becomes necessary.
+**CrowdSec engine version (as of 2026-04-20):** **v0.1.3** (released March 23, 2026). The 1.7.x series switched regex engine to **RE2** — noticeably faster matching, with slightly slower regex *compile* and a small baseline memory uptick (acceptable tradeoff for a workstation/server IDS). Adds a new `kind` attribute on alerts for source identification and a **polling API** that lets the CrowdSec Console send remote decision-management orders to engines. MiOS is not pinning a specific crowdsec version — it inherits whatever Fedora/COPR ships, which is fine; flag if an explicit version pin becomes necessary.
 
 ### USBGuard configuration requirements
 
@@ -1533,11 +1533,11 @@ TimeoutStartSec=300
 
 ### 2026-04-25 update — CVE-2026-39395 = GHSA-w6c6-c85g-mmv6 (cosign DSSE)
 
-CVE assignment confirmed for the cosign verify-blob-attestation false-positive flaw fixed in v0.1.1 / v0.1.1 (April 6, 2026). **MiOS already pinned to v0.1.1** — see Section 8 update for full detail. No action required.
+CVE assignment confirmed for the cosign verify-blob-attestation false-positive flaw fixed in v0.1.3 / v0.1.3 (April 6, 2026). **MiOS already pinned to v0.1.3** — see Section 8 update for full detail. No action required.
 
-### 2026-04-25 update — CrowdSec timeline still 1.7.x; no v0.1.1
+### 2026-04-25 update — CrowdSec timeline still 1.7.x; no v0.1.3
 
-Confirmed via github.com/crowdsecurity/crowdsec/releases: latest tag remains **v0.1.1** (March 30, 2025 — note this date is exactly 13 months stale, but no v0.1.1 RC has been cut). The 1.7.x line is therefore the long-running stable for the foreseeable future. No CVEs against engine 1.7.x in 2026 to date. The MiOS guidance (inherit Fedora/COPR-shipped version, no explicit pin) remains correct. Re-check this once a v0.1.1 timeline is published.
+Confirmed via github.com/crowdsecurity/crowdsec/releases: latest tag remains **v0.1.3** (March 30, 2025 — note this date is exactly 13 months stale, but no v0.1.3 RC has been cut). The 1.7.x line is therefore the long-running stable for the foreseeable future. No CVEs against engine 1.7.x in 2026 to date. The MiOS guidance (inherit Fedora/COPR-shipped version, no explicit pin) remains correct. Re-check this once a v0.1.3 timeline is published.
 <!-- FINDINGS END -->
 
 ---
@@ -1549,10 +1549,10 @@ Confirmed via github.com/crowdsecurity/crowdsec/releases: latest tag remains **v
 <!-- FINDINGS BEGIN -->
 ### GNOME 50 bugfix series
 
-- **GNOME 50** released March 2026 (stable). MiOS migrated from xRDP → `gnome-remote-desktop` for headless RDP support in v0.1.1 (April 22, 2026).
+- **GNOME 50** released March 2026 (stable). MiOS migrated from xRDP → `gnome-remote-desktop` for headless RDP support in v0.1.3 (April 22, 2026).
 - **GNOME 50.1** released **2026-04-15** — first bugfix release. Notable fixes:
   - **Mutter performance regression with several NVIDIA driver versions resolved** (Mutter 50.1). High-impact for MiOS `stable-nvidia` users on Ada/Blackwell.
-  - GTK4 → v0.1.1; GTK3 → v0.1.1.
+  - GTK4 → v0.1.3; GTK3 → v0.1.3.
   - On-screen keyboard fits very small screens.
   - Lock-screen network agent enabled by default.
   - Captive-portal basic zoom support.
@@ -1595,10 +1595,10 @@ Confirmed via github.com/crowdsecurity/crowdsec/releases: latest tag remains **v
 
 ---
 ### ⚖️ Legal & Source Reference
-- **Copyright:** (c) 2026 MiOS Project
+- **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
-- **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
-- **Documentation:** [MiOS Navigation Hub](https://github.com/mios-project/mios/blob/main/specs/Home.md)
-- **Artifact Hub:** [ai-context.json](https://github.com/mios-project/mios/blob/main/ai-context.json)
+- **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

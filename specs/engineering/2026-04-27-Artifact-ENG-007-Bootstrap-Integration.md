@@ -1,4 +1,4 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 # MiOS Bootstrap Repository Integration
 
 ```json:knowledge
@@ -28,7 +28,7 @@
 }
 ```
 
-> **Repository:** https://github.com/mios-project/MiOS-bootstrap
+> **Repository:** https://github.com/Kabuki94/MiOS-bootstrap
 > **Purpose:** Home of fully compiled artifacts every build, push, local build entry point
 > **Auto-Update:** Wiki automatically updates with every artifacts-as-logs/build-logs to bootstrap repo
 
@@ -53,7 +53,7 @@ The MiOS-bootstrap repository serves as the **distribution hub** for all MiOS ar
 ```
 MiOS-bootstrap/
 ├── ai-rag-packages/
-│   └── v0.1.2/
+│   └── v0.1.3/
 │       ├── mios-complete-rag-TIMESTAMP.tar.xz       (509 KB) ← PRIMARY
 │       ├── mios-complete-rag-TIMESTAMP.tar.gz       (814 KB) [legacy]
 │       ├── mios-knowledge-complete-TIMESTAMP.tar.xz (4.2 KB)
@@ -65,15 +65,15 @@ MiOS-bootstrap/
 │       ├── manifest.json                            (metadata)
 │       └── README.md
 ├── build-logs/
-│   └── v0.1.2/
+│   └── v0.1.3/
 │       └── latest-build.log
 ├── output/
-│   └── v0.1.2/
+│   └── v0.1.3/
 │       ├── *.sha256                                 (checksums)
 │       ├── *.json                                   (metadata)
 │       └── *.txt                                    (build info)
 └── wiki/
-    └── v0.1.2/
+    └── v0.1.3/
         ├── INDEX.md
         ├── README.md
         ├── AI-AGENT-GUIDE.md
@@ -98,10 +98,10 @@ MiOS-bootstrap/
 
 ```bash
 # Clone the bootstrap repository
-git clone https://github.com/mios-project/MiOS-bootstrap ~/MiOS-bootstrap
+git clone https://github.com/Kabuki94/MiOS-bootstrap ~/MiOS-bootstrap
 
 # Clone the Wiki repository (for auto-updates)
-git clone https://github.com/mios-project/MiOS-bootstrap.wiki ~/MiOS-bootstrap.wiki
+git clone https://github.com/Kabuki94/MiOS-bootstrap.wiki ~/MiOS-bootstrap.wiki
 ```
 
 ### 2. Set Environment Variable (Optional)
@@ -169,8 +169,8 @@ Add to `.github/workflows/build-sign.yml`:
 ```yaml
 - name: Log artifacts to bootstrap
   run: |
-    git clone https://github.com/mios-project/MiOS-bootstrap /tmp/bootstrap
-    git clone https://github.com/mios-project/MiOS-bootstrap.wiki /tmp/bootstrap.wiki
+    git clone https://github.com/Kabuki94/MiOS-bootstrap /tmp/bootstrap
+    git clone https://github.com/Kabuki94/MiOS-bootstrap.wiki /tmp/bootstrap.wiki
     BOOTSTRAP_REPO=/tmp/bootstrap ./tools/log-to-bootstrap.sh
 
 - name: Push bootstrap updates
@@ -203,7 +203,7 @@ if (Test-Path "$env:USERPROFILE\MiOS-bootstrap\.git") {
     Write-Host "✓ Artifacts logged to bootstrap" -ForegroundColor Green
 } else {
     Write-Warning "MiOS-bootstrap repository not found. Clone it first:"
-    Write-Host "  git clone https://github.com/mios-project/MiOS-bootstrap $env:USERPROFILE\MiOS-bootstrap"
+    Write-Host "  git clone https://github.com/Kabuki94/MiOS-bootstrap $env:USERPROFILE\MiOS-bootstrap"
 }
 ```
 
@@ -320,7 +320,7 @@ The script auto-generates `manifest.json` in the artifacts directory:
 
 ```json
 {
-  "mios_version": "v0.1.2",
+  "mios_version": "v0.1.3",
   "generated_at": "2026-04-27T18:00:00Z",
   "artifacts": {
     "ai_rag": { ... },
@@ -359,16 +359,16 @@ The script auto-generates `manifest.json` in the artifacts directory:
 cd ~/MiOS-bootstrap
 
 # Check artifacts
-ls -lh ai-rag-packages/v0.1.2/
+ls -lh ai-rag-packages/v0.1.3/
 
 # Check build logs
-ls -lh build-logs/v0.1.2/
+ls -lh build-logs/v0.1.3/
 
 # Check Wiki docs
-ls -lh wiki/v0.1.2/
+ls -lh wiki/v0.1.3/
 
 # View manifest
-cat ai-rag-packages/v0.1.2/manifest.json
+cat ai-rag-packages/v0.1.3/manifest.json
 ```
 
 ### Check Wiki Sync
@@ -395,7 +395,7 @@ git log -1
 
 ```bash
 # Clone it
-git clone https://github.com/mios-project/MiOS-bootstrap ~/MiOS-bootstrap
+git clone https://github.com/Kabuki94/MiOS-bootstrap ~/MiOS-bootstrap
 
 # Or set custom location
 export BOOTSTRAP_REPO=/path/to/MiOS-bootstrap
@@ -405,7 +405,7 @@ export BOOTSTRAP_REPO=/path/to/MiOS-bootstrap
 
 ```bash
 # Clone it
-git clone https://github.com/mios-project/MiOS-bootstrap.wiki ~/MiOS-bootstrap.wiki
+git clone https://github.com/Kabuki94/MiOS-bootstrap.wiki ~/MiOS-bootstrap.wiki
 
 # Or adjust path in script (default: ${BOOTSTRAP_REPO}/../MiOS-bootstrap.wiki)
 ```
@@ -452,7 +452,7 @@ just log-bootstrap
 # 3. Commit and push bootstrap updates
 cd ~/MiOS-bootstrap
 git add .
-git commit -m "Add MiOS v0.1.2 artifacts - $(date -u +%Y-%m-%d)"
+git commit -m "Add MiOS v0.1.3 artifacts - $(date -u +%Y-%m-%d)"
 git push
 
 # 4. Push Wiki updates (already committed by script)
@@ -496,9 +496,9 @@ git push
 
 ## References
 
-- **Main Repository:** https://github.com/mios-project/mios
-- **Bootstrap Repository:** https://github.com/mios-project/MiOS-bootstrap
-- **Wiki:** https://github.com/mios-project/MiOS-bootstrap/wiki
+- **Main Repository:** https://github.com/Kabuki94/MiOS-bootstrap
+- **Bootstrap Repository:** https://github.com/Kabuki94/MiOS-bootstrap
+- **Wiki:** https://github.com/Kabuki94/MiOS-bootstrap/wiki
 - **Script:** [tools/log-to-bootstrap.sh](../../tools/log-to-bootstrap.sh)
 - **Justfile Targets:** [Justfile](../../Justfile) (lines 99-108)
 - **Compression Summary:** [artifacts/COMPRESSION-SUMMARY.md](../../artifacts/COMPRESSION-SUMMARY.md)
@@ -506,4 +506,4 @@ git push
 
 ---
 
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

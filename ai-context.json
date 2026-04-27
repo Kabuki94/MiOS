@@ -1,29 +1,47 @@
 {
-  "project": "MiOS",
-  "version": "0.1.1",
-  "description": "System Context",
-  "harness_instructions": "This JSON structure provides a parse-able map of all project documentation, logs, and memories. AI agents should use the 'manifests' keys to locate specific data categories. Each manifest contains 'full_content' for direct ingestion.",
+  "project": "MiOS-DEV",
+  "version": "0.1.3",
+  "description": "Unified System Context for AI Agents and FOSS LLMs",
+  "harness_instructions": "This JSON structure provides a parse-able map of all project documentation, logs, and memories. AI agents should use the 'manifests' keys to locate specific data categories. All manifests follow the v0.1.3 promotional baseline.",
   "manifests": {
+    "root": "root-manifest.json",
     "documentation": "specs/manifest.json",
     "memories": ".ai/foundation/memories/manifest.json",
     "artifacts": "artifacts/manifest.json.gz",
     "automation": "automation/manifest.json",
     "tools": "tools/manifest.json",
-    "usr": "usr/",
-    "etc": "etc/",
-    "var": "var/",
-    "home": "home/",
+    "config": "config/manifest.json",
     "evals": "evals/manifest.json",
-    "config": "config/artifacts/manifest.json",
-    "research": "agents/research/manifest.json",
-    "deep_search": "agents/deep-search/manifest.json",
+    "usr": "usr/manifest.json",
+    "etc": "etc/manifest.json",
+    "var": "var/manifest.json",
+    "home": "home/manifest.json",
+    "agents": "agents/manifest.json",
     "ai_tools": ".well-known/ai-tools.json",
-    "user_identity": "identity.env.example",
-    "root": "root-manifest.json"
+    "ai_redirects": "specs/ai-integration/2026-04-27-Artifact-AI-006-Unified-Redirects.md"
   },
   "standard_formats": {
     "documentation": "Markdown (embedded in JSON)",
     "logs": "Markdown Journal (embedded in JSON)",
     "rendering_hint": "Content fields contain raw Markdown intended for rendering via standard Markdown-to-Markup processors for visual embedding."
+  },
+  "ai_api_agnostic_patterns": {
+    "local_proxy": "http://localhost:8080/v1",
+    "protocol_priority": [
+      "OpenAI (FOSS)",
+      "Gemini (Vertex)",
+      "Claude (Anthropic)"
+    ],
+    "environment_mapping": {
+      "key": "MIOS_AI_KEY",
+      "model": "MIOS_AI_MODEL",
+      "endpoint": "MIOS_AI_ENDPOINT"
+    },
+    "foss_llm_tagging": "MiOS-v0.1.3-Native"
+  },
+  "linux_native_compliance": {
+    "layout": "FHS 3.0 + USR-OVER-ETC",
+    "immutability": "bootc-v1.1.x compatible",
+    "state_management": "tmpfiles.d mandatory"
   }
 }

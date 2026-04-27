@@ -1,7 +1,7 @@
 [Unit]
 Description=MiOS AMD GPU container plumbing (ROCm/KFD + DRI)
 ConditionVirtualization=!container
-Documentation=https://github.com/Kabuki94/mios/blob/main/specs/gpu-passthrough.md
+Documentation=https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/gpu-passthrough.md
 ConditionPathExists=/dev/kfd
 After=systemd-modules-load.service systemd-udev-settle.service
 Wants=systemd-udev-settle.service

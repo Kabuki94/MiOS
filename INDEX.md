@@ -1,4 +1,4 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 # INDEX.md — MiOS Universal Agent Hub
 
 ```json:knowledge
@@ -26,8 +26,8 @@
       ".windsurfrules"
     ]
   },
-  "last_rag_sync": "2026-04-27T15:03:21.271935",
-  "version": "0.1.2"
+  "last_rag_sync": "2026-04-27T17:48:00Z",
+  "version": "0.1.3"
 }
 ```
 
@@ -39,20 +39,20 @@
 
 **IMPORTANT:** This INDEX.md is a snapshot. **ALWAYS check the Wiki for current/updated information:**
 
-- **Wiki Home:** https://github.com/mios-project/MiOS-bootstrap/wiki
+- **Wiki Home:** https://github.com/Kabuki94/MiOS-bootstrap/wiki
 - **Update Frequency:** Every build, push, and local build entry point
 - **Purpose:** PRIMARY source for current tasks, research patterns, artifacts, and build logs
 
 **Key Wiki Pages:**
-- [Home](https://github.com/mios-project/MiOS-bootstrap/wiki/Home) — Latest version, quick start
-- [AI Integration](https://github.com/mios-project/MiOS-bootstrap/wiki/AI-Integration-Index) — Current AI patterns
-- [Quick Reference](https://github.com/mios-project/MiOS-bootstrap/wiki/Quick-Reference) — Essential commands
-- [AI Agent Guide](https://github.com/mios-project/MiOS-bootstrap/wiki/AI-AGENT-GUIDE) — Hard rules, protected files
-- [INDEX](https://github.com/mios-project/MiOS-bootstrap/wiki/INDEX) — This file (Wiki version)
+- [Home](https://github.com/Kabuki94/MiOS-bootstrap/wiki/Home) — Latest version, quick start
+- [AI Integration](https://github.com/Kabuki94/MiOS-bootstrap/wiki/AI-Integration-Index) — Current AI patterns
+- [Quick Reference](https://github.com/Kabuki94/MiOS-bootstrap/wiki/Quick-Reference) — Essential commands
+- [AI Agent Guide](https://github.com/Kabuki94/MiOS-bootstrap/wiki/AI-AGENT-GUIDE) — Hard rules, protected files
+- [INDEX](https://github.com/Kabuki94/MiOS-bootstrap/wiki/INDEX) — This file (Wiki version)
 
-**Bootstrap Repository:** https://github.com/mios-project/MiOS-bootstrap
-- Artifacts: https://github.com/mios-project/MiOS-bootstrap/tree/main/ai-rag-packages
-- Build Logs: https://github.com/mios-project/MiOS-bootstrap/tree/main/build-logs
+**Bootstrap Repository:** https://github.com/Kabuki94/MiOS-bootstrap
+- Artifacts: https://github.com/Kabuki94/MiOS-bootstrap/tree/main/ai-rag-packages
+- Build Logs: https://github.com/Kabuki94/MiOS-bootstrap/tree/main/build-logs
 
 **Workflow for New Tasks:**
 1. Check Wiki for latest documentation and patterns
@@ -65,7 +65,7 @@
 MiOS is a **bootc-based, self-building, immutable workstation OS** on Fedora Rawhide.
 One OCI image covers all hardware roles: desktop, k3s/HA, GPU passthrough (VFIO), WSL2.
 Published at `$MIOS_IMAGE_NAME:latest`. Deployed systems update atomically via `sudo bootc upgrade`.
-Sole proprietor: **MiOS Project**. Target: AMD Ryzen 9 9950X3D + NVIDIA RTX 4090, hardware-agnostic by design.
+Sole proprietor: **MiOS-DEV**. Target: AMD Ryzen 9 9950X3D + NVIDIA RTX 4090, hardware-agnostic by design.
 
 **Version History:** MiOS-1 (Fedora bootc + akmod drivers) → MiOS-2/v0.1.x (ucore-hci + pre-signed NVIDIA) → MiOS-NXT (future: Project Hummingbird integration, SBOM generation, minimal variants).
 
@@ -117,6 +117,20 @@ MiOS is optimized for OpenAI API standards and AI scrapers:
 4. **Seed Context:** New agents initialized in this workspace should immediately ingest `INDEX.md` and the latest RAG snapshot at `.ai/foundation/shared-tmp/latest-context.json.gz` to establish full structural awareness.
 
 
+## 🔄 Self-Updating Build Lifecycle
+
+MiOS-DEV implements an autonomous documentation and artifact cycle triggered on every build entry point (Local, Windows, or Cloud):
+
+1. **Entry Point Build**: A build is triggered (Cloud, Local, or platform-agnostic).
+2. **Log Generation**: The master build runner (`automation/build.sh`) captures a deep technical log.
+3. **Repo Snapshot**: The `artifact` target refreshes the UKB, RAG snapshot, and machine-readable manifests.
+4. **Artifacting**: All build-time intelligence is packed into `.json.gz` and `.tar.gz` blobs in `artifacts/`.
+5. **Wiki Push**: Documentation, task lists, and research results are automatically pushed to the [Repository Wiki](https://github.com/Kabuki94/MiOS-bootstrap/wiki) for real-time AI retrieval.
+
+**Source Tracking:** https://github.com/Kabuki94/MiOS-bootstrap (Build Log & History)
+
+---
+
 ## Build & Test
 
 ```bash
@@ -136,15 +150,17 @@ just clean                                 # Remove output/ and local images
 
 The `Containerfile` has two stages:
 
-1. **`ctx` stage** — `scratch` image assembling: `automation/`, ``,
-   `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` (as `/ctx/PACKAGES.md`), `VERSION`, `bib-configs/`, `tools/`
-2. **`main` stage** — applies `` overlay via `08-system-files-overlay.sh`, then runs
-   `automation/build.sh` (all `automation/[0-9][0-9]-*.sh` in order)
+1. **`ctx` stage** — `scratch` image assembling: `automation/`, `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` (as `/ctx/PACKAGES.md`), `VERSION`, `config/`, `tools/`
+2. **`main` stage** — applies system overlay via `08-system-files-overlay.sh`, then runs `automation/build.sh` (all `automation/[0-9][0-9]-*.sh` in order)
 
-Scripts `18-`, `19-`, `20-`, `21-`, `22-`, `23-`, `25-`, `26-`, `37-` are called explicitly by the
-Containerfile *after* `build.sh` completes — do not also run them inside `build.sh`.
+Scripts `18-`, `19-`, `20-`, `21-`, `22-`, `23-`, `25-`, `26-`, `37-` are called explicitly by the Containerfile *after* `build.sh` completes — do not also run them inside `build.sh`.
 
-### Package system
+### Unified Manifest System (v0.1.3)
+
+MiOS-DEV uses a multi-layered manifest system for AI agent awareness:
+- **`root-manifest.json`**: Global map of root files and core scripts.
+- **`ai-context.json`**: Entry point for agents; maps all sub-manifests (`usr/`, `etc/`, `specs/`, etc.).
+- **`artifacts/manifest.json.gz`**: Machine-readable index of historical blobs and compressed research.
 
 All packages declared in `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` in fenced blocks:
 
@@ -176,6 +192,7 @@ These are absolute. Any violation causes state drift, CI failure, or broken depl
 6. **NOVA-CORE-BLACKLIST** — On Fedora 44+ (kernel 6.15+), blacklist both `nouveau` **and** `nova_core`. The `nova_core` module was introduced in kernel 6.15 and conflicts with the proprietary NVIDIA driver if not blacklisted.
 7. **BOOTC-CONTAINER-LINT** — `RUN bootc container lint` must be the final instruction in every Containerfile. Since v1.1.6 it enforces: single kernel present, valid kargs.d syntax, `/var` content has `tmpfiles.d` backing, correct kernel path, and other hygiene checks.
 8. **NO-DNF-UPGRADE-UNCONDITIONAL** — Never `RUN dnf -y upgrade` without specifying package names. Use targeted `dnf install` or `dnf upgrade <package>` to maintain build reproducibility.
+9. **UNIFIED-AI-REDIRECTS** — AI API integration MUST use agnostic environment variables (`MIOS_AI_KEY`, `MIOS_AI_MODEL`) and target the local proxy at `http://localhost:8080/v1` (FOSS-priority). Gemini and Claude specific patterns are supported via standard redirects documented in `specs/ai-integration/`.
 
 ## Hard Rules (build-breaking violations)
 
@@ -229,7 +246,7 @@ Never: `[kargs]` section header · `delete =` · `delete_kargs =` · `kargs.appe
 
 - Current `bootc-image-builder` uses a single config file mounted at `/config.toml`. ISO-specific settings go under `[customizations.iso]` within that file. Never mount multiple config files simultaneously (BIB crashes: "found config.json and also config.toml"). The `iso.toml` / `bib.toml` naming is obsolete — use `/config.toml` exclusively.
 - `--type vhd` outputs VPC/VHD, **not VHDX** — always post-convert: `qemu-img convert -f raw -O vhdx -o subformat=dynamic disk.raw disk.vhdx`. Hyper-V targets require Gen 2 VMs (UEFI); Gen 1 (BIOS/MBR) is incompatible with bootc's EFI boot chain.
-- No WSL2 tarball output from BIB (issue #172, open since 2024). WSL2 distribution is built via: `podman export $(podman create ghcr.io/mios-project/mios:latest) -o mios.tar && wsl --import MiOS ...`
+- No WSL2 tarball output from BIB (issue #172, open since 2024). WSL2 distribution is built via: `podman export $(podman create ghcr.io/kabuki94/mios:latest) -o mios.tar && wsl --import MiOS ...`
 
 ### Platform detection & runtime gating
 
@@ -275,7 +292,7 @@ All agents append to `journal.md` with timestamp + agent identity tag:
 
 ## Protected Files
 
-Do not modify without explicit authorization from MiOS Project:
+Do not modify without explicit authorization from MiOS-DEV:
 
 - `VERSION` and `CHANGELOG.md` — managed only via `push-to-github.ps1`
 - `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` — surgical edits only
@@ -341,7 +358,7 @@ To ensure all Markdown files are machine-parsable and referencable, they must in
     ]
   },
   "last_rag_sync": "2026-04-27T15:03:21.271935",
-  "version": "0.1.2"
+  "version": "0.1.3"
 }
 ```
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

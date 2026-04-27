@@ -1,5 +1,5 @@
 #!/bin/bash
-# MiOS v0.1.1 — 37-selinux: Build-time SELinux policy fixes
+# MiOS v0.1.3 — 37-selinux: Build-time SELinux policy fixes
 # Custom per-rule modules for known Fedora Rawhide / systemd 260 denials.
 set -euo pipefail
 
@@ -159,7 +159,8 @@ allow xdm_t cache_home_t:file { create write read open getattr setattr };'
         if checkmodule -M -m -o "/tmp/mios_${name}.mod" "/tmp/mios_${name}.te" 2>/dev/null && \
            semodule_package -o "/tmp/mios_${name}.pp" -m "/tmp/mios_${name}.mod" 2>/dev/null; then
             install -m 0644 "/tmp/mios_${name}.pp" "/usr/share/selinux/packages/mios/mios_${name}.pp"
-            echo "[37-selinux] mios_${name}: Staged"
+            semodule -i "/tmp/mios_${name}.pp" 2>/dev/null || true
+            echo "[37-selinux] mios_${name}: Staged and Installed"
             SELINUX_OK=$((SELINUX_OK + 1))
         else
             echo "[37-selinux] mios_${name}: SKIPPED (type missing in current policy)"

@@ -1,4 +1,4 @@
-# MiOS v0.1.1 — NVIDIA kernel module overrides
+# MiOS v0.1.3 — NVIDIA kernel module overrides
 match-architectures = ["x86_64"]
 kargs = [
     "nvidia.NVreg_OpenRmEnableUnsupportedGpus=1",

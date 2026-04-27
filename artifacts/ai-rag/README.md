@@ -1,6 +1,6 @@
 # MiOS AI RAG Artifacts
 
-**Version:** v0.1.2
+**Version:** v0.1.3
 **Generated:** 2026-04-27
 **Compression:** 928 MB → 509 KB (99.95% reduction, XZ-compressed)
 
@@ -144,7 +144,7 @@ TIMESTAMP=$(date -u +%Y%m%dT%H%M%SZ)
 tar -cJf artifacts/ai-rag/mios-complete-rag-${TIMESTAMP}.tar.xz \
   --exclude='.git' \
   --exclude='agents/research/.venv' \
-  --exclude='MiOSv0.1.1' \
+  --exclude='MiOSv0.1.3' \
   --exclude='artifacts' \
   --exclude='*.log' \
   --exclude='output/' \
@@ -187,5 +187,5 @@ See [specs/ai-integration/2026-04-27-Artifact-AI-001-RAG-Integration.md](../../s
 ---
 
 **Documentation:** [specs/ai-integration/](../../specs/ai-integration/)
-**Repository:** https://github.com/mios-project/mios
-**License:** Personal Property - MiOS Project
+**Repository:** https://github.com/Kabuki94/MiOS-bootstrap
+**License:** Personal Property - MiOS-DEV
