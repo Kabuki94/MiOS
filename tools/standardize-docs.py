@@ -13,7 +13,7 @@ FOOTER = """---
 - **Copyright:** (c) 2026 Kabu.ki
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
-- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/docs/Home.md)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
 ---"""
 
@@ -38,12 +38,12 @@ def standardize_file(file_path):
 
 if __name__ == "__main__":
     targets = [
-        "docs/audit",
-        "docs/changelogs",
-        "docs/core",
-        "docs/engineering",
-        "docs/memory",
-        "docs/knowledge"
+        "specs/audit",
+        "specs/changelogs",
+        "specs/core",
+        "specs/engineering",
+        "specs/memory",
+        "specs/knowledge"
     ]
     for target_dir in targets:
         if not os.path.exists(target_dir):

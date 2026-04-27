@@ -8,11 +8,11 @@
     "kargs.d/*": "toml",
     "*.ps1": "powershell",
     "Justfile": "makefile",
-    "scripts/mios-*": "shellscript",
-    "system_files/usr/libexec/mios/*": "shellscript",
-    "system_files/usr/bin/gamescope-session-steam": "shellscript",
-    "system_files/usr/local/bin/mios-ceph": "shellscript",
-    "system_files/etc/greenboot/check/wanted.d/*": "shellscript"
+    "automation/mios-*": "shellscript",
+    "overlay/usr/libexec/mios/*": "shellscript",
+    "overlay/usr/bin/gamescope-session-steam": "shellscript",
+    "overlay/usr/local/bin/mios-ceph": "shellscript",
+    "overlay/etc/greenboot/check/wanted.d/*": "shellscript"
   },
 
   "files.eol": "\n",
@@ -38,7 +38,7 @@
     "**/*.vhdx": true,
     "**/*.iso": true,
     "**/*.raw": true,
-    "docs/knowledge/blueprints/*.docx": true
+    "specs/knowledge/blueprints/*.docx": true
   },
 
   "cSpell.words": [
@@ -583,7 +583,7 @@
   "git.confirmSync": true,
   "git.enableSmartCommit": false,
 
-  "_terminal_comment": "PowerShell is the ONLY terminal profile on Windows. No WSL, no Git Bash, no Cygwin — having those defined at all makes VSCodium and Claude Code pick them up as available shells, and running bare `bash` on Windows spawns external WSL popups. If you need a Linux shell, `wsl` is a one-word command in PowerShell.",
+  "_terminal_comment": "PowerShell is the ONLY terminal profile on Windows. No WSL, no Git Bash, no Cygwin — having those defined at all makes VSCodium and System Code pick them up as available shells, and running bare `bash` on Windows spawns external WSL popups. If you need a Linux shell, `wsl` is a one-word command in PowerShell.",
   "terminal.integrated.defaultProfile.windows": "PowerShell",
   "terminal.integrated.profiles.windows": {
     "PowerShell": {
@@ -614,32 +614,32 @@
   },
   "terminal.external.windowsExec": "",
 
-  "_claude_comment": "Pin Claude Code's shell to PowerShell. Multiple key variants because the extension's schema changes across versions — unknown keys ignored, known ones take effect.",
-  "claude-code.projectContextFile": "CLAUDE.md",
-  "claude-code.enableProjectAgents": true,
-  "claude-code.enableSlashCommands": true,
-  "claude-code.terminal.integration": "integrated",
-  "claude-code.terminal.useIntegrated": true,
-  "claude-code.useExternalTerminal": false,
-  "claude-code.shell.windows": "powershell",
-  "claude-code.preferredShell": "powershell",
-  "claude-code.terminal.shell": "powershell",
+  ".ai/foundation_comment": "Pin System Code's shell to PowerShell. Multiple key variants because the extension's schema changes across versions — unknown keys ignored, known ones take effect.",
+  .ai/foundation-code.projectContextFile": "SYSTEM.md",
+  .ai/foundation-code.enableProjectAgents": true,
+  .ai/foundation-code.enableSlashCommands": true,
+  .ai/foundation-code.terminal.integration": "integrated",
+  .ai/foundation-code.terminal.useIntegrated": true,
+  .ai/foundation-code.useExternalTerminal": false,
+  .ai/foundation-code.shell.windows": "powershell",
+  .ai/foundation-code.preferredShell": "powershell",
+  .ai/foundation-code.terminal.shell": "powershell",
 
   "github.copilot.chat.codeGeneration.useInstructionFiles": true,
   "github.copilot.chat.codeGeneration.instructions": [
     { "file": ".github/copilot-instructions.md" }
   ],
 
-  "geminicodeassist.project": "mios-kabu-ki-io",
-  "geminicodeassist.inlineSuggestions.enableAuto": true,
-  "geminicodeassist.enableTelemetry": false,
+  .ai/agent-statecodeassist.project": "mios-kabu-ki-io",
+  .ai/agent-statecodeassist.inlineSuggestions.enableAuto": true,
+  .ai/agent-statecodeassist.enableTelemetry": false,
 
   "terminal.integrated.env.linux": {
     "AI_ARCH_BASELINE": "v2.1.0",
     "AI_DNF_POLICY": "--setopt=install_weak_deps=False",
     "AI_WSL_GATING": "ConditionVirtualization=!wsl",
-    "AI_OVERLAY_PATH": "system_files/",
-    "AI_PKG_SOURCE": "docs/PACKAGES.md",
+    "AI_OVERLAY_PATH": "overlay/",
+    "AI_PKG_SOURCE": "specs/PACKAGES.md",
     "AI_COSIGN_PIN": "v2.1.0",
     "AI_WORKSPACE_TYPE": "bootable-container",
     "AI_JOURNALING_LAW": "MANDATORY"
@@ -648,8 +648,8 @@
     "AI_ARCH_BASELINE": "v2.1.0",
     "AI_DNF_POLICY": "--setopt=install_weak_deps=False",
     "AI_WSL_GATING": "ConditionVirtualization=!wsl",
-    "AI_OVERLAY_PATH": "system_files/",
-    "AI_PKG_SOURCE": "docs/PACKAGES.md",
+    "AI_OVERLAY_PATH": "overlay/",
+    "AI_PKG_SOURCE": "specs/PACKAGES.md",
     "AI_COSIGN_PIN": "v2.1.0",
     "AI_WORKSPACE_TYPE": "bootable-container",
     "AI_JOURNALING_LAW": "MANDATORY"

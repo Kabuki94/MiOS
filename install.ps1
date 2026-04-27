@@ -108,7 +108,7 @@ switch ($choice) {
 
         Write-Host "  Copying repository to $buildPath ..." -ForegroundColor Cyan
         # Copy-Item with -Recurse and -Force. Use a robust way to copy content including hidden files if needed.
-        # But simple Copy-Item repo/* to build/ is usually fine.
+        # But simple Copy-Item repo/* to automation/ is usually fine.
         Get-ChildItem -Path $MiosRepoDir -Recurse | Copy-Item -Destination { Join-Path $buildPath $_.FullName.Substring($MiosRepoDir.Length) } -Force
 
         Write-Host "  Launching build script from $buildPath ..." -ForegroundColor Cyan

@@ -1,1 +1,0 @@
-../../docs/memory/2026-04-26-Artifact-MEM-004-Work-Plan.md

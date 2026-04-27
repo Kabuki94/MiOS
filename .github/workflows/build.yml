@@ -124,8 +124,8 @@ jobs:
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             IMAGE="${{ env.IMAGE_NAME }}:latest"
           fi
-          chmod +x tests/smoke-test.sh
-          ./tests/smoke-test.sh "$IMAGE"
+          chmod +x evals/smoke-test.sh
+          ./evals/smoke-test.sh "$IMAGE"
 
       - name: Rechunk image
         id: rechunk

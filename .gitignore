@@ -25,7 +25,7 @@ Desktop.ini
 .idea/
 
 # --- Build output ---
-build/
+automation/
 output/
 *.qcow2
 *.vhdx

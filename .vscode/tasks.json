@@ -117,7 +117,7 @@
       "command": "wsl",
       "args": [
         "-e", "bash", "-c",
-        "./scripts/bcvk-wrapper.sh --image build/mios-smoke.qcow2 --timeout 300 --serial-log build/smoke-serial.log && ./scripts/smoke-check.sh build/smoke-serial.log"
+        "./automation/bcvk-wrapper.sh --image automation/mios-smoke.qcow2 --timeout 300 --serial-log automation/smoke-serial.log && ./automation/smoke-check.sh automation/smoke-serial.log"
       ],
       "group": "test",
       "problemMatcher": [],

@@ -1,6 +1,6 @@
 output/
-deep-search-6418/.venv/
-deep-search-6418/frontend/node_modules/
-.claude/memories/journal.md
-docs/memory/
+agents/deep-search/.venv/
+agents/deep-search/frontend/node_modules/
+.ai/foundation/memories/journal.md
+specs/memory/
 artifacts/

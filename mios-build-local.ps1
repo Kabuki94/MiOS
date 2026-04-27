@@ -248,7 +248,7 @@ $ram = [math]::Floor((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory 
 Write-OK "CPU: $cpu cores | RAM: $ram MB"
 
 if ($DoBuild) {
-    foreach ($f in "Containerfile","docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md","VERSION","scripts/build.sh","scripts/31-user.sh") {
+    foreach ($f in "Containerfile","specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md","VERSION","automation/build.sh","automation/31-user.sh") {
         if (-not (Test-Path $f)) { Write-Fatal "Missing required file: $f — are you in the MiOS repo root?" }
     }
     Write-OK "All repo files present"
@@ -350,7 +350,7 @@ if ($DoPull) {
     # ── Inject hostname (only if custom; restored via git checkout after build) ──
     if ($HostIn -ne "mios") {
         Write-Step "Injecting static hostname: $HostIn ..."
-        Set-Content "system_files/etc/hostname" "$HostIn" -Encoding ascii
+        Set-Content "overlay/etc/hostname" "$HostIn" -Encoding ascii
     }
 
     $t0 = Get-Date
@@ -366,7 +366,7 @@ if ($DoPull) {
     if ($LASTEXITCODE -ne 0) { Write-Fatal "podman build failed" }
 
     # Restore hostname if it was temporarily overridden
-    & git checkout system_files/etc/hostname 2>$null | Out-Null
+    & git checkout overlay/etc/hostname 2>$null | Out-Null
 
     $buildMin = [math]::Round(((Get-Date) - $t0).TotalMinutes, 1)
     Write-OK "Image built in $buildMin min → $LocalImage"

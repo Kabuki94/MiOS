@@ -4,14 +4,14 @@ on:
   pull_request:
     paths:
       - "kargs.d/**"
-      - "system_files/usr/lib/bootc/kargs.d/**"
-      - "scripts/validate-kargs.py"
+      - "overlay/usr/lib/bootc/kargs.d/**"
+      - "automation/validate-kargs.py"
   push:
     branches: [main]
     paths:
       - "kargs.d/**"
-      - "system_files/usr/lib/bootc/kargs.d/**"
-      - "scripts/validate-kargs.py"
+      - "overlay/usr/lib/bootc/kargs.d/**"
+      - "automation/validate-kargs.py"
 
 permissions:
   contents: read
@@ -36,6 +36,6 @@ jobs:
 
       - name: Validate kargs.d files
         run: |
-          python3 scripts/validate-kargs.py --github \
+          python3 automation/validate-kargs.py --github \
             kargs.d/ \
-            system_files/usr/lib/bootc/kargs.d/
+            overlay/usr/lib/bootc/kargs.d/

@@ -8,7 +8,7 @@ def redact_secrets(content):
     """Redacts common secret patterns from content."""
     patterns = [
         (r'(?i)(api_key|secret|password|token|private_key)(\s*[:=]\s*)([^\s,]+)', r'\1\2[REDACTED]'),
-        (r'AIza[0-9A-Za-z-_]{35}', '[REDACTED]'),  # Google API Keys
+        (r'AIza[0-9A-Za-z-_]{35}', '[REDACTED]'),  # Cloud API Keys
         (r'sk-[0-9A-Za-z]{48}', '[REDACTED]'),      # OpenAI Keys
     ]
     redacted = content
@@ -47,10 +47,10 @@ def generate_unified_knowledge(output_file="artifacts/repo-rag-snapshot.json.gz"
             
             # Identify file category
             category = "other"
-            if rel_path.startswith("docs/"): category = "documentation"
-            elif rel_path.startswith("scripts/"): category = "automation"
-            elif rel_path.startswith("system_files/"): category = "configuration"
-            elif rel_path.startswith("tests/"): category = "validation"
+            if rel_path.startswith("specs/"): category = "documentation"
+            elif rel_path.startswith("automation/"): category = "automation"
+            elif rel_path.startswith("overlay/"): category = "configuration"
+            elif rel_path.startswith("evals/"): category = "validation"
             elif file.startswith("."): category = "environment"
             elif file.endswith(".md"): category = "documentation"
             elif file.endswith((".sh", ".py", ".ps1", ".toml", "Justfile", "Containerfile")): category = "source"

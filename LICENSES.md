@@ -35,7 +35,7 @@ These components are included in the MiOS image and are governed by their respec
 | NVIDIA Persistenced | [NVIDIA License](https://www.nvidia.com/en-us/drivers/nvidia-license/) | Keeps GPU initialized for low-latency access. |
 | Steam | [Steam Subscriber Agreement](https://store.steampowered.com/subscriber_agreement/) | User must accept SSA on first launch. |
 | Wine / DXVK | LGPL 2.1 | Open source. Windows compatibility layer. |
-| VirtIO-Win ISO | [Red Hat License](https://github.com/virtio-win/virtio-win-pkg-scripts/blob/master/LICENSE) | Windows guest drivers for KVM. Downloaded at build time. |
+| VirtIO-Win ISO | [Red Hat License](https://github.com/virtio-win/virtio-win-pkg-automation/blob/master/LICENSE) | Windows guest drivers for KVM. Downloaded at build time. |
 | Geist Font | [OFL 1.1](https://github.com/vercel/geist-font/blob/main/LICENSE.TXT) | Open source. Vercel's monospace/sans font. |
 
 ## Open-Source Licenses (Major Components)
@@ -78,7 +78,7 @@ Each CI build generates an SPDX and CycloneDX Software Bill of Materials listing
 
 ---
 ### 📚 Bootc Ecosystem & Resources
-- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osautomation/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
 - **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)

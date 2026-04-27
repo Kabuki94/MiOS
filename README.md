@@ -16,7 +16,7 @@
     ],
     "impacts": []
   },
-  "last_rag_sync": "2026-04-27T00:34:53.001761",
+  "last_rag_sync": "2026-04-27T02:30:34.494598",
   "version": "2.1.0"
 }
 ```
@@ -33,7 +33,7 @@
   "baseline": "v2.1.0",
   "kernel": "Fedora Rawhide (OCI-Mode)",
   "build": "just all",
-  "last_sync": "2026-04-27T00:34:53.001761"
+  "last_sync": "2026-04-27T02:30:34.494598"
 }
 ```
 
@@ -73,32 +73,32 @@ just wsl      # Generate WSL2 tarball
 just all      # Full artifact synthesis (RAW, VHDX, ISO, WSL)
 ```
 
-### 🛠️ [scripts/build.sh](scripts/build.sh) (Internal Master Runner)
+### 🛠️ [automation/build.sh](automation/build.sh) (Internal Master Runner)
 The core build logic that executes all numbered scripts in sequence. This is typically invoked automatically during the OCI build phase.
 
 ---
 
 ## 🏗️ Documentation Hub
 
-### 📐 [Strategic Blueprint](docs/blueprint.md)
+### 📐 [Strategic Blueprint](specs/blueprint.md)
 Technical specs, filesystem hierarchy, and kernel tuning.
 
-### 🛠️ [Operational Handbook](docs/operations.md)
+### 🛠️ [Operational Handbook](specs/operations.md)
 Setup guides (WSL2, Hyper-V), backup steps, and upgrade cycles.
 
-### 🔒 [Security Guide](docs/security.md)
+### 🔒 [Security Guide](specs/security.md)
 Execution whitelisting, integrity checks (fs-verity), and network rules.
 
-### 🔌 [Hardware Support](docs/infrastructure.md)
+### 🔌 [Hardware Support](specs/infrastructure.md)
 GPU-PV, SR-IOV, VFIO, and Silicon vendor details.
 
-### 🪟 [Windows Workflow](docs/knowledge/guides/WINDOWS-BUILD-WORKFLOW.md)
+### 🪟 [Windows Workflow](specs/knowledge/guides/WINDOWS-BUILD-WORKFLOW.md)
 Primary building environment: Windows 11 + Podman Desktop + WSL2/g.
 
-### 🧪 [System Validation](docs/testing.md)
+### 🧪 [System Validation](specs/testing.md)
 Automated tests (tmt) and build manifests.
 
-### 📋 [Feature Index](docs/manifest.md)
+### 📋 [Feature Index](specs/manifest.md)
 A structured list of all system components and features.
 
 ---
@@ -117,7 +117,7 @@ just test
 
 ---
 ### 📚 Bootc Ecosystem & Resources
-- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osautomation/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
 - **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)

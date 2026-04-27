@@ -17,7 +17,7 @@ ucore_hci_stable_nvidia_digest: sha256:3f4474648ab2835bdb8a29f1afe8805de96a32bc2
 # bib_digest: sha256:<populated by Renovate>
 
 # image-builder-cli — next-gen image builder (with SBOM support)
-# renovate: datasource=docker depName=ghcr.io/osbuild/image-builder-cli
+# renovate: datasource=docker depName=ghcr.io/osautomation/image-builder-cli
 # image_builder_cli_digest: sha256:<populated by Renovate>
 
 rechunk:

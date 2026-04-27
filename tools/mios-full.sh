@@ -1812,8 +1812,8 @@ install_phase_16_looking_glass() {
         make -j\$(nproc)
     " >> "$DEBUG_LOG" 2>&1
     
-    if [[ -f "$build_dir/LookingGlass/client/build/looking-glass-client" ]]; then
-        cp "$build_dir/LookingGlass/client/build/looking-glass-client" /usr/local/bin/
+    if [[ -f "$build_dir/LookingGlass/client/automation/looking-glass-client" ]]; then
+        cp "$build_dir/LookingGlass/client/automation/looking-glass-client" /usr/local/bin/
         chmod +x /usr/local/bin/looking-glass-client
         msg_success "Looking Glass client installed"
         

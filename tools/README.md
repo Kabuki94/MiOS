@@ -25,14 +25,14 @@
 This directory contains **standalone out-of-image tooling** that runs
 *on a booted MiOS host* (or any Fedora/RHEL-family host, in
 most cases). These scripts are **not part of the image build** — the
-image-build scripts live in [`../scripts/`](../scripts/) and the
-overlays live in [`../system_files/`](../system_files/).
+image-build scripts live in [`../automation/`](../automation/) and the
+overlays live in [`../overlay/`](../overlay/).
 
 Use these tools when you need to configure VFIO passthrough, isolate
 CPUs for VM pinning, profile a host before deploying MiOS to it, or
 troubleshoot Secure Boot / OVMF enrollment for Windows VMs.
 
-> **All rules from [`../CLAUDE.md`](../CLAUDE.md) §3.2 (Bash) apply
+> **All rules from [`../SYSTEM.md`](../SYSTEM.md) §3.2 (Bash) apply
 > here too.** No `((VAR++))` under `set -euo pipefail`, quote every
 > expansion, prefer `compgen -G` / `find -exec` / `read -ra`, etc.
 
@@ -41,7 +41,7 @@ troubleshoot Secure Boot / OVMF enrollment for Windows VMs.
 ## VFIO toolkit
 
 For passing GPUs and USB controllers into KVM/QEMU VMs. See
-[`../docs/knowledge/guides/vfio-toolkit-readme.md`](../docs/knowledge/guides/vfio-toolkit-readme.md)
+[`../specs/knowledge/guides/vfio-toolkit-readme.md`](../specs/knowledge/guides/vfio-toolkit-readme.md)
 for full documentation.
 
 | Script | Purpose |
@@ -57,7 +57,7 @@ for full documentation.
 
 For pinning VM vCPUs to host physical cores, isolating cores from the
 Linux scheduler, and configuring NUMA locality. See the full guide
-at [`../docs/knowledge/guides/cpu-isolation-guide.md`](../docs/knowledge/guides/cpu-isolation-guide.md).
+at [`../specs/knowledge/guides/cpu-isolation-guide.md`](../specs/knowledge/guides/cpu-isolation-guide.md).
 
 | Script | Purpose |
 |--------|---------|
@@ -117,7 +117,7 @@ and enrollment.
 ## Legacy mega-scripts
 
 Kept for reference. New work should **not** extend these — they
-predate the current `scripts/NN-*.sh` modular design.
+predate the current `automation/NN-*.sh` modular design.
 
 | Script | Purpose |
 |--------|---------|
@@ -125,31 +125,31 @@ predate the current `scripts/NN-*.sh` modular design.
 | `mios-build.sh` | Earlier Linux-side orchestrator (superseded by `Justfile` + `../mios-build-local.ps1`) |
 
 If you find yourself wanting to modify either of these, stop and work
-on the modular replacement in `../scripts/` instead.
+on the modular replacement in `../automation/` instead.
 
 ---
 
 ## How these scripts interact with the bootc image
 
-- The **image build** (Containerfile + `../scripts/`) produces the OS.
+- The **image build** (Containerfile + `../automation/`) produces the OS.
 - These **toolkit scripts** run on a host that's already booted —
   either a MiOS host, or a Fedora/RHEL host preparing to
   become one.
 - Nothing in this directory is copied into the image by default.
 - If you want one of these tools inside the image (e.g. `vfio-verify.sh`
   pre-installed for diagnostics), copy it into
-  `../system_files/usr/local/bin/` and reference it from the relevant
-  `../scripts/NN-*.sh` or `../systemd/` unit. Don't symlink from here.
+  `../overlay/usr/local/bin/` and reference it from the relevant
+  `../automation/NN-*.sh` or `../systemd/` unit. Don't symlink from here.
 
 ---
 
-*See [`../CLAUDE.md`](../CLAUDE.md) §8 for what Claude Code / other AI
+*See [`../SYSTEM.md`](../SYSTEM.md) §8 for what System Code / other AI
 agents should not do in this directory (summary: don't modernize
 working scripts unprompted, don't rewrite bash into other languages).*
 
 ---
 ### 📚 Bootc Ecosystem & Resources
-- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osautomation/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
 - **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)

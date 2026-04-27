@@ -17,10 +17,10 @@ build: artifact
 
 # Refresh all AI manifests, UKB, and Wiki documentation
 artifact:
-    ./scripts/ai-bootstrap.sh
+    ./automation/ai-bootstrap.sh
     @echo "✓ Artifacts, UKB, and Wiki refreshed."
 
-# Build OCI image on Google Cloud (using GCS context)
+# Build OCI image on Cloud Cloud (using GCS context)
 cloud-build:
     gcloud builds submit --project cloudws-os --gcs-source-staging-dir gs://mios-vertex-autogen-cloudws-os/build-context --tag us-central1-docker.pkg.dev/cloudws-os/mios-repo/mios:{{VERSION}} .
     @echo "✓ Cloud Build complete: us-central1-docker.pkg.dev/cloudws-os/mios-repo/mios:{{VERSION}}"
@@ -42,7 +42,7 @@ raw: build
         --security-opt label=type:unconfined_t \
         -v ./output:/output \
         -v /var/lib/containers/storage:/var/lib/containers/storage \
-        -v ./config/bib.toml:/config.toml:ro \
+        -v ./config/artifacts/bib.toml:/config.toml:ro \
         {{BIB}} build --type raw --rootfs ext4 {{LOCAL}}
     @echo "✓ RAW image in output/"
 
@@ -55,7 +55,7 @@ iso: build
         --security-opt label=type:unconfined_t \
         -v ./output:/output \
         -v /var/lib/containers/storage:/var/lib/containers/storage \
-        -v ./iso.toml:/config.toml:ro \
+        -v ./config/artifacts/iso.toml:/config.toml:ro \
         {{BIB}} build --type anaconda-iso --rootfs ext4 {{LOCAL}}
     @echo "✓ ISO in output/"
 
@@ -66,7 +66,7 @@ vhd: build
         --security-opt label=type:unconfined_t \
         -v ./output:/output \
         -v /var/lib/containers/storage:/var/lib/containers/storage \
-        -v ./config/bib.toml:/config.toml:ro \
+        -v ./config/artifacts/bib.toml:/config.toml:ro \
         {{BIB}} build --type vhd --rootfs ext4 {{LOCAL}}
     @echo "✓ VHD in output/"
 
@@ -98,8 +98,8 @@ boot-test: build
       -v /var/lib/containers/storage:/var/lib/containers/storage \
       {{BIB}} build --type qcow2 --rootfs ext4 {{LOCAL}}
     @echo "Starting QEMU boot validation (waiting for graphical.target)..."
-    chmod +x tests/qemu-boot-check.sh
-    ./tests/qemu-boot-check.sh ./output/qcow2/qcow2/disk.qcow2
+    chmod +x evals/qemu-boot-check.sh
+    ./evals/qemu-boot-check.sh ./output/qcow2/qcow2/disk.qcow2
 
 # Validate with bootc lint
 lint:

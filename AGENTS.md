@@ -3,7 +3,7 @@
 
 ```json:knowledge
 {
-  "summary": "Gateway for AI agents operating in MiOS. Defers all architectural mandates to AI.md.",
+  "summary": "Gateway for AI agents operating in MiOS. Defers all architectural mandates to INDEX.md.",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -13,21 +13,21 @@
   ],
   "relations": {
     "depends_on": [
-      "AI.md"
+      "INDEX.md"
     ],
     "impacts": []
   },
-  "last_rag_sync": "2026-04-27T00:34:53.001761",
+  "last_rag_sync": "2026-04-27T02:30:34.494598",
   "version": "2.1.0"
 }
 ```
 
-> **Single source of truth** for MiOS AI architecture is **[AI.md](AI.md)**.
+> **Single source of truth** for MiOS AI architecture is **[INDEX.md](INDEX.md)**.
 > All agents MUST defer to that file for laws, directory maps, and instruction patterns.
 
 ## Agent Core Instructions
 
-Refer to **[AI.md](AI.md)** for:
+Refer to **[INDEX.md](INDEX.md)** for:
 - Repository Directory Map
 - Instruction Patterns (Journaling, surgical edits, etc.)
 - Immutable Appliance Laws
@@ -36,6 +36,6 @@ Refer to **[AI.md](AI.md)** for:
 
 ## Standardized Ingestion
 
-New agents should immediately ingest **[AI.md](AI.md)** and the latest RAG snapshot at `artifacts/repo-rag-snapshot.json.gz`.
+New agents should immediately ingest **[INDEX.md](INDEX.md)** and the latest RAG snapshot at `artifacts/repo-rag-snapshot.json.gz`.
 
 <!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->

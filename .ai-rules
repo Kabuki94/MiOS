@@ -1,7 +1,7 @@
-# AI.md — MiOS Universal Agent Hub
+# INDEX.md — MiOS Universal Agent Hub
 
 > **Single source of truth** for every AI agent, LLM, copilot, and API operating in this repository.
-> All provider entry files (`CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, `.cursorrules`, `.windsurfrules`,
+> All provider entry files (`SYSTEM.md`, `AGENT.md`, `AGENTS.md`, `.cursorrules`, `.windsurfrules`,
 > `.clinerules`, `.github/copilot-instructions.md`) defer to this file for architecture laws and conventions.
 
 ## Project
@@ -20,7 +20,7 @@ just rechunk                               # Rechunk for Day-2 delta efficiency
 just raw / just iso / just vhd / just wsl  # Disk image generation via BIB
 just all                                   # Full pipeline: build → rechunk → images → push
 just clean                                 # Remove output/ and local images
-./tests/smoke-test.sh localhost/mios:dev   # Validate image (run after just build)
+./evals/smoke-test.sh localhost/mios:dev   # Validate image (run after just build)
 .\mios-build-local.ps1                    # Windows: 5-phase Podman Desktop build
 ```
 
@@ -30,17 +30,17 @@ just clean                                 # Remove output/ and local images
 
 The `Containerfile` has two stages:
 
-1. **`ctx` stage** — `scratch` image assembling: `scripts/`, `system_files/`,
-   `docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` (as `/ctx/PACKAGES.md`), `VERSION`, `bib-configs/`, `tools/`
-2. **`main` stage** — applies `system_files/` overlay via `08-system-files-overlay.sh`, then runs
-   `scripts/build.sh` (all `scripts/[0-9][0-9]-*.sh` in order)
+1. **`ctx` stage** — `scratch` image assembling: `automation/`, `overlay/`,
+   `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` (as `/ctx/PACKAGES.md`), `VERSION`, `bib-configs/`, `tools/`
+2. **`main` stage** — applies `overlay/` overlay via `08-system-files-overlay.sh`, then runs
+   `automation/build.sh` (all `automation/[0-9][0-9]-*.sh` in order)
 
 Scripts `18-`, `19-`, `20-`, `21-`, `22-`, `23-`, `25-`, `26-`, `37-` are called explicitly by the
 Containerfile *after* `build.sh` completes — do not also run them inside `build.sh`.
 
 ### Package system
 
-All packages declared in `docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` in fenced blocks:
+All packages declared in `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` in fenced blocks:
 
 ````
 ```packages-<category>
@@ -49,13 +49,13 @@ another-package
 ```
 ````
 
-Scripts install via `install_packages <category>` from `scripts/lib/packages.sh`.
+Scripts install via `install_packages <category>` from `automation/lib/packages.sh`.
 Never add packages outside this system.
 
 ### System files overlay
 
-`system_files/` mirrors the root filesystem. **All system config lives here** — no top-level overlay
-directories. Files are applied by `scripts/08-system-files-overlay.sh`, which handles the
+`overlay/` mirrors the root filesystem. **All system config lives here** — no top-level overlay
+directories. Files are applied by `automation/08-system-files-overlay.sh`, which handles the
 `/usr/local → /var/usrlocal` symlink present on ucore/FCOS bases.
 
 ## Immutable Appliance Laws
@@ -109,9 +109,9 @@ Never: `[kargs]` section header · `delete =` · `delete_kargs =` · `kargs.appe
 
 ### Packages / Containerfile
 
-- `docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` is the package SSOT — never regenerate wholesale
+- `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` is the package SSOT — never regenerate wholesale
 - The `gnome-core-apps` block must remain commented out
-- COPY path for packages: `COPY docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md /ctx/PACKAGES.md`
+- COPY path for packages: `COPY specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md /ctx/PACKAGES.md`
 
 ### Disk image generation
 
@@ -121,14 +121,14 @@ Never: `[kargs]` section header · `delete =` · `delete_kargs =` · `kargs.appe
 
 | Path | Purpose |
 |---|---|
-| `.claude/memories/journal.md` | Episodic memory — timestamped log of all AI actions |
-| `.claude/memory/` | Semantic memory — named `.md` files per topic |
-| `.claude/shared-tmp/` | Scratchpad — transient cross-agent data |
+| `.ai/foundation/memories/journal.md` | Episodic memory — timestamped log of all AI actions |
+| `.ai/foundation/memory/` | Semantic memory — named `.md` files per topic |
+| `.ai/foundation/shared-tmp/` | Scratchpad — transient cross-agent data |
 
 All agents append to `journal.md` with timestamp + agent identity tag:
 
 ```
-[2026-04-26T14:00:00Z] [AI: Claude Code] Analyzed scripts/35-gpu-passthrough.sh — found...
+[2026-04-26T14:00:00Z] [AI: System Code] Analyzed automation/35-gpu-passthrough.sh — found...
 ```
 
 ## Machine-readable Context
@@ -137,17 +137,17 @@ All agents append to `journal.md` with timestamp + agent identity tag:
 |---|---|
 | `.ai-environment.json` | Workspace metadata (fonts, extensions, apps, version) |
 | `ai-context.json` | Index of all docs, memories, scripts, manifests |
-| `docs/audit/MiOS-Omni-Todo.html` | Unified HTML To-Do list for Users and Agents (append `<li>` before `<!-- TASK_END -->`) |
-| `scripts/ai-bootstrap.sh` | Regenerates manifests; initializes sub-project envs |
+| `specs/audit/MiOS-Omni-Todo.html` | Unified HTML To-Do list for Users and Agents (append `<li>` before `<!-- TASK_END -->`) |
+| `automation/ai-bootstrap.sh` | Regenerates manifests; initializes sub-project envs |
 
 ## Protected Files
 
 Do not modify without explicit authorization from Kabu.ki:
 
 - `VERSION` and `CHANGELOG.md` — managed only via `push-to-github.ps1`
-- `docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` — surgical edits only
+- `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` — surgical edits only
 - `.github/workflows/build-sign.yml` and `.github/workflows/build-artifacts.yml`
-- `docs/memory/**` — AI semantic memory store
+- `specs/memory/**` — AI semantic memory store
 
 ## Deliverable Contract
 
@@ -158,13 +158,13 @@ Complete replacement files only — no patches, no diffs, no "paste this into X"
 
 | Agent / Tool | Entry file | Mechanism |
 |---|---|---|
-| Claude Code (Anthropic) | `CLAUDE.md` | Auto-loaded at session start |
-| Gemini CLI (Google) | `GEMINI.md` | `@./` import chain |
+| System Code (Anthropic) | `SYSTEM.md` | Auto-loaded at session start |
+| Agent CLI (Google) | `AGENT.md` | `@./` import chain |
 | GitHub Copilot | `.github/copilot-instructions.md` | System prompt injection |
 | Cursor | `.cursorrules` | Context injection |
 | Windsurf (Codeium) | `.windsurfrules` | Context injection |
 | Cline (VS Code) | `.clinerules` | Context injection |
 | OpenAI Codex CLI | `AGENTS.md` | Auto-loaded at session start |
-| Aider | `.aider.conf.yml` + `AI.md` | Config + read |
+| Aider | `.aider.conf.yml` + `INDEX.md` | Config + read |
 | Web LLMs / scrapers | `llms.txt` | Structured index |
 | MCP / programmatic | `ai-context.json` | JSON manifest |

@@ -64,13 +64,13 @@ def sync_wiki():
     print("📖 Syncing Wiki Documentation...")
     
     # 1. Update Scripts Index
-    scripts_dir = "scripts"
-    scripts_doc = "docs/engineering/2026-04-26-Artifact-ENG-002-Scripts-Index.md"
+    automation_dir = "automation"
+    automation_doc = "specs/engineering/2026-04-26-Artifact-ENG-002-Scripts-Index.md"
     
     knowledge_meta = {
-        "summary": "Automated index of all MiOS automation scripts.",
+        "summary": "Automated index of all MiOS automation automation.",
         "logic_type": "automation",
-        "tags": ["scripts", "automation", "index"],
+        "tags": ["automation", "automation", "index"],
         "version": get_version(),
         "last_rag_sync": get_last_rag_sync()
     }
@@ -84,12 +84,12 @@ def sync_wiki():
 {json.dumps(knowledge_meta, indent=2)}
 ```
 
-This file provides a machine-readable and human-readable index of all automation scripts in the `scripts/` directory.
+This file provides a machine-readable and human-readable index of all automation automation in the `automation/` directory.
 
 """
-    for script in sorted(os.listdir(scripts_dir)):
+    for script in sorted(os.listdir(automation_dir)):
         if script.endswith(".sh"):
-            path = os.path.join(scripts_dir, script)
+            path = os.path.join(automation_dir, script)
             # Try to extract a description from the first few lines
             description = "No description available."
             try:
@@ -107,13 +107,13 @@ This file provides a machine-readable and human-readable index of all automation
 
     content += "<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->"
     
-    os.makedirs(os.path.dirname(scripts_doc), exist_ok=True)
-    with open(scripts_doc, 'w') as f:
+    os.makedirs(os.path.dirname(automation_doc), exist_ok=True)
+    with open(automation_doc, 'w') as f:
         f.write(content)
-    print(f"✅ Updated {scripts_doc}")
+    print(f"✅ Updated {automation_doc}")
 
     # 2. Sync embeds in key files
-    target_files = ["README.md", "AI.md", "CLAUDE.md", "GEMINI.md", "AGENTS.md", "docs/Home.md"]
+    target_files = ["README.md", "INDEX.md", "SYSTEM.md", "AGENT.md", "AGENTS.md", "specs/Home.md"]
     for f in target_files:
         sync_json_embeds(f)
 

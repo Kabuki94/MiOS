@@ -60,14 +60,14 @@ The GitHub Actions pipeline automatically builds, tests, signs, and pushes MiOS 
 
 ```bash
 # Run locally before submitting a PR
-./tests/smoke-test.sh localhost/mios:dev
+./evals/smoke-test.sh localhost/mios:dev
 ```
 
 The smoke test validates: OCI labels, bootc container lint, 14 critical packages, footgun absence, systemd service enablement, filesystem structure, security hardening files, GPU drivers, Flatpak remotes, and version info.
 
 ---
 ### 📚 Bootc Ecosystem & Resources
-- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
+- **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osautomation/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
 - **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)

@@ -28,7 +28,7 @@ def parse_markdown_metadata(content):
 
 def generate_json_manifest(target_dir, output_file, recursive=True, ignore_dirs=None):
     if ignore_dirs is None:
-        ignore_dirs = {".git", ".venv", "output", "__pycache__", "GCE-Research"}
+        ignore_dirs = {".git", ".venv", "output", "__pycache__", "agents/research"}
     
     manifest = {
         "generated_at": datetime.now().isoformat(),
@@ -109,7 +109,7 @@ def generate_json_manifest(target_dir, output_file, recursive=True, ignore_dirs=
 
 def generate_gzipped_manifest(target_dir, output_file, recursive=True, ignore_dirs=None):
     if ignore_dirs is None:
-        ignore_dirs = {".git", ".venv", "output", "__pycache__", "GCE-Research"}
+        ignore_dirs = {".git", ".venv", "output", "__pycache__", "agents/research"}
     
     manifest = {
         "generated_at": datetime.now().isoformat(),
@@ -179,15 +179,15 @@ def generate_gzipped_manifest(target_dir, output_file, recursive=True, ignore_di
 if __name__ == "__main__":
     # Categories to manifest
     targets = [
-        ("docs", "docs/manifest.json", False), # Non-recursive for flat docs (Wiki)
-        (".claude/memories", ".claude/memories/manifest.json", False),
+        ("specs", "specs/manifest.json", False), # Non-recursive for flat specs (Wiki)
+        (".ai/foundation/memories", ".ai/foundation/memories/manifest.json", False),
         ("artifacts", "artifacts/manifest.json.gz", False),
-        ("scripts", "scripts/manifest.json", True),
+        ("automation", "automation/manifest.json", True),
         ("tools", "tools/manifest.json", True),
-        ("system_files", "system_files/manifest.json", True),
-        ("tests", "tests/manifest.json", True),
+        ("overlay", "overlay/manifest.json", True),
+        ("evals", "evals/manifest.json", True),
         ("bib-configs", "bib-configs/manifest.json", True),
-        ("GCE-Research", "GCE-Research/manifest.json", True),
+        ("agents/research", "agents/research/manifest.json", True),
         (".", "root-manifest.json", False) # Non-recursive for root
     ]
     

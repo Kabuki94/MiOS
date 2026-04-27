@@ -13,10 +13,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: ShellCheck (scripts/)
+      - name: ShellCheck (automation/)
         uses: ludeeus/action-shellcheck@v2.0.0
         with:
-          scandir: scripts/
+          scandir: automation/
           severity: warning
 
       - name: Hadolint (Containerfile)
@@ -28,7 +28,7 @@ jobs:
       - name: Validate TOML syntax (kargs.d)
         run: |
           pip install toml
-          for f in system_files/usr/lib/bootc/kargs.d/*.toml kargs.d/*.toml; do
+          for f in overlay/usr/lib/bootc/kargs.d/*.toml kargs.d/*.toml; do
             [ -f "$f" ] || continue
             echo "Checking $f"
             python3 -c '
@@ -57,8 +57,8 @@ jobs:
         run: |
           FOOTGUNS="gnome-initial-setup gnome-tour PackageKit"
           for pkg in $FOOTGUNS; do
-            if grep -qE "^${pkg}$" docs/PACKAGES.md; then
-              echo "FOOTGUN: $pkg found in docs/PACKAGES.md"
+            if grep -qE "^${pkg}$" specs/PACKAGES.md; then
+              echo "FOOTGUN: $pkg found in specs/PACKAGES.md"
               exit 1
             fi
           done
