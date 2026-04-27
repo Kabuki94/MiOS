@@ -12,11 +12,13 @@ if [ "$VIRT" != "none" ]; then
     echo "[mios-gpu-detect] VM detected ($VIRT) — blocking NVIDIA"
     cat > "$NVIDIA_CONF" <<'EOMOD'
 install nvidia /bin/false
+install nvidia /bin/false
 install nvidia_drm /bin/false
 install nvidia_modeset /bin/false
 install nvidia_uvm /bin/false
+install nova_core /bin/false
 EOMOD
-    for mod in nvidia_uvm nvidia_drm nvidia_modeset nvidia; do
+    for mod in nvidia_uvm nvidia_drm nvidia_modeset nvidia nova_core; do
         modprobe -r "$mod" 2>/dev/null || true
     done
 
