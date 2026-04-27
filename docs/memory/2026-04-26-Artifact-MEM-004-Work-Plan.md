@@ -104,11 +104,11 @@
 ## TIER 3 — Documentation / coordination
 
 ### T3.1 — Append AI journal entry
-**File:** `.ai-context/ai-journal.md`
+**File:** `.claude/memories/journal.md`
 **Action:** Append complete session journal entry (THOUGHT, LEARNING, DISCOVERY, ACTION, SUGGESTED ALTERNATIVE) covering all changes made in this session.
 
-### T3.2 — Update AI-ENVIRONMENT.md
-**File:** `.ai-context/AI-ENVIRONMENT.md`
+### T3.2 — Update .env
+**File:** `.env`
 **Action:** Update `AI_ARCH_BASELINE` to reflect the upstream research integration. Add notes about cosign v3 hold and cayo monitoring.
 
 ---

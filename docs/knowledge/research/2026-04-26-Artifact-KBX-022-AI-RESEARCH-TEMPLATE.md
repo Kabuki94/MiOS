@@ -49,7 +49,8 @@ AI agents MUST query these paths in the following priority:
 ### B. Persistent Memory (Long-Term Context)
 - `.claude/memories/`: Structured SQLite vaults and Markdown logs.
 - `.gemini/`: implementation-specific metadata.
-- `.ai-context/`: Historical research audits and research-plans.
+- `docs/memory/`: Persistent memory, historical research audits, and work plans.
+- `docs/knowledge/research/`: Detailed research artifacts and findings.
 
 ### C. Transient State (Short-Term Scratchpad)
 - `.claude/shared-tmp/`: Cross-agent inter-process communication.

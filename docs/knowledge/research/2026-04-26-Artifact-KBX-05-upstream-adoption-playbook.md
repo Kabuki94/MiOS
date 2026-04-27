@@ -507,7 +507,7 @@ Organize into sections so you can diff against upstream easily.
 [Unit]
 Description=MiOS first-boot provisioning target
 After=multi-user.target
-Requires=mios-cdi-detect.service mios-libvirtd-setup.service mios-crowdsec-init.service
+Requires=mios-cdi-detect.service mios-libvirtd-setup.service
 ```
 
 **`/usr/lib/systemd/system-preset/90-mios.preset`**:
@@ -527,7 +527,6 @@ enable crowdsec-firewall-bouncer.service
 enable nftables.service
 enable mios-cdi-detect.service
 enable mios-libvirtd-setup.service
-enable mios-crowdsec-init.service
 disable bootc-fetch-apply-updates.timer
 disable rpm-ostreed-automatic.timer
 disable systemd-remount-fs.service

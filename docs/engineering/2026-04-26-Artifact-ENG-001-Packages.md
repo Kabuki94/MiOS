@@ -676,10 +676,13 @@ libsss_nss_idmap
 
 ## AI Tools
 Rust-based LLM CLI assistants and shell integrations.
+Redis is used as the Pub/Sub backend for the Claude OS MCP server.
 
 ```packages-ai
 aichat
 aichat-ng
+redis
+sqlite
 ```
 
 ## Internal — Critical Validation
