@@ -1,0 +1,37 @@
+# 🌐 MiOS Environment Variables Index
+# This file provides a structured view of the MiOS variable system.
+# ----------------------------------------------------------------------------
+
+## 🛰️ GLOBAL UPDATING VARIABLES (Managed by AI/System)
+# Source: .env
+# Purpose: Define the immutable architectural baseline and AI operational laws.
+
+AI_ARCH_BASELINE="v2.1.0"
+AI_DNF_POLICY="--setopt=install_weak_deps=False"
+AI_WSL_GATING="ConditionVirtualization=!wsl"
+AI_OVERLAY_PATH="system_files/"
+AI_PKG_SOURCE="docs/engineering/2026-04-26-Artifact-ENG-001-Packages.md"
+AI_COSIGN_PIN="v2.6.3"
+AI_WORKSPACE_TYPE="bootable-container"
+AI_BASE_IMAGE="${MIOS_BASE_IMAGE:-ghcr.io/ublue-os/ucore-hci:stable-nvidia}"
+AI_JOURNALING_LAW="MANDATORY"
+
+# ----------------------------------------------------------------------------
+
+## 👤 USER SET VARIABLES (Managed by Human)
+# Source: .env.mios
+# Purpose: Personalization, accounts, and custom application layering.
+
+MIOS_BASE_IMAGE="ghcr.io/ublue-os/ucore-hci:stable-nvidia"
+MIOS_BIB_IMAGE="quay.io/centos-bootc/bootc-image-builder:latest"
+MIOS_DEFAULT_USER="mios"
+MIOS_DEFAULT_USER_PASSWORD="changeme"
+MIOS_ADMIN_PASSWORD="changeme"
+MIOS_FLATPAKS="org.gnome.Epiphany,com.github.tchx84.Flatseal,io.github.kolunmi.Bazaar,com.mattjakeman.ExtensionManager"
+MIOS_REPO_URL="https://github.com/kabuki94/mios"
+MIOS_IMAGE_NAME="ghcr.io/kabuki94/mios"
+MIOS_GCP_PROJECT="cloudws-os"
+MIOS_GCS_BUCKET="gs://mios-vertex-autogen-cloudws-os"
+
+# ----------------------------------------------------------------------------
+# End of Index.
