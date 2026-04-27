@@ -46,7 +46,7 @@ function Invoke-SecureWebRequest {
 }
 
 # Read version from repo VERSION file, fallback to hardcoded
-$Ver = "v2.1.0"
+$Ver = "v0.1.1"
 try { $Ver = "v" + (Invoke-SecureWebRequest -Uri "$RepoUrl/raw/main/VERSION").Content.Trim() } catch { Write-Verbose "Failed to fetch version: $_" }
 
 Write-Host ""

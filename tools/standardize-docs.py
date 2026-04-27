@@ -5,7 +5,7 @@ HEADER = """# 🌐 MiOS — Cloud Native Operating System
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---"""
 
 FOOTER = """---

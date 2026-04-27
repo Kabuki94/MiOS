@@ -10,7 +10,7 @@
 
 # ucore-hci:stable-nvidia — Universal Blue CoreOS with pre-signed NVIDIA
 # renovate: datasource=docker depName=ghcr.io/ublue-os/ucore-hci
-ucore_hci_stable_nvidia_digest: sha256:3f4474648ab2835bdb8a29f1afe8805de96a32bc291c0345ecf485a395aa1d1d
+ucore_hci_stable_nvidia_digest: sha256:3f4474648ab2835bdb8a29f1afe8805de96a32bc0.1.1345ecf485a395aa1d1d
 
 # bootc-image-builder — OCI to disk image converter
 # renovate: datasource=docker depName=quay.io/centos-bootc/bootc-image-builder

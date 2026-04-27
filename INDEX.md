@@ -26,7 +26,7 @@
       ".windsurfrules"
     ]
   },
-  "last_rag_sync": "2026-04-27T03:08:57.083830",
+  "last_rag_sync": "2026-04-27T03:33:47.842453",
   "version": "0.1.1"
 }
 ```
@@ -313,7 +313,7 @@ To ensure all Markdown files are machine-parsable and referencable, they must in
       "path/to/impacted/file"
     ]
   },
-  "last_rag_sync": "2026-04-27T03:08:57.083830",
+  "last_rag_sync": "2026-04-27T03:33:47.842453",
   "version": "0.1.1"
 }
 ```

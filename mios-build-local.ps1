@@ -1,19 +1,19 @@
 <#
 .SYNOPSIS
-    MiOS v2.1.0 — MiOS Builder (Windows)
+    MiOS v0.1.1 — MiOS Builder (Windows)
 
 .DESCRIPTION
     Secure build orchestrator with workflow selection.
     Tokens/passwords NEVER appear in plain text in logs or terminal output.
 
-    SECURITY FIXES in v2.1.0:
+    SECURITY FIXES in v0.1.1:
       - Passwords pre-hashed (SHA-512) before injection — plaintext never in build log
       - Registry token uses SecureString — never echoed, never in process args
       - Workflow menu: Local Build, Push Build, Custom Build
       - Admin/origin-owner detection for default token inference
       - Hostname randomization option for HA clusters
 
-    SELF-BUILDING in v2.1.0:
+    SELF-BUILDING in v0.1.1:
       - Pulls existing MiOS image from GHCR as the helper/builder image
       - MiOS image replaces alpine/python for all helper operations
       - Falls back to alpine/python only on first-ever build (no prior image)
@@ -50,7 +50,7 @@ if (Test-Path ".env.mios") {
     }
 }
 
-$v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "v2.1.0" }
+$v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "v0.1.1" }
 $ImageName      = if ($env:MIOS_IMAGE_NAME) { ($env:MIOS_IMAGE_NAME -split '/')[-1] -replace ':.*$','' } else { "mios" }
 $ImageTag       = "latest"
 $DefUser        = if ($env:MIOS_DEFAULT_USER) { $env:MIOS_DEFAULT_USER } else { "mios" }
@@ -653,7 +653,7 @@ if (Test-Path $TargetWsl) {
         $wslCPUs = $cpu
         # Build .wslconfig content without here-string (avoids PS parser edge cases)
         $wslLines = @(
-            "# MiOS v2.1.0 — WSL2 Configuration",
+            "# MiOS v0.1.1 — WSL2 Configuration",
             "[wsl2]",
             "memory=${wslRAM}GB",
             "processors=${wslCPUs}",

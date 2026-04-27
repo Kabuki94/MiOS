@@ -25,7 +25,7 @@ if lspci -nn | grep -qi "VGA compatible controller.*AMD"; then
     log "AMD GPU detected - Generating universal AMD CDI..."
     RENDER_NODES=$(ls /dev/dri/renderD* 2>/dev/null || echo "")
     cat <<EOF > "$CDI_DIR/amd.yaml"
-cdiVersion: "v0.1.1"
+cdiVersion: "0.7.0"
 kind: "amd.com/gpu"
 devices:
   - name: "all"
@@ -43,7 +43,7 @@ if lspci -nn | grep -qi "VGA compatible controller.*Intel"; then
     log "Intel GPU detected - Generating universal Intel CDI..."
     RENDER_NODES=$(ls /dev/dri/renderD* 2>/dev/null || echo "")
     cat <<EOF > "$CDI_DIR/intel.yaml"
-cdiVersion: "v0.1.1"
+cdiVersion: "0.7.0"
 kind: "intel.com/gpu"
 devices:
   - name: "all"
@@ -59,7 +59,7 @@ fi
 if [[ -e /dev/dxg ]]; then
     log "WSL2 /dev/dxg detected - Generating generic WSL CDI..."
     cat <<EOF > "$CDI_DIR/wsl.yaml"
-cdiVersion: "v0.1.1"
+cdiVersion: "0.7.0"
 kind: "microsoft.com/wsl"
 devices:
   - name: "all"

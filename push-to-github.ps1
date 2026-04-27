@@ -1,5 +1,5 @@
 # ============================================================================
-# push-to-github.ps1 — MiOS release deliverable (v2.1.0 baseline)
+# push-to-github.ps1 — MiOS release deliverable (v0.1.1 baseline)
 # ----------------------------------------------------------------------------
 # Single source of truth for the release pipeline. Per SYSTEM.md §4 + the
 # /push-version skill, this script is rewritten per release and never split

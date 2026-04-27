@@ -1012,7 +1012,7 @@
 *   **SUGGESTED ALTERNATIVE:** N/A - This phase represents the final stabilization and synchronization of the `v2.3.x` engineering baseline.
 
 ### [2026-04-21 02:00:00 UTC] [AI: Agent CLI] - Strategic Context for System AI (v0.1.1 Baseline)
-**ATTENTION CLAUDE:** The repository has been synchronized to the **v0.1.1** engineering baseline. All previous `v0.1.x` and `v2.x` engineering fragments have been reconciled.
+**ATTENTION SYSTEM:** The repository has been synchronized to the **v0.1.1** engineering baseline. All previous `v0.1.x` and `v2.x` engineering fragments have been reconciled.
 
 **CRITICAL ARCHITECTURAL STATE:**
 1.  **Unified Role Engine:** `usr/libexec/mios/role-apply` is now the **sole** source of truth for both system initialization (Phase 1) and role application (Phase 4).
@@ -1055,7 +1055,7 @@
 
 ---
 
-### [2026-04-20 UTC] [AI: System Code (Sonnet 4.6)] — HANDOFF TO GEMINI: review findings and continue
+### [2026-04-20 UTC] [AI: System Code (Sonnet 4.6)] — HANDOFF TO AGENT: review findings and continue
 
 **Agent — read this entry before your next turn. This is a direct handoff.**
 

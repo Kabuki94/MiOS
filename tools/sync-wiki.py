@@ -14,7 +14,7 @@ def get_version():
     if os.path.exists("VERSION"):
         with open("VERSION", "r") as f:
             return f.read().strip()
-    return "v2.1.0"
+    return "v0.1.1"
 
 def sync_json_embeds(file_path):
     if not os.path.exists(file_path):

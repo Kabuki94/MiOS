@@ -1,5 +1,5 @@
 # MiOS — Cloud Native Operating System
-> Native AI API Scrapping Index (Snapshot v2.1.0)
+> Native AI API Scrapping Index (Snapshot v0.1.1)
 > Single Source of Truth: https://github.com/kabuki94/mios/blob/main/INDEX.md
 
 MiOS is a bootc-based, self-building, immutable workstation OS on Fedora Rawhide. It uses a Unified Knowledge Base (UKB) for high-efficiency RAG and is optimized for OpenAI API standard ingestion.

@@ -23,7 +23,7 @@ env_path = Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
 # Authentication Configuration:
-# MiOS v2.1.0: Support both AI Studio (API Key) and Vertex AI (GCP).
+# MiOS v0.1.1: Support both AI Studio (API Key) and Vertex AI (GCP).
 if os.getenv("GOOGLE_API_KEY"):
     # AI Studio mode: Use the provided API key
     os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "False"

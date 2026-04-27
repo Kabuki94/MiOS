@@ -8,7 +8,7 @@ DIR="${MIOS_DIR:-$HOME/mios/repo}"
 BUILDS_DIR="${MIOS_BUILDS_DIR:-$HOME/mios/builds}"
 
 # Read version from repo VERSION file, fallback to hardcoded
-VER="v2.1.0"
+VER="v0.1.1"
 
 # --- Credential Handling ---
 if [[ -z "${GHCR_TOKEN:-}" ]]; then

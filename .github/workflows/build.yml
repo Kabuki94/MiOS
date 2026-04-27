@@ -166,7 +166,7 @@ jobs:
           
           # Install Syft and Oras
           curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-          curl -LO https://github.com/oras-project/oras/releases/download/v2.1.0/oras_1.2.2_linux_amd64.tar.gz
+          curl -LO https://github.com/oras-project/oras/releases/download/v1.2.2/oras_1.2.2_linux_amd64.tar.gz
           mkdir -p oras-install
           tar -zxf oras_1.2.2_linux_amd64.tar.gz -C oras-install
           sudo mv oras-install/oras /usr/local/bin/

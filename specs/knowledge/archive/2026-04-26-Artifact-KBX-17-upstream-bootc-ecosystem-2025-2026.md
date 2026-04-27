@@ -32,7 +32,7 @@
 
 | # | Item | Blocking now? | Effort | Risk | Notes |
 |---|---|---|---|---|---|
-| 1 | **WSL-spawn fix** — set `CLAUDE_CODE_GIT_BASH_PATH` (User env + `~/.ai/foundation/settings.json`) + prepend Git\bin to User PATH | **DONE** — already set in settings.json | tiny | low | Confirmed set to AppData\Local\Programs\Git\bin\bash.exe |
+| 1 | **WSL-spawn fix** — set `SYSTEM_CODE_GIT_BASH_PATH` (User env + `~/.ai/foundation/settings.json`) + prepend Git\bin to User PATH | **DONE** — already set in settings.json | tiny | low | Confirmed set to AppData\Local\Programs\Git\bin\bash.exe |
 | 2 | **GNOME 50 → xRDP is dead** — swap to `gnome-remote-desktop` with GDM headless multi-session | **YES** before F43/GNOME 50 rebase | medium | medium | xorgxrdp has no Wayland path; upstream confirmed no roadmap. |
 | 3 | **kargs.d validator** in CI | soft-blocks Copilot PRs | tiny | low | New separate `kargs-lint.yml` workflow + `automation/validate-kargs.py` (Python stdlib tomllib). **DELIVERED push-238.** |
 | 4 | **cosign signing polish** — keep key-based cosign, ADD `use-sigstore-attachments: true`, combine with key-based policy.json | near-blocking | small | low | **Do NOT jump to keyless only** — cosign v3 default bundle format **breaks rpm-ostree**: pin cosign v2.6.x. **DELIVERED push-239.** |
@@ -54,11 +54,11 @@
 
 ### 1.1 — WSL-spawn fix for System Code on Windows 11
 
-**Status: COMPLETE.** `CLAUDE_CODE_GIT_BASH_PATH` is set in `~/.ai/foundation/settings.json` pointing to `C:\Users\Administrator\AppData\Local\Programs\Git\bin\bash.exe`. No further action needed.
+**Status: COMPLETE.** `SYSTEM_CODE_GIT_BASH_PATH` is set in `~/.ai/foundation/settings.json` pointing to `C:\Users\Administrator\AppData\Local\Programs\Git\bin\bash.exe`. No further action needed.
 
 **Background.** System Code's Bash tool resolves `bash` via PATH; on Windows 11 `C:\Windows\System32\bash.exe` is a WSL launcher stub. Process tree: .ai/foundation.exe → bash.exe → wsl.exe → wslhost.exe (COM/RPC broker) → bash (inside WSL VM)`. `wslhost.exe` briefly acquires a console → visible popup on every tool call.
 
-**Fix.** Official Foundation variable is `CLAUDE_CODE_GIT_BASH_PATH`. The `git-bash.exe` path (MinTTY) is wrong — use `bin\bash.exe` (wrapper stub). Confirmed: `CLAUDE_CODE_SHELL` is ignored on Windows per issue #21843.
+**Fix.** Official Foundation variable is `SYSTEM_CODE_GIT_BASH_PATH`. The `git-bash.exe` path (MinTTY) is wrong — use `bin\bash.exe` (wrapper stub). Confirmed: `SYSTEM_CODE_SHELL` is ignored on Windows per issue #21843.
 
 ---
 
