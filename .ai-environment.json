@@ -53,5 +53,5 @@
     "python3 tools/generate-ai-manifest.py",
     "cd agents/research && make install"
   ],
-  "last_refresh": "2026-04-26T21:23:23.843947"
+  "last_refresh": "2026-04-27T04:14:44.000000"
 }

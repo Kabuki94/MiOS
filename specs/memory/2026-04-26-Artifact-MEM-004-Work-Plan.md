@@ -85,7 +85,7 @@
 **Containers to patch:**
 - `crowdsec-dashboard.container` — add `HttpProxy=false`
 - `mios-guacamole.container` — add `HttpProxy=false`
-- `mios-guacd.container` — add `HttpProxy=false`
+- `mios-guacd.container` — DELETED (consolidated into guacd.container)
 - `guacamole-postgres.container` — add `HttpProxy=false`
 - `guacd.container` — add `HttpProxy=false`
 - `ceph-radosgw.container` — add `HttpProxy=false` (also needs `GlobalArgs` since it's NOT in bound-images.d — actually it should NOT get GlobalArgs since it's not bound; skip GlobalArgs for ceph)
@@ -137,11 +137,10 @@
 | `usr/lib/sysctl.d/99-mios-hardening.conf` | MODIFY | T1.3 |
 | `etc/greenboot/greenboot.conf` | CREATE | T1.4 |
 | `usr/lib/NetworkManager/conf.d/rand_mac.conf` | CREATE | T1.5 |
-| `etc/greenboot/check/required.d/30-network.sh` | CREATE | T2.1 |
+| `etc/greenboot/check/required.d/30-network.sh" | CREATE | T2.1 |
 | `etc/greenboot/check/wanted.d/60-k3s.sh` | CREATE | T2.2 |
 | `usr/share/containers/systemd/crowdsec-dashboard.container` | MODIFY | T2.3 |
 | `usr/share/containers/systemd/mios-guacamole.container` | MODIFY | T2.3 |
-| `usr/share/containers/systemd/mios-guacd.container` | MODIFY | T2.3 |
 | `usr/share/containers/systemd/guacamole-postgres.container` | MODIFY | T2.3 |
 | `usr/share/containers/systemd/guacd.container` | MODIFY | T2.3 |
 | `usr/share/containers/systemd/ceph-radosgw.container` | MODIFY | T2.3 |
