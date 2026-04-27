@@ -80,12 +80,14 @@ switch ($choice) {
         if (Test-Path (Join-Path $MiosRepoDir ".git")) {
             Write-Host "  [OK] Repository found at $MiosRepoDir -- updating..." -ForegroundColor Cyan
             Push-Location $MiosRepoDir
-            git pull --rebase 2>&1 | Out-Null
+            # Use --progress for localized TTY feedback
+            git pull --rebase --progress
             Pop-Location
         }
         else {
             Write-Host "  Cloning $RepoUrl ..." -ForegroundColor Cyan
-            git clone $RepoUrl $MiosRepoDir
+            # Use --progress for localized TTY feedback
+            git clone --progress $RepoUrl $MiosRepoDir
             if ($LASTEXITCODE -ne 0) {
                 Write-Host "  [X] Clone failed" -ForegroundColor Red
                 return
@@ -107,9 +109,19 @@ switch ($choice) {
         New-Item -ItemType Directory -Path $buildPath -Force | Out-Null
 
         Write-Host "  Copying repository to $buildPath ..." -ForegroundColor Cyan
-        # Copy-Item with -Recurse and -Force. Use a robust way to copy content including hidden files if needed.
-        # But simple Copy-Item repo/* to automation/ is usually fine.
-        Get-ChildItem -Path $MiosRepoDir -Recurse | Copy-Item -Destination { Join-Path $buildPath $_.FullName.Substring($MiosRepoDir.Length) } -Force
+        $items = Get-ChildItem -Path $MiosRepoDir -Recurse
+        $totalItems = $items.Count
+        $currentItem = 0
+        foreach ($item in $items) {
+            $currentItem++
+            $percent = [int](($currentItem / $totalItems) * 100)
+            Write-Progress -Activity "Staging Build v${Ver}" -Status "Copying: $($item.Name)" -PercentComplete $percent
+            $dest = Join-Path $buildPath $item.FullName.Substring($MiosRepoDir.Length)
+            $parent = Split-Path $dest -Parent
+            if (-not (Test-Path $parent)) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
+            if (-not $item.PSIsContainer) { Copy-Item $item.FullName -Destination $dest -Force }
+        }
+        Write-Progress -Activity "Staging Build v${Ver}" -Completed
 
         Write-Host "  Launching build script from $buildPath ..." -ForegroundColor Cyan
         Push-Location $buildPath

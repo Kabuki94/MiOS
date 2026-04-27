@@ -26,21 +26,40 @@ $ErrorActionPreference = "Stop"
 # ══════════════════════════════════════════════════════════════════════════════
 #  UI HELPERS
 # ══════════════════════════════════════════════════════════════════════════════
+$BuildAudit = @()
 function Write-Banner { param([string]$T) $w=78; Write-Host "`n$("═"*$w)" -ForegroundColor Cyan; Write-Host ("  $T") -ForegroundColor Cyan; Write-Host "$("═"*$w)`n" -ForegroundColor Cyan }
 function Write-Phase { 
     param([string]$N,[string]$L) 
     Write-Host "`n  [$N] $L" -ForegroundColor Yellow; Write-Host "  $("─"*70)" -ForegroundColor DarkGray 
+    $script:BuildAudit += "PHASE $N: $L"
     # Enable PowerShell Native Progress Bar
     try {
         $percent = [int]($N) * 20 # 5 phases = 20% each
-        Write-Progress -Activity "MiOS Build v${Version}" -Status "Phase ${N}: ${L}" -PercentComplete $percent
+        Write-Progress -Activity "MiOS Build ${Version}" -Status "Phase ${N}: ${L}" -PercentComplete $percent
     } catch {}
 }
 
 function Write-Step  { param([string]$M) Write-Host "      » $M" -ForegroundColor DarkCyan }
-function Write-OK    { param([string]$M) Write-Host "      ✓ $M" -ForegroundColor Green }
-function Write-Warn  { param([string]$M) Write-Host "      ⚠ $M" -ForegroundColor Yellow }
-function Write-Fatal { param([string]$M) Write-Host "`n  ✗ FATAL: $M" -ForegroundColor Red; exit 1 }
+function Write-OK    { param([string]$M) Write-Host "      ✓ $M" -ForegroundColor Green; $script:BuildAudit += "  [OK] $M" }
+function Write-Warn  { param([string]$M) Write-Host "      ⚠ $M" -ForegroundColor Yellow; $script:BuildAudit += "  [WARN] $M" }
+function Write-Fatal { param([string]$M) Write-Host "`n  ✗ FATAL: $M" -ForegroundColor Red; $script:BuildAudit += "  [FAIL] $M"; Show-StatusCard; exit 1 }
+
+function Show-StatusCard {
+    $w = 78
+    Write-Host "`n╔$($("═"*($w-2)))╗" -ForegroundColor Cyan
+    Write-Host "║$($(" "*[math]::Floor(($w-18)/2)))MiOS BUILD SUMMARY$($(" "*[math]::Ceiling(($w-18)/2)))║" -ForegroundColor Cyan
+    Write-Host "╠$($("═"*($w-2)))╣" -ForegroundColor Cyan
+    Write-Host "  Version:  $Version"
+    Write-Host "  Status:   $([DateTime]::UtcNow.ToString('yyyy-MM-dd HH:mm:ss')) UTC"
+    Write-Host "  Audit Log:"
+    foreach ($line in $script:BuildAudit) {
+        if ($line -match "FAIL") { Write-Host "    $line" -ForegroundColor Red }
+        elseif ($line -match "WARN") { Write-Host "    $line" -ForegroundColor Yellow }
+        elseif ($line -match "PHASE") { Write-Host "    $line" -ForegroundColor Cyan }
+        else { Write-Host "    $line" -ForegroundColor Gray }
+    }
+    Write-Host "╚$($("═"*($w-2)))╝`n" -ForegroundColor Cyan
+}
 function Get-FileSize { param([string]$P) if(!(Test-Path $P)){return "N/A"} $s=(Get-Item $P).Length; if($s -gt 1GB){"$([math]::Round($s/1GB,2)) GB"}else{"$([math]::Round($s/1MB,2)) MB"} }
 
 function Read-Timed {
@@ -364,6 +383,11 @@ if ($DoPull) {
 
     $t0 = Get-Date
     Write-Step "Building OCI image (all $cpu threads, MAKEFLAGS=-j$cpu)..."
+    
+    # Force TTY detection and color for localized progress bars
+    $env:FORCE_COLOR = "1"
+    $env:BUILDAH_FORMAT = "docker"
+
     # Credentials passed as --build-arg: hash is available as MIOS_PASSWORD_HASH
     # env var inside the container build (consumed by 31-user.sh). Plaintext NEVER
     # written to disk, never appears in the build log or image layer metadata.
@@ -372,7 +396,10 @@ if ($DoPull) {
         --build-arg MIOS_USER="$U" `
         --build-arg MIOS_PASSWORD_HASH="$passHash" `
         --jobs 2 -t $LocalImage .
+    
     if ($LASTEXITCODE -ne 0) { Write-Fatal "podman build failed" }
+
+    Write-Progress -Activity "MiOS Build ${Version}" -Completed
 
     # Restore hostname if it was temporarily overridden
     & git checkout etc/hostname 2>$null | Out-Null
@@ -763,6 +790,8 @@ Write-Host "  MiOS is self-replicating: pull → build → push → repeat" -For
 Write-Host "  On deployed MiOS:  mios-rebuild" -ForegroundColor Cyan
 Write-Host "  On any machine:       podman pull $GhcrImage" -ForegroundColor Cyan
 Write-Host ""
+
+Show-StatusCard
 
 # Cleanup: wipe any credential variables from memory
 $P = $null; $passHash = $null; $RegistryToken = $null; $LuksPass = $null
