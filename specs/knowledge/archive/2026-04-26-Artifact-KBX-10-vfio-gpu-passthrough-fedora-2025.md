@@ -19,7 +19,7 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # Linux VFIO GPU passthrough tools remain mostly unpackaged in 2025
@@ -84,7 +84,7 @@ The Cockpit project maintains a **wiki feature page** for a "Hardware Devices" p
 
 Looking Glass complements GPU passthrough but does not handle VFIO binding itself.
 
-**vfio-isolate** is a Python tool for CPU and memory isolation (cpuset partitioning, IRQ affinity masking, CPU governor control) when running passthrough VMs. It is **only available via PyPI** (`pip install vfio-isolate`, version **v2.1.0**) — no Fedora RPM or COPR exists. It does not handle GPU binding; it is used alongside passthrough to reduce host-to-VM latency. Development appears feature-complete but dormant (GitHub: spheenik/vfio-isolate, 95 stars).
+**vfio-isolate** is a Python tool for CPU and memory isolation (cpuset partitioning, IRQ affinity masking, CPU governor control) when running passthrough VMs. It is **only available via PyPI** (`pip install vfio-isolate`, version **v0.1.1**) — no Fedora RPM or COPR exists. It does not handle GPU binding; it is used alongside passthrough to reduce host-to-VM latency. Development appears feature-complete but dormant (GitHub: spheenik/vfio-isolate, 95 stars).
 
 **GPU Passthrough Manager** (uwzis/GPU-Passthrough-Manager) is a GTK GUI for toggling GPUs between default and VFIO drivers, but it only handles **boot-time configuration** via GRUB modification — no dynamic runtime switching. It is available on Arch's AUR but **not reliably packaged for Fedora** (a COPR repo exists at `steeleyeballsac1/gpu-passthrough-manager` but appears unmaintained). Users have reported GRUB corruption issues.
 

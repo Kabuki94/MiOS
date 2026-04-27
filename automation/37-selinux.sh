@@ -1,5 +1,5 @@
 #!/bin/bash
-# MiOS v2.1.0 — 37-selinux: Build-time SELinux policy fixes
+# MiOS v0.1.1 — 37-selinux: Build-time SELinux policy fixes
 # Custom per-rule modules for known Fedora Rawhide / systemd 260 denials.
 set -euo pipefail
 

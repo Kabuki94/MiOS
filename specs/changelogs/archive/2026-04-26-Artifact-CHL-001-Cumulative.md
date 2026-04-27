@@ -19,20 +19,20 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [v2.1.0] - 2026-04-25
+## [v0.1.1] - 2026-04-25
 
 ### 🛠️ Hardware & WSL2 Optimization
 * **Intel Battlemage Support:** Implemented strict `xe` driver bindings for Xe2 hardware.
 * **WSL2 Stability:** Resolved `dbus-broker` crashes on WSL2 kernels.
 * **RTX 50 VFIO fix:** Initial Blackwell GSP firmware workaround deployed.
 
-## [v2.1.0] - 2026-04-22
+## [v0.1.1] - 2026-04-22
 
 ### ⚙️ Core OS & Role Engine Consolidation
 * **Unified Role Engine:** Consolidated the asynchronous initialization and role management into the extensionless `usr/libexec/mios/role-apply` script.
@@ -49,40 +49,40 @@ All notable changes to this project will be documented in this file.
 * **Fix (Virtualization):** Removed `dkms` from `packages-looking-glass-build` manifest to resolve `kernel-devel-matched` dependency conflict on mixed kernel builds.
 * **Fix (Scripts):** Hardened `12-virt.sh` to ensure `/usr/share/mios/virtio` exists before VirtIO-Win ISO download.
 
-## [v2.1.0] - 2026-04-18
+## [v0.1.1] - 2026-04-18
 
 ### 🛠️ Hardware & GPU Passthrough
 * **NVIDIA 595+ Stability:** Injected `NVreg_UseKernelSuspendNotifiers=1` to fix Wayland freezes on Ada/Blackwell hardware.
-* **WSL v2.1.0 Fix:** Gated `systemd-networkd-wait-online.service` on `!wsl` to prevent session timeouts.
-* **WSL v2.1.0 Fix:** Enforced 0755 on `wsl-user-generator` to fix login failures.
+* **WSL v0.1.1 Fix:** Gated `systemd-networkd-wait-online.service` on `!wsl` to prevent session timeouts.
+* **WSL v0.1.1 Fix:** Enforced 0755 on `wsl-user-generator` to fix login failures.
 * **Blackwell Safety Fix:** Implemented `vfio_pci.disable_idle_d3=1` workaround in `kargs.d`.
 
-## [v2.1.0] - 2026-04-16
+## [v0.1.1] - 2026-04-16
 
 ### ⚙️ Driver & Hardware Optimization
 * **NVIDIA Open Modules:** Standardized on NVIDIA open kernel modules as the default for Turing+.
 * **CDI Generation:** Integrated build-time CDI specification generation for NVIDIA GPUs.
 
-## [v2.1.0] - 2026-04-14
+## [v0.1.1] - 2026-04-14
 
 ### 🖥️ Desktop & UI Evolution
 * **GNOME 50 Transition:** Migrated to GNOME 50 (Wayland-only). Removed all legacy X11 session components.
 * **DNF5 Build Shift:** Fully transitioned the build pipeline to `dnf5`.
 
-## [v2.1.0] - 2026-03-25
+## [v0.1.1] - 2026-03-25
 
 ### 🚀 Unified Image Architecture
 * **Role-at-Boot:** Introduced the `mios-role.service` and `role.conf` system.
 * **ublue-os Adoption:** Integrated pre-signed NVIDIA kmods and adopted the `uupd` unified updater.
 * **Image Signing:** Implemented `cosign` keyless signing via GitHub Actions.
 
-## [v2.1.0] - 2026-03-12
+## [v0.1.1] - 2026-03-12
 
 ### 🔒 Ecosystem Intelligence & Hardening
 * **SecureBlue Integration:** Deployed SecureBlue-inspired kernel and sysctl hardening.
 * **Bootloader Management:** Added `bootupd` for unified bootloader updates.
 
-## [v2.1.0] - 2026-02-15
+## [v0.1.1] - 2026-02-15
 
 ### ⚙️ Core OS Foundation
 * **systemd 260 Compliance:** Removed cgroup v1 support and SysV compatibility.

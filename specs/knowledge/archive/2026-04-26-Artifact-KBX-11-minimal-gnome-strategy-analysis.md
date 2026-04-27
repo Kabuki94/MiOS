@@ -19,7 +19,7 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # Minimal GNOME desktop strategy for MiOS
@@ -60,9 +60,9 @@ Bluefin's Containerfile executes a single `RUN` directive that calls `/ctx/build
 
 The build pipeline executes in strict numerical order: `00-image-info.sh` → `03-install-kernel-akmods.sh` → **`04-packages.sh`** (primary package management) → `05-override-install.sh` → `build-gnome-extensions.sh` → `08-firmware.sh` → **`17-cleanup.sh`** (service configuration and removal) → `18-workarounds.sh` → **`20-tests.sh`** (validation). Phase 1 of `build.sh` removes conflicting packages using `rpm -e --nodeps` before copying system files: specifically `ublue-os-just`, `ublue-os-signing`, and `fedora-logos` are force-removed to prevent conflicts with Bluefin's own replacements.
 
-The `20-tests.sh` validation script enforces two arrays. **IMPORTANT_PACKAGES** (must be present, build fails if missing): `distrobox`, `fish`, `flatpak`, `mutter`, `pipewire`, `gnome-shell`, `ptyxis`, `gdm`, `systemd`, `tailscale`, `uupd`, `wireplumber`, `zsh`. **UNWANTED_PACKAGES** (must be absent, build fails if found) — the exact list could not be retrieved from the raw source, but the enforcement pattern is clear: `rpm -q "${package}"` success for an unwanted package aborts the build. Bluefin is actively transitioning from rpm-ostree to dnf5 for build scripts (tracked in issue #1946), and the broader ublue-os/main project completed this switch with v2.1.0.
+The `20-tests.sh` validation script enforces two arrays. **IMPORTANT_PACKAGES** (must be present, build fails if missing): `distrobox`, `fish`, `flatpak`, `mutter`, `pipewire`, `gnome-shell`, `ptyxis`, `gdm`, `systemd`, `tailscale`, `uupd`, `wireplumber`, `zsh`. **UNWANTED_PACKAGES** (must be absent, build fails if found) — the exact list could not be retrieved from the raw source, but the enforcement pattern is clear: `rpm -q "${package}"` success for an unwanted package aborts the build. Bluefin is actively transitioning from rpm-ostree to dnf5 for build scripts (tracked in issue #1946), and the broader ublue-os/main project completed this switch with v0.1.1.
 
-**Bluefin's malcontent strategy is coexistence, not removal.** Release changelogs show malcontent being routinely updated alongside other packages (e.g., `malcontent v2.1.0-2 → v2.1.0-3`). Instead of fighting the dependency chain, Bluefin neutralizes unwanted behavior through GSettings schema overrides (e.g., `welcome-dialog-last-shown-version='4294967295'` to suppress the welcome dialog), desktop file overlays from `projectbluefin/common`, and replacing GNOME Software entirely with Bazaar as the application storefront.
+**Bluefin's malcontent strategy is coexistence, not removal.** Release changelogs show malcontent being routinely updated alongside other packages (e.g., `malcontent v0.1.1-2 → v0.1.1-3`). Instead of fighting the dependency chain, Bluefin neutralizes unwanted behavior through GSettings schema overrides (e.g., `welcome-dialog-last-shown-version='4294967295'` to suppress the welcome dialog), desktop file overlays from `projectbluefin/common`, and replacing GNOME Software entirely with Bazaar as the application storefront.
 
 ## The malcontent dependency trap and its precise solution
 

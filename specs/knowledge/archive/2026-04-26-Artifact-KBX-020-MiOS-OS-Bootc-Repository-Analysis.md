@@ -19,7 +19,7 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # **Based on the detailed analysis of the MiOS-OS architecture, here are suggested improvements focused on addressing current limitations, enhancing long-term maintainability, and extending capabilities:1. Address the `systemd-sysext` Kernel Stacking Depth Limitation**
@@ -174,7 +174,7 @@ However, this precompilation strategy introduces severe friction with modern Uni
 
 While CI precompilation is functional, it tightly couples the base OS image to specific proprietary binary blob versions, severely inflating the container registry size and complicating deployment flexibility. The strategic, long-term horizon for MiOS-OS—slated for implementation across a four-to-six-month roadmap—is the transition to System Extensions (systemd-sysext).  
 The systemd-sysext framework provides an advanced mechanism to dynamically augment the immutable /usr and /opt directories without physically altering the base OSTree cryptographic hash. Proprietary NVIDIA drivers, complex CUDA toolkits, and heavy dependencies can be packaged independently as standalone SquashFS image files. During the operating system boot sequence, systemd-sysext utilizes an overlayfs mount to seamlessly merge these highly specialized extension images directly on top of the host filesystem in a transient state. This architectural decoupling allows the base MiOS-OS image to remain entirely open-source, mathematically verifiable, and universally compatible, while hardware-specific proprietary overlays are loaded purely on-demand at runtime.  
-The industry is rapidly pivoting toward this model, with competing distributions such as GNOME OS, Flatcar Container Linux, and uBlue exploring identical overlay paradigms. However, this technology introduces immense complexity regarding kernel versioning. As demonstrated by a recent critical failure in the uCore LTS distribution, a transition to the v2.1.0 LTS kernel entirely broke sysext functionality due to the overlayfs subsystem throwing an overlayfs: maximum fs stacking depth exceeded error during the systemd-sysext.service initialization. MiOS-OS engineering must meticulously navigate these upstream kernel stacking depth limitations to ensure seamless extension merging.
+The industry is rapidly pivoting toward this model, with competing distributions such as GNOME OS, Flatcar Container Linux, and uBlue exploring identical overlay paradigms. However, this technology introduces immense complexity regarding kernel versioning. As demonstrated by a recent critical failure in the uCore LTS distribution, a transition to the v0.1.1 LTS kernel entirely broke sysext functionality due to the overlayfs subsystem throwing an overlayfs: maximum fs stacking depth exceeded error during the systemd-sysext.service initialization. MiOS-OS engineering must meticulously navigate these upstream kernel stacking depth limitations to ensure seamless extension merging.
 
 ## **Security Posture, Networking, and Cluster Operations**
 

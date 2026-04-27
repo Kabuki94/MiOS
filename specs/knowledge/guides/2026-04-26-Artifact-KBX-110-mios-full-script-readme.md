@@ -19,10 +19,10 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
-# MiOS-Build Unified Management System v2.1.0
+# MiOS-Build Unified Management System v0.1.1
 
 ## Complete Integrated Edition
 
@@ -180,7 +180,7 @@ The script maintains persistent state in `/var/lib/mios/state.json`:
 
 ```json
 {
-    "version": "v2.1.0",
+    "version": "v0.1.1",
     "install_phase": "completed",
     "install_mode": "desktop",
     "assessment_done": "true",
@@ -327,7 +327,7 @@ Creates comprehensive report at:
 
 ## Version History
 
-### v2.1.0 - Integrated Edition
+### v0.1.1 - Integrated Edition
 - Complete rewrite as unified script
 - All functionality built-in (no external dependencies)
 - AMD X3D CPU optimization

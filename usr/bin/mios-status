@@ -33,7 +33,7 @@ if [[ "$JSON_MODE" == "true" ]]; then
     exit 0
 fi
 
-echo "MiOS v2.1.0 — System Status"
+echo "MiOS v0.1.1 — System Status"
 echo "════════════════════════════════"
 echo ""
 echo "Hostname:  $(hostname)"

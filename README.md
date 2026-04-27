@@ -17,7 +17,7 @@
     "impacts": []
   },
   "last_rag_sync": "2026-04-27T03:08:57.083830",
-  "version": "2.1.0"
+  "version": "0.1.1"
 }
 ```
 
@@ -30,7 +30,7 @@
 ```json
 {
   "status": "Production Stable",
-  "baseline": "v2.1.0",
+  "baseline": "v0.1.1",
   "kernel": "Fedora Rawhide (OCI-Mode)",
   "build": "just all",
   "last_sync": "2026-04-27T03:08:57.083830"

@@ -19,14 +19,14 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # Technical audit of the bootc ecosystem for MiOS
 
 MiOS has an ambitious multi-role architecture—workstation, hypervisor, K3s node, and Cockpit-managed server in a single immutable image—but **the project's build system, security posture, and CI/CD pipeline lag significantly behind the Universal Blue ecosystem** it draws from. This audit identified 14 critical anti-patterns, 23 missing features compared to Bluefin/Bazzite/uCore/SecureBlue, and 9 imminent upstream changes requiring preparation. The composefs-native backend transition (bootc v1.14–v1.15) is the most consequential ecosystem shift on the horizon, and MiOS has zero preparation for it.
 
-The findings below cross-reference actual code from MiOS against patterns from bootc upstream (v2.1.0, March 2026), Universal Blue (Bluefin, Bazzite, uCore, akmods), SecureBlue, WayBlue, and Fedora CoreOS. Every recommendation includes concrete code that can be directly adopted.
+The findings below cross-reference actual code from MiOS against patterns from bootc upstream (v0.1.1, March 2026), Universal Blue (Bluefin, Bazzite, uCore, akmods), SecureBlue, WayBlue, and Fedora CoreOS. Every recommendation includes concrete code that can be directly adopted.
 
 ---
 
@@ -280,11 +280,11 @@ TLS certificates go in `/etc/cockpit/ws-certs.d/` as `.cert` files (PEM format, 
 
 The composefs-native backend has progressed from experimental to production-ready across bootc v1.12–v1.15. **OSTree is being phased out as the storage backend.** Key implications for MiOS:
 
-- **Composefs GC** (v2.1.0) can potentially delete EFI partitions if misconfigured—bootc issue #2102 documents this risk
+- **Composefs GC** (v0.1.1) can potentially delete EFI partitions if misconfigured—bootc issue #2102 documents this risk
 - **Sealed images** default to requiring Secure Boot + fs-verity on the target system; a `--disable-sealing` flag allows degraded mode
 - **UKI (Unified Kernel Image)** support is deeply integrated with composefs-native, bundling kernel, initramfs, and cmdline into a single signed EFI binary
 - The `bootc install` command gains a `--composefs-native` flag
-- **SELinux enforcement for sealed images** landed in v2.1.0
+- **SELinux enforcement for sealed images** landed in v0.1.1
 
 MiOS should enable composefs in its images now:
 
@@ -381,7 +381,7 @@ jobs:
       packages: write
       id-token: write  # Required for OIDC keyless signing
     steps:
-      - uses: sigstore/cosign-installer@v2.1.0
+      - uses: sigstore/cosign-installer@v0.1.1
       - name: Sign image
         run: |
           cosign sign --yes \

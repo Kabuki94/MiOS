@@ -19,7 +19,7 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # MiOS Upstream Implementation Work Plan
@@ -117,7 +117,7 @@
 
 | Item | Reason deferred |
 |------|----------------|
-| `osautomation/bootc-image-builder-action@v2.1.0` migration | Current `ublue-os` action still works; migration is non-trivial and needs testing |
+| `osautomation/bootc-image-builder-action@v0.1.1` migration | Current `ublue-os` action still works; migration is non-trivial and needs testing |
 | K3s containerd v3 config template | Requires knowing exact K3s install path in image; needs deeper audit of `13-ceph-k3s.sh` |
 | K3s airgap `.cache.json` | Requires knowing which images are pre-pulled; needs separate research pass |
 | `bootc upgrade --download-only` systemd timer | Runtime feature, not build-time; document in DIAGNOSTICS.md separately |

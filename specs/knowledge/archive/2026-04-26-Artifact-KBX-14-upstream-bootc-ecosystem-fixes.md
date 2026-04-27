@@ -19,12 +19,12 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # Upstream bootc ecosystem fixes for MiOS
 
-**MiOS can resolve the majority of its runtime issues by adopting proven patterns from Universal Blue, Fedora CoreOS, and the rapidly maturing bootc upstream.** The bootc project—now a CNCF Sandbox project at v2.1.0—has gained composefs-native backend work, tag-aware upgrades, and robust linting tools since early 2025. Universal Blue's Bluefin, Bazzite, and uCore projects collectively represent the most battle-tested bootc deployment patterns, covering everything from SELinux workarounds to NVIDIA driver integration. This report maps each of MiOS's 20 known issues to specific upstream solutions with actionable code patterns, GitHub references, and implementation recommendations.
+**MiOS can resolve the majority of its runtime issues by adopting proven patterns from Universal Blue, Fedora CoreOS, and the rapidly maturing bootc upstream.** The bootc project—now a CNCF Sandbox project at v0.1.1—has gained composefs-native backend work, tag-aware upgrades, and robust linting tools since early 2025. Universal Blue's Bluefin, Bazzite, and uCore projects collectively represent the most battle-tested bootc deployment patterns, covering everything from SELinux workarounds to NVIDIA driver integration. This report maps each of MiOS's 20 known issues to specific upstream solutions with actionable code patterns, GitHub references, and implementation recommendations.
 
 ---
 
@@ -98,7 +98,7 @@ Run `dconf update` at build time or via a first-boot systemd oneshot service.
 **Universal Blue uses key-based Cosign signing, not keyless OIDC.** A private key is stored as GitHub Actions secret `SIGNING_SECRET`, with the public key committed to the repo. The workflow pattern across all ublue-os repos:
 
 ```yaml
-- uses: sigstore/cosign-installer@v2.1.0
+- uses: sigstore/cosign-installer@v0.1.1
 - name: Sign Images
   env:
     SIGNING_KEY: ${{ secrets.SIGNING_SECRET }}
@@ -109,7 +109,7 @@ The sigpolicy issue ([bootc-dev/bootc#528](https://github.com/bootc-dev/bootc/is
 
 **Rechunking reduces update sizes 5–10×.** The rechunker (now at [hhd-dev/rechunk](https://github.com/hhd-dev/rechunk), originally ublue-os/rechunk) flattens the OCI image to remove files replaced in later layers, reads the RPM database to group packages by version into "meta" packages, then re-partitions into N equally-sized layers using timestamp clamping so unchanged packages produce identical layer hashes. For MiOS's large images with NVIDIA drivers, ROCm, and Wine/Steam, rechunking is essential. Aurora/Bluefin integrate it via a three-step process (`1_prune.sh`, `2_create.sh`, `3_chunk.sh`) invoked in their GitHub Actions workflow with `PREV_REF` pointing to the previous production image for layer stability.
 
-**For automated updates**, avoid the built-in `bootc-fetch-apply-updates.timer`—it shuts down without warning. Universal Blue uses [uupd](https://github.com/ublue-os/uupd), a Go program that coordinates Flatpak, Distrobox, Homebrew, and bootc updates with hardware-aware checks (battery %, CPU load, memory). bootc v2.1.0 added `--download-only` and `--from-downloaded` flags for staged updates. Bluefin maintains three deployments simultaneously (current, staged, rollback) with automatic checks every 6 hours.
+**For automated updates**, avoid the built-in `bootc-fetch-apply-updates.timer`—it shuts down without warning. Universal Blue uses [uupd](https://github.com/ublue-os/uupd), a Go program that coordinates Flatpak, Distrobox, Homebrew, and bootc updates with hardware-aware checks (battery %, CPU load, memory). bootc v0.1.1 added `--download-only` and `--from-downloaded` flags for staged updates. Bluefin maintains three deployments simultaneously (current, staged, rollback) with automatic checks every 6 hours.
 
 ---
 
@@ -119,7 +119,7 @@ The sigpolicy issue ([bootc-dev/bootc#528](https://github.com/bootc-dev/bootc/is
 
 **For Ceph on bootc, ceph-fuse is preferred over kernel CephFS.** Fedora CoreOS encountered kernel compatibility issues with Ceph after kernel upgrades ([coreos/fedora-coreos-tracker#1393](https://github.com/coreos/fedora-coreos-tracker/issues/1393)). ceph-fuse operates in userspace, making it resilient to kernel changes. For running a Ceph cluster, cephadm is container-native and well-suited for bootc—it deploys all daemons as Podman containers, needing only Python 3, LVM2, and Podman on the host. State stores under `/var/lib/ceph/<fsid>/`. Bake `ceph-common` and `ceph-fuse` into the image; do not rely on `cephadm add-repo` at runtime (it writes to read-only `/etc/yum.repos.d/`).
 
-**CrowdSec runs best as a Podman quadlet container on bootc.** Set `DISABLE_ONLINE_API=true` for sovereign/offline mode. Pre-install collections via the `COLLECTIONS` environment variable. Two volumes are mandatory: `/var/lib/crowdsec/data/` (required since v2.1.0) and `/etc/crowdsec/`. For the firewall bouncer, install it natively in the bootc image since it needs host iptables access. Hub updates require internet—for air-gapped environments, pre-populate `/etc/crowdsec/hub/` at image build time. Use `config.yaml.local` for overrides that survive CrowdSec upgrades.
+**CrowdSec runs best as a Podman quadlet container on bootc.** Set `DISABLE_ONLINE_API=true` for sovereign/offline mode. Pre-install collections via the `COLLECTIONS` environment variable. Two volumes are mandatory: `/var/lib/crowdsec/data/` (required since v0.1.1) and `/etc/crowdsec/`. For the firewall bouncer, install it natively in the bootc image since it needs host iptables access. Hub updates require internet—for air-gapped environments, pre-populate `/etc/crowdsec/hub/` at image build time. Use `config.yaml.local` for overrides that survive CrowdSec upgrades.
 
 ---
 
@@ -145,7 +145,7 @@ The sigpolicy issue ([bootc-dev/bootc#528](https://github.com/bootc-dev/bootc/is
 
 **Bluefin's Containerfile architecture** is the gold standard—only **48 lines** using multi-stage builds with a `FROM scratch AS ctx` context stage, `--mount=type=bind,from=ctx` to avoid polluting image layers, `--mount=type=cache,dst=/var/cache/libdnf5` for build speed, and a single `RUN` delegating to an external `build.sh` script. The `/opt → /var/opt` symlink makes `/opt` writable at runtime. Every image ends with `CMD ["/sbin/init"]` and `RUN bootc container lint`.
 
-The broader ecosystem now includes **composefs-native backend** development (tracked at [bootc-dev/bootc#1190](https://github.com/bootc-dev/bootc/issues/1190)), which will replace the ostree backend with composefs-rs, enable UKI support, and provide fs-verity validation. bootc v2.1.0 (March 2026) added tag-aware upgrades, cached update info, and multiple composefs fixes. GNOME OS is now natively bootc-compatible, and bootcrew projects (opensuse-bootc, arch-bootc, debian-bootc) already use the composefs-native backend.
+The broader ecosystem now includes **composefs-native backend** development (tracked at [bootc-dev/bootc#1190](https://github.com/bootc-dev/bootc/issues/1190)), which will replace the ostree backend with composefs-rs, enable UKI support, and provide fs-verity validation. bootc v0.1.1 (March 2026) added tag-aware upgrades, cached update info, and multiple composefs fixes. GNOME OS is now natively bootc-compatible, and bootcrew projects (opensuse-bootc, arch-bootc, debian-bootc) already use the composefs-native backend.
 
 ---
 

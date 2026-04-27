@@ -1,5 +1,5 @@
 #!/bin/bash
-# MiOS v2.1.0 — Build Artifact Deployment
+# MiOS v0.1.1 — Build Artifact Deployment
 # Copies build-time logs, manifests, and context hubs to user home directories.
 # Runs on first boot or when new artifacts are detected.
 

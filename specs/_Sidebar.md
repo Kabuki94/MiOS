@@ -49,7 +49,7 @@
 - [OpenAI Parsability & Agent Standards](https://github.com/Kabuki94/mios/blob/main/specs/knowledge/research/2026-04-26-Artifact-KBX-024-OpenAI-Integration.md)
 
 ### 📜 Historical Audit
-- [Changelog v2.1.0](https://github.com/Kabuki94/mios/blob/main/specs/changelogs/2026-04-26-Artifact-CHL-003-v2.1.0.md)
+- [Changelog v0.1.1](https://github.com/Kabuki94/mios/blob/main/specs/changelogs/2026-04-26-Artifact-CHL-003-v0.1.1.md)
 - [Changelog Cumulative](https://github.com/Kabuki94/mios/blob/main/specs/changelogs/2026-04-26-Artifact-CHL-001-Cumulative.md)
 - [Research April 2026](https://github.com/Kabuki94/mios/blob/main/specs/audit/2026-04-26-Artifact-ADT-002-Research-April2026.md)
 - [Next Research Queue](https://github.com/Kabuki94/mios/blob/main/specs/audit/2026-04-26-Artifact-ADT-001-Next-Research.md)

@@ -46,7 +46,7 @@ mios-resume-updates:
 mios-verity-status:
     @grep -E 'composefs|enabled' /usr/lib/ostree/prepare-root.conf 2>/dev/null || echo "prepare-root.conf not present"
     @mount | grep -E 'composefs|overlay' || true
-# -------- Looking Glass (BAKED IN since v2.1.0) ----------------------------
+# -------- Looking Glass (BAKED IN since v0.1.1) ----------------------------
 
 # Enable kvmfr autoload at boot (required for Looking Glass)
 mios-looking-glass-enable:

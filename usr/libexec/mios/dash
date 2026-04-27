@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# MiOS v2.1.0 - Dynamic Auto-Updating Dashboard
+# MiOS v0.1.1 - Dynamic Auto-Updating Dashboard
 # Updates until Ctrl-C is pressed.
 
 # Exit cleanly on Ctrl-C

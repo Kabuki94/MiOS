@@ -19,7 +19,7 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # MiOS upstream research — 17-upstream-bootc-ecosystem-2025-2026
@@ -36,7 +36,7 @@
 | 2 | **GNOME 50 → xRDP is dead** — swap to `gnome-remote-desktop` with GDM headless multi-session | **YES** before F43/GNOME 50 rebase | medium | medium | xorgxrdp has no Wayland path; upstream confirmed no roadmap. |
 | 3 | **kargs.d validator** in CI | soft-blocks Copilot PRs | tiny | low | New separate `kargs-lint.yml` workflow + `automation/validate-kargs.py` (Python stdlib tomllib). **DELIVERED push-238.** |
 | 4 | **cosign signing polish** — keep key-based cosign, ADD `use-sigstore-attachments: true`, combine with key-based policy.json | near-blocking | small | low | **Do NOT jump to keyless only** — cosign v3 default bundle format **breaks rpm-ostree**: pin cosign v2.6.x. **DELIVERED push-239.** |
-| 5 | **NVIDIA CDI via `nvidia-cdi-refresh.service`** + remove `oci-nvidia-hook.json` + pin nvidia-ctk version (NOT v2.1.0) | soon — CDI contract change | small | low | **DELIVERED push-239.** |
+| 5 | **NVIDIA CDI via `nvidia-cdi-refresh.service`** + remove `oci-nvidia-hook.json` + pin nvidia-ctk version (NOT v0.1.1) | soon — CDI contract change | small | low | **DELIVERED push-239.** |
 | 6 | **MOK enrollment polish** — idempotent `enroll-mok.sh` using `mokutil --root-pw`; detect MiOS-1 vs MiOS-2 (ublue key fallback) | medium | medium | medium | **DELIVERED push-240.** PCR7 re-seal warning is critical. |
 | 7 | **composefs path verification expansion** — Tier A existence + Tier B fsverity-measure + Tier C policy.json sha256; wire into greenboot | medium | small | low | **DELIVERED push-240.** Tier B is no-op under default unsigned composefs. |
 | 8 | **Enable `ublue-os/packages` COPR + adopt `ujust`** pattern + `uupd` for unified updates | high-value quick win | small | low | v2.4 target. |
@@ -84,7 +84,7 @@ Key decisions documented:
 
 Key upstream facts:
 - **bz 2332433**: `/var/lib/ipa-client/sysrestore/` missing → pre-created via tmpfiles.d.
-- **bz 2320133**: SSSD file capabilities stripped by rpm-ostree < bootc v2.1.0-2.fc41. Build asserts `getcap` on SSSD binaries and fails if caps absent.
+- **bz 2320133**: SSSD file capabilities stripped by rpm-ostree < bootc v0.1.1-2.fc41. Build asserts `getcap` on SSSD binaries and fails if caps absent.
 - **bz 2417703**: sssd_be crashes under bootc+IPA; workaround: `selinux_provider = none` written by `ipa-enroll` into `20-mios-domain.conf`.
 - Opt-in: `mios-ipa-enroll.service` runs only when `/etc/mios/ipa.conf` exists AND `/var/lib/mios/ipa-enrolled` marker absent.
 - Completion marker lives in `/var` (persists across `bootc rollback`; `/etc` reverts).
@@ -123,7 +123,7 @@ Key upstream reality:
 - `fsverity measure` is constant-time (reads cached Merkle root) — cheap.
 - **Tier B is a no-op under default Fedora bootc.** To activate it: ship `/usr/lib/ostree/prepare-root.conf` with `composefs.enabled = verity`.
 - Tier C (policy.json SHA-256) is the highest-value new check. Baseline in `/usr` is composefs-covered.
-- **No `bootc verify` subcommand exists** as of bootc v2.1.0 (March 2026).
+- **No `bootc verify` subcommand exists** as of bootc v0.1.1 (March 2026).
 
 ---
 
@@ -149,12 +149,12 @@ Key decisions:
 **bootc-dev/bootc** — CNCF Sandbox since Jan 21 2025. Repo moved from `containers/bootc`.
 
 Notable v1.9–v1.15 (Sep 2025 → Mar 2026):
-- **v2.1.0**: `usroverlay --readonly`; tag-aware upgrade; cached update info; composefs proxy-auth + missing-verity + pre-flight disk-space check.
-- **v2.1.0**: `bootc upgrade` pre-flight disk space; composefs GC.
-- **v2.1.0**: `bootloader=none`; **`bootc container ukify`** (future UKI foundation); shell completions.
-- **v2.1.0**: `bootc upgrade --download-only` / `--from-downloaded`; `bootc container inspect`; systemd-boot autoenroll in install.
-- **v2.1.0**: factory reset (experimental); kargs from `usr/lib/bootc/kargs.d` confirmed.
-- **v2.1.0**: composefs-native backend; structured journal logging.
+- **v0.1.1**: `usroverlay --readonly`; tag-aware upgrade; cached update info; composefs proxy-auth + missing-verity + pre-flight disk-space check.
+- **v0.1.1**: `bootc upgrade` pre-flight disk space; composefs GC.
+- **v0.1.1**: `bootloader=none`; **`bootc container ukify`** (future UKI foundation); shell completions.
+- **v0.1.1**: `bootc upgrade --download-only` / `--from-downloaded`; `bootc container inspect`; systemd-boot autoenroll in install.
+- **v0.1.1**: factory reset (experimental); kargs from `usr/lib/bootc/kargs.d` confirmed.
+- **v0.1.1**: composefs-native backend; structured journal logging.
 
 MiOS adoptions:
 1. `--download-only` + `--from-downloaded` pattern for graceful upgrades.
@@ -186,7 +186,7 @@ MiOS adoptions:
 
 **Looking Glass B7** — kvmfr `static_size_mb=128` — MiOS 4K: bump to 256 MB. Build LG client with `-DENABLE_LIBDECOR=ON` (GNOME Wayland needs it). `memballoon type='none'` is non-negotiable for performance.
 
-**NVIDIA CDI** — Pin nvidia-container-toolkit: NOT v2.1.0 ("unresolvable CDI devices"). Use v2.1.0 or 1.18+/v2.1.0. Remove `oci-nvidia-hook.json` (dual injection conflict). `ublue-nvctk-cdi.service` pattern from ublue-os-nvidia-addons. **DELIVERED push-239.**
+**NVIDIA CDI** — Pin nvidia-container-toolkit: NOT v0.1.1 ("unresolvable CDI devices"). Use v0.1.1 or 1.18+/v0.1.1. Remove `oci-nvidia-hook.json` (dual injection conflict). `ublue-nvctk-cdi.service` pattern from ublue-os-nvidia-addons. **DELIVERED push-239.**
 
 **SecureBlue** — adopt opt-in hardenings ONLY via `ujust harden-*`. **DO NOT** pull: global hardened_malloc (breaks Electron/CUDA/Proton), unprivileged userns disabled in SELinux (breaks Podman rootless/distrobox), XWayland disabled (breaks VSCode/Discord/OBS), noexec on /home (breaks node_modules), lockdown=confidentiality (breaks debuggers/eBPF), Trivalent-only browser policy, SUID-Disabler.
 
@@ -194,7 +194,7 @@ MiOS adoptions:
 
 **GNOME 50 (released mid-March 2026) — Wayland-only:**
 - X11 session removed from source. GDM 50 never runs Xorg. XWayland retained for apps.
-- **xRDP/xorgxrdp is dead on GNOME 50.** xrdp v2.1.0/v2.1.0, xorgxrdp v2.1.0 — no Wayland backend, no roadmap.
+- **xRDP/xorgxrdp is dead on GNOME 50.** xrdp v0.1.1/v0.1.1, xorgxrdp v0.1.1 — no Wayland backend, no roadmap.
 - **Replacement: `gnome-remote-desktop`** — native RDP+VNC, headless multi-user via GDM integration. RHEL and SUSE official replacement.
 - **MiOS must migrate before F43/GNOME 50 rebase.** Remove `xrdp`, `xorgxrdp`, `xorgxrdp-glamor`. Ship `gnome-remote-desktop` + `grdctl` provisioning. This eliminates the `xorgxrdp`-vs-`xorgxrdp-glamor` conflict entirely.
 
@@ -206,7 +206,7 @@ MiOS adoptions:
 **NVIDIA 2025–2026 (RTX 4090):**
 - NVIDIA officially recommends Open kernel modules for Turing/Ampere/Ada/Hopper (RTX 4090 included).
 - **Caveat**: reported desktop-compositor regression at 2560×1440@240Hz with KWin under GSP firmware. Risk likely higher at 4K/240Hz. **Validate on 9950X3D+4090 hardware before defaulting to Open.**
-- NCT v2.1.0: read-only rootfs support (critical for bootc). v2.1.0: `nvidia-cdi-refresh.service`.
+- NCT v0.1.1: read-only rootfs support (critical for bootc). v0.1.1: `nvidia-cdi-refresh.service`.
 - CDI canonical path: `/var/run/cdi/nvidia.yaml` (runtime) or `/etc/cdi/nvidia.yaml` (persistent).
 
 **Podman / Quadlet 2025–2026:**
@@ -219,13 +219,13 @@ MiOS adoptions:
 - Ship: `cockpit cockpit-podman cockpit-machines cockpit-storaged cockpit-files cockpit-selinux`.
 - Fix libvirt-socket race: `cockpit.socket.d/10-mios.conf` with `After=libvirtd.socket`.
 
-**CrowdSec v2.1.0:**
+**CrowdSec v0.1.1:**
 - RE2 regex engine — faster grok, slightly higher memory.
-- Ship as Quadlet (`crowdsecurity/crowdsec:v2.1.0-debian`) with `datasource_journalctl`.
+- Ship as Quadlet (`crowdsecurity/crowdsec:v0.1.1-debian`) with `datasource_journalctl`.
 - `cs-firewall-bouncer` as host RPM (needs nftables).
-- Pin `:v2.1.0`, not `:latest`.
+- Pin `:v0.1.1`, not `:latest`.
 
-**Flatcar Container Linux (Mar 3 2026)** — `/etc` shipped as systemd-confext in production. Proof that confext is ready for MiOS v2.1.0.
+**Flatcar Container Linux (Mar 3 2026)** — `/etc` shipped as systemd-confext in production. Proof that confext is ready for MiOS v0.1.1.
 
 ---
 
@@ -237,14 +237,14 @@ MiOS adoptions:
 2. **cosign polish** (push-239): `build-sign.yml` (v2.6.x pin, key+keyless, SBOM, GHCR cleanup), `policy.json` (key-based entry + fixed keyless), `45-nvidia-cdi-refresh.sh` (remove OCI hook, pin version, CDI dir)
 3. **Verification + MOK + FreeIPA** (push-240): `verify-root.sh` (3-tier), `mios-verify-root.service` (hardened), greenboot wiring, `enroll-mok.sh` (mokutil, idempotent, variant-aware), `generate-mok-key.sh`, `mok-enroll-status`, `50-freeipa-client.sh`, SSSD conf.d, `mios-ipa-enroll.service`, `ipa-enroll`, `ipa.conf.example`, expanded `mios-freeipa.conf`, `COMPOSEFS-VERIFICATION.md`, `SECUREBOOT.md`
 
-### Next: v2.1.0 targets
+### Next: v0.1.1 targets
 
 4. **xRDP → gnome-remote-desktop migration** — must land before F43/GNOME 50 rebase.
 5. **ublue-os/packages COPR + ujust + uupd** enablement.
 6. **Open NVIDIA kmod default** with hardware validation on 9950X3D+4090.
 7. Soft-reboot integration (blocked on bootc#1350).
 
-### Architectural: v2.1.0+
+### Architectural: v0.1.1+
 
 8. Signed `/etc` confext replacing most `etc/` overlays.
 9. UKI signing via `bootc container ukify` + dracut-ng/ukify.
@@ -254,7 +254,7 @@ MiOS adoptions:
 ### Explicitly DO NOT pull
 
 - **Cosign v3** with default `--new-bundle-format` (breaks rpm-ostree/bootc, rpm-ostree#5509).
-- **nvidia-container-toolkit v2.1.0** ("unresolvable CDI devices" regression).
+- **nvidia-container-toolkit v0.1.1** ("unresolvable CDI devices" regression).
 - **`sbctl`** — wrong tool for Fedora GRUB2+shim chain.
 - **`gnome-session-xsession`** — does not exist in current Fedora.
 - **`GTK_THEME=Adwaita:dark`** — breaks libadwaita; use `ADW_DEBUG_COLOR_SCHEME=prefer-dark`.

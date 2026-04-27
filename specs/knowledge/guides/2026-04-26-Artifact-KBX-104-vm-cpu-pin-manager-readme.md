@@ -19,13 +19,13 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # VM CPU Core Pinning Hook Manager
 ## Professional Per-VM CPU Orchestration for MiOS-Build
 
-> **Version**: v2.1.0  
+> **Version**: v0.1.1  
 > **Compatible with**: MiOS, MiOS-Build Framework, AMD Ryzen X3D, Intel Hybrid  
 > **Integrates with**: libvirt, universal-cpu-isolator.sh, virt-manager
 
@@ -838,7 +838,7 @@ A: No, it complements it. Manager creates hooks (automatic), virt-manager sets X
 
 ## Changelog
 
-### v2.1.0 (2026-01-15)
+### v0.1.1 (2026-01-15)
 - Initial release
 - AMD Ryzen X3D optimized presets
 - Interactive configuration wizard

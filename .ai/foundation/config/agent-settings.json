@@ -3,7 +3,7 @@
     "contextFileName": "AGENT.md",
     "_comment": "Agent CLI runtime config. AGENT.md (project root) is the hierarchical bootstrap entry point and imports the shared state. Do not duplicate memory paths here — AGENT.md owns them.",
 
-    "AI_ARCH_BASELINE": "v2.1.0",
+    "AI_ARCH_BASELINE": "v0.1.1",
     "AI_ROLE": "Omni-Agent Workspace Component",
     "AI_BOOTSTRAP_FILE": "AGENT.md",
     "AI_ENGINE": "Shared Architecture",

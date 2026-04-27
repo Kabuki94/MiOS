@@ -19,7 +19,7 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # Minimal GNOME for Fedora Rawhide bootc: the definitive package strategy
@@ -117,7 +117,7 @@ This strips the parental controls GUI and CLI tools but preserves `malcontent` a
 | `gnome-control-center` | Removes gnome-shell → gdm | Hard `Requires` |
 | `gnome-settings-daemon` | Removes gnome-shell + gnome-control-center | Hard `Requires` |
 | `mutter` | Removes gnome-shell → cascade above | Hard `Requires` |
-| `gjs` | Removes gnome-shell → cascade above | Hard `Requires` (gjs >= v2.1.0) |
+| `gjs` | Removes gnome-shell → cascade above | Hard `Requires` (gjs >= v0.1.1) |
 
 **Every other GNOME application is safe to remove.** All apps in the user's list — gnome-tour, gnome-text-editor, gnome-calculator, gnome-calendar, gnome-contacts, gnome-weather, gnome-maps, gnome-clocks, gnome-characters, gnome-font-viewer, gnome-system-monitor, gnome-disk-utility, baobab, cheese/snapshot, simple-scan, gnome-connections, totem/showtime, eog/loupe, evince/papers, file-roller, gnome-music, gnome-photos, rhythmbox, seahorse, deja-dup, gnome-boxes, gnome-logs, yelp, gnome-classic-session, all `gnome-shell-extension-*` packages, and Firefox — are standalone applications with no reverse dependencies from `gnome-shell`, `gdm`, or `mutter`. They can all be `dnf remove`d cleanly.
 

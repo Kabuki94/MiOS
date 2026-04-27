@@ -19,7 +19,7 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # MiOS upstream adoption playbook
@@ -170,7 +170,7 @@ Key clarification: there are **two "HCI" concepts**. `ublue-os/ucore:stable` its
 
 - bsherman/ucore-hci delta vs ucore: adds `libvirt`, `libvirt-daemon-kvm`, `qemu-kvm`, `virt-install`, `edk2-ovmf`, `swtpm`, plus ZFS (`zfs`, `zfs-dracut`) via the akmods-zfs overlay. The `-nvidia` suffix additionally layers `akmods-nvidia` content. No K3s, no Ceph baked in.
 - ucore uses Fedora's `DefaultTimeoutStopSec=45s`; HCI docs recommend overriding with a `/etc/systemd/system/libvirtd.service.d/override.conf` containing `TimeoutStopSec=120s` so slow VMs don't get SIGKILL'd. **Adopt this directly.**
-- ucore as of 20251108 publishes **multi-arch manifests** (aarch64 + x86_64). Model your GitHub Actions matrix on ucore's current workflow.
+- ucore as of 200.1.18 publishes **multi-arch manifests** (aarch64 + x86_64). Model your GitHub Actions matrix on ucore's current workflow.
 - `mokutil --import /etc/pki/akmods/certs/akmods-ublue.der` with password `universalblue` is the enrollment instruction users follow. **Ship this same cert path** so users can use existing docs.
 
 ### ublue-os/akmods — NVIDIA Secure Boot signing

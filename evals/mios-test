@@ -1,10 +1,10 @@
 #!/bin/bash
-# MiOS v2.1.0 — mios-test
+# MiOS v0.1.1 — mios-test
 # System test harness — validates services, packages, configs, and capabilities.
 # Usage: mios-test [--quick|--full|--category NAME]
 set -euo pipefail
 
-VERSION="v2.1.0"
+VERSION="v0.1.1"
 PASS=0; FAIL=0; SKIP=0; WARN=0
 VIRT=$(systemd-detect-virt 2>/dev/null || echo "none")
 IS_WSL=false

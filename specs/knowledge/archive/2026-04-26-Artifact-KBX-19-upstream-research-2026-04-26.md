@@ -19,7 +19,7 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # MiOS Upstream Research — April 26, 2026
@@ -94,7 +94,7 @@ This disables the remote-login endpoint entirely, removing the attack surface wi
 
 **Status:** v1.19.0 (March 2025) — stable; CDI is production-ready
 
-**Correction from prior research:** Previous journal entries cited "v2.1.0 (Mar 2026)" for the CTK — this was incorrect. The CTK version series is **v1.x.x**. v1.19.0 is the current latest.
+**Correction from prior research:** Previous journal entries cited "v0.1.1 (Mar 2026)" for the CTK — this was incorrect. The CTK version series is **v1.x.x**. v1.19.0 is the current latest.
 
 **CDI status:**
 - CDI has been production-stable since v1.12.0; v1.19.0 adds improvements for systemd service triggering and initramfs support
@@ -153,7 +153,7 @@ This disables the remote-login endpoint entirely, removing the attack surface wi
 **Status:** v1.7.7 (March 23, 2026). No v2.x exists.
 
 - Latest stable: v1.7.7 with RE2 regex library adoption and WAF rule improvements
-- Prior research reference to "v2.1.0" was likely a version-number confusion. The CrowdSec release series remains v1.x.x
+- Prior research reference to "v0.1.1" was likely a version-number confusion. The CrowdSec release series remains v1.x.x
 - No new CVEs in release notes
 
 **MiOS actions:** None. Monthly cadence confirmed.

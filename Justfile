@@ -1,9 +1,9 @@
-# MiOS v2.1.0 — Linux Build Targets
+# MiOS v0.1.1 — Linux Build Targets
 # Requires: podman, just
 # Usage: just build | just iso | just all
 
 IMAGE_NAME := env_var_or_default("MIOS_IMAGE_NAME", "ghcr.io/kabuki94/mios")
-VERSION := `cat VERSION 2>/dev/null || echo "v2.1.0"`
+VERSION := `cat VERSION 2>/dev/null || echo "v0.1.1"`
 LOCAL := "localhost/mios:latest"
 BIB := env_var_or_default("MIOS_BIB_IMAGE", "quay.io/centos-bootc/bootc-image-builder:latest")
 
@@ -47,7 +47,7 @@ raw: build
     @echo "✓ RAW image in output/"
 
 # Generate Anaconda installer ISO
-# FIX v2.1.0: ONLY mount iso.toml (includes minsize). Do NOT also mount bib config.
+# FIX v0.1.1: ONLY mount iso.toml (includes minsize). Do NOT also mount bib config.
 # BIB crashes with: "found config.json and also config.toml"
 iso: build
     mkdir -p output
@@ -88,7 +88,7 @@ push:
 all: build rechunk raw iso vhd wsl push
 
 # Automated boot test via QEMU (requires nested virtualization)
-# v2.1.0: Added for architectural validation.
+# v0.1.1: Added for architectural validation.
 boot-test: build
     mkdir -p output/qcow2
     @echo "Building QCOW2 image for boot validation..."

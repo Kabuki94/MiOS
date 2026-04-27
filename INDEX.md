@@ -27,7 +27,7 @@
     ]
   },
   "last_rag_sync": "2026-04-27T03:08:57.083830",
-  "version": "2.1.0"
+  "version": "0.1.1"
 }
 ```
 
@@ -314,7 +314,7 @@ To ensure all Markdown files are machine-parsable and referencable, they must in
     ]
   },
   "last_rag_sync": "2026-04-27T03:08:57.083830",
-  "version": "2.1.0"
+  "version": "0.1.1"
 }
 ```
 <!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->

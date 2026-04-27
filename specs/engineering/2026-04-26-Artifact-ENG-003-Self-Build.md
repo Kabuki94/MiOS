@@ -19,7 +19,7 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # Self-Build Mode Guide
@@ -33,13 +33,13 @@ MiOS ships all the tools needed to rebuild itself: Podman, Buildah, bootc, and b
 The build chain is:
 
 ```
-MiOS v2.1.0 (running) → builds → MiOS v2.1.0 (OCI image)
+MiOS v0.1.1 (running) → builds → MiOS v0.1.1 (OCI image)
                                         ↓
                                   Rechunk → Sign → Push to GHCR
                                         ↓
-                              MiOS v2.1.0 (running via bootc upgrade)
+                              MiOS v0.1.1 (running via bootc upgrade)
                                         ↓
-                                  builds → MiOS v2.1.0 ...
+                                  builds → MiOS v0.1.1 ...
 ```
 
 ## Build Modes

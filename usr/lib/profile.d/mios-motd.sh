@@ -1,4 +1,4 @@
-# MiOS v2.1.0 — Terminal/TTY dashboard
+# MiOS v0.1.1 — Terminal/TTY dashboard
 # Shows fastfetch services panel on interactive login.
 # Suppress with:  export MIOS_NO_MOTD=1
 if [[ $- == *i* ]] && [ -z "${MIOS_NO_MOTD:-}" ]; then

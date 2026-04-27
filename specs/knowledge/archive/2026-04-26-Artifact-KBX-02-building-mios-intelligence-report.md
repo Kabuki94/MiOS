@@ -19,12 +19,12 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # Building MiOS: a complete technical intelligence report
 
-**The bootc ecosystem has matured dramatically through 2025-2026, and your MiOS project can now leverage battle-tested patterns from Universal Blue, SecureBlue, and the CNCF-sandboxed bootc project itself.** Bootc reached **v2.1.0** (March 2026) with composefs-native storage, tag-aware upgrades, and kernel argument drop-in directories. Fedora Rawhide now ships **kernel 7.0-rc6**, **systemd 260**, **GNOME 50**, and **Mesa 26.0** — all requiring specific adaptations for immutable workstation builds. This report synthesizes findings across mature bootc repositories, security hardening techniques, GPU passthrough ecosystem changes, and container orchestration patterns to inform every layer of the MiOS architecture.
+**The bootc ecosystem has matured dramatically through 2025-2026, and your MiOS project can now leverage battle-tested patterns from Universal Blue, SecureBlue, and the CNCF-sandboxed bootc project itself.** Bootc reached **v0.1.1** (March 2026) with composefs-native storage, tag-aware upgrades, and kernel argument drop-in directories. Fedora Rawhide now ships **kernel 7.0-rc6**, **systemd 260**, **GNOME 50**, and **Mesa 26.0** — all requiring specific adaptations for immutable workstation builds. This report synthesizes findings across mature bootc repositories, security hardening techniques, GPU passthrough ecosystem changes, and container orchestration patterns to inform every layer of the MiOS architecture.
 
 ---
 
@@ -71,7 +71,7 @@ permissions:
   id-token: write  # Enables OIDC keyless signing
 
 steps:
-  - uses: sigstore/cosign-installer@v2.1.0
+  - uses: sigstore/cosign-installer@v0.1.1
   - name: Sign image (keyless)
     run: cosign sign --yes ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
 ```
@@ -106,11 +106,11 @@ Post-build, Universal Blue projects run **image rechunking**, converting contain
 
 ---
 
-## Bootc v2.1.0 and the composefs revolution
+## Bootc v0.1.1 and the composefs revolution
 
-Bootc was accepted as a **CNCF Sandbox project on January 21, 2025**, and the repository moved from `containers/bootc` to **`bootc-dev/bootc`**. The project now follows strict semver and has reached v2.1.0 with transformative features.
+Bootc was accepted as a **CNCF Sandbox project on January 21, 2025**, and the repository moved from `containers/bootc` to **`bootc-dev/bootc`**. The project now follows strict semver and has reached v0.1.1 with transformative features.
 
-The most significant development is the **composefs-native backend** (tracking issue #1190), which aims to phase out ostree as a dependency entirely. Composefs-rs (a Rust implementation) generates composefs images directly from container images, and the feature gate was removed in v2.1.0. Key milestones achieved include composefs garbage collection (v2.1.0), SELinux enforcement for sealed images (v2.1.0), and pre-flight disk space checks (v2.1.0). Configure it in `/usr/lib/ostree/prepare-root.conf`:
+The most significant development is the **composefs-native backend** (tracking issue #1190), which aims to phase out ostree as a dependency entirely. Composefs-rs (a Rust implementation) generates composefs images directly from container images, and the feature gate was removed in v0.1.1. Key milestones achieved include composefs garbage collection (v0.1.1), SELinux enforcement for sealed images (v0.1.1), and pre-flight disk space checks (v0.1.1). Configure it in `/usr/lib/ostree/prepare-root.conf`:
 
 ```toml
 [composefs]
@@ -123,7 +123,7 @@ transient = true      # Recommended: transient /etc for maximum immutability
 transient-ro = true   # New: read-only overlay with privileged remount capability
 ```
 
-New CLI capabilities since v2.1.0 include **kernel argument drop-in directories** at `/usr/lib/bootc/kargs.d/` (eliminating the need to modify bootloader configs), **soft reboot** that detects SELinux policy deltas for userspace-only restarts, `bootc usroverlay --readonly` for read-only /usr overlays, `bootc container export --format=tar` for mutable installations, and `bootc completion <shell>` for shell completions. The **tag-aware upgrade operation** in v2.1.0 enables smarter upgrade strategies based on container image tags.
+New CLI capabilities since v0.1.1 include **kernel argument drop-in directories** at `/usr/lib/bootc/kargs.d/` (eliminating the need to modify bootloader configs), **soft reboot** that detects SELinux policy deltas for userspace-only restarts, `bootc usroverlay --readonly` for read-only /usr overlays, `bootc container export --format=tar` for mutable installations, and `bootc completion <shell>` for shell completions. The **tag-aware upgrade operation** in v0.1.1 enables smarter upgrade strategies based on container image tags.
 
 **Bootc Image Builder (BIB)** at `quay.io/centos-bootc/bootc-image-builder:latest` now supports output formats including ami, anaconda-iso, qcow2, raw, vhd, and vmdk. For Fedora, the `--rootfs` flag is required since Fedora has no default rootfs. A new `osautomation/image-builder-cli` project is being developed with SBOM generation (`--with-sbom`) and will eventually merge with BIB.
 
@@ -131,13 +131,13 @@ New CLI capabilities since v2.1.0 include **kernel argument drop-in directories*
 
 ## Fedora Rawhide's generational package shifts
 
-Fedora Rawhide (targeting Fedora 45) is undergoing several generational transitions simultaneously. The kernel has jumped to **v2.1.0-rc6** (the version bump from 6.x is purely cosmetic — Torvalds cited "getting confused by large numbers"). For VFIO, the `vfio_virqfd` module was consolidated into the base vfio module since kernel 6.2, simplifying dracut/initramfs configuration. **IOMMUFD** continues maturing as the replacement for legacy VFIO container model, with vIOMMU infrastructure landing in 6.13+.
+Fedora Rawhide (targeting Fedora 45) is undergoing several generational transitions simultaneously. The kernel has jumped to **v0.1.1-rc6** (the version bump from 6.x is purely cosmetic — Torvalds cited "getting confused by large numbers"). For VFIO, the `vfio_virqfd` module was consolidated into the base vfio module since kernel 6.2, simplifying dracut/initramfs configuration. **IOMMUFD** continues maturing as the replacement for legacy VFIO container model, with vIOMMU infrastructure landing in 6.13+.
 
 **systemd 260** ships in Rawhide with several breaking changes. cgroup v1 support was **removed entirely in systemd 258**, and SysV service script support is also gone. The positive side: systemd-sysext and systemd-confext are now fully mature for extending immutable `/usr` and `/etc`, systemd-stub loads extensions from the ESP, and systemd-repart supports file-level fs-verity checks. New tools include `systemd-sbsign` for Secure Boot signing, `systemd-keyutil` for key management, and `updatectl` for system updates via systemd-sysupdate.
 
 **GNOME 50 "Tokyo"** (50~rc) is in Rawhide. The critical change came in GNOME 49: systemd became a **hard dependency** — GDM now requires systemd's `userdb` infrastructure, and gnome-session's built-in service manager was removed entirely. Any bootc image with GNOME must include full systemd user session support. GNOME 48 brought dynamic triple buffering in Mutter and HDR configuration, while GTK's X11 and Broadway backends are deprecated, signaling a Wayland-only future.
 
-**Mesa v2.1.0** brings Vulkan 1.4 across AMD (RADV), Intel (ANV), and NVIDIA (NVK) drivers, with **ACO becoming the default shader compiler for RadeonSI** (better performance, faster compile times). NVIDIA proprietary drivers have reached the **590 series**, which drops Pascal (GTX 10xx) support. Open kernel modules are now the **default for Turing and newer** and the only option for Blackwell GPUs.
+**Mesa v0.1.1** brings Vulkan 1.4 across AMD (RADV), Intel (ANV), and NVIDIA (NVK) drivers, with **ACO becoming the default shader compiler for RadeonSI** (better performance, faster compile times). NVIDIA proprietary drivers have reached the **590 series**, which drops Pascal (GTX 10xx) support. Open kernel modules are now the **default for Turing and newer** and the only option for Blackwell GPUs.
 
 ---
 
@@ -166,7 +166,7 @@ net.ipv4.conf.all.rp_filter=1
 
 SecureBlue integrates **GrapheneOS's hardened_malloc** globally (including for Flatpak apps), blacklists unnecessary kernel modules (Bluetooth, Thunderbolt, CD-ROM), removes SUID bits from binaries (replacing with Linux capabilities), enables **USBGuard** by default, disables XWayland, and configures DNS-over-TLS with DNSSEC via systemd-resolved. User namespace creation is restricted via SELinux policy, with targeted exceptions for Flatpak and containers via `udica`-generated policies.
 
-**LKRG v2.1.0** (Linux Kernel Runtime Guard) released in September 2025 is worth evaluating — it performs runtime integrity checking of kernel code, data structures, and credential pointers. As an out-of-tree module, it must be compiled against the exact kernel in your bootc image during the container build.
+**LKRG v0.1.1** (Linux Kernel Runtime Guard) released in September 2025 is worth evaluating — it performs runtime integrity checking of kernel code, data structures, and credential pointers. As an out-of-tree module, it must be compiled against the exact kernel in your bootc image during the container build.
 
 For TPM2 integration, `bootc install to-disk --block-setup tpm2-luks` handles LUKS+TPM2 binding during installation. Post-install, use `systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7` for PCR binding. **PCR 7 alone** (Secure Boot state) is recommended for bootc systems — binding to PCR 0+2+4+7 breaks on every kernel or firmware update. For systems using UKIs, the **signed policy approach** is preferred:
 
@@ -187,9 +187,9 @@ Bazzite's KVMFR integration provides the model for MiOS. The kvmfr kernel module
 
 **QEMU 9.2** brings virtio-gpu Vulkan support via Venus (`-device virtio-gpu-gl,hostmem=8G,blob=true,venus=true`) and DRM native context support. IOMMUFD is maturing as the VFIO container model replacement, with vIOMMU infrastructure landing in kernel 6.13+.
 
-**Waydroid v2.1.0** works well on AMD/Intel with Wayland but remains problematic on NVIDIA — 2D video playback works, but **3D games lack proper GPU acceleration** due to Android's Mesa dependency conflicting with NVIDIA's proprietary stack. On Fedora, ensure CONFIG_PSI=y, loop devices, and binder kernel modules are available. IPv6 must be enabled in the kernel for Waydroid networking.
+**Waydroid v0.1.1** works well on AMD/Intel with Wayland but remains problematic on NVIDIA — 2D video playback works, but **3D games lack proper GPU acceleration** due to Android's Mesa dependency conflicting with NVIDIA's proprietary stack. On Fedora, ensure CONFIG_PSI=y, loop devices, and binder kernel modules are available. IPv6 must be enabled in the kernel for Waydroid networking.
 
-**Gamescope** continues as the premiere gaming compositor. For embedded session mode on Fedora, launch via a Wayland session desktop entry calling `gamescope-session`. Bazzite's fork (branch `ba147`) patches Gamescope with `CAP_SYS_NICE` capability for priority scheduling, HDR, VRR, and frame scaling. On NVIDIA+Wayland, Gamescope requires `nvidia-drm.modeset=1` and driver v2.1.0+.
+**Gamescope** continues as the premiere gaming compositor. For embedded session mode on Fedora, launch via a Wayland session desktop entry calling `gamescope-session`. Bazzite's fork (branch `ba147`) patches Gamescope with `CAP_SYS_NICE` capability for priority scheduling, HDR, VRR, and frame scaling. On NVIDIA+Wayland, Gamescope requires `nvidia-drm.modeset=1` and driver v0.1.1+.
 
 ---
 
@@ -199,7 +199,7 @@ K3s fits naturally on bootc because its data directory (`/var/lib/rancher/k3s`) 
 
 ```dockerfile
 RUN curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_START=true \
-    INSTALL_K3S_SKIP_ENABLE=true INSTALL_K3S_VERSION=v2.1.0+k3s1 sh -
+    INSTALL_K3S_SKIP_ENABLE=true INSTALL_K3S_VERSION=v0.1.1+k3s1 sh -
 RUN dnf install -y container-selinux k3s-selinux && dnf clean all
 RUN systemctl enable k3s
 ```

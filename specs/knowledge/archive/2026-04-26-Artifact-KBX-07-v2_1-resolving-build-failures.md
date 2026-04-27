@@ -19,10 +19,10 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
-# MiOS v2.1.0: resolving every build and boot failure
+# MiOS v0.1.1: resolving every build and boot failure
 
 **The Hyper-V Gen2 boot hang is almost certainly caused by GNOME 50's complete removal of the X11 backend colliding with xorgxrdp Enhanced Session Mode**, creating a GDM crash loop that prevents the system from ever reaching a login prompt. This single architectural incompatibility — Mutter 50 is Wayland-only, xorgxrdp requires X11 — explains why the kernel boots fine but the system never reaches userspace. Secondary contributing factors include potentially missing Hyper-V dracut modules in the initramfs and possible plymouth-masking dependency deadlocks. The remaining issues (lint warnings, service ordering, BIB GPG failures, memory alignment) are all solvable with targeted fixes documented below.
 

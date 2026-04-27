@@ -19,7 +19,7 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # GNOME 50 on Fedora Rawhide: complete package reference
@@ -32,12 +32,12 @@ GNOME 50, codenamed **"Tokyo"**, was officially released on March 18, 2026. Fedo
 
 | RPM package name | Version-Release | Upstream version | Notes |
 |---|---|---|---|
-| `gtk4` | **v2.1.0-1.fc45** | GTK 4.22 | Even-numbered GTK stable; GNOME 50's toolkit |
-| `libadwaita` | **v2.1.0-1.fc45** | libadwaita 1.9 | Requires gtk4 ≥ v2.1.0 |
+| `gtk4` | **v0.1.1-1.fc45** | GTK 4.22 | Even-numbered GTK stable; GNOME 50's toolkit |
+| `libadwaita` | **v0.1.1-1.fc45** | libadwaita 1.9 | Requires gtk4 ≥ v0.1.1 |
 | `mutter` | **50.0-1.fc45** | Mutter 50 | Provides `libmutter-18.so` |
 | `gnome-shell` | **50.0-1.fc45** | GNOME Shell 50 | Provides `libshell-18.so` |
 
-GTK follows its own versioning scheme: even minors (4.20, 4.22, 4.24) are stable, odd minors (4.21, 4.23) are development. The 4.21.x builds visible in Koji were pre-release; the stable **v2.1.0** landed alongside the rest of the GNOME 50 stack. GNOME 50 is the default desktop for Fedora 44 (stable) and Ubuntu 26.04 LTS. Key GNOME 50 highlights include the complete removal of the X11 session (Wayland-only), VRR and fractional scaling enabled by default, and GPU-accelerated remote desktop.
+GTK follows its own versioning scheme: even minors (4.20, 4.22, 4.24) are stable, odd minors (4.21, 4.23) are development. The 4.21.x builds visible in Koji were pre-release; the stable **v0.1.1** landed alongside the rest of the GNOME 50 stack. GNOME 50 is the default desktop for Fedora 44 (stable) and Ubuntu 26.04 LTS. Key GNOME 50 highlights include the complete removal of the X11 session (Wayland-only), VRR and fractional scaling enabled by default, and GPU-accelerated remote desktop.
 
 ## Replacement app RPM names on Rawhide
 

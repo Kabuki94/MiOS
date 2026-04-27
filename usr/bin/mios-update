@@ -28,7 +28,7 @@ if [[ "$VIRT" == "wsl" || "$VIRT" == container* ]] || [[ -f "/.containerenv" || 
 fi
 
 if [[ "$JSON_MODE" == "false" ]]; then
-    echo "MiOS v2.1.0 — Checking for updates..."
+    echo "MiOS v0.1.1 — Checking for updates..."
 fi
 
 # Parse origin from bootc status --format=json (stable API; never parse bootc upgrade stdout)

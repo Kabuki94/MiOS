@@ -19,7 +19,7 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # MiOS technical reference: 7 practical solutions
@@ -50,10 +50,10 @@ sudo podman run -d \
   -v k3s-agent-data:/var/lib/rancher/k3s \
   --ulimit nproc=65535 \
   --ulimit nofile=65535:65535 \
-  rancher/k3s:v2.1.0-k3s1 agent
+  rancher/k3s:v0.1.1-k3s1 agent
 ```
 
-Critical details: always use an **explicit version tag** (`v2.1.0-k3s1` with hyphens, not plus signs) because the `latest` tag is unmaintained. Use **K3s v1.28+** on Fedora Rawhide for proper cgroup v2 support — older versions fail with cgroupv2 errors. The persistent volume on `/var/lib/rancher/k3s` preserves agent state across restarts, and `--node-name` prevents hostname collisions.
+Critical details: always use an **explicit version tag** (`v0.1.1-k3s1` with hyphens, not plus signs) because the `latest` tag is unmaintained. Use **K3s v1.28+** on Fedora Rawhide for proper cgroup v2 support — older versions fail with cgroupv2 errors. The persistent volume on `/var/lib/rancher/k3s` preserves agent state across restarts, and `--node-name` prevents hostname collisions.
 
 **For WSL2 deployments**, the K3s binary can run directly (no nested container needed). Modern WSL2 kernels include all required modules (`br_netfilter`, `overlay`, `vxlan`). Enable systemd first via `/etc/wsl.conf`, then:
 
@@ -149,7 +149,7 @@ podman export <container-id> | gzip > mios.tar.gz
 - **Ensure virtualization** is enabled in BIOS and "Virtual Machine Platform" is enabled in Windows Features
 - **Fresh install directory** — if the path already has an `ext4.vhdx`, you get error 0x80070050
 
-The newer **`wsl --install --from-file <path.wsl>`** syntax (WSL v2.1.0+, November 2024) takes only one argument and reads the distro name from `/etc/wsl-distribution.conf` inside the tarball. It also runs the OOBE first-run setup. This requires renaming the tarball to `.wsl` extension and embedding a config file — a different workflow from `--import`.
+The newer **`wsl --install --from-file <path.wsl>`** syntax (WSL v0.1.1+, November 2024) takes only one argument and reads the distro name from `/etc/wsl-distribution.conf` inside the tarball. It also runs the OOBE first-run setup. This requires renaming the tarball to `.wsl` extension and embedding a config file — a different workflow from `--import`.
 
 ---
 
@@ -157,7 +157,7 @@ The newer **`wsl --install --from-file <path.wsl>`** syntax (WSL v2.1.0+, Novemb
 
 **`cockpit-ceph-installer` is not in Fedora repos and never was.** It was a Red Hat Ceph Storage 4 product component, distributed only through Red Hat subscription channels. Red Hat **officially deprecated it in RHCS 5**, stating that cephadm replaces it. The GitHub repo at `red-hat-storage/cockpit-ceph-installer` targets Ceph Nautilus-era ceph-ansible and is effectively abandoned — it is incompatible with modern Ceph versions (Pacific, Quincy, Reef) which use cephadm instead.
 
-**45Drives' `cockpit-ceph-deploy`** is a separate project but also unavailable in Fedora. It builds RPMs only for EL8, with the last release (v2.1.0) from mid-2023. It similarly depends on ceph-ansible (45Drives' fork) and is designed specifically for their storage hardware. Installing it on Fedora Rawhide would require manual RPM adaptation.
+**45Drives' `cockpit-ceph-deploy`** is a separate project but also unavailable in Fedora. It builds RPMs only for EL8, with the last release (v0.1.1) from mid-2023. It similarly depends on ceph-ansible (45Drives' fork) and is designed specifically for their storage hardware. Installing it on Fedora Rawhide would require manual RPM adaptation.
 
 **The recommended alternative is the Ceph Dashboard**, a ceph-mgr module that ships with Ceph itself and is available in Fedora Rawhide:
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# MiOS v2.1.0 — Upstream Source Synchronization
+# MiOS v0.1.1 — Upstream Source Synchronization
 # Fetches the latest 'main' branch root FS from GitHub and populates user folders.
 # Runs on first boot after network is online.
 

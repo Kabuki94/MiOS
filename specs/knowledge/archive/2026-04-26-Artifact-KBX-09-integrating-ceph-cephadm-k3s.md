@@ -19,18 +19,18 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # Integrating Ceph, Cephadm, and K3s into MiOS
 
-**Ceph's entire state model aligns perfectly with bootc's immutable filesystem** — every writable path cephadm needs (`/var/lib/ceph`, `/etc/ceph`, `/var/log/ceph`) falls within the mutable `/var` and `/etc` partitions. Fedora Rawhide ships **Ceph v2.1.0 (Tentacle)** with `cephadm`, `ceph-common`, and all required packages in the standard repos, requiring zero upstream repo configuration. The practical challenge is not compatibility but orchestration: designing a systemd dependency chain that gracefully handles first boot (no Ceph cluster yet), steady-state operation (CephFS mounts for `/var/home` and container storage), and multi-node expansion via the Ceph Dashboard. This report provides every configuration file, systemd unit, Containerfile snippet, and command needed to build this integration into the existing MiOS modular build system.
+**Ceph's entire state model aligns perfectly with bootc's immutable filesystem** — every writable path cephadm needs (`/var/lib/ceph`, `/etc/ceph`, `/var/log/ceph`) falls within the mutable `/var` and `/etc` partitions. Fedora Rawhide ships **Ceph v0.1.1 (Tentacle)** with `cephadm`, `ceph-common`, and all required packages in the standard repos, requiring zero upstream repo configuration. The practical challenge is not compatibility but orchestration: designing a systemd dependency chain that gracefully handles first boot (no Ceph cluster yet), steady-state operation (CephFS mounts for `/var/home` and container storage), and multi-node expansion via the Ceph Dashboard. This report provides every configuration file, systemd unit, Containerfile snippet, and command needed to build this integration into the existing MiOS modular build system.
 
 ---
 
-## Fedora Rawhide delivers Ceph v2.1.0 with complete packaging
+## Fedora Rawhide delivers Ceph v0.1.1 with complete packaging
 
-Fedora Rawhide (fc45) provides **Ceph v2.1.0-10 (Tentacle)** as a native package set. The critical packages for the bootc base image are minimal because cephadm runs all server daemons as Podman containers:
+Fedora Rawhide (fc45) provides **Ceph v0.1.1-10 (Tentacle)** as a native package set. The critical packages for the bootc base image are minimal because cephadm runs all server daemons as Podman containers:
 
 - **`ceph-common`** — Provides `/usr/bin/mount.ceph`, `ceph` CLI, `rbd`, `rados`, `ceph-authtool`, `ceph-conf`. This is the essential client package.
 - **`cephadm`** — The bootstrap and orchestration binary. Deploys MON, MGR, OSD, and MDS as Podman containers managed by systemd.
@@ -454,7 +454,7 @@ RUN dnf -y install \
     && dnf clean all
 
 # === K3s BINARY ===
-ARG K3S_VERSION=v2.1.0+k3s1
+ARG K3S_VERSION=v0.1.1+k3s1
 ADD https://github.com/k3s-io/k3s/releases/download/${K3S_VERSION}/k3s \
     /usr/local/bin/k3s
 RUN chmod 755 /usr/local/bin/k3s && \

@@ -19,16 +19,16 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
-# MiOS v2.1.0 — Package Manifest
+# MiOS v0.1.1 — Package Manifest
 
 This file is both documentation and the **single source of truth** for all packages installed in MiOS.
 Build scripts parse the fenced code blocks below using `automation/lib/packages.sh`.
 To add a package, add it to the appropriate section. One package per line.
 
-**CHANGELOG v2.1.0:**
+**CHANGELOG v0.1.1:**
 - Standardized versioning across the entire stack.
 - Added uupd (unified updater replacing bootc-fetch-apply-updates.timer)
 - Added greenboot + greenboot-default-health-checks (auto-rollback on boot failure)
@@ -47,7 +47,7 @@ To add a package, add it to the appropriate section. One package per line.
        sole source of truth; 40-series scripts handle config+services only
 - Added missing audited tools: strace, lsof, iotop, ntfs-3g, efibootmgr, nm-connection-editor
 
-**CHANGELOG v2.1.0 (previous):**
+**CHANGELOG v0.1.1 (previous):**
 - Added bootupd (unified bootloader updates — Fedora 44 phase 1)
 - Added dnf5-plugins (versionlock support for critical package pinning)
 - Added systemd-boot-unsigned (UKI preparation — future composefs+UKI chain)
@@ -56,7 +56,7 @@ To add a package, add it to the appropriate section. One package per line.
 - Added clevis, clevis-luks (automated LUKS unlock via TPM2/Tang)
 - Moved driverctl from security to utils (better categorization)
 
-**CHANGELOG v2.1.0 (previous):**
+**CHANGELOG v0.1.1 (previous):**
 - Removed htop (use btop instead)
 - Added nvidia-settings to NVIDIA section
 - Added avahi/nss-mdns for .local network discovery

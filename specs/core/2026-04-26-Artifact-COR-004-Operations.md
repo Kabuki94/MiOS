@@ -19,7 +19,7 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # 🛠️ MiOS-OS Operational Handbook
@@ -27,7 +27,7 @@
 ```json
 {
   "scope": "System Administration & Deployment",
-  "baseline": "v2.1.0",
+  "baseline": "v0.1.1",
   "tools": ["bootc", "just", "mios-backup", "mios-update"]
 }
 ```

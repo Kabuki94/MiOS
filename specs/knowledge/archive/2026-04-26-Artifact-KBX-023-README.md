@@ -19,7 +19,7 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # MiOS Knowledge Base
@@ -72,7 +72,7 @@ cosign, composefs, etc.) needs contextualizing.
 | 03 | `03-comprehensive-research-compendium.md` | Comprehensive research compendium — Fedora Rawhide bootc immutable workstation OS |
 | 04 | `04-technical-reference-7-solutions.md` | 7 practical solutions for immutable workstation deployment |
 | 05 | `05-upstream-adoption-playbook.md` | Upstream adoption playbook — sequencing plan for a signed, multi-variant Fedora bootc |
-| 06 | `06-v2_1_6-release-implementation-plan.md` | v2.1.0 release: CI fix, cosign keyless signing, full implementation plan |
+| 06 | `06-v2_1_6-release-implementation-plan.md` | v0.1.1 release: CI fix, cosign keyless signing, full implementation plan |
 | 07 | `07-v2_1-resolving-build-failures.md` | v2.1: resolving every build and boot failure |
 | 08 | `08-gnome-50-fedora-rawhide-package-guide.md` | GNOME 50 on Fedora Rawhide — complete package reference and configuration guide |
 | 09 | `09-integrating-ceph-cephadm-k3s.md` | Integrating Ceph, Cephadm, and K3s into MiOS |
@@ -146,7 +146,7 @@ Historical and detailed changelogs are now consolidated in the root [`/changelog
 | Document | Covers |
 |----------|--------|
 | [`01-v1.1-Legacy-Profiler.md`](../../changelogs/01-v1.1-Legacy-Profiler.md) | v1.1 legacy profiler documentation |
-| [`02-v2.1.0-Detailed-Technical-Log.md`](../../changelogs/02-v2.1.0-Detailed-Technical-Log.md) | Detailed v2.1.x milestone technical logs |
+| [`02-v0.1.1-Detailed-Technical-Log.md`](../../changelogs/02-v0.1.1-Detailed-Technical-Log.md) | Detailed v2.1.x milestone technical logs |
 | [`03-Cumulative-Changelog.md`](../../changelogs/03-Cumulative-Changelog.md) | Main cumulative project changelog |
 
 **Do not** treat legacy changelogs as current state. Cross-reference

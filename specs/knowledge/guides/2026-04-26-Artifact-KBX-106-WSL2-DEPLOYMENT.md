@@ -19,7 +19,7 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # 🛡️ WSL2 Deployment & Security Guide
@@ -31,7 +31,7 @@ This document outlines the requirements and security considerations for deployin
 A critical vulnerability (**CVE-2026-32178**) affecting the .NET runtime used in the WSL host has been identified. This vulnerability allows for SMTP header injection via `System.Net.Mail`.
 
 ### 🛠️ Required Mitigation
-To ensure the security of your MiOS deployment on Windows, you **MUST** upgrade your WSL host to version **2.1.0 or higher**.
+To ensure the security of your MiOS deployment on Windows, you **MUST** upgrade your WSL host to version **0.1.1 or higher**.
 
 **Check your version:**
 ```powershell

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# MiOS v2.1.0 — Post-boot serial log smoke check
+# MiOS v0.1.1 — Post-boot serial log smoke check
 # Usage: smoke-check.sh <serial-log>
 #
 # Analyzes QEMU serial console output for boot health indicators.

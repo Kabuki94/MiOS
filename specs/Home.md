@@ -11,14 +11,14 @@
     "navigation"
   ],
   "last_rag_sync": "2026-04-27T03:08:57.083830",
-  "version": "2.1.0"
+  "version": "0.1.1"
 }
 ```
 
 ## Changelogs
 - 🌐 MiOS — Cloud Native Operating System ([Cumulative History](https://github.com/Kabuki94/mios/blob/main/specs/changelogs/2026-04-26-Artifact-CHL-001-Cumulative.md))
 - 🌐 MiOS — Cloud Native Operating System ([v1.1 Release Log](https://github.com/Kabuki94/mios/blob/main/specs/changelogs/2026-04-26-Artifact-CHL-002-v1.1.md))
-- 🌐 MiOS — Cloud Native Operating System ([v2.1.0 Rebranding Log](https://github.com/Kabuki94/mios/blob/main/specs/changelogs/2026-04-26-Artifact-CHL-003-v2.1.0.md))
+- 🌐 MiOS — Cloud Native Operating System ([v0.1.1 Rebranding Log](https://github.com/Kabuki94/mios/blob/main/specs/changelogs/2026-04-26-Artifact-CHL-003-v0.1.1.md))
 
 ## Core Foundation
 - 🌐 MiOS — Cloud Native Operating System ([Project Blueprint](https://github.com/Kabuki94/mios/blob/main/specs/core/2026-04-26-Artifact-COR-001-Blueprint.md))

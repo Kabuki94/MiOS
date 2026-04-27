@@ -19,7 +19,7 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v2.1.0
+> **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # NEXT-RESEARCH — agenda for 2026-04-28 and beyond
@@ -36,7 +36,7 @@
 2. **ucore-hci F43 confirmed current** — no F44 tag yet; expected 24–48h post-GA.
 3. **bootc v1.15.1 confirmed latest** — Intel VROC support and `--karg-delete` added.
 4. **Cockpit v361 confirmed latest** — includes CVE-2026-4631 fix.
-5. **NVIDIA CTK version corrected** — latest is v1.19.0 (v1.x series). Prior "v2.1.0" reference was erroneous. CDI stable.
+5. **NVIDIA CTK version corrected** — latest is v1.19.0 (v1.x series). Prior "v0.1.1" reference was erroneous. CDI stable.
 6. **BIB action N/A for MiOS** — MiOS uses `quay.io/centos-bootc/bootc-image-builder:latest` directly; ublue-os action deprecation does not apply.
 7. **Renovate already migrated** — `minimumReleaseAge` already in `renovate.json`. No action.
 8. **CrowdSec v1.7.7 confirmed** — no v2.x exists. Monthly cadence maintained.
