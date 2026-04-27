@@ -18,21 +18,21 @@
       "ai-context.json"
     ],
     "impacts": [
-      "AGENT.md",
-      "SYSTEM.md",
-      "AGENTS.md",
+      "INDEX.md",
+      "INDEX.md",
+      "INDEX.md",
       ".cursorrules",
       ".clinerules",
       ".windsurfrules"
     ]
   },
-  "last_rag_sync": "2026-04-27T03:46:51.769936",
+  "last_rag_sync": "2026-04-27T03:55:40.780286",
   "version": "0.1.1"
 }
 ```
 
 > **Single source of truth** for every AI agent, LLM, copilot, and API operating in this repository.
-> All provider entry files (`SYSTEM.md`, `AGENT.md`, `AGENTS.md`, `.cursorrules`, `.windsurfrules`,
+> All provider entry files (`INDEX.md`, `INDEX.md`, `INDEX.md`, `.cursorrules`, `.windsurfrules`,
 > `.clinerules`, `.github/copilot-instructions.md`) defer to this file for architecture laws and conventions.
 
 ## Project
@@ -264,13 +264,13 @@ Complete replacement files only — no patches, no diffs, no "paste this into X"
 
 | Agent / Tool | Entry file | Mechanism |
 |---|---|---|
-| System Code (Foundation) | `SYSTEM.md` | Auto-loaded at session start |
-| Agent CLI (Cloud) | `AGENT.md` | `@./` import chain |
+| System Code (Foundation) | `INDEX.md` | Auto-loaded at session start |
+| Agent CLI (Cloud) | `INDEX.md` | `@./` import chain |
 | GitHub Copilot | `.github/copilot-instructions.md` | System prompt injection |
 | Cursor | `.cursorrules` | Context injection |
 | Windsurf (Codeium) | `.windsurfrules` | Context injection |
 | Cline (VS Code) | `.clinerules` | Context injection |
-| OpenAI Codex CLI | `AGENTS.md` | Auto-loaded at session start |
+| OpenAI Codex CLI | `INDEX.md` | Auto-loaded at session start |
 | Aider | `.aider.conf.yml` + `INDEX.md` | Config + read |
 | Web LLMs / scrapers | `llms.txt` | Structured index |
 | MCP / programmatic | `ai-context.json` | JSON manifest |
@@ -313,7 +313,7 @@ To ensure all Markdown files are machine-parsable and referencable, they must in
       "path/to/impacted/file"
     ]
   },
-  "last_rag_sync": "2026-04-27T03:46:51.769936",
+  "last_rag_sync": "2026-04-27T03:55:40.780286",
   "version": "0.1.1"
 }
 ```

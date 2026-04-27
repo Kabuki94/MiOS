@@ -390,7 +390,7 @@ This means MiOS-2 users do NOT need to install akmods at runtime — the modules
 
 - **4K/240Hz compositor regression (GSP firmware, KWin/GNOME Mutter):** Reported desktop-compositor stutter at 2560×1440@240Hz under KWin with GSP firmware; risk is likely higher at 4K/240Hz on RTX 4090. **Validate on 9950X3D+RTX 4090 before defaulting to open modules in MiOS.** Gate with `34-gpu-detect.sh` and allow proprietary escape-hatch.
 - **Waydroid is incompatible with NVIDIA proprietary drivers.** NVIDIA open modules partially help (Mesa virtio-gpu path), but full Waydroid 3D acceleration on NVIDIA remains unsupported. MiOS users wanting Waydroid should use AMD or Intel GPU.
-- **udev coldplug issue (critical for MiOS-2):** `ucore-hci:stable-nvidia` ships NVIDIA kernel modules that udev coldplugs **even in VMs with no GPU**. SYSTEM.md §3.5 documents the mitigation: blacklist NVIDIA modules by default, have `34-gpu-detect.sh` remove the blacklist only on bare metal. This is an existing MiOS-2 design requirement and must NOT be regressed.
+- **udev coldplug issue (critical for MiOS-2):** `ucore-hci:stable-nvidia` ships NVIDIA kernel modules that udev coldplugs **even in VMs with no GPU**. INDEX.md §3.5 documents the mitigation: blacklist NVIDIA modules by default, have `34-gpu-detect.sh` remove the blacklist only on bare metal. This is an existing MiOS-2 design requirement and must NOT be regressed.
 
 **MOK enrollment (Universal Blue key):**
 
@@ -478,7 +478,7 @@ This means MiOS-2 users do NOT need to install akmods at runtime — the modules
 ### Known issues with stable-nvidia base
 
 **1. NVIDIA udev coldplug in VMs (critical, MiOS-specific design requirement):**
-`ucore-hci:stable-nvidia` ships NVIDIA kernel modules that udev coldplugs even in VMs without a physical GPU, causing DRM errors, failed service starts, and GDM failures. SYSTEM.md §3.5 mandates blacklisting NVIDIA modules by default with `34-gpu-detect.sh` removing the blacklist only on bare metal. This must not be regressed.
+`ucore-hci:stable-nvidia` ships NVIDIA kernel modules that udev coldplugs even in VMs without a physical GPU, causing DRM errors, failed service starts, and GDM failures. INDEX.md §3.5 mandates blacklisting NVIDIA modules by default with `34-gpu-detect.sh` removing the blacklist only on bare metal. This must not be regressed.
 
 **2. `nvidia-drm.modeset=1` and `nvidia-drm.fbdev=1` in VM kargs:**
 These kargs must NOT be shipped unconditionally. Gate on hardware detection (`34-gpu-detect.sh`), not as default kargs. GDM fails in GPU-less VMs with these active.
@@ -502,7 +502,7 @@ Waydroid does not work with NVIDIA proprietary drivers on ucore-hci. NVIDIA open
 `systemd-remount-fs.service` crashes at boot on Fedora 42+ when composefs overlay is active because the kernel prevents remounting with new `/etc/fstab` options. Workaround: mask the service (`40-composefs-verity.sh`). Monitor Fedora 44+ for upstream systemd patch targeting `/sysroot` instead.
 
 **9. xRDP is dead on GNOME 50:** (updated 2026-04-20 with confirmed release details)
-**GNOME 50 "Tokyo" was released March 18, 2026** and ships as the default in **Fedora 44 (April 28, 2026 target)** and Ubuntu 26.04 LTS. The **X11 session is completely removed** — Wayland-only from GNOME 50 onward. xRDP and xorgxrdp have no Wayland backend and no upstream roadmap for one. **MiOS must have migrated to `gnome-remote-desktop` before the F43→F44 rebase.** Remove `xrdp`, `xorgxrdp`, `xorgxrdp-glamor`. Ship `gnome-remote-desktop` + `grdctl` provisioning. This also eliminates the xorgxrdp/xorgxrdp-glamor package conflict (SYSTEM.md §3.4).
+**GNOME 50 "Tokyo" was released March 18, 2026** and ships as the default in **Fedora 44 (April 28, 2026 target)** and Ubuntu 26.04 LTS. The **X11 session is completely removed** — Wayland-only from GNOME 50 onward. xRDP and xorgxrdp have no Wayland backend and no upstream roadmap for one. **MiOS must have migrated to `gnome-remote-desktop` before the F43→F44 rebase.** Remove `xrdp`, `xorgxrdp`, `xorgxrdp-glamor`. Ship `gnome-remote-desktop` + `grdctl` provisioning. This also eliminates the xorgxrdp/xorgxrdp-glamor package conflict (INDEX.md §3.4).
 
 **GNOME 50 remote-desktop wins (relevant for MiOS-2 RDP workflow):**
 - **Vulkan + VA-API hardware acceleration** for RDP video stream — significantly smoother, lower latency, lower power vs. GNOME 48/49's software path. Requires mutter hw-accel build (default in F44).

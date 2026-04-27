@@ -1,7 +1,7 @@
 """Reorder CHANGELOG.md so the 2026-04-25 v0.1.1 block sits at top.
 
 Authorised by Kabu 2026-04-25: "yes! FIX please System" (one-shot exception
-to the SYSTEM.md §8 / settings.json deny rule on Edit(CHANGELOG.md)).
+to the INDEX.md §8 / settings.json deny rule on Edit(CHANGELOG.md)).
 """
 from pathlib import Path
 

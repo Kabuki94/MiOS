@@ -6,7 +6,7 @@
   "logic_type": "documentation",
   "tags": [
     "MiOS",
-    "AGENT.md"
+    "INDEX.md"
   ],
   "relations": {
     "depends_on": [

@@ -25,9 +25,9 @@ description: Dry-run the MiOS hard-rules audit against the working tree or a pro
 argument-hint: [file-or-directory]
 ---
 
-Run the MiOS hard-rules audit defined in `SYSTEM.md` §3
+Run the MiOS hard-rules audit defined in `INDEX.md` §3
 against `$1` (or the whole working tree if no argument given). Report
-violations by rule number so they trace back to the SYSTEM.md section.
+violations by rule number so they trace back to the INDEX.md section.
 
 **Never invoke bare `bash` on Windows** — it spawns external WSL
 windows. Use PowerShell-native pipelines, or `Select-String` in place

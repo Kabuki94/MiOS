@@ -42,7 +42,7 @@
 AI agents MUST query these paths in the following priority:
 
 ### A. Architectural Laws (The "Constitution")
-- `AGENT.md` / `INDEX.md`: Primary behavioral mandates.
+- `INDEX.md` / `INDEX.md`: Primary behavioral mandates.
 - `.ai/foundation/memories/journal.md`: The shared chronological brain (SSOT).
 - `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md`: The manifest of all system components.
 

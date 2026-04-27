@@ -28,7 +28,7 @@ argument-hint: <version> [commit-message]
 Update the central PowerShell push script named `push-to-github.ps1`.
 Do NOT create versioned `push-vX.Y.Z.ps1` files. `push-to-github.ps1` is the
 single source of truth for the local build stack and follows the MiOS
-deliverable contract defined in `SYSTEM.md` §4.
+deliverable contract defined in `INDEX.md` §4.
 
 The script must:
 
@@ -53,7 +53,7 @@ The script must:
 8. **Print a concise summary** at the end: files changed, commit SHA,
    and the GHCR image tag the build will produce.
 
-Hard constraints (from SYSTEM.md §3.8):
+Hard constraints (from INDEX.md §3.8):
 
 - No `Invoke-Expression` on downloaded content.
 - No empty `catch {}` blocks — use `catch { throw }` or `catch { Write-Verbose $_ }`.

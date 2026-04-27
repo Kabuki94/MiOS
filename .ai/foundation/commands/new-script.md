@@ -71,7 +71,7 @@ step "done"
 - Shebang is `#!/usr/bin/env bash` — always.
 - `set -euo pipefail` is required.
 - **Never** use `((VAR++))` — use `VAR=$((VAR + 1))`. Violating this
-  is rule §3.2 in `SYSTEM.md`.
+  is rule §3.2 in `INDEX.md`.
 - Quote every variable expansion.
 - `find -exec` over `find | xargs`.
 - `compgen -G` over `ls | grep`.

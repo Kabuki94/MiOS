@@ -33,9 +33,9 @@ Files here are **reference material**, not instructions. System Code,
 Agent CLI, and other agents are expected to read from this directory
 when they need background — but authoritative project rules live in:
 
-- [`../../SYSTEM.md`](../../SYSTEM.md) — primary AI instruction file
-- [`../../AGENT.md`](../../AGENT.md) — Agent mirror
-- [`../../AGENTS.md`](../../AGENTS.md) — generic-agent mirror
+- [`../../INDEX.md`](../../INDEX.md) — primary AI instruction file
+- [`../../INDEX.md`](../../INDEX.md) — Agent mirror
+- [`../../INDEX.md`](../../INDEX.md) — generic-agent mirror
 - [`../../.github/copilot-instructions.md`](../../.github/copilot-instructions.md) — Copilot rules
 - [`../../.ai-context/knowledge-base.md`](../../.ai-context/knowledge-base.md) — historical audit log
 - [`../PACKAGES.md`](../PACKAGES.md) — single source of truth for packages
@@ -158,7 +158,7 @@ anything here.
 ## How AI agents should use this directory
 
 1. **Default to not reading.** The primary instruction files
-   (`SYSTEM.md`, `AGENT.md`, `AGENTS.md`) contain the rules. These
+   (`INDEX.md`, `INDEX.md`, `INDEX.md`) contain the rules. These
    research docs are background.
 2. **When a question requires background**, search semantically:
    "How does NVIDIA CDI interact with bootc?" → read
@@ -168,7 +168,7 @@ anything here.
    check if it's already tracked in `01-bootc-ecosystem-advances-2025-2026.md`
    or `14-upstream-bootc-ecosystem-fixes.md` before proposing a response.
 4. **Never quote these documents as a source of hard rules.** The hard
-   rules live in `SYSTEM.md` §3 and are the only rules. Research docs
+   rules live in `INDEX.md` §3 and are the only rules. Research docs
    explain *why* the rules exist; they do not override them.
 5. **DOCX blueprints require conversion before inline use.** If an
    agent needs their content programmatically, use `pandoc` or

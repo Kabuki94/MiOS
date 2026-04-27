@@ -32,7 +32,7 @@ Use these tools when you need to configure VFIO passthrough, isolate
 CPUs for VM pinning, profile a host before deploying MiOS to it, or
 troubleshoot Secure Boot / OVMF enrollment for Windows VMs.
 
-> **All rules from [`../SYSTEM.md`](../SYSTEM.md) §3.2 (Bash) apply
+> **All rules from [`../INDEX.md`](../INDEX.md) §3.2 (Bash) apply
 > here too.** No `((VAR++))` under `set -euo pipefail`, quote every
 > expansion, prefer `compgen -G` / `find -exec` / `read -ra`, etc.
 
@@ -143,7 +143,7 @@ on the modular replacement in `../automation/` instead.
 
 ---
 
-*See [`../SYSTEM.md`](../SYSTEM.md) §8 for what System Code / other AI
+*See [`../INDEX.md`](../INDEX.md) §8 for what System Code / other AI
 agents should not do in this directory (summary: don't modernize
 working scripts unprompted, don't rewrite bash into other languages).*
 

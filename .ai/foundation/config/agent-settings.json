@@ -1,11 +1,11 @@
 {
     "$schema": "https:/.ai/agent-state-cli.dev/schemas/settings.schema.json",
-    "contextFileName": "AGENT.md",
-    "_comment": "Agent CLI runtime config. AGENT.md (project root) is the hierarchical bootstrap entry point and imports the shared state. Do not duplicate memory paths here — AGENT.md owns them.",
+    "contextFileName": "INDEX.md",
+    "_comment": "Agent CLI runtime config. INDEX.md (project root) is the hierarchical bootstrap entry point and imports the shared state. Do not duplicate memory paths here — INDEX.md owns them.",
 
     "AI_ARCH_BASELINE": "v0.1.1",
     "AI_ROLE": "Omni-Agent Workspace Component",
-    "AI_BOOTSTRAP_FILE": "AGENT.md",
+    "AI_BOOTSTRAP_FILE": "INDEX.md",
     "AI_ENGINE": "Shared Architecture",
     "AI_MIRROR": "Agent CLI",
 
@@ -14,5 +14,5 @@
     "SEMANTIC_MEMORY_PATH": ".ai/foundation/memory/",
     "SYMMETRY_ENABLED": true,
 
-    "instructions": "You are a component of the Omni-Agent Workspace. Read AGENT.md (project root) before any action — it is the hierarchical bootstrap and imports the shared state. Every action, finding, or decision MUST be appended to .ai/foundation/memories/journal.md with timestamp + agent tag [AI: Agent CLI]. Use .ai/foundation/shared-tmp/ for transient artefacts. Never create a Agent-only memory store; the Omni-Agent Law forbids splitting the brain. No GCP integrations (project_no_gcp). Respect deny-listed files (CHANGELOG.md, VERSION, specs/PACKAGES.md, signing workflows)."
+    "instructions": "You are a component of the Omni-Agent Workspace. Read INDEX.md (project root) before any action — it is the hierarchical bootstrap and imports the shared state. Every action, finding, or decision MUST be appended to .ai/foundation/memories/journal.md with timestamp + agent tag [AI: Agent CLI]. Use .ai/foundation/shared-tmp/ for transient artefacts. Never create a Agent-only memory store; the Omni-Agent Law forbids splitting the brain. No GCP integrations (project_no_gcp). Respect deny-listed files (CHANGELOG.md, VERSION, specs/PACKAGES.md, signing workflows)."
 }

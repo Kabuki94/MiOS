@@ -34,11 +34,11 @@
 - **Journaling**: Both agents write to [`.ai/foundation/memories/journal.md`](../memories/journal.md).
 - **Communication**: Inter-agent data exchange via `.ai/foundation/shared-tmp/`.
 - **Implementation**: Agent executes; System remembers; both synchronize.
-- **Agent bootstrap**: Hierarchical context via [`AGENT.md`](../../AGENT.md) (option 1 — see .ai/agent-state-bootstrap.md].ai/agent-state-bootstrap.md)). Agent reads the same `.ai/foundation/` paths; no parallel store.
+- **Agent bootstrap**: Hierarchical context via [`INDEX.md`](../../INDEX.md) (option 1 — see .ai/agent-state-bootstrap.md].ai/agent-state-bootstrap.md)). Agent reads the same `.ai/foundation/` paths; no parallel store.
 
 ### Project memories
 - [No GCP](project_no_gcp.md) — MiOS does not target Google Cloud Platform.
-- [Agent bootstrap].ai/agent-state-bootstrap.md) — Cognitive Sync via AGENT.md hierarchical context engine (option 1).
+- [Agent bootstrap].ai/agent-state-bootstrap.md) — Cognitive Sync via INDEX.md hierarchical context engine (option 1).
 
 ### Architecture Update Complete (2026-04-25)
 - Shared scratchpad provisioned.

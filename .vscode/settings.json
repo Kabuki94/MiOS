@@ -615,7 +615,7 @@
   "terminal.external.windowsExec": "",
 
   ".ai/foundation_comment": "Pin System Code's shell to PowerShell. Multiple key variants because the extension's schema changes across versions — unknown keys ignored, known ones take effect.",
-  .ai/foundation-code.projectContextFile": "SYSTEM.md",
+  .ai/foundation-code.projectContextFile": "INDEX.md",
   .ai/foundation-code.enableProjectAgents": true,
   .ai/foundation-code.enableSlashCommands": true,
   .ai/foundation-code.terminal.integration": "integrated",

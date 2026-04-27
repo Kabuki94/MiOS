@@ -102,7 +102,7 @@ Invoke-ScriptAnalyzer -Path . -Recurse -Settings PSGallery -Severity Error,Warni
 ```
 
 Treat **PSAvoidUsingInvokeExpression** and
-**PSAvoidUsingEmptyCatchBlock** as fatal (SYSTEM.md §3.8).
+**PSAvoidUsingEmptyCatchBlock** as fatal (INDEX.md §3.8).
 
 ## 7. `bootc container lint` — only on Linux
 

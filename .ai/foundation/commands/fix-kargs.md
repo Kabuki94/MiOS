@@ -26,7 +26,7 @@ argument-hint: <path-to-kargs.d-file>
 ---
 
 Read `$1` and rewrite it to the canonical bootc `kargs.d` form
-defined in `SYSTEM.md` §3.3.
+defined in `INDEX.md` §3.3.
 
 **Never invoke bare `bash` on Windows during this operation** — it
 spawns external WSL popups. Use PowerShell or direct `python` calls
