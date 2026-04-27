@@ -26,7 +26,7 @@
       ".windsurfrules"
     ]
   },
-  "last_rag_sync": "2026-04-26T21:19:06.251223",
+  "last_rag_sync": "2026-04-27T00:00:00.000000",
   "version": "2.1.0"
 }
 ```
@@ -141,42 +141,48 @@ directories. Files are applied by `scripts/08-system-files-overlay.sh`, which ha
 These are absolute. Any violation causes state drift, CI failure, or broken deployments.
 
 1. **USR-OVER-ETC** — Never write static system config to `/etc/` at build time. Use `/usr/lib/<component>.d/`. `/etc/` is for user/admin overrides only.
-2. **NO-MKDIR-IN-VAR** — Never `mkdir /var/...` in build scripts. Declare all `/var` dirs via `tmpfiles.d` (`d` or `C` directives) so `bootc upgrade` creates them on existing deployments.
-3. **MANAGED-SELINUX** — Never `semodule -i` at build time. Stage `.te` modules in `/usr/share/selinux/packages/` and load via `mios-selinux-init.service` asynchronously.
-4. **BOUND-IMAGES** — All primary Quadlet sidecar containers must be symlinked into `/usr/lib/bootc/bound-images.d/` for atomic updates via `bootc upgrade`.
-5. **BOOT-SHIELDING** — All `dnf` operations must use `excludepkgs="shim-*,kernel*"` to prevent bootloader regressions.
+2. **NO-MKDIR-IN-VAR** — Never `mkdir /var/...` in build scripts. Declare all `/var` dirs via `tmpfiles.d` (`d` or `C` directives) or `StateDirectory=` in unit files. `bootc container lint` (v1.1.6+) actively enforces this. Exception: `mkdir /var/home` is required when symlinking `/home` to prevent a dangling symlink in the OCI layer — document it clearly.
+3. **MANAGED-SELINUX** — `semodule -i` **in a Containerfile `RUN` layer** is the correct primary method for custom SELinux modules (bootc v1.1.0 resolved historic instability). Fallback only: stage `.te` modules in `/usr/share/selinux/packages/` and load via `mios-selinux-init.service` for policies that cannot be compiled at build time.
+4. **BOUND-IMAGES** — All primary Quadlet sidecar containers must be symlinked into `/usr/lib/bootc/bound-images.d/` for atomic updates via `bootc upgrade` (stable since v1.1.0). Only the `Image=` field is parsed by bootc; all other Quadlet fields are ignored by the bound-images mechanism.
+5. **BOOT-SHIELDING** — Use `excludepkgs="shim-*,kernel*"` as a regression guard in `dnf` operations. Exception: with `rpm-ostree 2025.2+` and `/usr/lib/kernel/install.conf` containing `layout=ostree`, kernel upgrades via DNF are fully supported — do not exclude kernels in that case.
+6. **NOVA-CORE-BLACKLIST** — On Fedora 44+ (kernel 6.15+), blacklist both `nouveau` **and** `nova_core`. The `nova_core` module was introduced in kernel 6.15 and conflicts with the proprietary NVIDIA driver if not blacklisted.
+7. **BOOTC-CONTAINER-LINT** — `RUN bootc container lint` must be the final instruction in every Containerfile. Since v1.1.6 it enforces: single kernel present, valid kargs.d syntax, `/var` content has `tmpfiles.d` backing, correct kernel path, and other hygiene checks.
+8. **NO-DNF-UPGRADE-UNCONDITIONAL** — Never `RUN dnf -y upgrade` without specifying package names. Use targeted `dnf install` or `dnf upgrade <package>` to maintain build reproducibility.
 
 ## Hard Rules (build-breaking violations)
 
 ### kargs.d TOML — most common AI mistake
 
 ```toml
-# Only valid format:
+# Valid fields (flat TOML only — no section headers):
 kargs = ["key=value", "flag"]
+match-architectures = ["x86_64"]  # optional; Rust names: x86_64, aarch64, powerpc64 — NOT amd64/arm64/ppc64le
 ```
 
 Never: `[kargs]` section header · `delete =` · `delete_kargs =` · `kargs.append =` · `[[kargs]]`
+
+`--karg-delete` exists as a **bootc CLI flag only** — it is not a TOML field. TOML files can only add kargs; deletion is a deployment-time CLI operation.
 
 ### Bash
 
 - `set -euo pipefail` in all scripts; `build.sh` uses `set -uo pipefail` for per-script error tolerance
 - `VAR=$((VAR + 1))` always — never `((VAR++))` (exits 1 when result=0, kills script under `set -e`)
 - Never `dnf install kernel` or `dnf upgrade kernel` inside the container
-- Never `--squash-all` on `podman build` (strips OCI metadata bootc requires)
+- Never `--squash-all` on `podman build` (destroys layer structure required for bootc delta upgrades and composefs chunking)
 - Quote all variables; use `read -r`; separate declaration from assignment for command substitutions
 
 ### GNOME / theming
 
-- Never `GTK_THEME=Adwaita:dark` → use `ADW_DEBUG_COLOR_SCHEME=prefer-dark`
+- Never `GTK_THEME=Adwaita:dark` — for per-session debug use `ADW_DEBUG_COLOR_SCHEME=prefer-dark` (internal libadwaita var, not a public API). System-wide dark mode in the image must use a dconf profile drop-in: set `org.gnome.desktop.interface color-scheme prefer-dark` in `/etc/dconf/db/local.d/` with a corresponding lock file.
 - `/etc/dconf/profile/user` and `/etc/dconf/profile/gdm` must exist
 - Never put both `categories=` and `apps=` in a dconf app folder at the same time
 - `xorgxrdp-glamor` only (`xorgxrdp` conflicts with it)
-- `gnome-session-xsession` does not exist in Fedora — do not suggest it
+- `gnome-session-xsession` was removed in Fedora 43 (WaylandOnlyGNOME); GNOME 49+ disabled X11 session at compile time; GNOME 50 (Fedora 44) is Wayland-only — do not suggest it
 
 ### NVIDIA / VM gating
 
-- NVIDIA blacklisted by default; unblacklisted only on bare metal via `34-gpu-detect.sh`
-- Never ship `nvidia-drm.modeset=1` or `nvidia-drm.fbdev=1` unconditionally in kargs
+- NVIDIA blacklisted by default; unblacklisted only on bare metal via `34-gpu-detect.sh`. On Fedora 44+ (kernel 6.15+) also blacklist `nova_core` — it was added in kernel 6.15 and competes with the proprietary driver.
+- Never ship `nvidia-drm.modeset=1` or `nvidia-drm.fbdev=1` unconditionally in kargs (gate to bare metal via `34-gpu-detect.sh`). Both remain required for Wayland on current drivers; future NVIDIA releases may enable them by default.
 
 ### PowerShell
 
@@ -193,7 +199,7 @@ Never: `[kargs]` section header · `delete =` · `delete_kargs =` · `kargs.appe
 
 ### Disk image generation
 
-- ISO builds use `iso.toml` exclusively — never mount both `iso.toml` and `bib.toml` at the same time (BIB crashes: "found config.json and also config.toml")
+- Current `bootc-image-builder` uses a single config file mounted at `/config.toml`. ISO-specific settings go under `[customizations.iso]` within that file. Never mount multiple config files simultaneously (BIB crashes: "found config.json and also config.toml"). The `iso.toml` / `bib.toml` naming is obsolete — use `/config.toml` exclusively.
 
 ## Shared Memory System
 
