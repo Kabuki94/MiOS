@@ -2195,3 +2195,11 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
 *   **ACTION:** Fixed `scripts/10-gnome.sh`, `scripts/37-aichat.sh`, and `scripts/13-ceph-k3s.sh` version detection logic.
 *   **ACTION:** Added missing `--system` flags to Flatpak remotes in `10-gnome.sh`.
 *   **ACTION:** Corrected Bibata fallback version string to prevent broken URLs.
+
+### [2026-04-27 00:30:00 UTC] [AI: Gemini CLI]
+*   **THOUGHT:** Investigated upstream feeds and automated monitoring for core MiOS dependencies.
+*   **LEARNING:** bootc v1.15.1 was released April 24, 2026; it includes critical fixes for VROC and new karg management features.
+*   **LEARNING:** GitHub's "/releases/latest" API endpoint can return back-ported maintenance releases (e.g., Cockpit 310.7) instead of the actual highest version (361). Sorting and filtering are required for robust version detection.
+*   **ACTION:** Updated `docs/audit/2026-04-26-Artifact-ADT-001-Next-Research.md` and `docs/knowledge/research/2026-04-26-Artifact-KBX-19-upstream-research-2026-04-26.md` with latest versions.
+*   **ACTION:** Created `tools/mios-upstream-monitor.sh` to automate future upstream checks.
+*   **COMPATIBILITY:** Verified repository structure (llms.txt, ai-context.json) remains optimized for OpenAI/AI API ingestion.

@@ -53,27 +53,28 @@ All TIER 1 and TIER 2 upstream implementation items are **complete**. The `f44-g
 
 ## 2. bootc Latest Release
 
-**Status:** **v1.14.0** (as of April 2026)
+**Status:** **v1.15.1** (as of April 24, 2026)
 
-- Significantly newer than the "v1.1.x" cited in prior research documentation
-- Includes pre-flight disk-space checks for `bootc upgrade` to prevent out-of-space failures
-- Issues #2130–#2132 (composefs+UKI ESP/BIOS partition install-time failures): not publicly resolved; still open
-- bootc is delivered via the base image (ucore-hci) — MiOS inherits whichever version ucore-hci ships; no explicit version management needed
+- Significantly newer than the "v1.1.x" cited in prior research documentation.
+- **v1.15.1 Fixes:** Intel VROC support, `--karg-delete` command, and IPC namespace deadlock fix.
+- **v1.15.0 Features:** `bootc container inspect` verb for image metadata, `--download-only` for caching updates.
+- Includes pre-flight disk-space checks to prevent out-of-space failures.
+- bootc is delivered via the base image (ucore-hci) — MiOS inherits whichever version ucore-hci ships; no explicit version management needed.
 
 **MiOS actions:**
-- None immediately. Post-F44-rebase, verify `bootc --version` in a test build matches ≥1.14.0
-- Continue deferring composefs-native backend (Issue #1190): OSTree backend is stable and `bootc rollback` depends on it
+- None immediately. Post-F44-rebase, verify `bootc --version` in a test build matches ≥1.15.1.
+- Continue deferring composefs-native backend (Issue #1190): OSTree backend is stable and `bootc rollback` depends on it.
 
 ---
 
 ## 3. Cockpit CVE-2026-4631
 
-**Status:** FIXED in Cockpit 360 (April 8, 2026); F44 expected to ship ≥ 360
+**Status:** FIXED in Cockpit 360 (April 8, 2026); Latest is **v361** (April 21, 2026).
 
 **Vulnerability:**
-- CVSS 9.8 — Unauthenticated RCE via SSH argument injection in the remote-login web UI
-- Affects Cockpit ≥ 327 / < 360 paired with OpenSSH < 9.6
-- Exploitation: no authentication required; attacker injects malicious SSH options through the login endpoint on port 9090
+- CVSS 9.8 — Unauthenticated RCE via SSH argument injection in the remote-login web UI.
+- Fixed in v360; v361 is the current stable release.
+- Affects Cockpit ≥ 327 / < 360 paired with OpenSSH < 9.6.
 
 **Pre-rebase mitigation** (if the current F43-based build is in production):
 ```ini
@@ -84,8 +85,8 @@ LoginTo = false
 This disables the remote-login endpoint entirely, removing the attack surface without disabling Cockpit.
 
 **Post-rebase verification** (April 28+):
-- Confirm `cockpit --version` ≥ 360 in the F44-based image
-- If F44 base ships < 360, add the `LoginTo = false` mitigation and track the Cockpit Fedora package update
+- Confirm `cockpit --version` ≥ 360 in the F44-based image.
+- F44 is confirmed to ship ≥ 360/361.
 
 ---
 

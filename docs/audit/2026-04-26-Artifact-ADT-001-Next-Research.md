@@ -34,8 +34,8 @@
 
 1. **Fedora 44 GA confirmed** — GO decision April 23; release April 28. `f44-ga-rpmfusion-stable` branch staged and ready.
 2. **ucore-hci F43 confirmed current** — no F44 tag yet; expected 24–48h post-GA.
-3. **bootc v1.14.0 confirmed latest** — prior "v1.1.x" references in docs were stale.
-4. **Cockpit CVE-2026-4631 fixed in v360** — F44 expected to ship ≥ 360. Mitigation doc updated.
+3. **bootc v1.15.1 confirmed latest** — Intel VROC support and `--karg-delete` added.
+4. **Cockpit v361 confirmed latest** — includes CVE-2026-4631 fix.
 5. **NVIDIA CTK version corrected** — latest is v1.19.0 (v1.x series). Prior "v2.1.0" reference was erroneous. CDI stable.
 6. **BIB action N/A for MiOS** — MiOS uses `quay.io/centos-bootc/bootc-image-builder:latest` directly; ublue-os action deprecation does not apply.
 7. **Renovate already migrated** — `minimumReleaseAge` already in `renovate.json`. No action.
@@ -52,8 +52,8 @@
 2. **Watch ucore-hci digest** — poll `{{MIOS_BASE_IMAGE}}` for F44 tag (24–48h post-GA)
 3. **Trigger image build** — once F44 tag is live, trigger full MiOS build from F44 base
 4. **Post-build verification:**
-   - `cockpit --version` ≥ 360 (CVE-2026-4631 fix)
-   - `bootc --version` ≥ 1.14.0
+   - `cockpit --version` ≥ 361 (CVE-2026-4631 fix)
+   - `bootc --version` ≥ 1.15.1
    - `bootc container lint` passes cleanly
    - RPMFusion `release-44` URLs resolve (not 404)
    - `greenboot --check` passes on a test VM boot
