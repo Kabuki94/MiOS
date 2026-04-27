@@ -1,8 +1,8 @@
-<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
 # 🌐 MiOS
 ```json:knowledge
 {
-  "summary": "> **Proprietor:** Kabu.ki",
+  "summary": "> **Proprietor:** MiOS Project",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -16,9 +16,9 @@
   }
 }
 ```
-> **Proprietor:** Kabu.ki
+> **Proprietor:** MiOS Project
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
+> **License:** Licensed as personal property to MiOS Project
 > **Source Reference:** MiOS-Core-v0.1.1
 ---
 
@@ -372,7 +372,7 @@ The WSL2 `wsl.conf` must enable systemd (`[boot]\nsystemd=true`) and the `system
 
 ## Image signing is completely absent and must be implemented immediately
 
-MiOS publishes to `ghcr.io/kabuki94/mios:latest` with **no cryptographic signing, no SBOM, and no provenance verification**. The minimal implementation uses cosign keyless signing in GitHub Actions:
+MiOS publishes to `ghcr.io/mios-project/mios:latest` with **no cryptographic signing, no SBOM, and no provenance verification**. The minimal implementation uses cosign keyless signing in GitHub Actions:
 
 ```yaml
 jobs:
@@ -385,7 +385,7 @@ jobs:
       - name: Sign image
         run: |
           cosign sign --yes \
-            ghcr.io/kabuki94/mios@${{ steps.push.outputs.digest }}
+            ghcr.io/mios-project/mios@${{ steps.push.outputs.digest }}
 ```
 
 **The `--new-bundle-format=false` workaround is critical:** Cosign v3's default protobuf bundle format is incompatible with the `containers/image` library used by rpm-ostree and bootc for signature verification. Until upstream support lands, always sign with `cosign sign --new-bundle-format=false --yes $DIGEST`.
@@ -454,10 +454,10 @@ SecureBlue's sudoless design (`run0` replacing `sudo`), SUID stripping, and hard
 
 ---
 ### ⚖️ Legal & Source Reference
-- **Copyright:** (c) 2026 Kabu.ki
+- **Copyright:** (c) 2026 MiOS Project
 - **Status:** Personal Property / Private Infrastructure
-- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
-- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/specs/Home.md)
-- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
+- **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/mios-project/mios/blob/main/specs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/mios-project/mios/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->

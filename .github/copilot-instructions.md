@@ -8,8 +8,8 @@
 
 MiOS is a **bootc-based, self-building, immutable workstation OS** on Fedora Rawhide.
 One OCI image covers all hardware roles: desktop, k3s/HA, GPU passthrough (VFIO), WSL2.
-Published at `ghcr.io/kabuki94/mios:latest`. Deployed systems update atomically via `sudo bootc upgrade`.
-Sole proprietor: **Kabu.ki**. Target: AMD Ryzen 9 9950X3D + NVIDIA RTX 4090, hardware-agnostic by design.
+Published at `ghcr.io/mios-project/mios:latest`. Deployed systems update atomically via `sudo bootc upgrade`.
+Sole proprietor: **MiOS Project**. Target: AMD Ryzen 9 9950X3D + NVIDIA RTX 4090, hardware-agnostic by design.
 
 ## Build & Test
 
@@ -142,7 +142,7 @@ All agents append to `journal.md` with timestamp + agent identity tag:
 
 ## Protected Files
 
-Do not modify without explicit authorization from Kabu.ki:
+Do not modify without explicit authorization from MiOS Project:
 
 - `VERSION` and `CHANGELOG.md` — managed only via `push-to-github.ps1`
 - `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` — surgical edits only

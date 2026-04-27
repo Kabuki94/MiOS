@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-UPSTREAM_URL="https://github.com/Kabuki94/mios/archive/refs/heads/main.tar.gz"
+UPSTREAM_URL="https://github.com/mios-project/mios/archive/refs/heads/main.tar.gz"
 TARGET_SUBDIR="Documents/MiOS/Upstream-Source"
 
 log_ts() { date '+%Y-%m-%d %H:%M:%S'; }

@@ -1,4 +1,4 @@
-<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
 # 🧠 MiOS Cognitive Journal (Episodic Memory)
 
 ```json:knowledge
@@ -50,12 +50,12 @@ MiOS uses a Linux-native filesystem pattern for its cognitive history, following
 
 ---
 ### ⚖️ Legal & Source Reference
-- **Copyright:** (c) 2026 Kabu.ki
+- **Copyright:** (c) 2026 MiOS Project
 - **Status:** Personal Property / Private Infrastructure
-- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
-- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/specs/Home.md)
+- **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/mios-project/mios/blob/main/specs/Home.md)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->
 
 ### [2026-04-27 05:40:00 UTC] [AI: Gemini CLI]
 - **Type:** ARCHITECTURE — STRUCTURED MEMORY

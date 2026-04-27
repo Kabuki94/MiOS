@@ -2,7 +2,7 @@
 # Requires: podman, just
 # Usage: just build | just iso | just all
 
-IMAGE_NAME := env_var_or_default("MIOS_IMAGE_NAME", "ghcr.io/kabuki94/mios")
+IMAGE_NAME := env_var_or_default("MIOS_IMAGE_NAME", "ghcr.io/mios-project/mios")
 VERSION := `cat VERSION 2>/dev/null || echo "v0.1.2"`
 LOCAL := "localhost/mios:latest"
 BIB := env_var_or_default("MIOS_BIB_IMAGE", "quay.io/centos-bootc/bootc-image-builder:latest")
@@ -57,10 +57,11 @@ artifact:
     ./automation/ai-bootstrap.sh
     @echo "✓ Artifacts, UKB, and Wiki refreshed."
 
-# Build OCI image on Cloud Cloud (using GCS context)
+# Build OCI image on Cloud (using remote context)
 cloud-build:
-    gcloud builds submit --project cloudws-os --gcs-source-staging-dir gs://mios-vertex-autogen-cloudws-os/build-context --tag us-central1-docker.pkg.dev/cloudws-os/mios-repo/mios:{{VERSION}} .
-    @echo "✓ Cloud Build complete: us-central1-docker.pkg.dev/cloudws-os/mios-repo/mios:{{VERSION}}"
+    @echo "Configure cloud-build with your cloud provider CLI"
+    @echo "Example: podman build --remote -t {{IMAGE_NAME}}:{{VERSION}} ."
+    @echo "✓ Cloud Build target (customize for your cloud provider)"
 
 # Rechunk for optimal Day-2 updates (5-10x smaller deltas)
 rechunk: build

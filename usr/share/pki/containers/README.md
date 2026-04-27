@@ -1,8 +1,8 @@
-<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
 # 🌐 MiOS
 ```json:knowledge
 {
-  "summary": "> **Proprietor:** Kabu.ki",
+  "summary": "> **Proprietor:** MiOS Project",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -16,9 +16,9 @@
   }
 }
 ```
-> **Proprietor:** Kabu.ki
+> **Proprietor:** MiOS Project
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
+> **License:** Licensed as personal property to MiOS Project
 ---
 # Cosign verification keys
 
@@ -40,7 +40,7 @@ sigstoreSigned entry with `insecureAcceptAnything` temporarily.
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osautomation/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
-- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
-- **Sole Proprietor:** Kabu.ki
+- **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
+- **Sole Proprietor:** MiOS Project
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->

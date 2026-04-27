@@ -1,8 +1,8 @@
-<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
 # 🌐 MiOS
 ```json:knowledge
 {
-  "summary": "> **Proprietor:** Kabu.ki",
+  "summary": "> **Proprietor:** MiOS Project",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -16,16 +16,16 @@
   }
 }
 ```
-> **Proprietor:** Kabu.ki
+> **Proprietor:** MiOS Project
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
+> **License:** Licensed as personal property to MiOS Project
 > **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # 🪟 Windows 11 Build & Deployment Workflow
-> **Proprietor:** Kabu.ki
+> **Proprietor:** MiOS Project
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
+> **License:** Licensed as personal property to MiOS Project
 > **Source Reference:** MiOS-Core-v0.1.1
 ---
 
@@ -83,7 +83,7 @@ The `mios-build-local.ps1` script is the primary master orchestrator. It manages
 ## 🏗️ Building in WSL2/g
 If you prefer to work entirely within a WSL2 environment:
 
-1.  **Clone the Repo:** `git clone https://github.com/Kabuki94/mios.git`
+1.  **Clone the Repo:** `git clone https://github.com/mios-project/mios.git`
 2.  **Use the Justfile:**
     ```bash
     just build    # OCI Image only
@@ -109,10 +109,10 @@ Every Windows-side action is logged with high-resolution timestamps.
 
 ---
 ### ⚖️ Legal & Source Reference
-- **Copyright:** (c) 2026 Kabu.ki
+- **Copyright:** (c) 2026 MiOS Project
 - **Status:** Personal Property / Private Infrastructure
-- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
-- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/specs/Home.md)
-- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
+- **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/mios-project/mios/blob/main/specs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/mios-project/mios/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->

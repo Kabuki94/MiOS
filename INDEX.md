@@ -1,4 +1,4 @@
-<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
 # INDEX.md — MiOS Universal Agent Hub
 
 ```json:knowledge
@@ -40,7 +40,7 @@
 MiOS is a **bootc-based, self-building, immutable workstation OS** on Fedora Rawhide.
 One OCI image covers all hardware roles: desktop, k3s/HA, GPU passthrough (VFIO), WSL2.
 Published at `$MIOS_IMAGE_NAME:latest`. Deployed systems update atomically via `sudo bootc upgrade`.
-Sole proprietor: **Kabu.ki**. Target: AMD Ryzen 9 9950X3D + NVIDIA RTX 4090, hardware-agnostic by design.
+Sole proprietor: **MiOS Project**. Target: AMD Ryzen 9 9950X3D + NVIDIA RTX 4090, hardware-agnostic by design.
 
 **Version History:** MiOS-1 (Fedora bootc + akmod drivers) → MiOS-2/v0.1.x (ucore-hci + pre-signed NVIDIA) → MiOS-NXT (future: Project Hummingbird integration, SBOM generation, minimal variants).
 
@@ -204,7 +204,7 @@ Never: `[kargs]` section header · `delete =` · `delete_kargs =` · `kargs.appe
 
 - Current `bootc-image-builder` uses a single config file mounted at `/config.toml`. ISO-specific settings go under `[customizations.iso]` within that file. Never mount multiple config files simultaneously (BIB crashes: "found config.json and also config.toml"). The `iso.toml` / `bib.toml` naming is obsolete — use `/config.toml` exclusively.
 - `--type vhd` outputs VPC/VHD, **not VHDX** — always post-convert: `qemu-img convert -f raw -O vhdx -o subformat=dynamic disk.raw disk.vhdx`. Hyper-V targets require Gen 2 VMs (UEFI); Gen 1 (BIOS/MBR) is incompatible with bootc's EFI boot chain.
-- No WSL2 tarball output from BIB (issue #172, open since 2024). WSL2 distribution is built via: `podman export $(podman create ghcr.io/kabuki94/mios:latest) -o mios.tar && wsl --import MiOS ...`
+- No WSL2 tarball output from BIB (issue #172, open since 2024). WSL2 distribution is built via: `podman export $(podman create ghcr.io/mios-project/mios:latest) -o mios.tar && wsl --import MiOS ...`
 
 ### Platform detection & runtime gating
 
@@ -250,7 +250,7 @@ All agents append to `journal.md` with timestamp + agent identity tag:
 
 ## Protected Files
 
-Do not modify without explicit authorization from Kabu.ki:
+Do not modify without explicit authorization from MiOS Project:
 
 - `VERSION` and `CHANGELOG.md` — managed only via `push-to-github.ps1`
 - `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` — surgical edits only
@@ -319,4 +319,4 @@ To ensure all Markdown files are machine-parsable and referencable, they must in
   "version": "0.1.2"
 }
 ```
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->

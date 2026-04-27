@@ -1,4 +1,4 @@
-<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
 # 📜 MiOS Scripts Index
 > **Generated:** 2026-04-27T15:18:21.949050
 > **Status:** Automated Sync
@@ -219,4 +219,4 @@ This file provides a machine-readable and human-readable index of all automation
 - **Path:** `automation/generate-mok-key.sh`
 - **Description:** generate-mok-key.sh — one-shot MiOS MOK key generator.
 
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->

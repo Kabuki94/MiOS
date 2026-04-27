@@ -1,4 +1,4 @@
-<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
 # 🌐 MiOS Knowledge Graph
 
 ```json:knowledge
@@ -73,7 +73,7 @@
 }
 ```
 
-> **Proprietor:** Kabu.ki
+> **Proprietor:** MiOS Project
 > **Type:** Structured Knowledge Graph
 > **Version:** 0.1.2
 > **Format:** JSON (machine-readable)
@@ -112,4 +112,4 @@ EOF
 ---
 
 **Last Updated:** 2026-04-27
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->

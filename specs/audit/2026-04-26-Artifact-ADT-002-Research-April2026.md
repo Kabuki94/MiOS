@@ -1,8 +1,8 @@
-<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
 # 🌐 MiOS
 ```json:knowledge
 {
-  "summary": "> **Proprietor:** Kabu.ki",
+  "summary": "> **Proprietor:** MiOS Project",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -16,9 +16,9 @@
   }
 }
 ```
-> **Proprietor:** Kabu.ki
+> **Proprietor:** MiOS Project
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
+> **License:** Licensed as personal property to MiOS Project
 > **Source Reference:** MiOS-Core-v0.1.1
 ---
 
@@ -947,7 +947,7 @@ ConditionVirtualization=!wsl
 3. cosign signs the image with the ephemeral key; signature stored in **Rekor** transparency log
 4. Certificate is discarded; verification uses Fulcio root CA + Rekor inclusion proof
 
-**Verification:** `cosign verify --certificate-identity-regexp=... --certificate-oidc-issuer=https://token.actions.githubusercontent.com ghcr.io/kabuki94/mios:latest`
+**Verification:** `cosign verify --certificate-identity-regexp=... --certificate-oidc-issuer=https://token.actions.githubusercontent.com ghcr.io/mios-project/mios:latest`
 
 **GitHub Actions workflow pattern (MiOS `build-sign.yml`):**
 ```yaml
@@ -959,7 +959,7 @@ permissions:
 - name: Sign image
   run: |
     cosign sign --yes \
-      ghcr.io/kabuki94/mios@${{ steps.build.outputs.digest }}
+      ghcr.io/mios-project/mios@${{ steps.build.outputs.digest }}
 ```
 
 **`--yes` flag:** Required in non-interactive CI to skip the Rekor upload confirmation prompt. Without it, the step hangs.
@@ -968,7 +968,7 @@ permissions:
 
 **syft** is the standard tool for generating SBOMs from OCI images:
 ```bash
-syft ghcr.io/kabuki94/mios:latest \
+syft ghcr.io/mios-project/mios:latest \
   -o spdx-json=mios-mios-2-sbom.spdx.json \
   -o cyclonedx-json=mios-mios-2-sbom.cyclonedx.json
 ```
@@ -978,7 +978,7 @@ syft ghcr.io/kabuki94/mios:latest \
 **SBOM signing:** After generating SBOM, attach as OCI attestation:
 ```bash
 cosign attest --type spdxjson --predicate mios-sbom.spdx.json \
-  ghcr.io/kabuki94/mios@<digest>
+  ghcr.io/mios-project/mios@<digest>
 ```
 
 ### OCI attestation / SLSA provenance
@@ -1390,7 +1390,7 @@ Knowledge cutoff: August 2025 (confirmed). Items marked [INFERRED] are trajector
 
 - **OCI artifact tracking (v38+):** Renovate added support for non-image OCI objects (Helm charts, Sigstore policy bundles pushed as OCI). Uses same `docker` datasource. Relevant if MiOS begins tracking cosign key bundles or attestations as OCI artifacts.
 
-- **`hostRules` for ghcr.io (2025 change):** GitHub Actions token scoping changed. Renovate running as a GitHub App requires `packages: read` permission on the installation to pull manifests from `ghcr.io`. Verify the Renovate App installation has this scope on the `Kabuki94/mios` repo.
+- **`hostRules` for ghcr.io (2025 change):** GitHub Actions token scoping changed. Renovate running as a GitHub App requires `packages: read` permission on the installation to pull manifests from `ghcr.io`. Verify the Renovate App installation has this scope on the `mios-project/mios` repo.
 
 **Action items for this repo's `renovate.json`:**
 
@@ -1595,10 +1595,10 @@ Confirmed via github.com/crowdsecurity/crowdsec/releases: latest tag remains **v
 
 ---
 ### ⚖️ Legal & Source Reference
-- **Copyright:** (c) 2026 Kabu.ki
+- **Copyright:** (c) 2026 MiOS Project
 - **Status:** Personal Property / Private Infrastructure
-- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
-- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/specs/Home.md)
-- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
+- **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/mios-project/mios/blob/main/specs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/mios-project/mios/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->

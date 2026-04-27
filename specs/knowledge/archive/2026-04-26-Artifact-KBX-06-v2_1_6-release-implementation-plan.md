@@ -1,8 +1,8 @@
-<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
 # 🌐 MiOS
 ```json:knowledge
 {
-  "summary": "> **Proprietor:** Kabu.ki",
+  "summary": "> **Proprietor:** MiOS Project",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -16,9 +16,9 @@
   }
 }
 ```
-> **Proprietor:** Kabu.ki
+> **Proprietor:** MiOS Project
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
+> **License:** Licensed as personal property to MiOS Project
 > **Source Reference:** MiOS-Core-v0.1.1
 ---
 
@@ -305,7 +305,7 @@ on:
 
 env:
   IMAGE_REGISTRY: ghcr.io
-  IMAGE_NAME: kabuki94/mios
+  IMAGE_NAME: mios-project/mios
   IMAGE_BASE: {{MIOS_BASE_IMAGE}}
 
 concurrency:
@@ -405,13 +405,13 @@ jobs:
     ],
     "transports": {
         "docker": {
-            "ghcr.io/kabuki94/mios": [
+            "ghcr.io/mios-project/mios": [
                 {
                     "type": "sigstoreSigned",
                     "fulcio": {
                         "caPath": "/etc/pki/containers/fulcio_v1.crt.pem",
                         "oidcIssuer": "https://token.actions.githubusercontent.com",
-                        "subjectEmail": "https://github.com/Kabuki94/mios/.github/workflows/build-test.yml@refs/heads/main"
+                        "subjectEmail": "https://github.com/mios-project/mios/.github/workflows/build-test.yml@refs/heads/main"
                     },
                     "rekorPublicKeyPath": "/etc/pki/containers/rekor.pub",
                     "signedIdentity": { "type": "matchRepository" }
@@ -518,7 +518,7 @@ log "37-cosign-policy: done"
 
 ```toml
 # bib-configs/qcow2.toml
-# Target: local libvirt/QEMU smoke-test of ghcr.io/kabuki94/mios:latest
+# Target: local libvirt/QEMU smoke-test of ghcr.io/mios-project/mios:latest
 
 [[customizations.user]]
 name     = "mios"
@@ -617,7 +617,7 @@ on:
   workflow_dispatch:
     inputs:
       image-tag:
-        description: "Tag of ghcr.io/kabuki94/mios to convert"
+        description: "Tag of ghcr.io/mios-project/mios to convert"
         required: false
         default: "latest"
   schedule:
@@ -632,7 +632,7 @@ permissions:
   packages: read
 
 env:
-  IMAGE: ghcr.io/kabuki94/mios
+  IMAGE: ghcr.io/mios-project/mios
   BIB_IMAGE: quay.io/centos-bootc/bootc-image-builder:latest
   ROOTFS: ext4
 
@@ -929,7 +929,7 @@ Outstanding item A (cosign keyless):
   sigstore/cosign-installer@v0.1.1, id-token: write, digest capture
   via buildah push --digestfile.
 - etc/containers/policy.json: strict default-reject with
-  sigstoreSigned rules for ghcr.io/kabuki94/mios and
+  sigstoreSigned rules for ghcr.io/mios-project/mios and
   ghcr.io/ublue-os.
 - etc/containers/registries.d/ghcr.io-kabuki94.yaml:
   use-sigstore-attachments: true.
@@ -960,7 +960,7 @@ Outstanding item C (akmod guards):
 6. CI run on PR — cosign sign/verify steps gated off for PRs, only build+lint+push run.
 7. First merge to main — cosign sign succeeds, `cosign verify` step passes.
 8. Manual `workflow_dispatch` of build-artifacts — all three matrix legs complete; artifacts downloadable.
-9. On a test VM: `podman pull ghcr.io/kabuki94/mios:latest` with the new policy.json installed — policy triggers, fetches sigstore attachment, verifies Fulcio identity against the main-branch workflow URL.
+9. On a test VM: `podman pull ghcr.io/mios-project/mios:latest` with the new policy.json installed — policy triggers, fetches sigstore attachment, verifies Fulcio identity against the main-branch workflow URL.
 10. `systemctl status nvidia-persistenced` after a kernel update on real hardware — unit is skipped (not failed) until `akmods.service` completes; re-triggers cleanly after depmod finishes.
 
 ---
@@ -979,10 +979,10 @@ The flatpack is ready to generate from this document alone; every file listed in
 
 ---
 ### ⚖️ Legal & Source Reference
-- **Copyright:** (c) 2026 Kabu.ki
+- **Copyright:** (c) 2026 MiOS Project
 - **Status:** Personal Property / Private Infrastructure
-- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
-- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/specs/Home.md)
-- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
+- **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/mios-project/mios/blob/main/specs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/mios-project/mios/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->

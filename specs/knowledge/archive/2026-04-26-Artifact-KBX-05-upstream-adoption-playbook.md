@@ -1,8 +1,8 @@
-<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
 # 🌐 MiOS
 ```json:knowledge
 {
-  "summary": "> **Proprietor:** Kabu.ki",
+  "summary": "> **Proprietor:** MiOS Project",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -16,17 +16,17 @@
   }
 }
 ```
-> **Proprietor:** Kabu.ki
+> **Proprietor:** MiOS Project
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
+> **License:** Licensed as personal property to MiOS Project
 > **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # MiOS upstream adoption playbook
 
-**Bottom line up front.** The single highest-leverage move you can make in the next sprint is to stop hand-rolling plumbing and instead **layer `ghcr.io/ublue-os/akmods-nvidia-open` + `ghcr.io/ublue-os/akmods` into your Containerfile, adopt `uupd` as your updater, enable `composefs.enabled = verity` in `/usr/lib/ostree/prepare-root.conf`, and switch to cosign keyless signing with a GitHub Actions attest-build-provenance step.** Those four changes alone give you signed Secure-Boot-compatible NVIDIA kmods, a working update service with desktop notifications, tamper-evident roots, and verifiable supply chain — all with code already proven in Bluefin/Bazzite/ucore at production scale. Everything else in this report is additive. The second-order priority is Podman-machine-backend compliance (sshd on :22, a `core`/`user` passwordless-sudo account, CDI refresh via `nvidia-cdi-refresh.path`, and a WSL systemd shim), which unlocks `podman machine init --image ghcr.io/kabuki94/mios:latest` as your Windows dev loop. The third-order work — Gamescope session, Looking Glass kvmfr, K3s/Ceph/HA — is genuinely pioneering; you will be writing patterns upstream doesn't have, and the report flags exactly where that boundary lies so you can plan accordingly.
+**Bottom line up front.** The single highest-leverage move you can make in the next sprint is to stop hand-rolling plumbing and instead **layer `ghcr.io/ublue-os/akmods-nvidia-open` + `ghcr.io/ublue-os/akmods` into your Containerfile, adopt `uupd` as your updater, enable `composefs.enabled = verity` in `/usr/lib/ostree/prepare-root.conf`, and switch to cosign keyless signing with a GitHub Actions attest-build-provenance step.** Those four changes alone give you signed Secure-Boot-compatible NVIDIA kmods, a working update service with desktop notifications, tamper-evident roots, and verifiable supply chain — all with code already proven in Bluefin/Bazzite/ucore at production scale. Everything else in this report is additive. The second-order priority is Podman-machine-backend compliance (sshd on :22, a `core`/`user` passwordless-sudo account, CDI refresh via `nvidia-cdi-refresh.path`, and a WSL systemd shim), which unlocks `podman machine init --image ghcr.io/mios-project/mios:latest` as your Windows dev loop. The third-order work — Gamescope session, Looking Glass kvmfr, K3s/Ceph/HA — is genuinely pioneering; you will be writing patterns upstream doesn't have, and the report flags exactly where that boundary lies so you can plan accordingly.
 
-This report has two scope notes. (1) The repo `github.com/Kabuki94/mios` was inaccessible during research (returned permissions errors and no search hits), so gap analysis is framed against the *typical* custom-bootc repo; substitute your actual Containerfile paths when applying recommendations. (2) `bootc` canonically lives at `github.com/bootc-dev/bootc` as of late 2025; older references to `containers/bootc` redirect.
+This report has two scope notes. (1) The repo `github.com/mios-project/mios` was inaccessible during research (returned permissions errors and no search hits), so gap analysis is framed against the *typical* custom-bootc repo; substitute your actual Containerfile paths when applying recommendations. (2) `bootc` canonically lives at `github.com/bootc-dev/bootc` as of late 2025; older references to `containers/bootc` redirect.
 
 ## Executive summary: top 10 highest-value upstream adoptions, ranked
 
@@ -39,7 +39,7 @@ The ranking below weights *impact × confidence × implementation cost*. Items 1
 | 3 | **`composefs.enabled = verity` in `prepare-root.conf`** | `github.com/bootc-dev/bootc` filesystem docs; `ublue-os/main#608` | Tamper-evident root; fsverity-backed; already default-on for fedora-bootc base but you should promote to `verity` mode |
 | 4 | **cosign keyless + `actions/attest-build-provenance` + `policy.json`** | `secureblue/secureblue` workflows; `ublue-os/main` cosign.pub pattern | Verifiable GHCR pulls; SLSA L3 provenance; zero secret management |
 | 5 | **Greenboot-rs health checks + `bootc rollback` wiring** | Fedora 43 Change: greenboot-rs; `docs.redhat.com` RHEL image mode | Automatic boot-failure rollback; one drop-in script in `/etc/greenboot/check/required.d/` |
-| 6 | **Podman-machine backend compatibility shim** | `containers/podman-machine-os` + `containers/podman-machine-wsl-os` (now merged) | `podman machine init --image ghcr.io/kabuki94/mios:latest` becomes your Windows dev loop |
+| 6 | **Podman-machine backend compatibility shim** | `containers/podman-machine-os` + `containers/podman-machine-wsl-os` (now merged) | `podman machine init --image ghcr.io/mios-project/mios:latest` becomes your Windows dev loop |
 | 7 | **`nvidia-cdi-refresh.path` + `.service`** | `nvidia-container-toolkit` ≥ 1.18 | First-boot CDI generation done correctly — no brittle build-time spec |
 | 8 | **`/usr/lib/bootc/kargs.d/*.toml`** for NVIDIA + VFIO + IOMMU | bootc docs; `ublue-os/bluefin` `03-install-kernel-akmods.sh` L92-94 | Kargs that survive upgrades without grubby hacks |
 | 9 | **SecureBlue sysctl/systemd hardening drop-ins (selective)** | `secureblue/secureblue` `files/` tree | Free hardening wins that don't break NVIDIA or libvirt |
@@ -57,7 +57,7 @@ Upstream-published tags live at `quay.io/podman/machine-os:<podman-version>` (Hy
 
 ### Apply flow and `bootc switch`
 
-`podman machine os apply <image> <machine>` runs `bootc switch` inside the guest. Supported transports: `docker://`, `oci-archive:`, `containers-storage:`. That means **any bootc image (including MiOS) can be applied today with `podman machine os apply ghcr.io/kabuki94/mios:latest podman-machine-default`** as long as the image satisfies the machine contract below. Note WSL-based machines are documented as *not* upgradable via `os apply` — users fall back to `podman machine ssh` + dnf; however since WSL machine-os is now a bootc image, `bootc switch` should work, just unsupported officially.
+`podman machine os apply <image> <machine>` runs `bootc switch` inside the guest. Supported transports: `docker://`, `oci-archive:`, `containers-storage:`. That means **any bootc image (including MiOS) can be applied today with `podman machine os apply ghcr.io/mios-project/mios:latest podman-machine-default`** as long as the image satisfies the machine contract below. Note WSL-based machines are documented as *not* upgradable via `os apply` — users fall back to `podman machine ssh` + dnf; however since WSL machine-os is now a bootc image, `bootc switch` should work, just unsupported officially.
 
 ### Minimal Containerfile stanza for Podman-machine compatibility
 
@@ -275,10 +275,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: sigstore/cosign-installer@v3
-      - run: cosign sign --yes ghcr.io/kabuki94/mios@${{ steps.push.outputs.digest }}
+      - run: cosign sign --yes ghcr.io/mios-project/mios@${{ steps.push.outputs.digest }}
       - uses: actions/attest-build-provenance@v2
         with:
-          subject-name: ghcr.io/kabuki94/mios
+          subject-name: ghcr.io/mios-project/mios
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 ```
@@ -290,7 +290,7 @@ jobs:
   "default": [{ "type": "reject" }],
   "transports": {
     "docker": {
-      "ghcr.io/kabuki94/mios": [{
+      "ghcr.io/mios-project/mios": [{
         "type": "sigstoreSigned",
         "keyPath": "/etc/pki/containers/mios-cosign.pub",
         "signedIdentity": { "type": "matchRepository" }
@@ -312,11 +312,11 @@ docker:
     use-sigstore-attachments: true
 ```
 
-Ship both files in the image. Users then invoke `bootc switch --enforce-container-sigpolicy ghcr.io/kabuki94/mios:latest` and pulls are verified. For SLSA, extend the `ujust update-system` recipe to also run `gh attestation verify <ghcr-image> --repo Kabuki94/mios` before the switch.
+Ship both files in the image. Users then invoke `bootc switch --enforce-container-sigpolicy ghcr.io/mios-project/mios:latest` and pulls are verified. For SLSA, extend the `ujust update-system` recipe to also run `gh attestation verify <ghcr-image> --repo mios-project/mios` before the switch.
 
 ### Generate your cosign keyless identity reference
 
-Record in README that the expected signer identity is `https://github.com/Kabuki94/mios/.github/workflows/build-sign.yml@refs/heads/main` with issuer `https://token.actions.githubusercontent.com`. Users verify offline via `cosign verify --certificate-identity <...> --certificate-oidc-issuer <...> ghcr.io/kabuki94/mios:latest`.
+Record in README that the expected signer identity is `https://github.com/mios-project/mios/.github/workflows/build-sign.yml@refs/heads/main` with issuer `https://token.actions.githubusercontent.com`. Users verify offline via `cosign verify --certificate-identity <...> --certificate-oidc-issuer <...> ghcr.io/mios-project/mios:latest`.
 
 ## Switch, rollback, health-check integration plan
 
@@ -324,7 +324,7 @@ Record in README that the expected signer identity is `https://github.com/Kabuki
 
 `bootc upgrade` pulls the registry manifest, stages a new deployment as `pending`, and applies on next shutdown/reboot via `ostree-finalize-staged.service`. Flags: `--check` (manifest-only), `--download-only` (stage but don't promote), `--apply` (reboot immediately). Soft-reboot support via systemd's soft-reboot is tracked in issue #1350, not default yet.
 
-`bootc rollback` reorders bootloader entries: current becomes rollback, rollback becomes default. Does not create a new deployment; discards staged updates; `/etc` reverts to the rolled-back deployment's state. **Gotcha**: `bootc-fetch-apply-updates.timer` runs within 1-3 hours of rollback and re-upgrades. Plan: teach users `systemctl disable --now bootc-fetch-apply-updates.timer` before a rollback they want to persist, or pin a specific digest with `bootc switch ghcr.io/kabuki94/mios@sha256:<digest>`.
+`bootc rollback` reorders bootloader entries: current becomes rollback, rollback becomes default. Does not create a new deployment; discards staged updates; `/etc` reverts to the rolled-back deployment's state. **Gotcha**: `bootc-fetch-apply-updates.timer` runs within 1-3 hours of rollback and re-upgrades. Plan: teach users `systemctl disable --now bootc-fetch-apply-updates.timer` before a rollback they want to persist, or pin a specific digest with `bootc switch ghcr.io/mios-project/mios@sha256:<digest>`.
 
 `bootc switch --enforce-container-sigpolicy` forces signature verification on the target image. Always use this flag in your docs and `ujust` recipes.
 
@@ -399,13 +399,13 @@ podman run --rm --privileged --pull=newer \
   -v /var/lib/containers/storage:/var/lib/containers/storage \
   quay.io/centos-bootc/bootc-image-builder:latest \
   --type vhd --rootfs ext4 --config /config.toml \
-  ghcr.io/kabuki94/mios:latest
+  ghcr.io/mios-project/mios:latest
 ```
 
 **WSL2 tarball** (not natively a BIB output — build manually):
 ```bash
 # Export the running image as a tar for WSL import
-podman create --name tmp-wsl ghcr.io/kabuki94/mios:latest /bin/true
+podman create --name tmp-wsl ghcr.io/mios-project/mios:latest /bin/true
 podman export tmp-wsl | zstd -T0 -o output/mios-wsl.tar.zst
 ```
 Users import via `wsl --import MiOS C:\WSL\MiOS mios-wsl.tar.zst --version 2`.
@@ -702,10 +702,10 @@ Land signed akmod-nvidia-open + uupd + cosign keyless + composefs-verity in the 
 
 ---
 ### ⚖️ Legal & Source Reference
-- **Copyright:** (c) 2026 Kabu.ki
+- **Copyright:** (c) 2026 MiOS Project
 - **Status:** Personal Property / Private Infrastructure
-- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
-- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/specs/Home.md)
-- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
+- **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/mios-project/mios/blob/main/specs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/mios-project/mios/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->

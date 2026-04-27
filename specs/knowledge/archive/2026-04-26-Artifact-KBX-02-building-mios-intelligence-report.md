@@ -1,8 +1,8 @@
-<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
 # 🌐 MiOS
 ```json:knowledge
 {
-  "summary": "> **Proprietor:** Kabu.ki",
+  "summary": "> **Proprietor:** MiOS Project",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -16,9 +16,9 @@
   }
 }
 ```
-> **Proprietor:** Kabu.ki
+> **Proprietor:** MiOS Project
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
+> **License:** Licensed as personal property to MiOS Project
 > **Source Reference:** MiOS-Core-v0.1.1
 ---
 
@@ -83,12 +83,12 @@ The corresponding container policy at `/etc/containers/policy.json` should enfor
   "default": [{"type": "reject"}],
   "transports": {
     "docker": {
-      "ghcr.io/Kabuki94/mios": [{
+      "ghcr.io/mios-project/mios": [{
         "type": "sigstoreSigned",
         "fulcio": {
           "caPath": "/etc/pki/cosign/fulcio_v1.crt.pem",
           "oidcIssuer": "https://token.actions.githubusercontent.com",
-          "subjectEmail": "https://github.com/Kabuki94/mios/.github/workflows/build.yml@refs/heads/main"
+          "subjectEmail": "https://github.com/mios-project/mios/.github/workflows/build.yml@refs/heads/main"
         },
         "rekorPublicKeyPath": "/etc/pki/cosign/rekor.pub",
         "signedIdentity": {"type": "matchRepository"}
@@ -252,10 +252,10 @@ The kernel argument drop-in directory (`/usr/lib/bootc/kargs.d/`) is the ideal m
 
 ---
 ### ⚖️ Legal & Source Reference
-- **Copyright:** (c) 2026 Kabu.ki
+- **Copyright:** (c) 2026 MiOS Project
 - **Status:** Personal Property / Private Infrastructure
-- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
-- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/specs/Home.md)
-- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
+- **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/mios-project/mios/blob/main/specs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/mios-project/mios/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->

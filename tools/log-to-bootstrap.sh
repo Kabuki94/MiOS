@@ -118,8 +118,8 @@ cat > "${ARTIFACT_DIR}/manifest.json" << MANIFEST
     "LocalAI",
     "vLLM"
   ],
-  "license": "Personal Property - Kabu.ki",
-  "repository": "https://github.com/Kabuki94/mios"
+  "license": "Personal Property - MiOS Project",
+  "repository": "https://github.com/mios-project/mios"
 }
 MANIFEST
 
@@ -222,9 +222,9 @@ These artifacts enable:
 
 ---
 
-**Repository:** https://github.com/Kabuki94/mios  
+**Repository:** https://github.com/mios-project/mios  
 **Bootstrap:** https://github.com/Kabuki94/MiOS-bootstrap  
-**License:** Personal Property - Kabu.ki
+**License:** Personal Property - MiOS Project
 README
 
 echo "✓ README generated: ${ARTIFACT_DIR}/README.md"

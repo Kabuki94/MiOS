@@ -1,10 +1,10 @@
-# CLAUDE.md
+# AI-AGENT-GUIDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to AI coding agents when working with code in this repository.
 
 ## Project
 
-MiOS is a **bootc-based immutable workstation OS** on Fedora Rawhide. One OCI image covers all hardware roles: desktop, k3s/HA, GPU passthrough (VFIO), WSL2. Published at `ghcr.io/kabuki94/mios:latest`. Deployed systems update atomically via `sudo bootc upgrade`. Sole proprietor: **Kabu.ki**.
+MiOS is a **bootc-based immutable workstation OS** on Fedora Rawhide. One OCI image covers all hardware roles: desktop, k3s/HA, GPU passthrough (VFIO), WSL2. Published at `ghcr.io/mios-project/mios:latest`. Deployed systems update atomically via `sudo bootc upgrade`. Sole proprietor: **MiOS Project**.
 
 ## Commands
 
@@ -112,7 +112,7 @@ Never: `[kargs]` section header · `delete =` · `delete_kargs =` · `kargs.appe
 
 ## Protected Files
 
-Do not modify without explicit authorization from Kabu.ki:
+Do not modify without explicit authorization from MiOS Project:
 
 - `VERSION` and `CHANGELOG.md` — managed only via `push-to-github.ps1`
 - `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` — surgical edits only; never regenerate wholesale
@@ -123,11 +123,11 @@ Do not modify without explicit authorization from Kabu.ki:
 
 | Path | Purpose |
 |---|---|
-| `.ai/foundation/memories/journal.md` | Episodic log — append every significant action with timestamp + `[AI: Claude Code]` tag |
+| `.ai/foundation/memories/journal.md` | Episodic log — append every significant action with timestamp + `[AI: Agent]` tag |
 | `.ai/foundation/memory/` | Semantic memory — named `.md` files per topic |
 | `.ai/foundation/shared-tmp/` | Transient cross-agent scratchpad |
 
-Journal entry format: `[2026-04-27T00:00:00Z] [AI: Claude Code] <action> — <finding>`
+Journal entry format: `[2026-04-27T00:00:00Z] [AI: Agent] <action> — <finding>`
 
 ## Key Context Files
 

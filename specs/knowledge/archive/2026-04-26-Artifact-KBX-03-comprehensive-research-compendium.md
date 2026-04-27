@@ -1,8 +1,8 @@
-<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
 # 🌐 MiOS
 ```json:knowledge
 {
-  "summary": "> **Proprietor:** Kabu.ki",
+  "summary": "> **Proprietor:** MiOS Project",
   "logic_type": "documentation",
   "tags": [
     "MiOS",
@@ -16,15 +16,15 @@
   }
 }
 ```
-> **Proprietor:** Kabu.ki
+> **Proprietor:** MiOS Project
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
-> **License:** Licensed as personal property to Kabu.ki
+> **License:** Licensed as personal property to MiOS Project
 > **Source Reference:** MiOS-Core-v0.1.1
 ---
 
 # MiOS comprehensive research compendium
 
-**This report covers 13 technical research areas for building a Fedora Rawhide bootc immutable workstation OS**, spanning WSL2/Hyper-V virtualization, build modularization, desktop theming, system management tooling, and licensing. The most impactful findings include systemd's built-in hostname wildcard feature (`mios-?????` in `/etc/hostname`), the `FROM scratch AS ctx` Containerfile pattern used universally across ublue-os projects, and the `cockpit-desktop` mode that eliminates TLS certificate issues entirely. The MiOS repository at `github.com/Kabuki94/mios` is currently private/inaccessible, but ecosystem analysis from comparable projects provides strong architectural guidance.
+**This report covers 13 technical research areas for building a Fedora Rawhide bootc immutable workstation OS**, spanning WSL2/Hyper-V virtualization, build modularization, desktop theming, system management tooling, and licensing. The most impactful findings include systemd's built-in hostname wildcard feature (`mios-?????` in `/etc/hostname`), the `FROM scratch AS ctx` Containerfile pattern used universally across ublue-os projects, and the `cockpit-desktop` mode that eliminates TLS certificate issues entirely. The MiOS repository at `github.com/mios-project/mios` is currently private/inaccessible, but ecosystem analysis from comparable projects provides strong architectural guidance.
 
 ---
 
@@ -216,10 +216,10 @@ For kernel management, the Bazzite/fsync-kernel COPR model is battle-tested at s
 
 ---
 ### ⚖️ Legal & Source Reference
-- **Copyright:** (c) 2026 Kabu.ki
+- **Copyright:** (c) 2026 MiOS Project
 - **Status:** Personal Property / Private Infrastructure
-- **Project Repository:** [Kabuki94/mios](https://github.com/Kabuki94/mios)
-- **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/mios/blob/main/specs/Home.md)
-- **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/mios/blob/main/ai-context.json)
+- **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
+- **Documentation:** [MiOS Navigation Hub](https://github.com/mios-project/mios/blob/main/specs/Home.md)
+- **Artifact Hub:** [ai-context.json](https://github.com/mios-project/mios/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->

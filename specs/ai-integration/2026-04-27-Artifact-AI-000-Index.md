@@ -1,4 +1,4 @@
-<!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
+<!-- 🌐 MiOS Artifact | Proprietor: MiOS Project | https://github.com/mios-project/mios -->
 # 🌐 MiOS AI Integration
 
 ```json:knowledge
@@ -28,9 +28,9 @@
 }
 ```
 
-> **Proprietor:** Kabu.ki  
+> **Proprietor:** MiOS Project  
 > **Infrastructure:** AI-Native Knowledge Base (FOSS-Only)  
-> **License:** Licensed as personal property to Kabu.ki  
+> **License:** Licensed as personal property to MiOS Project  
 
 ---
 
@@ -283,4 +283,4 @@ test -f test-extract/Containerfile && echo "✓ Containerfile"
 **MiOS Version:** 0.1.2
 
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->
+<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS Project -->
