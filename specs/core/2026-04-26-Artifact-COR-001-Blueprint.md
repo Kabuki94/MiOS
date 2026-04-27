@@ -1,9 +1,9 @@
 <!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
-# 🏗️ MiOS-OS Strategic Blueprint
+# 🏗️ MiOS Strategic Blueprint
 
 ```json:knowledge
 {
-  "summary": "Strategic technical blueprint for MiOS-OS architecture and specifications.",
+  "summary": "Strategic technical blueprint for MiOS architecture and specifications.",
   "logic_type": "documentation",
   "tags": ["MiOS", "Blueprint", "Architecture", "Core"],
   "relations": {
@@ -21,7 +21,7 @@
 
 ```json
 {
-  "project": "MiOS-OS",
+  "project": "MiOS",
   "version": "v0.1.1",
   "architecture": "Fedora Bootc (OCI-Native)",
   "immutability": "composefs + fs-verity",
@@ -32,7 +32,7 @@
 ---
 
 ## 🚀 Executive Summary
-MiOS-OS is a container-native, immutable workstation engineered for high-performance virtualization and Generative AI development. It bridges the gap between OCI image-based deployment and bare-metal hardware acceleration.
+MiOS is a container-native, immutable workstation engineered for high-performance virtualization and Generative AI development. It bridges the gap between OCI image-based deployment and bare-metal hardware acceleration.
 
 ### 🛡️ Core Pillars
 - **Transactional Immutability:** The entire userspace is a cryptographically sealed OCI image.

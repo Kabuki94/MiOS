@@ -22,7 +22,7 @@
 > **Source Reference:** MiOS-Core-v0.1.1
 ---
 
-# 🛠️ MiOS-OS Operational Handbook
+# 🛠️ MiOS Operational Handbook
 
 ```json
 {
@@ -37,7 +37,7 @@
 ## 🚀 Deployment & Installation
 
 ### 💻 WSL2 Quickstart
-MiOS-OS is optimized for Windows Subsystem for Linux with automated pathing and systemd enablement.
+MiOS is optimized for Windows Subsystem for Linux with automated pathing and systemd enablement.
 
 ```json
 {
@@ -50,7 +50,7 @@ MiOS-OS is optimized for Windows Subsystem for Linux with automated pathing and 
 }
 ```
 
-1. **Import:** `wsl --import MiOS-OS C:\WSL\MiOS output\mios-wsl.tar --version 2`
+1. **Import:** `wsl --import MiOS C:\WSL\MiOS output\mios-wsl.tar --version 2`
 2. **Initialize:** First boot executes `mios-wsl-firstboot` to provision home directories and SSH keys.
 
 ---
@@ -58,7 +58,7 @@ MiOS-OS is optimized for Windows Subsystem for Linux with automated pathing and 
 ## 🔄 Lifecycle Management
 
 ### 📥 System Upgrades
-MiOS-OS uses transactional atomic swaps.
+MiOS uses transactional atomic swaps.
 
 | Method | Command | Behavior |
 | :--- | :--- | :--- |

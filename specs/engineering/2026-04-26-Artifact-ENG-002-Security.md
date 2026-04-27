@@ -22,7 +22,7 @@
 > **Source Reference:** MiOS-Core-v0.1.1
 ---
 
-# 🛡️ MiOS-OS Security Guide
+# 🛡️ MiOS Security Guide
 
 ```json
 {
@@ -37,7 +37,7 @@
 ## 🔒 Hardened Layers
 
 ### 🧠 Execution Control
-MiOS-OS implements strict binary whitelisting to prevent unauthorized execution.
+MiOS implements strict binary whitelisting to prevent unauthorized execution.
 
 ```json
 {
@@ -89,7 +89,7 @@ Firewalld is configured for maximum isolation.
 ## 🛠️ Infrastructure Hardening
 
 ### 🧠 Kernel Hardening
-MiOS-OS implements the **SecureBlue 29-parameter kernel hardening** standard.
+MiOS implements the **SecureBlue 29-parameter kernel hardening** standard.
 
 | Parameter | Rationale |
 | :--- | :--- |

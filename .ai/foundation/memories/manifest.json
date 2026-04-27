@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-04-27T03:34:53.254266",
+  "generated_at": "2026-04-27T03:47:37.901132",
   "source_directory": ".ai/foundation/memories",
   "entries": [
     {
       "path": ".ai/foundation/memories/upstream-work-plan.md",
-      "last_modified": "2026-04-27T03:29:51.922405",
+      "last_modified": "2026-04-27T03:46:51.866937",
       "title": "\ud83c\udf10 MiOS \u2014 Cloud Native Operating System",
       "type": "documentation",
       "metadata": {
@@ -32,7 +32,7 @@
     },
     {
       "path": ".ai/foundation/memories/upstream-research-plan.md",
-      "last_modified": "2026-04-27T03:29:51.924405",
+      "last_modified": "2026-04-27T03:46:51.869937",
       "title": "\ud83c\udf10 MiOS \u2014 Cloud Native Operating System",
       "type": "documentation",
       "metadata": {

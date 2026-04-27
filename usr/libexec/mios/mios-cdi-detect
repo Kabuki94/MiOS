@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 # Universal CDI (Container Device Interface) Generator
-# MiOS-OS: Hardware & Environment Agnostic
+# MiOS: Hardware & Environment Agnostic
 # Generates CDI specs for NVIDIA, AMD, Intel, and WSL2 (/dev/dxg)
 set -euo pipefail
 

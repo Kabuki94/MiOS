@@ -561,7 +561,7 @@ Write-Phase "3b" "Auto-Deploy to Hyper-V + WSL2"
 # Hyper-V
 if (Test-Path $TargetVhdx) {
     $ErrorActionPreference = "Continue"
-    $vmName = "MiOS-OS"
+    $vmName = "MiOS"
     try {
         Write-Step "Deploying to Hyper-V..."
         Remove-VM -Name $vmName -Force -ErrorAction SilentlyContinue
@@ -635,7 +635,7 @@ if (Test-Path $TargetVhdx) {
 # WSL2
 if (Test-Path $TargetWsl) {
     $ErrorActionPreference = "Continue"
-    $WslName = "MiOS-OS"
+    $WslName = "MiOS"
     $WslPath = Join-Path $env:USERPROFILE "WSL\$WslName"
     try {
         Write-Step "Deploying to WSL2..."

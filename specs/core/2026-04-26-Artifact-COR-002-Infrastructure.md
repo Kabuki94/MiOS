@@ -22,7 +22,7 @@
 > **Source Reference:** MiOS-Core-v0.1.1
 ---
 
-# 🔌 MiOS-OS Hardware Support
+# 🔌 MiOS Hardware Support
 
 ```json
 {
@@ -37,7 +37,7 @@
 ## 🖥️ GPU & CPU Support
 
 ### 🎮 Graphics Acceleration
-MiOS-OS provides native-tier performance across all major vendors.
+MiOS provides native-tier performance across all major vendors.
 
 ```json
 {

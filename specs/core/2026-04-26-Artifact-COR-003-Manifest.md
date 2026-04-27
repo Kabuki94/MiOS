@@ -22,7 +22,7 @@
 > **Source Reference:** MiOS-Core-v0.1.1
 ---
 
-# 📋 MiOS-OS Feature Index
+# 📋 MiOS Feature Index
 
 ```json
 {

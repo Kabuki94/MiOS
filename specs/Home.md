@@ -10,7 +10,7 @@
     "home",
     "navigation"
   ],
-  "last_rag_sync": "2026-04-27T03:33:47.842453",
+  "last_rag_sync": "2026-04-27T03:46:51.769936",
   "version": "0.1.1"
 }
 ```
@@ -42,7 +42,7 @@
 - 🌐 MiOS — Cloud Native Operating System ([Upstream Research 2026-04-26](https://github.com/Kabuki94/mios/blob/main/specs/knowledge/research/2026-04-26-Artifact-KBX-019-upstream-research-2026-04-26.md))
 - 🌐 MiOS — Cloud Native Operating System ([Bootc Composefs Native](https://github.com/Kabuki94/mios/blob/main/specs/knowledge/research/2026-04-26-Artifact-KBX-018-upstream-bootc-composefs-native.md))
 - 🌐 MiOS — Cloud Native Operating System ([Bootc Ecosystem 2025-2026](https://github.com/Kabuki94/mios/blob/main/specs/knowledge/research/2026-04-26-Artifact-KBX-017-upstream-bootc-ecosystem-2025-2026.md))
-- 🌐 MiOS — Cloud Native Operating System ([MiOS-OS Bootc Repository Analysis](https://github.com/Kabuki94/mios/blob/main/specs/knowledge/research/2026-04-26-Artifact-KBX-020-MiOS-OS-Bootc-Repository-Analysis.md))
+- 🌐 MiOS — Cloud Native Operating System ([MiOS Bootc Repository Analysis](https://github.com/Kabuki94/mios/blob/main/specs/knowledge/research/2026-04-26-Artifact-KBX-020-MiOS-Bootc-Repository-Analysis.md))
 
 ## Knowledge Base (Guides)
 - 🌐 MiOS — Cloud Native Operating System ([CPU Isolation Guide](https://github.com/Kabuki94/mios/blob/main/specs/knowledge/guides/2026-04-26-Artifact-KBX-101-cpu-isolation-guide.md))

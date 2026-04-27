@@ -26,7 +26,7 @@
       ".windsurfrules"
     ]
   },
-  "last_rag_sync": "2026-04-27T03:33:47.842453",
+  "last_rag_sync": "2026-04-27T03:46:51.769936",
   "version": "0.1.1"
 }
 ```
@@ -202,7 +202,7 @@ Never: `[kargs]` section header · `delete =` · `delete_kargs =` · `kargs.appe
 
 - Current `bootc-image-builder` uses a single config file mounted at `/config.toml`. ISO-specific settings go under `[customizations.iso]` within that file. Never mount multiple config files simultaneously (BIB crashes: "found config.json and also config.toml"). The `iso.toml` / `bib.toml` naming is obsolete — use `/config.toml` exclusively.
 - `--type vhd` outputs VPC/VHD, **not VHDX** — always post-convert: `qemu-img convert -f raw -O vhdx -o subformat=dynamic disk.raw disk.vhdx`. Hyper-V targets require Gen 2 VMs (UEFI); Gen 1 (BIOS/MBR) is incompatible with bootc's EFI boot chain.
-- No WSL2 tarball output from BIB (issue #172, open since 2024). WSL2 distribution is built via: `podman export $(podman create ghcr.io/kabuki94/mios:latest) -o mios.tar && wsl --import MiOS-OS ...`
+- No WSL2 tarball output from BIB (issue #172, open since 2024). WSL2 distribution is built via: `podman export $(podman create ghcr.io/kabuki94/mios:latest) -o mios.tar && wsl --import MiOS ...`
 
 ### Platform detection & runtime gating
 
@@ -313,7 +313,7 @@ To ensure all Markdown files are machine-parsable and referencable, they must in
       "path/to/impacted/file"
     ]
   },
-  "last_rag_sync": "2026-04-27T03:33:47.842453",
+  "last_rag_sync": "2026-04-27T03:46:51.769936",
   "version": "0.1.1"
 }
 ```

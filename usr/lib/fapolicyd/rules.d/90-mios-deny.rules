@@ -1,4 +1,4 @@
-# MiOS-OS: Zero-Trust Local Security
+# MiOS: Zero-Trust Local Security
 # Enforce strict deny-by-default on user directories and external media.
 # Overrides default allow rules for trusted directories if they fall in these paths.
 

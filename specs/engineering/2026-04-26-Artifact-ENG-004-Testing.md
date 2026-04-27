@@ -22,7 +22,7 @@
 > **Source Reference:** MiOS-Core-v0.1.1
 ---
 
-# 🧪 MiOS-OS System Validation
+# 🧪 MiOS System Validation
 
 ```json
 {
@@ -63,7 +63,7 @@ Verifying the integrity of the KVM/VFIO stack.
 
 ## 📋 Software Bill of Materials (SBOM)
 
-MiOS-OS generates signed manifests for every build.
+MiOS generates signed manifests for every build.
 
 1. **Formats:** `CycloneDX`, `SPDX`.
 2. **Records:** Built via GitHub Actions with OIDC identity verification.

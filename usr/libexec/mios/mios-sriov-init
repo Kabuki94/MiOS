@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# MiOS-OS Universal SR-IOV Initialization Script
+# MiOS Universal SR-IOV Initialization Script
 # This script initializes SR-IOV Virtual Functions (VFs) for detected PFs.
 # In production, specific VF counts should be set via kernel command line
 # or a drop-in configuration file for this service.

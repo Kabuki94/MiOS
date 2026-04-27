@@ -51,8 +51,8 @@ def sync_json_embeds(file_path):
             return match.group(0)
 
     # Targeted regex for the status-style JSON blocks (not knowledge)
-    content = re.sub(r"# 🌐 MiOS-OS: Immutable Cloud-Native Workstation\n\n```json\n(.*?)\n```", 
-                     r"# 🌐 MiOS-OS: Immutable Cloud-Native Workstation\n\n```json\n\1\n```", content, flags=re.DOTALL)
+    content = re.sub(r"# 🌐 MiOS: Immutable Cloud-Native Workstation\n\n```json\n(.*?)\n```", 
+                     r"# 🌐 MiOS: Immutable Cloud-Native Workstation\n\n```json\n\1\n```", content, flags=re.DOTALL)
     # Actually apply the update to any generic json block that looks like a status block
     content = re.sub(r"```json\n(\{.*?\})\n```", update_status, content, flags=re.DOTALL)
 

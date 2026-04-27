@@ -1,6 +1,6 @@
 <!-- 🌐 MiOS Artifact | Proprietor: Kabu.ki | https://github.com/kabuki94/mios -->
 # 📜 MiOS Scripts Index
-> **Generated:** 2026-04-27T03:34:54.042933
+> **Generated:** 2026-04-27T03:47:38.686072
 > **Status:** Automated Sync
 
 ```json:knowledge
@@ -13,7 +13,7 @@
     "index"
   ],
   "version": "0.1.1",
-  "last_rag_sync": "2026-04-27T03:33:47.842453"
+  "last_rag_sync": "2026-04-27T03:46:51.769936"
 }
 ```
 

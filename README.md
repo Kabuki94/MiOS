@@ -16,7 +16,7 @@
     ],
     "impacts": []
   },
-  "last_rag_sync": "2026-04-27T03:33:47.842453",
+  "last_rag_sync": "2026-04-27T03:46:51.769936",
   "version": "0.1.1"
 }
 ```
@@ -25,7 +25,7 @@
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
 ---
-# 🌐 MiOS-OS: Immutable Cloud-Native Workstation
+# 🌐 MiOS: Immutable Cloud-Native Workstation
 
 ```json
 {
@@ -33,14 +33,14 @@
   "baseline": "v0.1.1",
   "kernel": "Fedora Rawhide (OCI-Mode)",
   "build": "just all",
-  "last_sync": "2026-04-27T03:33:47.842453"
+  "last_sync": "2026-04-27T03:46:51.769936"
 }
 ```
 
 ---
 
 ## 🚀 Overview
-MiOS-OS is a container-native, mathematically verifiable workstation operating system. Built for high-performance virtualization (VFIO), hardware agnosticism, and zero-trust security, it transforms the host OS into a cryptographically sealed OCI payload.
+MiOS is a container-native, mathematically verifiable workstation operating system. Built for high-performance virtualization (VFIO), hardware agnosticism, and zero-trust security, it transforms the host OS into a cryptographically sealed OCI payload.
 
 ### 🛡️ Core Mandates
 - **Naked Core:** Minimalist base OS; applications reside in sandboxes (Flatpak/Distrobox).

@@ -52,7 +52,7 @@ Fedora 44 plans to hardlink identical files under `/usr` by default to drastical
 
 **MiOS Gap:** Our `08-system-files-overlay.sh` uses `tar` pipes to copy overlays. We must ensure that our overlay mechanisms do not break hardlinks or dramatically inflate layer sizes when the base image introduces global hardlinking.
 
-## Strategic Roadmap for MiOS-OS
+## Strategic Roadmap for MiOS
 To keep progressing, we must prioritize the following missing implementations:
 1.  **Test the `--composefs-native` flag:** Evaluate building RAW/VHDX targets with `bootc-image-builder` forcing the new backend.
 2.  **UKI Architecture:** Research how to bundle our custom `kargs.d/` and NVIDIA `akmod` kernel modules into a Unified Kernel Image.

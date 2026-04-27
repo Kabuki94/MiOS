@@ -22,7 +22,7 @@ if [[ "$VIRT" == "wsl" || "$VIRT" == container* ]] || [[ -f "/.containerenv" || 
         echo "  bootc upgrade cannot manage this environment."
         echo "  To upgrade, re-export and re-import the latest OCI image:"
         echo "    podman export \$(podman create ghcr.io/kabuki94/mios:latest) -o mios.tar"
-        echo "    wsl --import MiOS-OS /path/to/install mios.tar"
+        echo "    wsl --import MiOS /path/to/install mios.tar"
     fi
     exit 0
 fi
