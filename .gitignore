@@ -46,5 +46,44 @@ Thumbs.db
 
 
 
-# User-specific identity
+# User-specific identity (legacy)
 user/identity.env
+
+# ============================================================================
+# User-Space Configuration (XDG Compliant)
+# ============================================================================
+# User configuration belongs in $HOME/.config/mios/ (NOT in repository)
+# These files may exist in repository root for legacy reasons but should NOT be committed
+
+# Legacy .env file (replaced by $HOME/.config/mios/env.toml)
+/.env
+/.env.local
+/.env.*
+!/.env.example
+
+# User-specific logs (should be in $XDG_STATE_HOME/mios/logs/)
+/logs/
+*.log
+
+# User credentials (should be in $HOME/.config/mios/credentials/)
+*.token
+*.key
+*.pem
+*.p12
+*.pfx
+*password*
+*secret*
+*credential*
+auth.json
+registry-auth.json
+
+# User cache (should be in $XDG_CACHE_HOME/mios/)
+/.cache/
+/cache/
+
+# User data (should be in $XDG_DATA_HOME/mios/)
+/.local/
+
+# Note: If you see files matching these patterns in your working directory,
+# run: just init-user-space
+# This will set up proper XDG-compliant user configuration directories.

@@ -2,9 +2,13 @@
 # Requires: podman, just
 # Usage: just build | just iso | just all
 
+# Load user environment from XDG-compliant configuration
+# This sources $HOME/.config/mios/*.toml files and exports MIOS_* variables
+_load_env := `bash -c 'source ./tools/load-user-env.sh 2>/dev/null || true'`
+
 IMAGE_NAME := env_var_or_default("MIOS_IMAGE_NAME", "ghcr.io/mios-project/mios")
 VERSION := `cat VERSION 2>/dev/null || echo "v0.1.2"`
-LOCAL := "localhost/mios:latest"
+LOCAL := env_var_or_default("MIOS_IMAGE_NAME", "localhost/mios:latest")
 BIB := env_var_or_default("MIOS_BIB_IMAGE", "quay.io/centos-bootc/bootc-image-builder:latest")
 
 # Build OCI image locally
@@ -112,3 +116,82 @@ build-and-log: build-logged
 # Full pipeline: build → rechunk → log to bootstrap (Linux FS native)
 all-bootstrap: build rechunk log-bootstrap
     @echo "✅ Full pipeline complete (build → rechunk → bootstrap Linux FS native)"
+
+# ============================================================================
+# User-Space Management
+# ============================================================================
+
+# Initialize user-space configuration (XDG Base Directory structure)
+init-user-space:
+    @echo "🏗️  Initializing MiOS user-space..."
+    ./tools/init-user-space.sh
+    @echo "✅ User-space initialization complete"
+
+# Re-initialize user-space (overwrite existing configs)
+reinit-user-space:
+    @echo "🔄 Re-initializing MiOS user-space (overwriting existing configs)..."
+    ./tools/init-user-space.sh --force
+    @echo "✅ User-space re-initialization complete"
+
+# Show user-space configuration paths
+show-user-space:
+    @echo "MiOS User-Space Directories:"
+    @echo "  Config:  ${XDG_CONFIG_HOME:-$HOME/.config}/mios/"
+    @echo "  Data:    ${XDG_DATA_HOME:-$HOME/.local/share}/mios/"
+    @echo "  Cache:   ${XDG_CACHE_HOME:-$HOME/.cache}/mios/"
+    @echo "  State:   ${XDG_STATE_HOME:-$HOME/.local/state}/mios/"
+    @echo "  Runtime: ${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/mios/"
+    @echo ""
+    @echo "Configuration files:"
+    @if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/mios/env.toml" ]; then \
+        echo "  ✅ env.toml"; \
+    else \
+        echo "  ❌ env.toml (not found - run: just init-user-space)"; \
+    fi
+    @if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/mios/images.toml" ]; then \
+        echo "  ✅ images.toml"; \
+    else \
+        echo "  ❌ images.toml (not found - run: just init-user-space)"; \
+    fi
+    @if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/mios/build.toml" ]; then \
+        echo "  ✅ build.toml"; \
+    else \
+        echo "  ❌ build.toml (not found - run: just init-user-space)"; \
+    fi
+
+# Show loaded environment variables
+show-env:
+    @echo "MiOS Environment Variables:"
+    @source ./tools/load-user-env.sh && env | grep '^MIOS_' | sort | sed 's/^/  /'
+
+# Edit user environment configuration
+edit-env:
+    @if [ ! -f "${XDG_CONFIG_HOME:-$HOME/.config}/mios/env.toml" ]; then \
+        echo "❌ User config not found. Run: just init-user-space"; \
+        exit 1; \
+    fi
+    @${EDITOR:-vim} "${XDG_CONFIG_HOME:-$HOME/.config}/mios/env.toml"
+
+# Edit user image configuration
+edit-images:
+    @if [ ! -f "${XDG_CONFIG_HOME:-$HOME/.config}/mios/images.toml" ]; then \
+        echo "❌ User config not found. Run: just init-user-space"; \
+        exit 1; \
+    fi
+    @${EDITOR:-vim} "${XDG_CONFIG_HOME:-$HOME/.config}/mios/images.toml"
+
+# Edit user build configuration
+edit-build:
+    @if [ ! -f "${XDG_CONFIG_HOME:-$HOME/.config}/mios/build.toml" ]; then \
+        echo "❌ User config not found. Run: just init-user-space"; \
+        exit 1; \
+    fi
+    @${EDITOR:-vim} "${XDG_CONFIG_HOME:-$HOME/.config}/mios/build.toml"
+
+# Edit Flatpak applications list
+edit-flatpaks:
+    @if [ ! -f "${XDG_CONFIG_HOME:-$HOME/.config}/mios/flatpaks.list" ]; then \
+        echo "❌ User config not found. Run: just init-user-space"; \
+        exit 1; \
+    fi
+    @${EDITOR:-vim} "${XDG_CONFIG_HOME:-$HOME/.config}/mios/flatpaks.list"

@@ -1,0 +1,237 @@
+# MiOS Build Configuration
+# This is a TEMPLATE - copy to $HOME/.config/mios/build.toml and customize
+#
+# Location: /usr/share/mios/config/default.build.toml (in image)
+# User copy: $HOME/.config/mios/build.toml (overrides these defaults)
+
+[artifacts]
+# Which artifacts to generate
+# Options: "qcow2", "raw", "iso", "vmdk", "vhdx", "ami", "hyperv"
+enabled = ["qcow2"]
+
+# Output directory for artifacts
+output_dir = "./output"
+
+[qcow2]
+# QEMU QCOW2 image settings
+enabled = true
+disk_size = "50G"
+format = "qcow2"
+compression = true
+
+[raw]
+# RAW disk image settings
+enabled = false
+disk_size = "50G"
+format = "raw"
+
+[iso]
+# Anaconda installer ISO settings
+enabled = false
+installer_type = "anaconda"
+include_netinstall = true
+# Minimum ISO size optimization
+minsize = true
+
+[vmdk]
+# VMware VMDK image settings
+enabled = false
+disk_size = "50G"
+format = "vmdk"
+compatibility = "vmware"
+
+[vhdx]
+# Hyper-V VHDX image settings
+enabled = false
+disk_size = "50G"
+format = "vhdx"
+
+[ami]
+# AWS AMI image settings
+enabled = false
+disk_size = "50G"
+format = "raw"
+
+[hyperv]
+# Hyper-V image settings
+enabled = false
+disk_size = "50G"
+
+[flatpaks]
+# Flatpak application installation
+enabled = false
+
+# Path to flatpaks.list (one app per line)
+# Default: $XDG_CONFIG_HOME/mios/flatpaks.list
+source_file = ""
+
+# Flatpak remote to use
+remote = "flathub"
+
+# Install system-wide (true) or user-local (false)
+system_wide = false
+
+[nvidia]
+# NVIDIA GPU support
+# Note: Only relevant if base image is ucore-hci:stable-nvidia
+enabled = true
+
+# Driver version ("latest" or specific version like "550.120")
+driver_version = "latest"
+
+# Enable CUDA support
+cuda = true
+
+# Enable NVENC/NVDEC (video encoding/decoding)
+video_codec = true
+
+[amd]
+# AMD GPU support (ROCm)
+enabled = false
+
+# ROCm version
+rocm_version = "6.0"
+
+# Enable ROCm for compute
+compute = false
+
+[intel]
+# Intel GPU support
+enabled = false
+
+# Enable Intel Media Driver
+media_driver = true
+
+# Enable Intel Compute Runtime
+compute_runtime = true
+
+[kernel]
+# Kernel configuration
+# Note: Base image ships with ucore-hci kernel; these are overlays
+
+# Additional kernel modules to load
+modules = []
+
+# Kernel parameters to add
+# Example: ["quiet", "splash", "nvidia-drm.modeset=1"]
+parameters = []
+
+[bootloader]
+# Bootloader configuration (GRUB2)
+
+# Bootloader timeout (seconds)
+timeout = 5
+
+# Show boot menu
+show_menu = true
+
+# Default boot entry (0 = first entry)
+default_entry = 0
+
+[selinux]
+# SELinux configuration
+# Options: "enforcing", "permissive", "disabled"
+mode = "enforcing"
+
+# SELinux policy type
+# Options: "targeted", "mls"
+policy = "targeted"
+
+[firewall]
+# Firewall configuration (firewalld)
+enabled = true
+
+# Default zone
+default_zone = "public"
+
+# Open ports (format: "port/protocol")
+# Example: ["22/tcp", "80/tcp", "443/tcp"]
+open_ports = []
+
+# Open services (firewalld service names)
+# Example: ["ssh", "http", "https"]
+open_services = ["ssh"]
+
+[ssh]
+# SSH server configuration
+enabled = true
+
+# Allow root login
+# Options: "yes", "no", "prohibit-password"
+root_login = "prohibit-password"
+
+# Allow password authentication
+password_auth = false
+
+# SSH port
+port = 22
+
+[users]
+# Default user configuration (used during build)
+
+# Default username (can be overridden by installer)
+default_user = "mios"
+
+# Create default user during build
+create_default_user = false
+
+# Default user groups
+# Example: ["wheel", "docker", "libvirt"]
+default_groups = ["wheel"]
+
+[passwords]
+# Password hash for default user (SHA-512 crypt format)
+# Generate with: mkpasswd -m sha-512
+# Leave empty to disable password login
+default_user_hash = ""
+
+# Require password change on first login
+force_password_change = false
+
+[hostname]
+# Default hostname (can be overridden by installer)
+default = "mios"
+
+[timezone]
+# Default timezone
+# Example: "America/New_York", "Europe/London", "UTC"
+default = "UTC"
+
+[locale]
+# Default locale
+# Example: "en_US.UTF-8", "en_GB.UTF-8"
+default = "en_US.UTF-8"
+
+# Additional locales to generate
+additional = []
+
+[keyboard]
+# Default keyboard layout
+# Example: "us", "uk", "de", "fr"
+layout = "us"
+
+# Keyboard variant (optional)
+variant = ""
+
+[signing]
+# Secure Boot signing configuration
+
+# Enable Secure Boot signing
+enabled = false
+
+# MOK (Machine Owner Key) private key path
+# Path: $XDG_CONFIG_HOME/mios/credentials/mok-key.priv
+mok_key = ""
+
+# MOK certificate path
+# Path: $XDG_CONFIG_HOME/mios/credentials/mok-cert.pem
+mok_cert = ""
+
+[rechunk]
+# OSTree rechunk configuration (composefs optimization)
+
+# Enable rechunking after build
+enabled = false
+
+# Rechunk labels (for OCI image layer optimization)
+labels = []

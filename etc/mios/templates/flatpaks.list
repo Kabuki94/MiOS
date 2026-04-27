@@ -1,0 +1,36 @@
+# MiOS User Flatpak Applications
+# Copy to: $HOME/.config/mios/flatpaks.list
+#
+# One Flatpak application ID per line
+# Lines starting with # are comments
+#
+# Common applications:
+
+# Web Browsers
+#org.mozilla.firefox
+#com.google.Chrome
+#com.brave.Browser
+
+# Development Tools
+#com.visualstudio.code
+#org.gnome.Builder
+#io.atom.Atom
+
+# Media & Graphics
+#org.blender.Blender
+#org.gimp.GIMP
+#org.inkscape.Inkscape
+#org.kde.kdenlive
+
+# Office & Productivity
+#org.libreoffice.LibreOffice
+#org.onlyoffice.desktopeditors
+
+# Communication
+#org.signal.Signal
+#com.discordapp.Discord
+#org.telegram.desktop
+
+# Utilities
+#org.keepassxc.KeePassXC
+#com.github.tchx84.Flatseal

@@ -1,0 +1,73 @@
+# MiOS OCI Image Configuration
+# This is a TEMPLATE - copy to $HOME/.config/mios/images.toml and customize
+#
+# Location: /usr/share/mios/config/default.images.toml (in image)
+# User copy: $HOME/.config/mios/images.toml (overrides these defaults)
+
+[base]
+# Base image for MiOS builds
+# Options:
+#   - ghcr.io/ublue-os/ucore-hci:stable-nvidia (default - NVIDIA GPU support)
+#   - ghcr.io/ublue-os/ucore-hci:stable (Intel/AMD GPUs)
+#   - ghcr.io/ublue-os/ucore:stable (minimal, no HCI)
+image = "ghcr.io/ublue-os/ucore-hci:stable-nvidia"
+
+# Base image variant (if needed for multi-arch)
+# Options: "", "stable", "latest", "40", "41"
+variant = "stable-nvidia"
+
+[builder]
+# Bootc Image Builder (BIB) image
+image = "quay.io/centos-bootc/bootc-image-builder:latest"
+
+# BIB variant/tag
+variant = "latest"
+
+[output]
+# Output image name (local builds)
+name = "localhost/mios"
+
+# Output image tags (multiple tags supported)
+tags = ["latest", "v0.1.2"]
+
+# Registry for pushed images (if pushing)
+registry = "ghcr.io"
+
+# Repository path (for pushing)
+# Example: "your-username/mios" → ghcr.io/your-username/mios:latest
+repository = "mios-project/mios"
+
+[registry]
+# Default container registry
+default = "ghcr.io"
+
+# Automatically push after successful build
+push_on_build = false
+
+# Use authenticated registries (reads from $XDG_CONFIG_HOME/mios/credentials/registry-auth.json)
+use_auth = false
+
+# Verify TLS certificates
+tls_verify = true
+
+[mirrors]
+# Container registry mirrors (for offline/airgap environments)
+# Format: "original" = "mirror"
+# Example:
+# "ghcr.io" = "registry.local:5000"
+enabled = false
+
+[mirrors.map]
+# Add your mirrors here
+# "ghcr.io" = "your-mirror.com"
+
+[pull]
+# Image pull policy
+# Options: "always", "missing", "never"
+policy = "missing"
+
+# Pull timeout (seconds)
+timeout = 600
+
+# Retry failed pulls
+retry = 3
