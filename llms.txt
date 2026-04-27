@@ -1,8 +1,10 @@
 # MiOS
-> AI Ingestion Index (Snapshot v0.1.1)
+> AI Ingestion Index (Snapshot v0.1.2)
 > Single Source of Truth: https://github.com/kabuki94/mios/blob/main/INDEX.md
 
 MiOS is a bootc-based, self-building, immutable workstation OS on Fedora Rawhide. It uses a Unified Knowledge Base (UKB) for RAG and is optimized for OpenAI API standard ingestion.
+
+**Version Roadmap:** MiOS-1 (akmod drivers) → MiOS-2/v0.1.x (ucore-hci base) → MiOS-NXT (Hummingbird integration, SBOM, minimal variants).
 
 ## 🏛️ Essential Context (Seed)
 - [AI-Agent-Hub](https://github.com/Kabuki94/mios/blob/main/INDEX.md): Mandatory laws, directory map, and instruction patterns.

@@ -13,6 +13,8 @@ Environment=POSTGRES_PASSWORD=guacamole
 Environment=POSTGRES_USER=guacamole
 Environment=POSTGRES_DB=guacamole
 AutoUpdate=registry
+Notify=healthy
+HealthCmd=pg_isready -h localhost -p 5432
 
 [Service]
 Restart=always

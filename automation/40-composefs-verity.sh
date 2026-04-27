@@ -1,9 +1,8 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 # 40-composefs-verity.sh - promote composefs from default (yes) to verity mode
 # Tamper-evident root. Requires ext4 or btrfs target FS (NOT xfs).
 set -euo pipefail
-
-log() { printf '[40-composefs-verity] %s\n' "$*"; }
+source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 
 conf=/usr/lib/ostree/prepare-root.conf
 if [[ -f "$conf" ]]; then

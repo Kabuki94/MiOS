@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 # 45-nvidia-cdi-refresh.sh - wire up NVIDIA CDI auto-refresh services.
 # Package installs live in PACKAGES.md (packages-gpu-nvidia section).
 #
@@ -9,8 +9,7 @@
 #   - CDI canonical path: /var/run/cdi/nvidia.yaml (runtime) or /etc/cdi/nvidia.yaml (persistent).
 #   - NVIDIA kmods blacklisted by default; 34-gpu-detect.sh removes blacklist on bare metal.
 set -euo pipefail
-
-log() { printf '[45-nvidia-cdi] %s\n' "$*"; }
+source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 
 # Remove legacy OCI hook — conflicts with CDI when both are present.
 OCI_HOOK=/usr/share/containers/oci/hooks.d/oci-nvidia-hook.json
@@ -31,20 +30,24 @@ NVIDIA_CTK_DEBUG=0
 EOF
 chmod 0644 /etc/nvidia-container-toolkit/cdi-refresh.env
 
-# Toolkit-shipped units (require nvidia-container-toolkit >= 1.18).
-log "enabling nvidia-cdi-refresh units"
-systemctl enable nvidia-cdi-refresh.path    2>/dev/null || log "note: nvidia-cdi-refresh.path not available"
-systemctl enable nvidia-cdi-refresh.service 2>/dev/null || log "note: nvidia-cdi-refresh.service not available"
-systemctl enable nvidia-persistenced.service 2>/dev/null || true
+# Enable units using build-safe symlinks
+WANTS=/usr/lib/systemd/system/multi-user.target.wants
+install -d -m 0755 "${WANTS}"
 
-# MiOS CDI detect shim — handles bare metal vs VM vs no-GPU context.
-# Unit is in usr/lib/systemd/system/mios-nvidia-cdi.service.
-if systemctl cat mios-nvidia-cdi.service >/dev/null 2>&1; then
-    log "enabling mios-nvidia-cdi.service"
-    systemctl enable mios-nvidia-cdi.service
-else
-    log "WARN: mios-nvidia-cdi.service missing from system_files — skipping"
-fi
+log "Enabling NVIDIA CDI units..."
+for unit in \
+    nvidia-cdi-refresh.path \
+    nvidia-cdi-refresh.service \
+    nvidia-persistenced.service \
+    mios-nvidia-cdi.service
+do
+    if [[ -f "/usr/lib/systemd/system/${unit}" ]]; then
+        ln -sf "../${unit}" "${WANTS}/${unit}"
+        log "Enabled ${unit}"
+    else
+        warn "${unit} not found, skipping enablement."
+    fi
+done
 
 # Ensure CDI persistent dir exists; tmpfiles.d/mios-gpu.conf creates the runtime dir.
 install -d -m 0755 /etc/cdi

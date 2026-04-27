@@ -1,2 +1,3 @@
 [Volume]
-# MiOS v0.1.1: Persistent storage for CrowdSec Metabase dashboard
+Driver=local
+Label=org.mios.volume.for=crowdsec-dashboard

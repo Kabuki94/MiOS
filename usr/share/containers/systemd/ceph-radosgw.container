@@ -13,6 +13,8 @@ PublishPort=8000:8080
 Volume=/etc/ceph:/etc/ceph:ro
 Volume=/var/lib/ceph:/var/lib/ceph:ro
 Exec=radosgw --cluster ceph --name client.rgw.standalone --setuser ceph --setgroup ceph -f
+Notify=healthy
+HealthCmd=radosgw-admin ping
 
 [Service]
 Restart=on-failure

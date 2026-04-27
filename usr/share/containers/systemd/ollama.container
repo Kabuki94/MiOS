@@ -18,6 +18,9 @@ Volume=/var/lib/ollama:/root/.ollama
 # Pass through NVIDIA devices if present
 # Note: Requires nvidia-container-toolkit in the host (already in PACKAGES.md)
 Annotation=run.oci.keep_original_groups=1
+AutoUpdate=registry
+Notify=healthy
+HealthCmd=ollama --version
 # Limit resources to avoid starving the host
 # Memory=16G
 # CPU=4

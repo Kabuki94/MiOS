@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 # 53-bake-lookingglass-client.sh - git clone Looking Glass B7, cmake/make,
 # install looking-glass-client binary to /usr/bin/. BAKED IN - WHEN POSSIBLE.
 #
@@ -10,8 +10,7 @@
 #     because the binary is already installed by 12-virt.sh; a hard-fail
 #     aborted the whole build for a redundant second build attempt.
 set -euo pipefail
-
-log() { printf '[53-lg-client] %s\n' "$*"; }
+source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 
 # --- If 12-virt.sh already baked it in, declare success and exit -----------
 if [[ -x /usr/bin/looking-glass-client ]]; then
@@ -29,10 +28,10 @@ for tool in cmake make gcc git; do
 done
 
 if [[ -n "$MISSING" ]]; then
-    log "SKIP: missing toolchain: $MISSING"
-    log "      12-virt.sh normally builds Looking Glass and removes cmake/gcc"
-    log "      afterwards. If 12-virt.sh failed, fix it first - the LG build"
-    log "      there is the canonical path."
+    warn "SKIP: missing toolchain: $MISSING"
+    warn "      12-virt.sh normally builds Looking Glass and removes cmake/gcc"
+    warn "      afterwards. If 12-virt.sh failed, fix it first - the LG build"
+    warn "      there is the canonical path."
     exit 0
 fi
 
@@ -44,7 +43,7 @@ log "cloning Looking Glass $LG_BRANCH"
 rm -rf "$BUILD_DIR"
 if ! git clone --depth 1 --branch "$LG_BRANCH" --recurse-submodules \
         https://github.com/gnif/LookingGlass.git "$BUILD_DIR"; then
-    log "SKIP: git clone failed (network or branch issue)"
+    warn "SKIP: git clone failed (network or branch issue)"
     exit 0
 fi
 
@@ -60,13 +59,13 @@ if ! cmake -DCMAKE_INSTALL_PREFIX=/usr \
            -DENABLE_PULSEAUDIO=OFF \
            -DENABLE_BACKTRACE=OFF \
            ..; then
-    log "SKIP: cmake configure failed - check -devel packages"
+    warn "SKIP: cmake configure failed - check -devel packages"
     exit 0
 fi
 
 log "building looking-glass-client (jobs=$(nproc))"
 if ! make -j"$(nproc)"; then
-    log "SKIP: make failed"
+    warn "SKIP: make failed"
     exit 0
 fi
 
@@ -97,7 +96,7 @@ if [[ -x /usr/bin/looking-glass-client ]]; then
     log "OK: looking-glass-client baked in at /usr/bin/looking-glass-client"
     /usr/bin/looking-glass-client --version 2>&1 | head -5 || true
 else
-    log "SKIP: binary missing after install (non-fatal)"
+    warn "SKIP: binary missing after install (non-fatal)"
     exit 0
 fi
 

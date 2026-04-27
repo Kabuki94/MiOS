@@ -383,12 +383,12 @@ if ($DoPull) {
     # Falls back to external RECHUNK_IMAGE if local fails
     & podman run --rm --privileged `
         -v /var/lib/containers/storage:/var/lib/containers/storage `
-        $LocalImage /usr/libexec/bootc-base-imagectl rechunk "containers-storage:$LocalImage" "containers-storage:$LocalImage"
+        $LocalImage /usr/libexec/bootc-base-imagectl rechunk --max-layers 67 "containers-storage:$LocalImage" "containers-storage:$LocalImage"
     if ($LASTEXITCODE -ne 0) {
         Write-Warn "Self-build rechunk failed; falling back to external rechunker"
         & podman run --rm --privileged `
             -v /var/lib/containers/storage:/var/lib/containers/storage `
-            $RechunkImage /usr/libexec/bootc-base-imagectl rechunk "containers-storage:$LocalImage" "containers-storage:$LocalImage"
+            $RechunkImage /usr/libexec/bootc-base-imagectl rechunk --max-layers 67 "containers-storage:$LocalImage" "containers-storage:$LocalImage"
     }
     $ErrorActionPreference = "Stop"
 

@@ -1,0 +1,21 @@
+[Unit]
+Description=CrowdSec Security Engine
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+GlobalArgs=--storage-opt=additionalimagestore=/usr/lib/bootc/storage
+Image=docker.io/crowdsecurity/crowdsec:latest
+ContainerName=crowdsec
+HttpProxy=false
+Volume=/var/lib/crowdsec:/var/lib/crowdsec:Z
+Volume=/etc/crowdsec:/etc/crowdsec:Z
+AutoUpdate=registry
+Notify=healthy
+HealthCmd=cscli metrics
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

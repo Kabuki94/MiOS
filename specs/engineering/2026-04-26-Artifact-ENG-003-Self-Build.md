@@ -19,7 +19,7 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v0.1.1
+> **Source Reference:** MiOS-Core-v0.1.2
 ---
 
 # Self-Build Mode Guide
@@ -33,13 +33,13 @@ MiOS ships all the tools needed to rebuild itself: Podman, Buildah, bootc, and b
 The build chain is:
 
 ```
-MiOS v0.1.1 (running) → builds → MiOS v0.1.1 (OCI image)
+MiOS v0.1.2 (running) → builds → MiOS v0.1.3 (OCI image)
                                         ↓
                                   Rechunk → Sign → Push to GHCR
                                         ↓
-                              MiOS v0.1.1 (running via bootc upgrade)
+                              MiOS v0.1.3 (running via bootc upgrade)
                                         ↓
-                                  builds → MiOS v0.1.1 ...
+                                  builds → MiOS-3 / MiOS-NXT ...
 ```
 
 ## Build Modes
@@ -128,7 +128,7 @@ If you're starting from scratch (no existing MiOS image):
 
 1. Install Podman on any Linux system (Fedora, Ubuntu, etc.) or use Podman Desktop on Windows
 2. Clone the repo and run `podman build` (or `mios-build-local.ps1` on Windows)
-3. The Containerfile pulls `{{MIOS_BASE_IMAGE}}` (MiOS-2 primary, pre-signed NVIDIA kmods) or `quay.io/fedora/fedora-bootc:rawhide` (MiOS-1, akmod-built drivers) as the base — no prior MiOS image needed
+3. The Containerfile pulls `{{MIOS_BASE_IMAGE}}` (MiOS-2 primary, pre-signed NVIDIA kmods via ucore-hci) or `quay.io/fedora/fedora-bootc:rawhide` (MiOS-1, akmod-built drivers) as the base — no prior MiOS image needed. Future MiOS-NXT will evaluate Project Hummingbird minimal bases.
 4. Deploy the resulting image to your target (bare metal via ISO, Hyper-V via VHDX, etc.)
 5. Subsequent builds can use the running MiOS itself (self-build mode)
 

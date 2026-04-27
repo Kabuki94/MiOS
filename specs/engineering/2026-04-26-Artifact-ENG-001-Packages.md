@@ -19,14 +19,20 @@
 > **Proprietor:** Kabu.ki
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to Kabu.ki
-> **Source Reference:** MiOS-Core-v0.1.1
+> **Source Reference:** MiOS-Core-v0.1.2
 ---
 
-# MiOS v0.1.1 — Package Manifest
+# MiOS v0.1.2 — Package Manifest
 
 This file is both documentation and the **single source of truth** for all packages installed in MiOS.
 Build scripts parse the fenced code blocks below using `automation/lib/packages.sh`.
 To add a package, add it to the appropriate section. One package per line.
+
+**CHANGELOG v0.1.2:**
+- Baseline update to v0.1.2 for version consistency
+- Added future roadmap references to MiOS-NXT
+- Prepared for Project Hummingbird minimal base evaluation
+- Added SBOM generation capability planning
 
 **CHANGELOG v0.1.1:**
 - Standardized versioning across the entire stack.

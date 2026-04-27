@@ -22,6 +22,9 @@ PublishPort=8080:8080/tcp
 Environment=PORT=80
 Environment=WEB_PORT=8080
 Restart=always
+AutoUpdate=registry
+Notify=healthy
+HealthCmd=curl -f http://localhost:8080 || exit 1
 
 [Service]
 # Ensure directories exist

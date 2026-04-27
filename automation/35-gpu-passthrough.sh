@@ -12,9 +12,8 @@
 # Runs AFTER 34-gpu-detect.sh and 08-system-files-overlay.sh.
 # ============================================================================
 set -euo pipefail
-IFS=$'\n\t'
+source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 
-log() { printf '[35-gpu-passthrough] %s\n' "$*"; }
 log "Enabling GPU passthrough services"
 
 # ----------------------------------------------------------------------------

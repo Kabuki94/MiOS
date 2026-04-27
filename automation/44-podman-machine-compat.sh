@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 # 44-podman-machine-compat.sh - Podman-machine backend compatibility.
 # Package installs moved to PACKAGES.md (packages-containers, packages-utils).
 # This script only does the runtime config that cannot be expressed as packages:
@@ -11,8 +11,7 @@
 #     ships udev rules that create these groups dynamically at runtime, but
 #     during the image build they're absent.
 set -euo pipefail
-
-log() { printf '[44-podman-machine] %s\n' "$*"; }
+source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 
 log "Hardware groups are pre-created globally by 31-user.sh"
 
@@ -25,10 +24,14 @@ if id -u core >/dev/null 2>&1; then
     passwd -l core 2>/dev/null || true
     log "user 'core' initialized (declarative; key-auth only)"
 else
-    log "WARN: Failed to initialize 'core' user via sysusers"
+    warn "Failed to initialize 'core' user via sysusers"
 fi
 
 # Enable core services for Podman-machine and cloud-init entry
+WANTS=/usr/lib/systemd/system/multi-user.target.wants
+install -d -m 0755 "${WANTS}"
+
+log "Enabling Podman Machine and cloud-init services..."
 for unit in \
     sshd.service \
     podman.socket \
@@ -36,7 +39,12 @@ for unit in \
     cloud-init.service \
     cloud-final.service
 do
-    systemctl enable "$unit" 2>/dev/null || log "WARN: could not enable $unit (not installed?)"
+    if [[ -f "/usr/lib/systemd/system/${unit}" ]]; then
+        ln -sf "../${unit}" "${WANTS}/${unit}"
+        log "Enabled ${unit}"
+    else
+        warn "${unit} not found, skipping enablement."
+    fi
 done
 
 log "podman-machine compatibility wired"

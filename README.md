@@ -16,8 +16,8 @@
     ],
     "impacts": []
   },
-  "last_rag_sync": "2026-04-27T04:47:38.944130",
-  "version": "0.1.1"
+  "last_rag_sync": "2026-04-27T15:03:21.271935",
+  "version": "MiOSv0.1.2"
 }
 ```
 
@@ -30,10 +30,10 @@
 ```json
 {
   "status": "Production Stable",
-  "baseline": "v0.1.1",
+  "baseline": "v0.1.2",
   "kernel": "Fedora Rawhide (OCI-Mode)",
   "build": "just all",
-  "last_sync": "2026-04-27T04:47:38.944130"
+  "last_sync": "2026-04-27T15:03:21.271935"
 }
 ```
 

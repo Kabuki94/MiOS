@@ -1,11 +1,14 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 # 46-greenboot.sh - wire greenboot services; package installs via PACKAGES.md
 # (packages-updater section: greenboot, greenboot-default-health-checks).
 set -euo pipefail
-
-log() { printf '[46-greenboot] %s\n' "$*"; }
+source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 
 # Enable core greenboot services
+WANTS=/usr/lib/systemd/system/multi-user.target.wants
+install -d -m 0755 "${WANTS}"
+
+log "Enabling Greenboot services..."
 for unit in \
     greenboot-healthcheck.service \
     greenboot-rpm-ostree-grub2-check-fallback.service \
@@ -14,7 +17,12 @@ for unit in \
     greenboot-status.service \
     redboot-auto-reboot.service
 do
-    systemctl enable "$unit" 2>/dev/null || log "note: $unit not installed"
+    if [[ -f "/usr/lib/systemd/system/${unit}" ]]; then
+        ln -sf "../${unit}" "${WANTS}/${unit}"
+        log "Enabled ${unit}"
+    else
+        warn "${unit} not installed, skipping enablement."
+    fi
 done
 
 # Make health-check scripts executable (shipped via )

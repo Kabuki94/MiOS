@@ -41,8 +41,6 @@ enable redboot-auto-reboot.service
 enable cockpit.socket
 enable usbguard.service
 enable auditd.service
-enable crowdsec.service
-enable crowdsec-firewall-bouncer.service
 enable nftables.service
 enable mios-mcp.service
 enable redis.service

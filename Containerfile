@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.9
 # ============================================================================
-# MiOS - Unified Image (v0.1.1)
+# MiOS - Unified Image (v0.1.2)
 # ============================================================================
 # One image. Every role. Every surface. Every GPU vendor.
 #
@@ -11,7 +11,7 @@
 # AMD:      Mesa + ROCm in-image (PACKAGES.md packages-gpu-amd-compute)
 # Intel:    intel-compute-runtime + intel-media-driver (packages-gpu-intel-compute)
 #
-# v0.1.1 Architecture: Rootfs-Native Repository
+# v0.1.2 Architecture: Rootfs-Native Repository
 #   - usr/, etc/, var/ directories promoted to the repository root.
 #   - matches upstream bootc and native Linux filesystem standards.
 # ============================================================================
@@ -27,7 +27,7 @@ COPY usr/                  /ctx/usr/
 COPY etc/                  /ctx/etc/
 COPY var/                  /ctx/var/
 COPY home/                 /ctx/home/
-# v0.1.1: PACKAGES.md moved to specs/engineering/ during the artifact reorganization.
+# v0.1.2: PACKAGES.md moved to specs/engineering/ during the artifact reorganization.
 # Re-path the COPY so /ctx/PACKAGES.md (the path packages.sh reads) stays stable.
 COPY specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md   /ctx/PACKAGES.md
 COPY VERSION            /ctx/VERSION
@@ -43,7 +43,7 @@ LABEL org.opencontainers.image.title="MiOS"
 LABEL org.opencontainers.image.description="Unified immutable cloud-native workstation OS (desktop/k3s/ha/hybrid)"
 LABEL org.opencontainers.image.source="https://github.com/Kabuki94/mios"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
-LABEL org.opencontainers.image.version="v0.1.1"
+LABEL org.opencontainers.image.version="v0.1.2"
 LABEL containers.bootc="1"
 LABEL ostree.bootable="1"
 
@@ -74,7 +74,7 @@ RUN podman pull docker.io/postgres:15 || true \
  && podman pull quay.io/ceph/ceph:latest || true
 
  # Install essential security packages
- RUN dnf install -y \
+ RUN dnf install -y --skip-unavailable \
  policycoreutils-python-utils \
  selinux-policy-targeted \
  firewalld \
@@ -88,7 +88,7 @@ RUN podman pull docker.io/postgres:15 || true \
 # ---------------------------------------------------------------------------
 # Overlay rootfs content onto the system.
 # ---------------------------------------------------------------------------
-# MiOS v0.1.1: delegate system_files overlay to the script so the
+# MiOS v0.1.2: delegate system_files overlay to the script so the
 # /usr/local -> /var/usrlocal symlink on ucore/bootc bases is handled correctly.
 RUN bash /ctx/automation/08-system-files-overlay.sh
 
@@ -97,6 +97,7 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     --mount=type=cache,dst=/var/cache/dnf,sharing=locked     \
     set -e; \
     chmod +x /ctx/automation/build.sh /ctx/automation/*.sh 2>/dev/null || true; \
+    chmod +x /usr/libexec/mios/copy-build-log.sh; \
     /ctx/automation/build.sh && \
     /ctx/automation/18-apply-boot-fixes.sh && \
     /ctx/automation/19-k3s-selinux.sh && \
@@ -106,7 +107,8 @@ RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     /ctx/automation/23-uki-render.sh && \
     /ctx/automation/25-firewall-ports.sh && \
     /ctx/automation/26-gnome-remote-desktop.sh && \
-    /ctx/automation/37-ollama-prep.sh
+    /ctx/automation/37-ollama-prep.sh && \
+    /ctx/automation/50-enable-log-copy-service.sh
 
 # Preserve build logs
 RUN mkdir -p /usr/lib/mios/logs \

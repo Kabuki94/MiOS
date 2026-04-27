@@ -26,8 +26,8 @@
       ".windsurfrules"
     ]
   },
-  "last_rag_sync": "2026-04-27T04:47:38.944130",
-  "version": "0.1.1"
+  "last_rag_sync": "2026-04-27T15:03:21.271935",
+  "version": "0.1.2"
 }
 ```
 
@@ -41,6 +41,8 @@ MiOS is a **bootc-based, self-building, immutable workstation OS** on Fedora Raw
 One OCI image covers all hardware roles: desktop, k3s/HA, GPU passthrough (VFIO), WSL2.
 Published at `$MIOS_IMAGE_NAME:latest`. Deployed systems update atomically via `sudo bootc upgrade`.
 Sole proprietor: **Kabu.ki**. Target: AMD Ryzen 9 9950X3D + NVIDIA RTX 4090, hardware-agnostic by design.
+
+**Version History:** MiOS-1 (Fedora bootc + akmod drivers) → MiOS-2/v0.1.x (ucore-hci + pre-signed NVIDIA) → MiOS-NXT (future: Project Hummingbird integration, SBOM generation, minimal variants).
 
 ## 🏗️ Repository Directory Map (Rootfs-Native)
 
@@ -313,8 +315,8 @@ To ensure all Markdown files are machine-parsable and referencable, they must in
       "path/to/impacted/file"
     ]
   },
-  "last_rag_sync": "2026-04-27T04:47:38.944130",
-  "version": "0.1.1"
+  "last_rag_sync": "2026-04-27T15:03:21.271935",
+  "version": "0.1.2"
 }
 ```
 <!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 Kabu.ki -->

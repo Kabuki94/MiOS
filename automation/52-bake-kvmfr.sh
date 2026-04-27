@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 # 52-bake-kvmfr.sh - compile Looking Glass kvmfr kmod against the ucore-hci
 # kernel shipped in the base image, sign it with the ublue MOK, and bake the
 # .ko into /usr/lib/modules/$KVER/extra/kvmfr/.
@@ -22,16 +22,14 @@
 #   Looking Glass still runs IVSHMEM-only without kvmfr.
 set -euo pipefail
 
-log() { printf '[52-kvmfr] %s\n' "$*"; }
-
 # shellcheck source=lib/common.sh
 source "$(dirname "$0")/lib/common.sh"
 
 # --- Detect the kernel version shipped in the base image -------------------
 KVER="$(find /usr/lib/modules/ -mindepth 1 -maxdepth 1 -printf "%f\n" 2>/dev/null | sort -V | tail -1)"
 if [[ -z "$KVER" ]]; then
-    log "WARN: no kernel modules directory; cannot determine kernel version"
-    log "      skipping kvmfr bake - Looking Glass will run in IVSHMEM-only mode"
+    warn "no kernel modules directory; cannot determine kernel version"
+    warn "skipping kvmfr bake - Looking Glass will run in IVSHMEM-only mode"
     exit 0
 fi
 log "building against kernel: $KVER"
@@ -47,14 +45,14 @@ if [[ ! -d "/usr/src/kernels/$KVER" ]]; then
         set +e
         AVAIL="$(rpm -qa 'kernel-devel*' 2>/dev/null | tr '\n' ' ')"
         set -e
-        log "SKIP: no exact kernel-devel for $KVER (dnf rc=$RC; installed: ${AVAIL:-none})"
-        log "      The ucore-hci base kernel $KVER is typically newer/older than"
-        log "      F44's repo-published kernel-devel. Project principle is 'never"
-        log "      upgrade base kernel in-container', so kvmfr is skipped here."
-        log "      Looking Glass still works in IVSHMEM-only mode. To enable kvmfr"
-        log "      on the booted image once the kernel matches, run:"
-        log "         sudo dnf install kernel-devel-\$(uname -r) akmod-kvmfr"
-        log "         sudo akmods --force --kernels \$(uname -r)"
+        warn "SKIP: no exact kernel-devel for $KVER (dnf rc=$RC; installed: ${AVAIL:-none})"
+        warn "      The ucore-hci base kernel $KVER is typically newer/older than"
+        warn "      F44's repo-published kernel-devel. Project principle is 'never"
+        warn "      upgrade base kernel in-container', so kvmfr is skipped here."
+        warn "      Looking Glass still works in IVSHMEM-only mode. To enable kvmfr"
+        warn "      on the booted image once the kernel matches, run:"
+        warn "         sudo dnf install kernel-devel-\$(uname -r) akmod-kvmfr"
+        warn "         sudo akmods --force --kernels \$(uname -r)"
         exit 0
     fi
 fi
@@ -66,8 +64,8 @@ $DNF_BIN "${DNF_SETOPT[@]}" install -y "${DNF_OPTS[@]}" akmod-kvmfr >/dev/null 2
 RC=$?
 set -e
 if [[ $RC -ne 0 ]]; then
-    log "SKIP: akmod-kvmfr install failed (rc=$RC; COPR unreachable or package missing)"
-    log "      verify COPR enabled: dnf5 copr list | grep looking-glass-kvmfr"
+    warn "SKIP: akmod-kvmfr install failed (rc=$RC; COPR unreachable or package missing)"
+    warn "      verify COPR enabled: dnf5 copr list | grep looking-glass-kvmfr"
     exit 0
 fi
 
@@ -78,8 +76,8 @@ akmods --force --kernels "$KVER" 2>&1 | sed 's/^/[akmods] /'
 RC=${PIPESTATUS[0]}
 set -e
 if [[ $RC -ne 0 ]]; then
-    log "SKIP: akmods build failed (rc=$RC)"
-    log "      checking /var/cache/akmods/kvmfr/ for build log..."
+    warn "SKIP: akmods build failed (rc=$RC)"
+    warn "      checking /var/cache/akmods/kvmfr/ for build log..."
     find /var/cache/akmods/ -name '*.log' -exec tail -50 {} \; 2>/dev/null || true
     exit 0
 fi
@@ -90,15 +88,15 @@ if [[ -f "$KMOD_PATH" ]] || [[ -f "${KMOD_PATH}.xz" ]] || [[ -f "${KMOD_PATH}.zs
     log "OK: kvmfr.ko baked in at /usr/lib/modules/$KVER/extra/kvmfr/"
     ls -la "/usr/lib/modules/$KVER/extra/kvmfr/"
 else
-    log "SKIP: kvmfr.ko NOT FOUND after akmods build"
-    log "      listing /usr/lib/modules/$KVER/extra/:"
-    ls -la "/usr/lib/modules/$KVER/extra/" 2>/dev/null || log "  (no extra/ dir)"
+    warn "SKIP: kvmfr.ko NOT FOUND after akmods build"
+    warn "      listing /usr/lib/modules/$KVER/extra/:"
+    ls -la "/usr/lib/modules/$KVER/extra/" 2>/dev/null || warn "  (no extra/ dir)"
     exit 0
 fi
 
 # --- Update module dependencies --------------------------------------------
 log "running depmod -a -b /usr $KVER"
-depmod -a -b /usr "$KVER" || log "WARN: depmod failed (non-fatal)"
+depmod -a -b /usr "$KVER" || warn "depmod failed (non-fatal)"
 
 # --- Sign the module with ublue MOK (if present, for Secure Boot) ----------
 PRIV_KEY="/etc/pki/akmods/private/private_key.priv"
@@ -112,7 +110,7 @@ if [[ -f "$PRIV_KEY" && -f "$PUB_KEY" ]]; then
                 log "  signed: $ko"
         done
     else
-        log "WARN: sign-file script not found at $SIGN_FILE; kvmfr unsigned"
+        warn "sign-file script not found at $SIGN_FILE; kvmfr unsigned"
     fi
 else
     log "NOTE: ublue MOK private key not in image (expected); users enroll MOK"

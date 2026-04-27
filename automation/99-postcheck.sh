@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 # 99-postcheck.sh - build-time technical invariant validation
 # 
 # This script runs at the very end of the Containerfile build (before cleanup).
@@ -6,9 +6,7 @@
 # architectural purity. Failures here ABORT THE BUILD to prevent shipping
 # a regressed or vulnerable image.
 set -euo pipefail
-
-log() { printf '[99-postcheck] %s\n' "$*"; }
-error() { printf '[99-postcheck] ERROR: %s\n' "$*" >&2; exit 1; }
+source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 
 echo "════════════ MiOS Build-Time Validation ════════════"
 
@@ -16,7 +14,7 @@ echo "════════════ MiOS Build-Time Validation ═══�
 # Requirement: ≥ 9.6
 log "Checking OpenSSH version..."
 if ! command -v sshd >/dev/null 2>&1; then
-    error "sshd not found in image (required for Podman-machine & remote mgmt)"
+    die "sshd not found in image (required for Podman-machine & remote mgmt)"
 fi
 
 SSH_VER_RAW=$(sshd -V 2>&1 | head -n1 | grep -oP 'OpenSSH_\K[0-9.]+')
@@ -24,7 +22,7 @@ log "  Found: OpenSSH $SSH_VER_RAW"
 
 # Compare version (simple dot-split comparison)
 if [[ $(printf '%s\n9.6' "$SSH_VER_RAW" | sort -V | head -n1) != "9.6" ]]; then
-    error "OpenSSH version $SSH_VER_RAW is below required 9.6 (Vulnerable to CVE-2026-4631 in Cockpit context)"
+    die "OpenSSH version $SSH_VER_RAW is below required 9.6 (Vulnerable to CVE-2026-4631 in Cockpit context)"
 fi
 log "  ✓ OpenSSH version is safe"
 
@@ -41,7 +39,7 @@ fi
 
 if [[ -f "$COCKPIT_CONF" ]]; then
     if ! grep -q "LoginTo = false" "$COCKPIT_CONF"; then
-        error "Cockpit LoginTo mitigation missing in $COCKPIT_CONF (CVE-2026-4631)"
+        die "Cockpit LoginTo mitigation missing in $COCKPIT_CONF (CVE-2026-4631)"
     fi
     log "  ✓ Cockpit LoginTo = false is enforced"
 else
@@ -64,7 +62,7 @@ log "Verifying critical system binaries..."
 CRITICAL_TOOLS=(podman bootc cockpit-bridge rpm-ostree)
 for tool in "${CRITICAL_TOOLS[@]}"; do
     if ! command -v "$tool" >/dev/null 2>&1; then
-        error "Critical tool '$tool' is missing from the image"
+        die "Critical tool '$tool' is missing from the image"
     fi
     log "  ✓ $tool present"
 done
@@ -75,7 +73,7 @@ if command -v nvidia-ctk >/dev/null 2>&1; then
     NCT_VER=$(nvidia-ctk --version | head -n1 | grep -oP 'version \K[0-9.]+')
     log "  Found: $NCT_VER"
     if [[ $(printf '%s\n1.18' "$NCT_VER" | sort -V | head -n1) != "1.18" ]]; then
-        error "nvidia-container-toolkit version $NCT_VER is below required 1.18"
+        die "nvidia-container-toolkit version $NCT_VER is below required 1.18"
     fi
     log "  ✓ NVIDIA Container Toolkit version is safe"
 fi

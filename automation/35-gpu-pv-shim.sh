@@ -1,13 +1,14 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 # automation/35-gpu-pv-shim.sh - MiOS v0.1.1
 # ----------------------------------------------------------------------------
 # Automates guest-side shimming for Hyper-V GPU-PV (dxgkrnl).
 # Since dxgkrnl isn't mainlined yet, we provide the user-mode hooks
 # to bridge to host drivers mounted via WSL/Hyper-V.
+#
+# v0.1.1: Refactored to use common logging and build-safe symlinks.
 # ----------------------------------------------------------------------------
 set -euo pipefail
-
-log() { echo "[35-gpu-pv-shim] $*"; }
+source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 
 # 1. Create the system-standard mount points for dxgkrnl/WSL hooks
 # These are the locations where Mesa D3D12 and NVIDIA CUDA look for Hyper-V host drivers.
@@ -58,7 +59,11 @@ RemainAfterExit=yes
 WantedBy=multi-user.target
 EOF
 
+# 5. Enable the service using a build-safe symlink
+# See 35-gpu-passthrough.sh for detailed explanation.
 log "Enabling GPU-PV detection service..."
-systemctl enable mios-gpu-pv-detect.service
+WANTS=/usr/lib/systemd/system/multi-user.target.wants
+install -d -m 0755 "${WANTS}"
+ln -sf ../mios-gpu-pv-detect.service "${WANTS}/mios-gpu-pv-detect.service"
 
 log "GPU-PV shim integration complete."

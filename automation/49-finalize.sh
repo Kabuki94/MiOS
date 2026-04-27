@@ -1,8 +1,7 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 # 49-finalize.sh - final cleanup, systemd preset application, image linting
 set -euo pipefail
-
-log() { printf '[49-finalize] %s\n' "$*"; }
+source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 
 # Apply all shipped presets now (so `systemctl is-enabled` reflects intent)
 systemctl preset-all 2>/dev/null || true

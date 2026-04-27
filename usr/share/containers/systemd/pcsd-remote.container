@@ -12,6 +12,9 @@ Privileged=true
 Volume=/etc/corosync:/etc/corosync:Z
 Volume=/etc/pacemaker:/etc/pacemaker:Z
 Label=org.mios.ha.role=pcs-remote
+AutoUpdate=registry
+Notify=healthy
+HealthCmd=crm_mon -1
 
 [Install]
 WantedBy=multi-user.target

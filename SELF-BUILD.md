@@ -31,13 +31,13 @@ MiOS ships all the tools needed to rebuild itself: Podman, Buildah, bootc, and b
 The build chain is:
 
 ```
-MiOS v1.3 (running) → builds → MiOS v1.4 (OCI image)
+MiOS v0.1.2 (running) → builds → MiOS v0.1.3 (OCI image)
                                         ↓
                                   Rechunk → Sign → Push to GHCR
                                         ↓
-                              MiOS v1.4 (running via bootc upgrade)
+                              MiOS v0.1.3 (running via bootc upgrade)
                                         ↓
-                                  builds → MiOS v1.5 ...
+                                  builds → MiOS-NXT ...
 ```
 
 ## Build Modes
@@ -148,6 +148,43 @@ df -h /var/lib/containers
 sudo podman build --no-cache -t test-build . && echo "Self-build: OK"
 sudo podman rmi test-build
 ```
+
+## Build Requirements
+
+| Resource | Minimum | Recommended |
+|----------|---------|-------------|
+| CPU cores | 4 | 8+ |
+| RAM | 8 GB | 16+ GB |
+| Disk (builder) | 100 GB | 250 GB |
+| Network | Required (pulls base image + packages) | Fast connection for RPM downloads |
+
+## Future Considerations: image-builder-cli
+
+The `bootc-image-builder` (BIB) tool is currently used for generating disk images. However, the `image-builder-cli` is an emerging alternative with advantages such as SBOM generation and cross-architecture support.
+
+**Actionable Item:** Evaluate `image-builder-cli` as a potential successor to BIB.
+- **Current Status:** `image-versions.yml` has commented-out entries for `image_builder_cli_digest`, indicating an intention to track this tool.
+- **Next Steps:**
+    1. Uncomment and populate `image_builder_cli_digest` in `image-versions.yml` to enable Renovate Bot for version management.
+    2. Investigate the `ghcr.io/osautomation/image-builder-cli:latest` container image as a potential replacement for the BIB container.
+    3. Compare output formats and build times against current BIB usage.
+    4. Assess its compatibility with MiOS's existing build pipeline and testing infrastructure.
+
+This evaluation should be conducted before considering a full migration.
+
+## Future Considerations: image-builder-cli
+
+The `bootc-image-builder` (BIB) tool is currently used for generating disk images. However, the `image-builder-cli` is an emerging alternative with advantages such as SBOM generation and cross-architecture support.
+
+**Actionable Item:** Evaluate `image-builder-cli` as a potential successor to BIB.
+- **Current Status:** `image-versions.yml` has commented-out entries for `image_builder_cli_digest`, indicating an intention to track this tool.
+- **Next Steps:**
+    1. Uncomment and populate `image_builder_cli_digest` in `image-versions.yml` to enable Renovate Bot for version management.
+    2. Investigate the `ghcr.io/osautomation/image-builder-cli:latest` container image as a potential replacement for the BIB container.
+    3. Compare output formats and build times against current BIB usage.
+    4. Assess its compatibility with MiOS's existing build pipeline and testing infrastructure.
+
+This evaluation should be conducted before considering a full migration.
 
 ## Build Requirements
 

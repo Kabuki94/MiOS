@@ -9,6 +9,8 @@ ContainerName=guacd
 HttpProxy=false
 Network=guacamole.network
 AutoUpdate=registry
+Notify=healthy
+HealthCmd=nc -z localhost 4822
 
 [Service]
 Restart=always
