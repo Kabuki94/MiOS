@@ -1,5 +1,35 @@
 #!/bin/bash
 set -euo pipefail
+JSON_MODE=false
+for arg in "$@"; do
+    if [[ "$arg" == "--json" ]]; then JSON_MODE=true; fi
+done
+
+if [[ "$JSON_MODE" == "true" ]]; then
+    IOMMU="false"
+    if dmesg 2>/dev/null | grep -qi "IOMMU enabled"; then IOMMU="true"; fi
+    
+    MODS=()
+    for mod in vfio vfio_iommu_type1 vfio_pci; do
+        if modprobe -n "$mod" 2>/dev/null; then
+            MODS+=("\"$mod\": true")
+        else
+            MODS+=("\"$mod\": false")
+        fi
+    done
+    MODS_JSON=$(IFS=,; echo "${MODS[*]}")
+    
+    GPUS=()
+    while read -r line; do
+        GPUS+=("\"$line\"")
+    done < <(lspci -nn 2>/dev/null | grep -i nvidia)
+    GPUS_JSON=$(IFS=,; echo "${GPUS[*]}")
+    
+    printf '{"iommu_enabled": %s, "modules": {%s}, "nvidia_gpus": [%s]}\n' \
+        "$IOMMU" "$MODS_JSON" "$GPUS_JSON"
+    exit 0
+fi
+
 echo "MiOS v0.1.1 — VFIO Passthrough Readiness Check"
 echo "════════════════════════════════════════════════"
 echo ""

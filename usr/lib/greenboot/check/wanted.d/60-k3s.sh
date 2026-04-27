@@ -42,4 +42,5 @@ if kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml get nodes --no-headers 2>/dev/
 else
     echo "[mios-greenboot] WARNING: K3s node not yet in Ready state." >&2
     exit 1
-fi
+    fi
+

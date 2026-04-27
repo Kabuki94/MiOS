@@ -1,15 +1,41 @@
 #!/bin/bash
 set -euo pipefail
-if [ -z "${1:-}" ]; then
+JSON_MODE=false
+PCI=""; ACTION="bind"
+
+for arg in "$@"; do
+    case $arg in
+        --json) JSON_MODE=true ;;
+        bind|unbind) ACTION=$arg ;;
+        *) [[ -z "$PCI" ]] && PCI=$arg ;;
+    esac
+done
+
+if [ -z "$PCI" ]; then
+    if [[ "$JSON_MODE" == "true" ]]; then
+        echo '{"error": "missing_pci_slot", "message": "Usage: mios vfio-toggle <PCI_SLOT> [bind|unbind]"}'
+        exit 1
+    fi
     echo "Usage: mios vfio-toggle <PCI_SLOT> [bind|unbind]"
     echo "Example: mios vfio-toggle 0000:01:00.0 bind"
     exit 1
 fi
-PCI="$1"; ACTION="${2:-bind}"
+
+SUCCESS=false
 if [ "$ACTION" = "bind" ]; then
-    echo "$PCI" | sudo tee /sys/bus/pci/drivers/vfio-pci/bind 2>/dev/null || true
-    echo "Bound $PCI to vfio-pci"
+    if echo "$PCI" | sudo tee /sys/bus/pci/drivers/vfio-pci/bind >/dev/null 2>&1; then SUCCESS=true; fi
 else
-    echo "$PCI" | sudo tee /sys/bus/pci/drivers/vfio-pci/unbind 2>/dev/null || true
-    echo "Unbound $PCI from vfio-pci"
+    if echo "$PCI" | sudo tee /sys/bus/pci/drivers/vfio-pci/unbind >/dev/null 2>&1; then SUCCESS=true; fi
+fi
+
+if [[ "$JSON_MODE" == "true" ]]; then
+    printf '{"pci_slot": "%s", "action": "%s", "success": %s}\n' "$PCI" "$ACTION" "$SUCCESS"
+    exit 0
+fi
+
+if [[ "$SUCCESS" == "true" ]]; then
+    if [ "$ACTION" = "bind" ]; then echo "Bound $PCI to vfio-pci"; else echo "Unbound $PCI from vfio-pci"; fi
+else
+    echo "FAILED to $ACTION $PCI"
+    exit 1
 fi

@@ -2231,3 +2231,23 @@ Could add Helm's official baltorepo as section 9 for belt-and-suspenders. Reject
     4. **Workspace Optimization:** Performed emergency pruning of `agents/deep-search/` (`.venv` and `node_modules`) to resolve a "No space left on device" failure during agent initialization. Freed ~1GB on the `/home` partition.
     5. **Synchronization:** Re-executed `automation/ai-bootstrap.sh` ensuring all manifests and the RAG snapshot are synchronized.
 *   **RESULT:** Repository historical knowledge is now flattened into a 448-node semantic UKB. Architecture is fully AI-parseable and workspace integrity is restored.
+
+### [2026-04-27 04:45:00 UTC] [AI: Gemini CLI]
+*   **ACTION:** Removed redundant "MiOS-OS" and "Cloud Native Operating System" naming globally.
+*   **ACTION:** Updated `tools/standardize-docs.py` and performed a global regex purge across all project files.
+*   **RESULT:** Branding standardized to "MiOS".
+
+### [2026-04-27 05:00:00 UTC] [AI: Gemini CLI]
+*   **TYPE:** AI TOOL INTERFACE & CORRECTNESS
+*   **ACTION:** Fixed defect in `usr/lib/greenboot/check/wanted.d/60-k3s.sh`; now correctly exits with 1 on failure to trigger greenboot warnings.
+*   **ACTION:** Refactored `usr/bin/mios-vfio-check` and `usr/bin/mios-vfio-toggle` to support machine-readable `--json` output.
+*   **ACTION:** Updated `/.well-known/ai-tools.json` to v1.1.0, exposing VFIO management tools to the Programmable AI Interface.
+*   **RESULT:** Enhanced MiOS observability for AI agents and corrected advisory health check signals.
+
+### [2026-04-27 04:55:00 UTC] [AI: Gemini CLI]
+*   **TYPE:** BUILD FIX — GITHUB ACTIONS SYNC
+*   **THOUGHT:** Investigated GitHub Actions build failure where `home/` and `var/` directories were missing from the build context.
+*   **DISCOVERY:** The directories were empty (or contained only empty subdirectories) and thus not tracked by git, causing the `COPY` instructions in the `Containerfile` to fail.
+*   **ACTION:** Created \`.gitkeep\` files in \`home/mios/Documents/\`, \`home/mios/.config/\`, \`home/mios/.local/{bin,share,state}/\`, \`var/lib/mios/\`, and \`var/log/mios/\` to force git tracking.
+*   **RESULT:** Build context integrity restored for remote runners; \`home/\` and \`var/\` directories are now correctly found during the Docker build \`COPY\` stage.
+

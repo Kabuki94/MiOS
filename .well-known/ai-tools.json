@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "tools": [
     {
       "type": "function",
@@ -38,6 +38,50 @@
               "default": true
             }
           }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mios_vfio_check",
+        "description": "Check system readiness for VFIO GPU passthrough, including IOMMU status and module availability.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "json": {
+              "type": "boolean",
+              "description": "Return output in machine-readable JSON format.",
+              "default": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mios_vfio_toggle",
+        "description": "Dynamically bind or unbind a PCIe device to the vfio-pci driver for VM passthrough.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "json": {
+              "type": "boolean",
+              "description": "Return output in machine-readable JSON format.",
+              "default": true
+            },
+            "pci_slot": {
+              "type": "string",
+              "description": "The PCI address of the device (e.g., 0000:01:00.0)."
+            },
+            "action": {
+              "type": "string",
+              "enum": ["bind", "unbind"],
+              "description": "The action to perform."
+            }
+          },
+          "required": ["pci_slot", "action"]
         }
       }
     }
