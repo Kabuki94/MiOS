@@ -4,24 +4,16 @@
 # and BEFORE any service that references the user.
 set -euo pipefail
 
-# Warning reporting helper
-report_warn() {
-    local msg="$1"
-    echo "[31-user] WARNING: $msg"
-    if [[ -n "${MIOS_BUILD_STATE:-}" ]]; then
-        touch "${MIOS_BUILD_STATE}/$(basename "$0").warn"
-    fi
-}
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/lib/common.sh"
 
-echo "----------------------?"
-echo "  MiOS v0.1.3 - User & Authentication"
-echo "----------------------?"
+log "User & Authentication Configuration"
 
 # - PAM FIX -
-echo "[31-user] Configuring PAM via authselect..."
+log "Configuring PAM via authselect..."
 if command -v authselect &>/dev/null; then
     authselect select local --force 2>/dev/null || {
-        report_warn "authselect failed - using system_files overlay fallback"
+        warn "authselect failed - using system_files overlay fallback"
     }
 fi
 
@@ -32,7 +24,7 @@ C_USER="mios" # @track:USER_ADMIN
 # Note: MIOS_PASSWORD_HASH should be a SHA-512 crypt-style hash
 C_HASH="${MIOS_PASSWORD_HASH:-}"
 
-echo "[31-user] Creating user ${C_USER} via sysusers..."
+log "Creating user ${C_USER} via sysusers..."
 if [[ "${C_USER}" != "mios" ]]; then
     # Generate dynamic sysusers for custom username
     cat <<EOF > /usr/lib/sysusers.d/15-mios-custom.conf
@@ -51,10 +43,12 @@ fi
 # Apply sysusers declarative config
 systemd-sysusers --root=/ 2>/dev/null || true
 
+# Validate user creation
 if getent passwd "${C_USER}" >/dev/null; then
+    log "User ${C_USER} created successfully"
     home=$(getent passwd "${C_USER}" | cut -d: -f6)
     if [ ! -d "$home" ]; then
-        echo "[31-user] Creating home directory for ${C_USER} from /etc/skel..."
+        log "Creating home directory for ${C_USER} from /etc/skel..."
         mkdir -p "$home"
         cp -a /etc/skel/. "$home/"
     fi
@@ -64,7 +58,7 @@ if getent passwd "${C_USER}" >/dev/null; then
     # Pattern: /ctx/etc/mios/dotfiles/ (mapped from $XDG_CONFIG_HOME/mios/dotfiles/)
     DOTFILE_SRC="/ctx/etc/mios/dotfiles"
     if [[ -d "$DOTFILE_SRC" ]]; then
-        echo "[31-user] Injecting user-space dotfiles into ${home}..."
+        log "Injecting user-space dotfiles into ${home}..."
         # Copy files removing the .user suffix if present
         for f in "${DOTFILE_SRC}"/.*; do
             [[ -f "$f" ]] || continue
@@ -80,7 +74,7 @@ if getent passwd "${C_USER}" >/dev/null; then
     fi
     passwd -u "${C_USER}" 2>/dev/null || true
 else
-    echo "[31-user] ERROR: Failed to create user ${C_USER}"
+    die "Failed to create user ${C_USER}"
 fi
 
 # - GROUP INJECTION -
@@ -102,7 +96,7 @@ localedef -i en_US -f UTF-8 en_US.UTF-8 2>/dev/null || true
 # Managed via usr/lib/multipath.conf
 
 # - FIX HOME DIRECTORY OWNERSHIP -
-echo "[31-user] Fixing home directory ownership..."
+log "Fixing home directory ownership..."
 awk -F: '$3 >= 1000 && $3 < 65000 {print $1}' /etc/passwd | while read -r u; do
     home=$(getent passwd "$u" | cut -d: -f6)
     if [ -d "$home" ]; then
@@ -114,4 +108,4 @@ done
 # - NFS STATE DIRECTORY -
 # Managed via usr/lib/tmpfiles.d/mios-nfs.conf
 
-echo "[31-user] User & authentication configured."
+log "User & authentication configured successfully"

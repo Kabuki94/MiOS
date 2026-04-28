@@ -10,9 +10,10 @@
 #   - Improved: Bare-metal vs VM vs WSL2 service gating
 set -euo pipefail
 
-echo "==================================================================="
-echo "  MiOS v0.1.3  Service Configuration"
-echo "==================================================================="
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/lib/common.sh"
+
+log "Service Configuration"
 
 # --- Fix systemd unit file permissions ----------------------------------------
 # Container builds sometimes leave bad perms from COPY operations.
@@ -24,7 +25,7 @@ for unit_file in \
 ; do
     [ -f "$unit_file" ] && chmod 644 "$unit_file"
 done
-echo "[20-services] Fixed systemd unit file permissions"
+log "Fixed systemd unit file permissions"
 
 # --- Service Configuration Note ----------------------------------------------
 # CORE and OPTIONAL services are now primarily managed via:
@@ -33,7 +34,7 @@ echo "[20-services] Fixed systemd unit file permissions"
 
 # --- WSL2 & Container Service Gating -----------------------------------------
 # These services skip OCI/WSL2 via drop-ins in system_files overlay.
-echo "[20-services] WSL2/Container skip drop-ins active via overlay"
+log "WSL2/Container skip drop-ins active via overlay"
 
 # --- nvidia-powerd: skip in ALL VMs (no physical NVIDIA GPU) -----------------
 # Drop-in handled via overlay.
@@ -41,4 +42,4 @@ echo "[20-services] WSL2/Container skip drop-ins active via overlay"
 # --- TuneD: set throughput-performance profile ------------------------------
 tuned-adm profile throughput-performance 2>/dev/null || true
 
-echo "[20-services] Service configuration baseline complete. v1.4"
+log "Service configuration baseline complete"
