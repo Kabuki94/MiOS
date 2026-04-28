@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "project": {
     "name": "MiOS",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "type": "bootc-immutable-os",
     "description": "Unified immutable cloud-native workstation OS (desktop/k3s/ha/hybrid)",
     "repository": "https://github.com/Kabuki94/MiOS-bootstrap",

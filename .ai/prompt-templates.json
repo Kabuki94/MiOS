@@ -132,7 +132,7 @@
 
   "metadata": {
     "generated": "2026-04-28T03:49:00Z",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "compatibility": [
       "OpenAI Chat Completions API",
       "Ollama API",

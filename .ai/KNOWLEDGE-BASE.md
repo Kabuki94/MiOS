@@ -10,7 +10,7 @@
 ## Project Identity
 
 **Name:** MiOS (Immutable Cloud-Native Workstation OS)
-**Version:** v0.1.3
+**Version:** v0.1.4
 **Type:** bootc-based container-to-OS system
 **Base:** Fedora Rawhide + ucore-hci (Universal Blue CoreOS)
 **Architecture:** Rootfs-native, FHS 3.0 compliant
@@ -253,7 +253,7 @@ Stage 2: main (FROM ${BASE_IMAGE})
 31-user.sh               # User creation & authentication
 34-gpu-detect.sh         # GPU detection (bare metal vs VM)
 35-gpu-passthrough.sh    # VFIO setup
-37-ai-agnostic.sh        # AI environment configuration
+37-ai-agnostic.sh        # AI environment configuration (MOVED to ai-tools/automation/ai-agnostic.sh)
 40-composefs-verity.sh   # Integrity verification
 42-cosign-policy.sh      # Image verification
 46-greenboot.sh          # Atomic rollback

@@ -9,7 +9,7 @@ schema: openai-compatible
 # ============================================================================
 project:
   name: MiOS
-  version: 0.1.3
+  version: 0.1.4
   type: bootc-immutable-os
   description: Unified immutable cloud-native workstation OS
   repository: https://github.com/Kabuki94/MiOS-bootstrap
@@ -269,7 +269,7 @@ indexing:
 # ============================================================================
 vector_store:
   backend: chromadb  # or faiss, qdrant, weaviate
-  collection_name: mios-knowledge-v0.1.3
+  collection_name: mios-knowledge-v0.1.4
   distance_metric: cosine
   persist_directory: .ai/vector-store
 

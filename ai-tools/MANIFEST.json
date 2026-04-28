@@ -1,0 +1,222 @@
+{
+  "name": "MiOS AI Development Tools",
+  "version": "0.1.4",
+  "type": "ai-development-environment",
+  "created": "2026-04-28",
+  "description": "AI development tools, agents, and RAG artifacts for MiOS - separate from OS infrastructure",
+  "separation_purpose": "FHS 3.0 compliant separation of AI development tools from MiOS system scripts",
+  "foss_ai_apis": {
+    "priority_order": [
+      "Ollama",
+      "llama.cpp",
+      "LocalAI",
+      "vLLM"
+    ],
+    "protocol": "OpenAI v1 Compatible"
+  },
+  "structure": {
+    "bin": {
+      "path": "ai-tools/bin/",
+      "purpose": "AI tool executables",
+      "files": [
+        {
+          "name": "generate-ai-manifest",
+          "type": "python",
+          "purpose": "Generate AI manifest files",
+          "executable": true,
+          "source": "tools/generate-ai-manifest.py"
+        }
+      ]
+    },
+    "lib": {
+      "path": "ai-tools/lib/",
+      "purpose": "AI libraries and dependencies",
+      "subdirectories": {
+        "python": {
+          "path": "ai-tools/lib/python/",
+          "purpose": "Python AI libraries"
+        }
+      }
+    },
+    "automation": {
+      "path": "ai-tools/automation/",
+      "purpose": "AI automation scripts (NOT in OS image)",
+      "scripts": [
+        {
+          "name": "ai-agnostic.sh",
+          "purpose": "Vendor-neutral AI environment configuration",
+          "original_location": "automation/37-ai-agnostic.sh",
+          "supports": ["Ollama", "llama.cpp", "LocalAI", "vLLM"]
+        },
+        {
+          "name": "ollama-prep.sh",
+          "purpose": "Ollama-specific setup and model management",
+          "original_location": "automation/37-ollama-prep.sh",
+          "models": ["llama3.1:8b", "codellama:13b", "nomic-embed-text"]
+        },
+        {
+          "name": "aichat-setup.sh",
+          "purpose": "aichat CLI installation and configuration",
+          "original_location": "automation/37-aichat.sh"
+        },
+        {
+          "name": "ai-bootstrap.sh",
+          "purpose": "Complete AI environment initialization",
+          "original_location": "automation/ai-bootstrap.sh"
+        }
+      ]
+    },
+    "agents": {
+      "path": "ai-tools/agents/",
+      "purpose": "AI agents for research and automation",
+      "agents": [
+        {
+          "name": "research",
+          "path": "ai-tools/agents/research/",
+          "type": "vertex-ai-integration",
+          "purpose": "Multi-model AI research and analysis",
+          "original_location": "agents/research/",
+          "language": "python",
+          "dependencies": "requirements.txt"
+        }
+      ]
+    },
+    "rag": {
+      "path": "ai-tools/rag/",
+      "purpose": "RAG (Retrieval-Augmented Generation) artifacts",
+      "subdirectories": {
+        "snapshots": {
+          "path": "ai-tools/rag/snapshots/",
+          "purpose": "Compressed RAG knowledge archives",
+          "formats": [".tar.gz", ".tar.xz"],
+          "compression": {
+            "gz": "gzip",
+            "xz": "LZMA2 (37% better than gz)"
+          }
+        },
+        "manifests": {
+          "path": "ai-tools/rag/manifests/",
+          "purpose": "RAG configuration and metadata",
+          "files": [
+            "rag-manifest.yaml",
+            "script-inventory.json"
+          ]
+        },
+        "knowledge-graphs": {
+          "path": "ai-tools/rag/knowledge-graphs/",
+          "purpose": "Knowledge graph representations",
+          "files": [
+            "mios-knowledge-graph.json"
+          ]
+        }
+      }
+    }
+  },
+  "migration": {
+    "date": "2026-04-28",
+    "from_locations": [
+      "automation/37-ai-agnostic.sh",
+      "automation/37-ollama-prep.sh",
+      "automation/37-aichat.sh",
+      "automation/ai-bootstrap.sh",
+      "agents/research/",
+      "artifacts/ai-rag/",
+      "tools/generate-ai-manifest.py"
+    ],
+    "to_locations": [
+      "ai-tools/automation/ai-agnostic.sh",
+      "ai-tools/automation/ollama-prep.sh",
+      "ai-tools/automation/aichat-setup.sh",
+      "ai-tools/automation/ai-bootstrap.sh",
+      "ai-tools/agents/research/",
+      "ai-tools/rag/",
+      "ai-tools/bin/generate-ai-manifest"
+    ],
+    "reason": "FHS 3.0 compliance - separate AI development tools from MiOS system scripts"
+  },
+  "relationship_to_mios": {
+    "mios_system": {
+      "scope": "Operating System infrastructure",
+      "paths": [
+        "automation/00-*.sh through 90-*.sh (excluding 37-ai-*)",
+        "usr/bin/mios*",
+        "etc/mios/",
+        "var/lib/mios/"
+      ],
+      "in_os_image": true
+    },
+    "ai_tools": {
+      "scope": "AI development environment",
+      "paths": [
+        "ai-tools/"
+      ],
+      "in_os_image": false,
+      "usage": "Development and build time only"
+    },
+    "ai_knowledge": {
+      "scope": "AI knowledge base (config only)",
+      "paths": [
+        ".ai/"
+      ],
+      "in_os_image": false,
+      "contains_executables": false,
+      "purpose": "Knowledge, prompts, and configuration - NO executable scripts"
+    }
+  },
+  "fhs_compliance": {
+    "standard": "FHS 3.0",
+    "compliant": true,
+    "separation_achieved": true,
+    "principles": [
+      "AI tools NOT in OS image",
+      "Clear separation of concerns",
+      "MiOS system = OS infrastructure only",
+      "AI tools = Development concern only"
+    ]
+  },
+  "openai_compatibility": {
+    "protocol_version": "OpenAI v1",
+    "compatible_apis": [
+      "Ollama",
+      "llama.cpp",
+      "LocalAI",
+      "vLLM",
+      "OpenAI (official)"
+    ],
+    "endpoint_format": "http://localhost:PORT/v1/chat/completions",
+    "request_format": "OpenAI standard JSON",
+    "vendor_neutral": true
+  },
+  "statistics": {
+    "total_scripts": 4,
+    "total_agents": 1,
+    "total_rag_snapshots": 7,
+    "total_knowledge_graphs": 1,
+    "supported_foss_apis": 4,
+    "directory_structure_depth": 3
+  },
+  "documentation": {
+    "readme": "ai-tools/README.md",
+    "manifest": "ai-tools/MANIFEST.json",
+    "separation_design": "docs/AI-MIOS-SEPARATION-DESIGN.md",
+    "ai_knowledge_base": ".ai/KNOWLEDGE-BASE.md",
+    "ai_system_prompt": ".ai/system-prompt.md"
+  },
+  "best_practices": [
+    "Use FOSS AI APIs first (Ollama > llama.cpp > LocalAI > vLLM)",
+    "Keep AI tools separate from MiOS system scripts",
+    "Use OpenAI-compatible protocols only",
+    "Version control RAG snapshots (prefer .tar.xz)",
+    "Do NOT add ai-tools/ to Containerfile",
+    "Do NOT put executable scripts in .ai/"
+  ],
+  "prohibited": [
+    "Adding ai-tools/ scripts to Containerfile",
+    "Putting executable scripts in .ai/",
+    "Mixing AI tools with MiOS system scripts",
+    "Using proprietary AI APIs",
+    "Committing large RAG snapshots uncompressed"
+  ],
+  "license": "Personal Property (MiOS-DEV)",
+  "repository": "https://github.com/Kabuki94/MiOS-bootstrap"
+}

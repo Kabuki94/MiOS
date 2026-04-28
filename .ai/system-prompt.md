@@ -245,10 +245,10 @@ cat INDEX.md AI-KNOWLEDGE-CONSOLIDATED.md HISTORICAL-KNOWLEDGE-COMPRESSED.md
 curl https://github.com/Kabuki94/MiOS-bootstrap/wiki/Home
 
 # 3. Load knowledge graph
-cat artifacts/ai-rag/mios-knowledge-graph.json
+cat ai-tools/rag/mios-knowledge-graph.json
 
 # 4. Review RAG manifest
-cat artifacts/ai-rag/rag-manifest.yaml
+cat ai-tools/rag/rag-manifest.yaml
 
 # 5. Bootstrap AI environment
 ./automation/ai-bootstrap.sh

@@ -466,7 +466,7 @@ export MIOS_EMBEDDING_MODEL="all-MiniLM-L6-v2"
 **Old Files → New Files:**
 
 - `ai-context.json` → `.ai/context.json` (enhanced)
-- `artifacts/ai-rag/rag-manifest.yaml` → `.ai/rag-config.yaml` (enhanced)
+- `ai-tools/rag/rag-manifest.yaml` → `.ai/rag-config.yaml` (enhanced)
 - `.well-known/ai-tools.json` → `.ai/tools.json` (enhanced with OpenAPI schema)
 - `INDEX.md` + `AI-KNOWLEDGE-CONSOLIDATED.md` → `.ai/knowledge.txt` (flattened)
 - Various AI prompts → `.ai/prompt-templates.json` (consolidated)
