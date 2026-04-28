@@ -41,31 +41,58 @@
 
 ## [START] Quick Deployment - Linux Filesystem Native
 
-MiOS deploys as a **native Linux application** on minimal Fedora Server:
+MiOS deploys as a **native Linux application** on minimal Fedora Server using the **automated bootstrap script**:
+
+### One-Liner Installation (Recommended)
+
+```bash
+# Fedora Server bootstrap - clones, installs, configures, and builds
+curl -fsSL https://raw.githubusercontent.com/Kabuki94/MiOS-bootstrap/main/build-mios.sh | sudo bash
+```
+
+**What it does:**
+1. ✅ Clones repository from GitHub
+2. ✅ Installs to FHS directories (merge-only, no deletions)
+3. ✅ **Prompts for user configuration** (interactive)
+   - Username (default: mios)
+   - Password (SHA-512 hashed)
+   - Hostname (default: mios)
+   - Base image selection (NVIDIA/No NVIDIA/Minimal/Custom)
+   - Flatpak applications
+   - AI configuration (optional)
+4. ✅ **Automatically initializes user-space** (no separate command needed)
+   - Creates user accounts with full group memberships (wheel, libvirt, kvm, video, render, docker)
+   - Sets up XDG-compliant directories (~/.config/mios, ~/.local/share/mios, ~/.cache/mios)
+   - Creates configuration files (env.toml, images.toml, build.toml, flatpaks.list, ai.env)
+   - Initializes Python virtual environment (~/.local/share/mios/venv)
+   - Sets up dotfiles directory (~/.config/mios/dotfiles/)
+   - Creates credentials directory with .gitignore (~/.config/mios/credentials/)
+5. ✅ Optionally builds MiOS OCI image
+
+### Manual Installation
 
 ```bash
 # 1. Clone repository
 git clone https://github.com/Kabuki94/MiOS-bootstrap.git
 cd mios
 
-# 2. Install to system directories (FHS-compliant)
-sudo ./install.sh
-
-# 3. Initialize user-space configuration
-mios init-user-space
-
-# 4. Build MiOS image
-mios build
+# 2. Run bootstrap installer (handles everything)
+sudo ./build-mios.sh
 ```
+
+**Note:** `build-mios.sh` is the **automated entry script** that integrates `install.sh` and user-space initialization. No separate `mios init-user-space` command is needed.
 
 **Installs to:**
 - `/usr/share/mios/` - Application data (scripts, templates, source)
+- `/usr/bin/mios*` - Command binaries
+- `/usr/libexec/mios*` - Internal executables
 - `/etc/mios/` - System configuration templates
 - `/var/lib/mios/` - Build artifacts and snapshots
 - `/var/log/mios/` - Build logs
 - `~/.config/mios/` - User configuration (XDG-compliant)
+- `/etc/skel/` - User skeleton files
 
-** See:** [DEPLOY.md](DEPLOY.md) for complete deployment guide
+**See:** [DEPLOY.md](DEPLOY.md) for complete deployment guide
 
 ---
 

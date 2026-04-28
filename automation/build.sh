@@ -35,9 +35,9 @@ render_status_card() {
     local current="$2"
     local total="$3"
     
-    local ok_count=$(ls "$STATE_DIR"/*.ok 2>/dev/null | wc -l)
-    local warn_count=$(ls "$STATE_DIR"/*.warn 2>/dev/null | wc -l)
-    local fail_count=$(ls "$STATE_DIR"/*.fail 2>/dev/null | wc -l)
+    local ok_count=$(find "$STATE_DIR" -maxdepth 1 -name "*.ok" 2>/dev/null | wc -l)
+    local warn_count=$(find "$STATE_DIR" -maxdepth 1 -name "*.warn" 2>/dev/null | wc -l)
+    local fail_count=$(find "$STATE_DIR" -maxdepth 1 -name "*.fail" 2>/dev/null | wc -l)
 
     {
         echo ""
@@ -138,11 +138,11 @@ echo "  Version:    ${VERSION_STR}"
 echo "  Duration:   ${MIN}m ${SEC}s"
 echo "  Steps:      ${ITER} executed"
 
-FAIL_COUNT=$(ls "$STATE_DIR"/*.fail 2>/dev/null | wc -l)
+FAIL_COUNT=$(find "$STATE_DIR" -maxdepth 1 -name "*.fail" 2>/dev/null | wc -l)
 if [[ $FAIL_COUNT -eq 0 ]]; then
 echo "  Status:     COMPLETE [OK]"
 else
-FAIL_LIST=$(ls "$STATE_DIR"/*.fail 2>/dev/null | xargs -n1 basename | sed 's/\.fail//' | tr '\n' ' ')
+FAIL_LIST=$(find "$STATE_DIR" -maxdepth 1 -name "*.fail" 2>/dev/null | xargs -n1 basename | sed 's/\.fail//' | tr '\n' ' ')
 echo "  Failures:   ${FAIL_LIST}"
 echo "  Status:     FAILED [FAIL]"
 fi

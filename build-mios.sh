@@ -387,7 +387,7 @@ merge_mios_structure() {
 }
 
 # ============================================================================
-# Create User Account
+# Create User Account & Initialize User-Space
 # ============================================================================
 create_user_account() {
     log_info "Creating user account: ${MIOS_USERNAME}..."
@@ -397,7 +397,7 @@ create_user_account() {
         echo "${MIOS_USERNAME}:${MIOS_PASSWORD}" | chpasswd
     else
         # Create user with password hash
-        useradd -m -G wheel -s /bin/bash "$MIOS_USERNAME"
+        useradd -m -G wheel,libvirt,kvm,video,render,input,dialout,docker -s /bin/bash "$MIOS_USERNAME"
         echo "${MIOS_USERNAME}:${MIOS_PASSWORD}" | chpasswd
 
         # Set up sudo access
@@ -405,12 +405,59 @@ create_user_account() {
         chmod 0440 "/etc/sudoers.d/${MIOS_USERNAME}"
     fi
 
-    # Copy environment files to user's home
-    if [[ -d "$MIOS_USER_CONFIG_DIR" ]]; then
-        chown -R "${MIOS_USERNAME}:${MIOS_USERNAME}" "$(dirname "$MIOS_USER_CONFIG_DIR")"
+    log_info "Initializing user-space directories and configuration..."
+
+    # XDG Base Directory variables
+    MIOS_USER_DATA_DIR="${MIOS_USER_HOME}/.local/share/mios"
+    MIOS_USER_CACHE_DIR="${MIOS_USER_HOME}/.cache/mios"
+    MIOS_USER_STATE_DIR="${MIOS_USER_HOME}/.local/state/mios"
+
+    # Create XDG directory structure
+    mkdir -p "${MIOS_USER_CONFIG_DIR}/credentials/ssh-keys"
+    mkdir -p "${MIOS_USER_DATA_DIR}/artifacts"
+    mkdir -p "${MIOS_USER_DATA_DIR}/images"
+    mkdir -p "${MIOS_USER_DATA_DIR}/templates"
+    mkdir -p "${MIOS_USER_DATA_DIR}/plugins"
+    mkdir -p "${MIOS_USER_CACHE_DIR}/podman"
+    mkdir -p "${MIOS_USER_CACHE_DIR}/downloads"
+    mkdir -p "${MIOS_USER_CACHE_DIR}/build-cache"
+    mkdir -p "${MIOS_USER_STATE_DIR}/logs"
+
+    # Setup dotfiles directory for build-time injection
+    mkdir -p "${MIOS_USER_CONFIG_DIR}/dotfiles"
+    if [[ ! -f "${MIOS_USER_CONFIG_DIR}/dotfiles/.bashrc.user" ]]; then
+        cat > "${MIOS_USER_CONFIG_DIR}/dotfiles/.bashrc.user" <<'DOTFILE_EOF'
+# MiOS User-Space .bashrc extension
+# This file is injected into the image during build-time.
+alias ll='ls -alF'
+alias mios-status='mios assess'
+export EDITOR=vim
+DOTFILE_EOF
     fi
 
-    log "User account configured successfully"
+    # Create credentials .gitignore
+    cat > "${MIOS_USER_CONFIG_DIR}/credentials/.gitignore" <<'GITIGNORE_EOF'
+# MiOS Credentials - Ignore Everything
+# This directory should NEVER be committed to version control
+
+*
+!.gitignore
+!README.md
+GITIGNORE_EOF
+
+    # Initialize Python virtual environment
+    if command -v python3 &>/dev/null; then
+        if [[ ! -d "${MIOS_USER_DATA_DIR}/venv" ]]; then
+            python3 -m venv "${MIOS_USER_DATA_DIR}/venv" 2>/dev/null || log_warn "Failed to create Python venv"
+        fi
+    fi
+
+    # Copy environment files to user's home and fix ownership
+    chown -R "${MIOS_USERNAME}:${MIOS_USERNAME}" "${MIOS_USER_HOME}/.config" 2>/dev/null || true
+    chown -R "${MIOS_USERNAME}:${MIOS_USERNAME}" "${MIOS_USER_HOME}/.local" 2>/dev/null || true
+    chown -R "${MIOS_USERNAME}:${MIOS_USERNAME}" "${MIOS_USER_HOME}/.cache" 2>/dev/null || true
+
+    log "User account and user-space configured successfully"
 }
 
 # ============================================================================
@@ -506,7 +553,9 @@ Configuration:
 
 Installation Details:
   ✓ MiOS structure merged to system root (FHS-compliant)
-  ✓ User environment files created
+  ✓ User account created with full permissions
+  ✓ User-space initialized (XDG directories, configs, dotfiles)
+  ✓ Python virtual environment created
   ✓ System configuration installed
   ✓ Build files installed to /usr/share/mios
 
@@ -521,11 +570,11 @@ Next Steps:
   3. Check system status:
      mios status
 
-  4. Initialize user space:
-     mios init
-
-  5. View available commands:
+  4. View available commands:
      mios --help
+
+  5. Customize your configuration:
+     \$EDITOR ~/.config/mios/env.toml
 
 Documentation:
   - Installation log: ${MIOS_INSTALL_LOG}

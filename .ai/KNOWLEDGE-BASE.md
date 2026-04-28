@@ -172,18 +172,46 @@ These are **absolute** - violations cause build failures or runtime issues:
 
 ### Entry Points
 
-1. **`just build`** (Recommended)
+1. **`build-mios.sh`** (PRIMARY - Fedora Server Bootstrap)
+   - **ONE-LINER:** `curl -fsSL https://raw.githubusercontent.com/Kabuki94/MiOS-bootstrap/main/build-mios.sh | sudo bash`
+   - **What it does:**
+     - Clones repository from GitHub
+     - Installs to FHS directories (merge-only, no deletions)
+     - **Prompts for user configuration** (interactive):
+       - Username (default: mios)
+       - Password (SHA-512 hashed)
+       - Hostname
+       - Base image selection
+       - Flatpak applications
+       - AI configuration (model, endpoint, API key)
+     - **Fully automated user-space initialization:**
+       - Creates Linux user accounts with full group memberships (wheel, libvirt, kvm, video, render, docker)
+       - Sets up XDG-compliant directories (~/.config/mios, ~/.local/share/mios, ~/.cache/mios, ~/.local/state/mios)
+       - Creates configuration files (env.toml, images.toml, build.toml, flatpaks.list, ai.env)
+       - Initializes Python virtual environment (~/.local/share/mios/venv)
+       - Sets up dotfiles directory for build-time injection (~/.config/mios/dotfiles/)
+       - Creates credentials directory with .gitignore (~/.config/mios/credentials/)
+       - Sets correct ownership for all user files
+     - Optionally builds OCI image
+   - **Note:** This is the **COMPLETE automated entry script** - no separate `mios init-user-space` needed
+   - Output: Fully configured system with user-space initialized + optionally `localhost/mios:latest`
+
+2. **`just build`** (Developer workflow)
    - Runs artifact refresh, preflight checks, podman build
+   - Assumes repository already cloned
+   - Requires user-space already configured (use `just init-user-space` if needed)
    - Output: `localhost/mios:latest`
 
-2. **`mios build`** (Native command)
+3. **`mios build`** (Native command - post-installation)
+   - Available after `build-mios.sh` or `install.sh` has run
    - Syncs source, changes to `/usr/src/mios/`, runs build
+   - User-space already initialized by `build-mios.sh`
+   - Output: `localhost/mios:latest`
 
-3. **`build-mios.sh`** (Fedora Server ignition)
-   - Fetches repo, prompts for config, merges to FHS locations, builds
-
-4. **Direct podman build**
+4. **Direct podman build** (Advanced)
    - `podman build --no-cache -t localhost/mios:latest .`
+   - Requires manual configuration
+   - Assumes repository present and configured
 
 ### Containerfile Stages
 
@@ -236,18 +264,66 @@ Stage 2: main (FROM ${BASE_IMAGE})
 
 ### Build-Time Variables
 
+**Note:** `build-mios.sh` automatically prompts for and sets these variables during bootstrap.
+
 ```bash
 # Containerfile ARG (passed via --build-arg)
-MIOS_USER=mios
-MIOS_PASSWORD_HASH=   # SHA-512 hash
-MIOS_HOSTNAME=mios
-MIOS_FLATPAKS=        # Comma-separated app IDs
+# build-mios.sh prompts for these and generates them automatically
+MIOS_USER=mios                # Prompted: "Enter username (default: mios)"
+MIOS_PASSWORD_HASH=...        # Prompted: "Enter password" → SHA-512 hashed automatically
+MIOS_HOSTNAME=mios            # Prompted: "Enter hostname (default: mios)"
+MIOS_FLATPAKS=                # Prompted: "Flatpak applications (comma-separated)"
 
 # User-Editable (~/.config/mios/*.toml)
-MIOS_BASE_IMAGE=ghcr.io/ublue-os/ucore-hci:stable-nvidia
+# build-mios.sh creates these files automatically based on prompts
+MIOS_BASE_IMAGE=ghcr.io/ublue-os/ucore-hci:stable-nvidia  # Prompted: Base image selection (1-4)
 MIOS_IMAGE_NAME=ghcr.io/kabuki94/mios:latest
 MIOS_BIB_IMAGE=quay.io/centos-bootc/bootc-image-builder:latest
+
+# AI Configuration (Optional)
+# build-mios.sh prompts: "Configure AI integration? (y/n)"
+MIOS_AI_ENDPOINT=http://localhost:11434  # Prompted if AI enabled
+MIOS_AI_MODEL=llama3.1:8b                # Prompted if AI enabled
+MIOS_AI_API_KEY=                         # Prompted if AI enabled (stored in ~/.config/mios/ai.env mode 600)
 ```
+
+### User-Space Initialization (Automated by build-mios.sh)
+
+**`build-mios.sh` automatically handles all user-space setup:**
+
+1. **User Account Creation**
+   - Prompts for username (default: mios)
+   - Prompts for password (SHA-512 hashed, confirmed)
+   - Creates user via `systemd-sysusers`
+   - Adds to required groups (wheel, libvirt, kvm, video, etc.)
+
+2. **Home Directory Setup**
+   - Creates `/var/home/${USER}` (FHS-compliant)
+   - Copies from `/etc/skel/` (populated from repo `home/`)
+   - Sets correct ownership and permissions
+
+3. **Configuration Files**
+   - Creates `~/.config/mios/env.toml` (user environment)
+   - Creates `~/.config/mios/images.toml` (image configuration)
+   - Creates `~/.config/mios/build.toml` (build configuration)
+   - Creates `~/.config/mios/flatpaks.list` (flatpak app IDs)
+   - Creates `~/.config/mios/ai.env` (AI secrets, mode 600)
+
+4. **Dotfiles Injection**
+   - If build context includes `/ctx/etc/mios/dotfiles/`, copies to home
+   - Removes `.user` suffix from dotfile names
+   - Sets up user-specific shell configuration
+
+5. **Environment Variables**
+   - Queues env/venv setup based on user inputs
+   - All settings stored in XDG-compliant locations
+
+6. **Credentials Storage**
+   - Passwords stored as SHA-512 hashes only
+   - API keys stored in mode 600 files
+   - No plaintext credentials in logs or configs
+
+**No separate `mios init-user-space` command needed** - it's fully integrated into `build-mios.sh`.
 
 ---
 
@@ -1002,8 +1078,9 @@ ollama pull llama3.1:8b       # Download model
 ### Environment Setup
 
 ```bash
-# User space initialization
-mios init-user-space
+# User space is automatically initialized by build-mios.sh
+# For manual initialization (if needed), use:
+# just init-user-space
 
 # Load environment
 source /usr/share/mios/tools/load-user-env.sh
