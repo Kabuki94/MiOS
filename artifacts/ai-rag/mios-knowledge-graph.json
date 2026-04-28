@@ -101,5 +101,37 @@
     "k3s": "SELinux policies, automated install via automation/13-ceph-k3s.sh",
     "vfio": "GPU passthrough for VMs, 34-gpu-detect.sh gates NVIDIA on bare metal",
     "flatpak": "Desktop apps isolation, install list in .env.mios"
+  },
+
+  "historical_context": {
+    "episodic_memory": "var/lib/mios/memory/journal/v1.jsonl (JSONL, API-native)",
+    "compressed_history": "HISTORICAL-KNOWLEDGE-COMPRESSED.md (2457 lines → condensed)",
+    "key_events": [
+      "2026-04-27: Linux FS Native implementation (99.95% compression)",
+      "2026-04-27: WSL2 hardening (systemd ordering, journald, locale)",
+      "2026-04-28: Global Variable Registry (@track: system)",
+      "2026-04-28: Emoji removal (167 Unicode → ASCII mappings)"
+    ],
+    "critical_decisions": [
+      "OSTree backend (not composefs-native) for rollback capability",
+      "FOSS AI API agnostic (Ollama, llama.cpp, LocalAI, vLLM)",
+      "XZ primary compression (37% better than GZ)",
+      "Wiki as live documentation (auto-sync on builds)",
+      "Cosign v2.x pin (v3 breaks bootc)",
+      "FHS 3.0 compliance (100% verified)"
+    ],
+    "research_artifacts": {
+      "audit_2026_04": "1604 lines (bootc, ucore-hci, NVIDIA, security)",
+      "research_plan": "251 lines (actionable items from upstream)",
+      "work_plan": "164 lines (immediate priorities + roadmap)",
+      "changelog_v0.1.1": "149 lines (major changes summary)"
+    },
+    "lessons_learned": [
+      "Pipefail pitfalls with ls/glob in strict bash",
+      "Unicode rendering issues across terminals",
+      "Secret masking requires special char escaping",
+      "composefs-native immature (no rollback as of v1.15.x)",
+      "WSL2 requires specific systemd hardening"
+    ]
   }
 }
