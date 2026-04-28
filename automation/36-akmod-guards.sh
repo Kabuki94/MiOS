@@ -45,7 +45,7 @@ for svc in "${SERVICES[@]}"; do
 #  grep sees \. (literal-dot escape). Plain \\. triggered SC "unknown
 # escape sequence" [WARN]s in systemd 259+ and could mis-match.
 [Service]
-ExecCondition=/bin/bash -c 'grep -Eq "(^|/)nvidia\\.ko(\\.[xz]z|\\.zst)?:" /lib/modules/$(uname -r)/modules.dep'
+ExecCondition=/bin/bash -c 'grep -Eq "(^|/)nvidia\\.ko(\\.[xz]z|\\.zst)?:" /usr/lib/modules/$(uname -r)/modules.dep'
 EOF
     chmod 0644 "${path}"
     count=$((count + 1))

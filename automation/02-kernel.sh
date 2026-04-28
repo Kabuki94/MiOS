@@ -25,6 +25,10 @@ install_packages_strict "kernel"
 # Capture KVER for akmod builds later.
 # The base image kernel is the only one installed; grab it.
 KVER=$(find /usr/lib/modules/ -mindepth 1 -maxdepth 1 -printf "%f\n" | sort -V | tail -1) # Explicitly use /usr
+if [[ -z "$KVER" ]]; then
+    echo "[02-kernel] FATAL: Could not detect kernel version in /usr/lib/modules/"
+    exit 1
+fi
 export KVER
 echo "[02-kernel] Kernel version: $KVER"
 echo "$KVER" > /tmp/mios-kver

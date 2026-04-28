@@ -1,13 +1,5 @@
 #!/bin/bash
 # MiOS v0.1.3  12-virt: Virtualization, containers, orchestration, gaming
-#
-# CHANGELOG v1.3:
-#   - Looking Glass B7: MOVED to 53-bake-lookingglass-client.sh (refactored out)
-#   - KVMFR module: MOVED to 52-bake-kvmfr.sh (refactored out)
-#   - K3s: MOVED to 13-ceph-k3s.sh (no longer duplicated here)
-#   - CrowdSec: Updated sovereign mode config (RE2 regex engine default)
-#   - Added Podman quadlet example for CrowdSec
-#   - VirtIO-Win ISO: Updated URL pattern
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
@@ -40,9 +32,6 @@ install_packages "security"
 
 # Sovereign mode: disable Central API, use local-only decisions
 if [ -d /etc/crowdsec ]; then
-    # acquis.d/journalctl.yaml managed via  overlay
-
-    # Disable online API for sovereign operation
     if [ -f /etc/crowdsec/config.yaml ]; then
         sed -i 's/^online_client:/# online_client:/' /etc/crowdsec/config.yaml 2>/dev/null || true
     fi
@@ -54,11 +43,10 @@ echo "[12-virt] Installing Windows interop tools..."
 install_packages "wintools"
 
 # -- Gaming (Steam, Wine, Gamescope) -----------------------------------------
-# NOTE: steam-devices and udev-joystick-blacklist-rm (terra weak dep of
-# gamescope-session-steam) both ship the same udev rules file. Exclude it.
 echo "[12-virt] Installing gaming packages..."
 GAMING_PKGS=$(get_packages "gaming")
 if [[ -n "$GAMING_PKGS" ]]; then
+    # steam-devices and udev-joystick-blacklist-rm conflict on some rules files
     ($DNF_BIN "${DNF_SETOPT[@]}" install -y "${DNF_OPTS[@]}" --skip-unavailable --exclude=udev-joystick-blacklist-rm $GAMING_PKGS) || {
         echo "[12-virt] WARNING: Some gaming packages failed to install" >&2
     }
@@ -88,11 +76,9 @@ install_packages "android"
 echo "[12-virt] Downloading VirtIO-Win ISO..."
 VIRTIO_URL="https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso"
 mkdir -p /usr/share/mios/virtio
-scurl -sL "$VIRTIO_URL" -o /usr/share/mios/virtio/virtio-win.iso 2>/dev/null || {
-    echo "[12-virt] WARNING: VirtIO-Win ISO download failed  download manually later"
+# Use --fail to ensure we catch 404s, but don't exit script on failure
+curl -sL --fail "$VIRTIO_URL" -o /usr/share/mios/virtio/virtio-win.iso || {
+    echo "[12-virt] WARNING: VirtIO-Win ISO download failed."
 }
 
-# Symlink the immutable ISO into /var/lib/libvirt/images via tmpfiles.d so it survives upgrades
-# Managed via usr/lib/tmpfiles.d/mios-virtio.conf
-
-echo "[12-virt] Virtualization stack complete. (LG: refactored to 53-lg; K3s: refactored to 13-ceph-k3s)"
+echo "[12-virt] Virtualization stack complete."

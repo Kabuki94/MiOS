@@ -94,14 +94,14 @@ echo "[01-repos] Ensuring F44 ca-certificates is installed..."
 $DNF_BIN "${DNF_SETOPT[@]}" install -y ca-certificates p11-kit-trust 2>&1 | tail -5 || true
 
 # -- RPMFusion ---------------------------------------------------------------
-echo "[01-repos] Installing RPMFusion Free + Nonfree for Fedora 44..."
+echo "[01-repos] Installing RPMFusion Free + Nonfree for Fedora Rawhide/44..."
 $DNF_BIN "${DNF_SETOPT[@]}" install -y \
-    "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-44.noarch.rpm" \
-    "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-44.noarch.rpm" \
+    "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-rawhide.noarch.rpm" \
+    "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-rawhide.noarch.rpm" \
     2>&1 | tail -15 || true
 
 
-for repo in rpmfusion-free rpmfusion-free-updates rpmfusion-nonfree rpmfusion-nonfree-updates; do
+for repo in rpmfusion-free rpmfusion-free-updates rpmfusion-free-rawhide rpmfusion-nonfree rpmfusion-nonfree-updates rpmfusion-nonfree-rawhide; do
     if [ -f "/etc/yum.repos.d/${repo}.repo" ]; then
         if ! grep -q '^priority=' "/etc/yum.repos.d/${repo}.repo"; then
             sed -i '/^\['"$repo"'\]/a priority=90' "/etc/yum.repos.d/${repo}.repo"
