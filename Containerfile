@@ -74,15 +74,15 @@ RUN podman pull docker.io/postgres:15 || true \
 
  # Install essential security packages
  RUN dnf install -y --skip-unavailable \
- policycoreutils-python-utils \
- selinux-policy-targeted \
- firewalld \
- audit \
- fapolicyd \
- crowdsec \
- usbguard \
- kernel-devel \
- && dnf clean all
+     policycoreutils-python-utils \
+     selinux-policy-targeted \
+     firewalld \
+     audit \
+     fapolicyd \
+     crowdsec \
+     usbguard \
+     kernel-devel \
+  && dnf clean all
 
 # ---------------------------------------------------------------------------
 # Overlay rootfs content onto the system.

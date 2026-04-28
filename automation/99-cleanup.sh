@@ -27,6 +27,10 @@ rm -rf /var/tmp/* /var/log/* 2>/dev/null || true
 # Clean /var/lib excluding critical paths if any (mostly dnf/rpm-ostree cache)
 find /var/cache/* -maxdepth 0 -type d \! -name libdnf5 \! -name rpm-ostree -exec rm -fr {} \; 2>/dev/null || true
 
+# MiOS v0.1.3: Clean /var/home to satisfy bootc lint. 
+# It will be repopulated at runtime via usr/lib/tmpfiles.d/mios-var-hygiene.conf
+rm -rf /var/home/* 2>/dev/null || true
+
 # 3. Lint-specific cleanup: remove files that trigger bootc container lint [WARN]s
 echo "[99-cleanup] Cleaning lint triggers..."
 rm -f /var/log/lastlog /var/log/dnf5.log* 2>/dev/null || true
@@ -37,6 +41,13 @@ rm -rf /var/lib/glusterd 2>/dev/null || true
 rm -f /var/lib/containers/storage/db.sql 2>/dev/null || true
 rm -f /var/lib/flatpak/.changed 2>/dev/null || true
 rm -rf /var/lib/flatpak/repo/tmp/* 2>/dev/null || true
+
+# SELinux build-residue cleanup
+rm -f /var/lib/selinux/targeted/semanage.read.LOCK 2>/dev/null || true
+rm -f /var/lib/selinux/targeted/semanage.trans.LOCK 2>/dev/null || true
+rm -f /var/lib/selinux/targeted/active/policy.kern 2>/dev/null || true
+rm -f /var/lib/selinux/targeted/active/users_extra 2>/dev/null || true
+rm -f /var/lib/selinux/targeted/active/file_contexts.homedirs 2>/dev/null || true
 
 # 4. Restore system skeleton via systemd-tmpfiles
 # This ensures all /var and /tmp directories exist with correct metadata.

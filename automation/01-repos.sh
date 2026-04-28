@@ -4,7 +4,7 @@
 # FIX v0.1.3: Two-phase distro-sync to handle filesystem scriptlet failure.
 # The filesystem package's lua %posttrans fails in container builds, aborting
 # the entire 1162-package transaction. Without this fix, the system boots with
-# F43 core libs but F44 desktop packages  a broken ABI mismatch.
+# F43 core libs but F44 desktop packages: a broken ABI mismatch.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"

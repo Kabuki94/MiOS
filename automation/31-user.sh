@@ -47,24 +47,25 @@ systemd-sysusers --root=/ 2>/dev/null || true
 if getent passwd "${C_USER}" >/dev/null; then
     log "User ${C_USER} created successfully"
     home=$(getent passwd "${C_USER}" | cut -d: -f6)
-    if [ ! -d "$home" ]; then
-        log "Creating home directory for ${C_USER} from /etc/skel..."
-        mkdir -p "$home"
-        cp -a /etc/skel/. "$home/"
-    fi
 
+    # -- SKELETON POPULATION --
+    # Instead of populating /var/home directly (which violates bootc lint),
+    # we populate /etc/skel. systemd-tmpfiles will then initialize the home
+    # directory at runtime from this template.
+    
     # -- USER-SPACE DOTFILE INJECTION --
     # Injects personal dotfiles from the build context if provided.
     # Pattern: /ctx/etc/mios/dotfiles/ (mapped from $XDG_CONFIG_HOME/mios/dotfiles/)
     DOTFILE_SRC="/ctx/etc/mios/dotfiles"
     if [[ -d "$DOTFILE_SRC" ]]; then
-        log "Injecting user-space dotfiles into ${home}..."
+        log "Injecting user-space dotfiles into /etc/skel..."
         # Copy files removing the .user suffix if present
         for f in "${DOTFILE_SRC}"/.*; do
             [[ -f "$f" ]] || continue
             basename=$(basename "$f")
+            [[ "$basename" == "." || "$basename" == ".." ]] && continue
             target_name="${basename%.user}"
-            cp -v "$f" "${home}/${target_name}"
+            cp -v "$f" "/etc/skel/${target_name}"
         done
     fi
 
