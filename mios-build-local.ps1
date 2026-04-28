@@ -24,25 +24,80 @@
 $ErrorActionPreference = "Stop"
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  UI HELPERS
+#  UI HELPERS & MASKING ENGINE
 # ══════════════════════════════════════════════════════════════════════════════
 $BuildAudit = @()
-function Write-Banner { param([string]$T) $w=78; Write-Host "`n$("═"*$w)" -ForegroundColor Cyan; Write-Host ("  $T") -ForegroundColor Cyan; Write-Host "$("═"*$w)`n" -ForegroundColor Cyan }
+$Global:MiOS_MaskList = @()
+
+function Register-Secret {
+    param([string]$S)
+    if ([string]::IsNullOrWhiteSpace($S) -or $S.Length -lt 4) { return }
+    if ($Global:MiOS_MaskList -notcontains $S) {
+        $Global:MiOS_MaskList += $S
+    }
+}
+
+function Format-Masked {
+    param([string]$InputString)
+    if ([string]::IsNullOrWhiteSpace($InputString)) { return $InputString }
+    $out = $InputString
+    foreach ($secret in $Global:MiOS_MaskList) {
+        # Escape for regex and replace case-insensitively
+        $pattern = [regex]::Escape($secret)
+        $out = $out -ireplace $pattern, "********"
+    }
+    return $out
+}
+
+function Write-Banner { 
+    param([string]$T) 
+    $w=78; 
+    $maskedT = Format-Masked $T
+    Write-Host "`n$("═"*$w)" -ForegroundColor Cyan; 
+    Write-Host ("  $maskedT") -ForegroundColor Cyan; 
+    Write-Host "$("═"*$w)`n" -ForegroundColor Cyan 
+}
+
 function Write-Phase { 
     param([string]$N,[string]$L) 
-    Write-Host "`n  [$N] $L" -ForegroundColor Yellow; Write-Host "  $("─"*70)" -ForegroundColor DarkGray 
-    $script:BuildAudit += "PHASE ${N}: ${L}"
-    # Enable PowerShell Native Progress Bar
+    $maskedL = Format-Masked $L
+    Write-Host "`n  [$N] $maskedL" -ForegroundColor Yellow; 
+    Write-Host "  $("─"*70)" -ForegroundColor DarkGray 
+    $script:BuildAudit += "PHASE ${N}: ${maskedL}"
     try {
-        $percent = [int]($N) * 20 # 5 phases = 20% each
-        Write-Progress -Activity "MiOS Build ${Version}" -Status "Phase ${N}: ${L}" -PercentComplete $percent
+        $percent = [int]($N) * 20
+        Write-Progress -Activity "MiOS Build ${Version}" -Status "Phase ${N}: ${maskedL}" -PercentComplete $percent
     } catch {}
 }
 
-function Write-Step  { param([string]$M) Write-Host "      » $M" -ForegroundColor DarkCyan }
-function Write-OK    { param([string]$M) Write-Host "      ✓ $M" -ForegroundColor Green; $script:BuildAudit += "  [OK] $M" }
-function Write-Warn  { param([string]$M) Write-Host "      ⚠ $M" -ForegroundColor Yellow; $script:BuildAudit += "  [WARN] $M" }
-function Write-Fatal { param([string]$M) Write-Host "`n  ✗ FATAL: $M" -ForegroundColor Red; $script:BuildAudit += "  [FAIL] $M"; Show-StatusCard; exit 1 }
+function Write-Step  { 
+    param([string]$M) 
+    $maskedM = Format-Masked $M
+    Write-Host "      » $maskedM" -ForegroundColor DarkCyan 
+}
+
+function Write-OK { 
+    param([string]$M) 
+    $maskedM = Format-Masked $M
+    Write-Host "      ✓ $maskedM" -ForegroundColor Green; 
+    $script:BuildAudit += "  [OK] $maskedM" 
+}
+
+function Write-Warn { 
+    param([string]$M) 
+    $maskedM = Format-Masked $M
+    Write-Host "      ⚠ $maskedM" -ForegroundColor Yellow; 
+    $script:BuildAudit += "  [WARN] $maskedM" 
+}
+
+function Write-Fatal { 
+    param([string]$M) 
+    $maskedM = Format-Masked $M
+    Write-Host "`n  ✗ FATAL: $maskedM" -ForegroundColor Red; 
+    $script:BuildAudit += "  [FAIL] $maskedM"; 
+    Show-StatusCard; 
+    exit 1 
+}
 
 function Show-StatusCard {
     $w = 78
@@ -53,13 +108,21 @@ function Show-StatusCard {
     Write-Host "  Status:   $([DateTime]::UtcNow.ToString('yyyy-MM-dd HH:mm:ss')) UTC"
     Write-Host "  Audit Log:"
     foreach ($line in $script:BuildAudit) {
-        if ($line -match "FAIL") { Write-Host "    $line" -ForegroundColor Red }
-        elseif ($line -match "WARN") { Write-Host "    $line" -ForegroundColor Yellow }
-        elseif ($line -match "PHASE") { Write-Host "    $line" -ForegroundColor Cyan }
-        else { Write-Host "    $line" -ForegroundColor Gray }
+        # Audit log entries are already masked during collection, but double-check here
+        $maskedLine = Format-Masked $line
+        if ($maskedLine -match "FAIL") { Write-Host "    $maskedLine" -ForegroundColor Red }
+        elseif ($maskedLine -match "WARN") { Write-Host "    $maskedLine" -ForegroundColor Yellow }
+        elseif ($maskedLine -match "PHASE") { Write-Host "    $maskedLine" -ForegroundColor Cyan }
+        else { Write-Host "    $maskedLine" -ForegroundColor Gray }
     }
     Write-Host "╚$($("═"*($w-2)))╝`n" -ForegroundColor Cyan
 }
+
+# ── Register initial secrets from environment (if present) ──
+@("MIOS_PASSWORD", "GHCR_TOKEN", "MIOS_GHCR_PUSH_TOKEN", "MIOS_PASSWORD_HASH") | ForEach-Object {
+    if ($env:$_) { Register-Secret $env:$_ }
+}
+
 function Get-FileSize { param([string]$P) if(!(Test-Path $P)){return "N/A"} $s=(Get-Item $P).Length; if($s -gt 1GB){"$([math]::Round($s/1GB,2)) GB"}else{"$([math]::Round($s/1MB,2)) MB"} }
 
 function Read-Timed {
@@ -78,12 +141,12 @@ function Read-Timed {
             if ($PSVersionTable.PSVersion.Major -ge 7) {
                 $buf = Read-Host -MaskInput
             } else {
-                # Windows PowerShell 5.1 fallback (no -MaskInput parameter)
                 $sec  = Read-Host -AsSecureString
                 $bstr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($sec)
                 try   { $buf = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr) }
                 finally { [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
             }
+            if ($buf) { Register-Secret $buf }
         } else {
             $buf = Read-Host
         }
@@ -149,8 +212,8 @@ if (Test-Path ".env.mios") {
 $v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "v0.1.1" }
 $ImageName      = if ($env:MIOS_IMAGE_NAME) { ($env:MIOS_IMAGE_NAME -split '/')[-1] -replace ':.*$','' } else { "mios" }
 $ImageTag       = "latest"
-$DefUser        = if ($env:MIOS_DEFAULT_USER) { $env:MIOS_DEFAULT_USER } else { "mios" }
-$DefPass        = if ($env:MIOS_DEFAULT_USER_PASSWORD) { $env:MIOS_DEFAULT_USER_PASSWORD } else { "mios" }
+$DefUser        = if ($env:MIOS_USER) { $env:MIOS_USER } elseif ($env:MIOS_DEFAULT_USER) { $env:MIOS_DEFAULT_USER } else { "mios" }
+$DefPass        = if ($env:MIOS_PASSWORD) { $env:MIOS_PASSWORD } elseif ($env:MIOS_DEFAULT_USER_PASSWORD) { $env:MIOS_DEFAULT_USER_PASSWORD } else { "mios" }
 $DefHostname    = if ($env:MIOS_HOSTNAME) { $env:MIOS_HOSTNAME } else { "mios" }
 $DefRegistry    = if ($env:MIOS_IMAGE_NAME) { $env:MIOS_IMAGE_NAME -replace ':.*$','' } else { "ghcr.io/kabuki94/mios" }
 $BibImage       = if ($env:MIOS_BIB_IMAGE) { $env:MIOS_BIB_IMAGE } else { "quay.io/centos-bootc/bootc-image-builder:latest" }
@@ -179,16 +242,21 @@ $FallbackConvert = "docker.io/library/alpine:latest"
 # ══════════════════════════════════════════════════════════════════════════════
 Write-Banner "MiOS v$Version — MiOS Builder"
 
-Write-Host "  Select build workflow:" -ForegroundColor White
-Write-Host ""
-Write-Host "    1) Local Build Only     — Build image, generate targets, NO registry push" -ForegroundColor Cyan
-Write-Host "    2) Build + Push         — Full pipeline: build → targets → push to registry" -ForegroundColor Cyan
-Write-Host "    3) Custom Build         — Custom user/pass/hostname/registry/token" -ForegroundColor Cyan
-Write-Host "    4) Pull + Deploy Only   — Pull existing image from registry, generate targets" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "  Choice [1-4]: " -NoNewline -ForegroundColor Yellow
-$workflow = Read-Host
-if ([string]::IsNullOrWhiteSpace($workflow)) { $workflow = "1" }
+$workflow = $env:MIOS_WORKFLOW
+if ([string]::IsNullOrWhiteSpace($workflow)) {
+    Write-Host "  Select build workflow:" -ForegroundColor White
+    Write-Host ""
+    Write-Host "    1) Local Build Only     — Build image, generate targets, NO registry push" -ForegroundColor Cyan
+    Write-Host "    2) Build + Push         — Full pipeline: build → targets → push to registry" -ForegroundColor Cyan
+    Write-Host "    3) Custom Build         — Custom user/pass/hostname/registry/token" -ForegroundColor Cyan
+    Write-Host "    4) Pull + Deploy Only   — Pull existing image from registry, generate targets" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "  Choice [1-4] (default 1): " -NoNewline -ForegroundColor Yellow
+    $workflow = Read-Host
+    if ([string]::IsNullOrWhiteSpace($workflow)) { $workflow = "1" }
+} else {
+    Write-OK "Workflow inherited from environment: $workflow"
+}
 
 $DoPush       = $false
 $DoCustom     = $false
@@ -226,11 +294,19 @@ if ($DoCustom) {
 } else {
     $U = $DefUser
     $P = $DefPass
-    $HostIn = "mios"
+    $HostIn = $DefHostname
     $UseLuks = $false
     $LuksPass = ""
     $RegistryUrl = $DefRegistry
-    $SelectedTargets = 1..4
+    
+    # Target selection inheritance
+    if ($env:MIOS_TARGETS) {
+        if ($env:MIOS_TARGETS -eq "none") { $SelectedTargets = @() }
+        elseif ($env:MIOS_TARGETS -eq "all") { $SelectedTargets = 1..4 }
+        else { $SelectedTargets = $env:MIOS_TARGETS -split ',' | ForEach-Object { [int]$_.Trim() } }
+    } else {
+        $SelectedTargets = 1..4
+    }
 }
 
 $GhcrImage = "${RegistryUrl}:${ImageTag}"
@@ -243,6 +319,7 @@ if ($DoPush -or $DoPull) {
     # Try environment variables first (CI/CD friendly)
     $RegistryUser  = $env:MIOS_GHCR_USER
     $RegistryToken = if ($env:MIOS_GHCR_TOKEN) { $env:MIOS_GHCR_TOKEN } else { $env:GHCR_TOKEN }
+    if ($RegistryToken) { Register-Secret $RegistryToken }
 
     if (-not $RegistryUser) {
         $RegistryUser = Read-Timed "Registry username:" "kabuki94"
@@ -590,129 +667,150 @@ if ($SelectedTargets -contains 4) {
 Remove-Item (Join-Path $OutputFolder ".luks-tmp") -Force -ErrorAction SilentlyContinue
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  PHASE 3b: AUTO-DEPLOY (Hyper-V + WSL2)
+#  PHASE 3b: DEPLOYMENT (Hyper-V + WSL2)
 # ══════════════════════════════════════════════════════════════════════════════
-Write-Phase "3b" "Auto-Deploy to Hyper-V + WSL2"
+if ($env:MIOS_SKIP_DEPLOY -eq "1") {
+    Write-OK "Deployment phase skipped (MIOS_SKIP_DEPLOY=1)"
+} else {
+    Write-Phase "3b" "Deployment (Hyper-V + WSL2)"
 
-# Hyper-V
-if (Test-Path $TargetVhdx) {
-    $ErrorActionPreference = "Continue"
-    $vmName = "MiOS"
-    try {
-        Write-Step "Deploying to Hyper-V..."
-        Remove-VM -Name $vmName -Force -ErrorAction SilentlyContinue
-        $vmSwitchObj = Get-VMSwitch | Where-Object SwitchType -eq "External" | Select-Object -First 1
-        $vmSwitch = if ($vmSwitchObj) { $vmSwitchObj.Name } else { "Default Switch" }
-        $vmCpu = $cpu
-        $totalRamBytes = (Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory
-        $vmRamRaw = [int64]($totalRamBytes * 0.8)
-        $vmRam = [int64]([Math]::Floor($vmRamRaw / 2MB) * 2MB)  # Align to 2MB (Hyper-V requirement)
-        $vmRamGB = [Math]::Floor($vmRam / 1GB)
-        $minRam = [Math]::Min(16GB, [int64]([Math]::Floor($totalRamBytes * 0.5 / 2MB) * 2MB))
-        if ($totalRamBytes -lt 16GB) { $minRam = [int64]([Math]::Floor($totalRamBytes * 0.5 / 2MB) * 2MB) }
-        else { $minRam = 16GB }
-
-        New-VM -Name $vmName -MemoryStartupBytes $minRam -Generation 2 -VHDPath $TargetVhdx -SwitchName $vmSwitch | Out-Null
-        Set-VM -Name $vmName -ProcessorCount $vmCpu -DynamicMemory -MemoryMinimumBytes $minRam -MemoryMaximumBytes $vmRam -MemoryStartupBytes $minRam
-        Set-VMFirmware -VMName $vmName -SecureBootTemplate "MicrosoftUEFICertificateAuthority"
-        Write-OK "Hyper-V VM '$vmName' created (CPUs: $vmCpu | RAM: ${vmRamGB}GB max, 16GB min/startup, dynamic)"
-
-        # Start VM and wait for POST
-        Write-Step "Starting VM..."
-        try {
-            Start-VM -Name $vmName
-            Write-OK "VM starting — waiting for heartbeat..."
-        } catch {
-            Write-Warn "Start-VM failed: $($_.Exception.Message)"
-            Write-Warn "Try starting manually: Start-VM -Name '$vmName'"
-            Write-Step "Applying Enhanced Session (HvSocket) anyway..."
-            Set-VM -Name $vmName -EnhancedSessionTransportType HvSocket
-            Write-OK "Enhanced Session configured. Start VM manually."
+    # Hyper-V
+    if (Test-Path $TargetVhdx) {
+        $ErrorActionPreference = "Continue"
+        $vmName = "MiOS"
+        $doDeploy = $true
+        if ($env:MIOS_FORCE_DEPLOY -ne "1") {
+            $ans = Read-Timed "Deploy/Update Hyper-V VM '$vmName'? (y/N)" "N"
+            $doDeploy = $ans -match "^[yY]"
         }
 
-        # Wait for VM to fully POST (Hyper-V heartbeat integration service)
-        $timeout = 120
-        $elapsed = 0
-        while ($elapsed -lt $timeout) {
-            $hb = (Get-VMIntegrationService -VMName $vmName | Where-Object Name -eq "Heartbeat").PrimaryStatusDescription
-            if ($hb -eq "OK") { break }
-            Start-Sleep 5
-            $elapsed += 5
-            Write-Host "      » Waiting for POST... (${elapsed}s)" -ForegroundColor DarkGray
+        if ($doDeploy) {
+            try {
+                Write-Step "Preparing Hyper-V VM..."
+                if (Get-VM -Name $vmName -ErrorAction SilentlyContinue) {
+                    Write-Warn "VM '$vmName' already exists. This will OVERWRITE it."
+                    $ans = "Y"
+                    if ($env:MIOS_FORCE_DEPLOY -ne "1") {
+                        $ans = Read-Timed "Confirm OVERWRITE of '$vmName'? (y/N)" "N"
+                    }
+                    if ($ans -match "^[yY]") {
+                        Stop-VM -Name $vmName -Force -ErrorAction SilentlyContinue
+                        Remove-VM -Name $vmName -Force
+                    } else {
+                        Write-Warn "Overwrite cancelled. Skipping Hyper-V deployment."
+                        $doDeploy = $false
+                    }
+                }
+                
+                if ($doDeploy) {
+                    $vmSwitchObj = Get-VMSwitch | Where-Object SwitchType -eq "External" | Select-Object -First 1
+                    $vmSwitch = if ($vmSwitchObj) { $vmSwitchObj.Name } else { "Default Switch" }
+                    $vmCpu = $cpu
+                    $totalRamBytes = (Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory
+                    $vmRamRaw = [int64]($totalRamBytes * 0.8)
+                    $vmRam = [int64]([Math]::Floor($vmRamRaw / 2MB) * 2MB)  # Align to 2MB (Hyper-V requirement)
+                    $vmRamGB = [Math]::Floor($vmRam / 1GB)
+                    $minRam = [Math]::Min(16GB, [int64]([Math]::Floor($totalRamBytes * 0.5 / 2MB) * 2MB))
+                    if ($totalRamBytes -lt 16GB) { $minRam = [int64]([Math]::Floor($totalRamBytes * 0.5 / 2MB) * 2MB) }
+                    else { $minRam = 16GB }
+
+                    New-VM -Name $vmName -MemoryStartupBytes $minRam -Generation 2 -VHDPath $TargetVhdx -SwitchName $vmSwitch | Out-Null
+                    Set-VM -Name $vmName -ProcessorCount $vmCpu -DynamicMemory -MemoryMinimumBytes $minRam -MemoryMaximumBytes $vmRam -MemoryStartupBytes $minRam
+                    Set-VMFirmware -VMName $vmName -SecureBootTemplate "MicrosoftUEFICertificateAuthority"
+                    Write-OK "Hyper-V VM '$vmName' created (CPUs: $vmCpu | RAM: ${vmRamGB}GB max)"
+
+                    # Start VM
+                    Write-Step "Starting VM..."
+                    Start-VM -Name $vmName
+                    
+                    # Wait for POST
+                    $timeout = 120; $elapsed = 0; $hb = ""
+                    while ($elapsed -lt $timeout) {
+                        $hb = (Get-VMIntegrationService -VMName $vmName | Where-Object Name -eq "Heartbeat").PrimaryStatusDescription
+                        if ($hb -eq "OK") { break }
+                        Start-Sleep 5; $elapsed += 5
+                        Write-Progress -Activity "Hyper-V POST" -Status "Waiting for heartbeat..." -PercentComplete ([int]($elapsed/$timeout*100))
+                    }
+                    Write-Progress -Activity "Hyper-V POST" -Completed
+
+                    if ($hb -eq "OK") {
+                        Write-OK "VM fully booted (heartbeat OK)"
+                        Write-Step "Enabling Enhanced Session (HvSocket)..."
+                        Stop-VM -Name $vmName -Force -ErrorAction SilentlyContinue
+                        Set-VM -Name $vmName -EnhancedSessionTransportType HvSocket
+                        Start-VM -Name $vmName
+                        Write-OK "Hyper-V VM ready. Connect: vmconnect.exe localhost $vmName"
+                    } else {
+                        Write-Warn "VM may still be booting (no heartbeat). Configure Enhanced Session manually if needed."
+                    }
+                }
+            } catch { Write-Warn "Hyper-V deployment failed: $_" }
+        }
+    }
+
+    # WSL2
+    if (Test-Path $TargetWsl) {
+        $ErrorActionPreference = "Continue"
+        $WslName = "MiOS"
+        $WslPath = Join-Path $env:USERPROFILE "WSL\$WslName"
+        $doDeploy = $true
+        if ($env:MIOS_FORCE_DEPLOY -ne "1") {
+            $ans = Read-Timed "Import/Update WSL2 distro '$WslName'? (y/N)" "N"
+            $doDeploy = $ans -match "^[yY]"
         }
 
-        if ($hb -eq "OK") {
-            Write-OK "VM fully booted (heartbeat OK)"
-        } else {
-            Write-Warn "VM may still be booting (no heartbeat after ${timeout}s)"
+        if ($doDeploy) {
+            try {
+                Write-Step "Preparing WSL2 distro..."
+                $existing = wsl --list --quiet | Where-Object { $_ -match "^$WslName" }
+                if ($existing) {
+                    Write-Warn "WSL distro '$WslName' already exists. This will DELETE it."
+                    $ans = "Y"
+                    if ($env:MIOS_FORCE_DEPLOY -ne "1") {
+                        $ans = Read-Timed "Confirm DELETION of existing '$WslName'? (y/N)" "N"
+                    }
+                    if ($ans -match "^[yY]") {
+                        wsl --unregister $WslName | Out-Null
+                    } else {
+                        Write-Warn "WSL import cancelled."
+                        $doDeploy = $false
+                    }
+                }
+
+                if ($doDeploy) {
+                    New-Item -ItemType Directory -Path $WslPath -Force | Out-Null
+                    wsl --import $WslName $WslPath $TargetWsl --version 2
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-OK "WSL2 distro '$WslName' imported"
+                        
+                        # Generate .wslconfig
+                        $wslConfigPath = Join-Path $env:USERPROFILE ".wslconfig"
+                        $wslCPUs = $cpu
+                        $wslRAM = [Math]::Max(16, [Math]::Floor((Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum / 1GB * 0.75))
+                        
+                        $wslLines = @(
+                            "# MiOS v0.1.3 — WSL2 Configuration",
+                            "[wsl2]",
+                            "memory=${wslRAM}GB",
+                            "processors=${wslCPUs}",
+                            "swap=8GB",
+                            "localhostForwarding=true",
+                            "nestedVirtualization=true",
+                            "vmIdleTimeout=-1",
+                            "systemd=true",
+                            "",
+                            "[experimental]",
+                            "networkingMode=mirrored",
+                            "dnsTunneling=true",
+                            "autoProxy=true"
+                        )
+                        $wslLines -join "`r`n" | Set-Content $wslConfigPath -Encoding UTF8
+                        Write-OK ".wslconfig optimized: ${wslRAM}GB RAM"
+                    } else { Write-Warn "WSL import failed" }
+                }
+            } catch { Write-Warn "WSL2 deployment failed: $_" }
         }
-
-        # Apply Enhanced Session AFTER VM is fully running
-        Write-Step "Enabling Enhanced Session (HvSocket)..."
-        Stop-VM -Name $vmName -Force -ErrorAction SilentlyContinue
-        Start-Sleep 3
-        Set-VM -Name $vmName -EnhancedSessionTransportType HvSocket
-        try { Start-VM -Name $vmName } catch { Write-Warn "Restart failed — start manually" }
-        Write-OK "Enhanced Session enabled"
-
-        # Wait for second boot heartbeat
-        $elapsed = 0
-        while ($elapsed -lt $timeout) {
-            $hb = (Get-VMIntegrationService -VMName $vmName | Where-Object Name -eq "Heartbeat").PrimaryStatusDescription
-            if ($hb -eq "OK") { break }
-            Start-Sleep 5
-            $elapsed += 5
-        }
-        Write-OK "Hyper-V VM '$vmName' ready with Enhanced Session"
-        Write-OK "  Connect: vmconnect.exe localhost $vmName"
-    } catch { Write-Warn "Hyper-V auto-deploy failed: $_" }
-}
-
-# WSL2
-if (Test-Path $TargetWsl) {
-    $ErrorActionPreference = "Continue"
-    $WslName = "MiOS"
-    $WslPath = Join-Path $env:USERPROFILE "WSL\$WslName"
-    try {
-        Write-Step "Deploying to WSL2..."
-        Write-Step "Ensuring clean WSL state..."
-        wsl --unregister $WslName 2>$null | Out-Null
-        Start-Sleep 1
-        New-Item -ItemType Directory -Path $WslPath -Force | Out-Null
-        wsl --import $WslName $WslPath $TargetWsl --version 2
-        if ($LASTEXITCODE -ne 0) { throw "WSL import failed" }
-        Write-OK "WSL2 distro '$WslName' imported"
-
-        $wslConfigPath = Join-Path $env:USERPROFILE ".wslconfig"
-        $totalRAM = (Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum
-        $wslRAM = [Math]::Max(16, [Math]::Floor($totalRAM / 1GB * 0.80))
-        $wslCPUs = $cpu
-        # Build .wslconfig content without here-string (avoids PS parser edge cases)
-        $wslLines = @(
-            "# MiOS v0.1.3 — WSL2 Configuration",
-            "[wsl2]",
-            "memory=${wslRAM}GB",
-            "processors=${wslCPUs}",
-            "swap=8GB",
-            "localhostForwarding=true",
-            "nestedVirtualization=true",
-            "vmIdleTimeout=-1",
-            "systemd=true",
-            "",
-            "[experimental]",
-            "networkingMode=mirrored",
-            "dnsTunneling=true",
-            "autoProxy=true"
-        )
-        $wslConfig = $wslLines -join "`r`n"
-        if (Test-Path $wslConfigPath) {
-            $backup = "${wslConfigPath}.bak.$(Get-Date -Format 'yyyyMMdd-HHmmss')"
-            Copy-Item $wslConfigPath $backup
-            Write-Step "Backed up existing .wslconfig to $backup"
-        }
-        $wslConfig | Set-Content $wslConfigPath -Encoding UTF8
-        Write-OK ".wslconfig generated: ${wslRAM}GB RAM, $wslCPUs CPUs (75% RAM, all CPUs)"
-    } catch { Write-Warn "WSL2 auto-deploy failed: $_" }
+    }
 }
 $ErrorActionPreference = "Stop"
 

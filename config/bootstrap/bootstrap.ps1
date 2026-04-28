@@ -18,7 +18,31 @@ $MiosImagesDir = Join-Path $MiosDocsDir "images"
 
 $PrivateInstaller = "https://raw.githubusercontent.com/Kabuki94/mios/main/install.ps1"
 $EnvFile = Join-Path $MiosEnvDir "mios-build.env"
-$SecretsFile = Join-Path $env:TEMP "mios-secrets.env"
+$SecretsFile = Join-Path $MiosEnvDir "mios-secrets.env"
+
+function Set-SecureACL {
+    param([string]$Path)
+    if (-not (Test-Path $Path)) { return }
+    try {
+        $acl = Get-Acl $Path
+        $acl.SetAccessRuleProtection($true, $false) # Disable inheritance, remove inherited rules
+        $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+        $rule = New-Object System.Security.AccessControl.FileSystemAccessRule(
+            $currentUser, "FullControl", "Allow"
+        )
+        $acl.AddAccessRule($rule)
+        
+        # Add Administrators group for recovery
+        $adminRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
+            "Administrators", "FullControl", "Allow"
+        )
+        $acl.AddAccessRule($adminRule)
+        
+        Set-Acl $Path $acl
+    } catch {
+        Write-Host "  [!] Security Warning: Could not restrict permissions on $Path: $_" -ForegroundColor Yellow
+    }
+}
 
 function Read-Secret {
     param([string]$Prompt)
@@ -56,7 +80,10 @@ function Import-EnvFile {
 function Export-EnvFile {
     param([string]$Path)
     $dir = Split-Path $Path -Parent
-    if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+    if (-not (Test-Path $dir)) { 
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null 
+    }
+    Set-SecureACL $dir
 
     $lines = @(
         "# MiOS Build Configuration"
@@ -73,20 +100,7 @@ function Export-EnvFile {
     )
     if ($env:MIOS_GHCR_PUSH_TOKEN) { $secretLines += "MIOS_GHCR_PUSH_TOKEN=$env:MIOS_GHCR_PUSH_TOKEN" }
     $secretLines | Set-Content $SecretsFile -Encoding UTF8
-
-    # Restrict secrets file to current user only
-    try {
-        $acl = Get-Acl $SecretsFile
-        $acl.SetAccessRuleProtection($true, $false)
-        $rule = New-Object System.Security.AccessControl.FileSystemAccessRule(
-            [System.Security.Principal.WindowsIdentity]::GetCurrent().Name,
-            "FullControl", "Allow"
-        )
-        $acl.AddAccessRule($rule)
-        Set-Acl $SecretsFile $acl
-    } catch {
-        Write-Host "  [!] Could not restrict secrets file permissions: $_" -ForegroundColor DarkGray
-    }
+    Set-SecureACL $SecretsFile
 }
 
 Write-Host ""
