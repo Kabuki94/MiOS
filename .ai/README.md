@@ -1,22 +1,23 @@
 # MiOS AI Environment
 
-**Version:** 1.0.0
+**Version:** 2.0.0
 **Generated:** 2026-04-28
-**Compatibility:** OpenAI API, Ollama, llama.cpp, LocalAI, vLLM, LangChain, LlamaIndex
+**Target:** FOSS AI APIs (Ollama, llama.cpp, LocalAI, vLLM)
+**Format:** OpenAI-compatible
 
 ---
 
 ## Overview
 
-This directory contains **flattened, API-compatible AI environment files** for MiOS. All files follow OpenAI-compatible formatting and are optimized for FOSS AI APIs.
+This directory contains **consolidated, FOSS-optimized AI integration files** for MiOS. All files follow OpenAI-compatible formatting and prioritize open-source AI APIs.
 
 ### Design Principles
 
 1. **FOSS-First**: Vendor-neutral, prioritizes open-source AI APIs
-2. **API-Compatible**: OpenAI Chat Completions API format
-3. **Flattened Structure**: Consolidated files, no deep nesting
-4. **Portable**: All files are self-contained and relocatable
-5. **Well-Documented**: Clear schemas and examples
+2. **Consolidated**: All knowledge in single KNOWLEDGE-BASE.md (29KB)
+3. **API-Compatible**: OpenAI Chat Completions API format
+4. **Self-Contained**: No external dependencies
+5. **Well-Documented**: Complete examples and patterns
 
 ---
 
@@ -25,16 +26,27 @@ This directory contains **flattened, API-compatible AI environment files** for M
 ```
 .ai/
 ├── README.md                  # This file
+├── KNOWLEDGE-BASE.md          # **NEW** Consolidated knowledge (all AI knowledge)
+├── system-prompt.md           # System prompt for AI agents (updated v2.0.0)
 ├── context.json               # Unified project context (OpenAI compatible)
-├── system-prompt.md           # System prompt for AI agents
-├── rag-config.yaml            # RAG configuration (FOSS AI APIs)
 ├── tools.json                 # Function calling definitions (OpenAI format)
-├── knowledge.txt              # Plain text knowledge base
 ├── prompt-templates.json      # Reusable prompt templates
-└── foundation/                # Legacy memory system (preserved)
-    ├── memories/              # Semantic memory
-    └── shared-tmp/            # Working memory
+├── variables.json             # Variable mappings (@track: system)
+└── foundation/                # Memory system
+    ├── memories/              # Episodic memory (journal.md)
+    └── memory/                # Semantic memory
 ```
+
+### Legacy Files Removed
+
+These files were consolidated into `KNOWLEDGE-BASE.md`:
+- ~~AI-KNOWLEDGE-CONSOLIDATED.md~~ (713 lines) → KNOWLEDGE-BASE.md
+- ~~AI-KNOWLEDGE-SUMMARY.md~~ (~150 lines) → KNOWLEDGE-BASE.md
+- ~~HISTORICAL-KNOWLEDGE-COMPRESSED.md~~ (~300 lines) → KNOWLEDGE-BASE.md
+- ~~AI-AGENT-GUIDE.md~~ (289 lines) → KNOWLEDGE-BASE.md
+- ~~AI-ENVIRONMENT-FLATTENING.md~~ → README.md (this file)
+
+**Total consolidation:** ~1,500 lines → 29KB single file
 
 ---
 
