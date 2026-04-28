@@ -141,12 +141,12 @@ priority=80
 EOREPO
 
 # ── NVIDIA Container Toolkit repo ──────────────────────────────────────────
-echo "[01-repos] Adding NVIDIA Container Toolkit repo..."
+echo "[01-repos] Adding NVIDIA Container Toolkit repo (EXPERIMENTAL for 1.18+)..."
 if ! [ -f /etc/yum.repos.d/nvidia-container-toolkit.repo ]; then
     cat > /etc/yum.repos.d/nvidia-container-toolkit.repo <<'EOREPO'
 [nvidia-container-toolkit]
 name=NVIDIA Container Toolkit
-baseurl=https://nvidia.github.io/libnvidia-container/stable/rpm/$basearch
+baseurl=https://nvidia.github.io/libnvidia-container/experimental/rpm/$basearch
 enabled=1
 gpgcheck=1
 gpgkey=https://nvidia.github.io/libnvidia-container/gpgkey

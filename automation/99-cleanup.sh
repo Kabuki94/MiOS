@@ -41,13 +41,9 @@ rm -rf /var/lib/flatpak/repo/tmp/* 2>/dev/null || true
 # 4. Restore system skeleton via systemd-tmpfiles
 # This ensures all /var and /tmp directories exist with correct metadata.
 echo "[99-cleanup] Restoring system skeleton..."
-systemd-tmpfiles --create --boot --root=/ 2>/dev/null || true
+systemd-tmpfiles --create --root=/ 2>/dev/null || true
 
-# 5. ostree container commit — CRITICAL: finalizes OSTree layer metadata
-echo "[99-cleanup] Running ostree container commit..."
-ostree container commit 2>&1 || true
-
-# 6. Clean DNF caches
+# 5. Clean DNF caches
 echo "[99-cleanup] Cleaning package manager caches..."
 $DNF_BIN "${DNF_SETOPT[@]}" clean all 2>/dev/null || true
 

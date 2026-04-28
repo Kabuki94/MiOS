@@ -99,6 +99,10 @@
 **File:** `Containerfile`
 **Status:** Implemented at `Containerfile:154` (`RUN bootc completion bash > /etc/bash_completion.d/bootc`) before the final `bootc container lint`. Verified 2026-04-25 by System Opus 4.7.
 
+### T2.6 — Implement SBOM generation (CycloneDX/SPDX) ✅ DONE
+**Files:** `automation/90-generate-sbom.sh`, `Justfile`, `tools/prepare-bootstrap-native.sh`
+**Action:** Created dedicated SBOM generation script using `syft`. Integrated into build pipeline and bootstrap sync. Added `just sbom` target for scanning local images.
+
 ---
 
 ## TIER 3 — Documentation / coordination
@@ -107,9 +111,9 @@
 **File:** `.ai/foundation/memories/journal.md`
 **Action:** Append complete session journal entry (THOUGHT, LEARNING, DISCOVERY, ACTION, SUGGESTED ALTERNATIVE) covering all changes made in this session.
 
-### T3.2 — Update .env
-**File:** `.env`
-**Action:** Update `AI_ARCH_BASELINE` to reflect the upstream research integration. Add notes about cosign v3 hold and cayo monitoring.
+### T3.2 — Update .env and Repository Metadata ✅ DONE
+**Files:** `.env`, `image-versions.yml`
+**Action:** Updated `.env` for vendor-neutrality. Updated `image-versions.yml` to enable tracking for `image-builder-cli`.
 
 ---
 

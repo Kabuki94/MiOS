@@ -34,7 +34,14 @@ build-logged: artifact
     @echo "---" | tee -a "${LOG_FILE}"
     @echo "✅ CHECKPOINT: MiOS build complete." | tee -a "${LOG_FILE}"
     @echo "Unified log available at: ${LOG_FILE}" | tee -a "${LOG_FILE}"
-    @echo "---" | tee -a "${LOG_FILE}"
+    @echo "---"
+
+# Build OCI image with verbose output (no redirection)
+build-verbose: artifact
+    podman build --no-cache \
+        --build-arg BASE_IMAGE={{env_var_or_default("MIOS_BASE_IMAGE", "ghcr.io/ublue-os/ucore-hci:stable-nvidia")}} \
+        --build-arg MIOS_FLATPAKS={{env_var_or_default("MIOS_FLATPAKS", "")}} \
+        -t {{LOCAL}} .
 
 # Embed the most recent build log into the image
 embed-log:
