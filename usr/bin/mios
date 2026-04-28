@@ -57,9 +57,9 @@ case "$CMD" in
     version|--version|-v)
         echo "MiOS v${VERSION}"
         ;;
-    init)        exec /usr/share/mios/tools/mios-init.sh user "$@" ;;
-    deploy)      exec /usr/share/mios/tools/mios-init.sh deploy "$@" ;;
-    live-init)   exec /usr/share/mios/tools/mios-init.sh live-init "$@" ;;
+    init)        exec /usr/libexec/mios-init.sh user "$@" ;;
+    deploy)      exec /usr/libexec/mios-init.sh deploy "$@" ;;
+    live-init)   exec /usr/libexec/mios-init.sh live-init "$@" ;;
     update)      exec /usr/bin/mios-update "$@" ;;
     rebuild)     exec /usr/bin/mios-rebuild "$@" ;;
     build)       exec /usr/bin/mios-build "$@" ;;
@@ -73,7 +73,7 @@ case "$CMD" in
     test)        exec /usr/libexec/mios/mios-test "$@" ;;
     vfio-toggle|vfio_toggle) exec /usr/bin/mios-vfio-toggle "$@" ;;
     vfio-check|vfio_check)  exec /usr/bin/mios-vfio-check "$@" ;;
-    cpu-isolate|cpu_isolate) exec /usr/bin/mios-cpu-isolate "$@" ;;
+    cpu-isolate|cpu_isolate) exec /usr/libexec/mios/cpu-isolate "$@" ;;
     iommu-groups|iommu) exec /usr/bin/iommu-groups "$@" ;;
     gc)          exec /usr/libexec/mios/mios-podman-gc "$@" ;;
     gc-status|gc_status)   podman system df 2>/dev/null || echo "Podman not available" ;;
