@@ -16,7 +16,7 @@
 #   - matches upstream bootc and native Linux filesystem standards.
 # ============================================================================
 
-ARG ghcr.io/ublue-os/ucore-hci:stable-nvidia # @track:IMG_BASE
+ARG BASE_IMAGE=ghcr.io/ublue-os/ucore-hci:stable-nvidia # @track:IMG_BASE
 
 # ----------------------------------------------------------------------------
 # ctx stage: build context (scripts, system_files, manifests, overlay dirs)

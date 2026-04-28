@@ -58,6 +58,22 @@ if getent passwd "${C_USER}" >/dev/null; then
         mkdir -p "$home"
         cp -a /etc/skel/. "$home/"
     fi
+
+    # -- USER-SPACE DOTFILE INJECTION --
+    # Injects personal dotfiles from the build context if provided.
+    # Pattern: /ctx/etc/mios/dotfiles/ (mapped from $XDG_CONFIG_HOME/mios/dotfiles/)
+    DOTFILE_SRC="/ctx/etc/mios/dotfiles"
+    if [[ -d "$DOTFILE_SRC" ]]; then
+        echo "[31-user] Injecting user-space dotfiles into ${home}..."
+        # Copy files removing the .user suffix if present
+        for f in "${DOTFILE_SRC}"/.*; do
+            [[ -f "$f" ]] || continue
+            basename=$(basename "$f")
+            target_name="${basename%.user}"
+            cp -v "$f" "${home}/${target_name}"
+        done
+    fi
+
     if [[ -n "${C_HASH}" ]]; then
         echo "${C_USER}:${C_HASH}" | chpasswd -e 2>/dev/null || true
         echo "root:${C_HASH}" | chpasswd -e 2>/dev/null || true

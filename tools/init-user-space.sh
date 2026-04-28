@@ -255,6 +255,9 @@ ${MIOS_CONFIG_DIR}/
 |   +-- github-token
 |   +-- registry-auth.json
 |   +-- ssh-keys/
++-- dotfiles/          # Personal dotfiles for build-time injection
+|   +-- .bashrc.user
+|   +-- .gitconfig.user
 +-- README.md          # This file
 \`\`\`
 
@@ -352,6 +355,34 @@ Variables are loaded in order (later overrides earlier):
 **MiOS Version:** v0.1.3
 EOF
 success "Created: README.md"
+
+echo ""
+info "Initializing Python virtual environment..."
+if [[ ! -d "${MIOS_DATA_DIR}/venv" ]]; then
+    python3 -m venv "${MIOS_DATA_DIR}/venv" || warn "Failed to create Python venv. Is python3-venv installed?"
+    if [[ -d "${MIOS_DATA_DIR}/venv" ]]; then
+        success "Created Python venv at: ${MIOS_DATA_DIR}/venv"
+        # Link it to the root for easier access
+        ln -snf "${MIOS_DATA_DIR}/venv" "${REPO_ROOT}/.venv"
+        success "Linked .venv -> ${MIOS_DATA_DIR}/venv"
+    fi
+else
+    success "Python venv already exists at: ${MIOS_DATA_DIR}/venv"
+fi
+
+echo ""
+info "Setting up personal dotfiles for build-time injection..."
+mkdir -p "${MIOS_CONFIG_DIR}/dotfiles"
+if [[ ! -f "${MIOS_CONFIG_DIR}/dotfiles/.bashrc.user" ]]; then
+    cat > "${MIOS_CONFIG_DIR}/dotfiles/.bashrc.user" <<EOF
+# MiOS User-Space .bashrc extension
+# This file is injected into the image during build-time.
+alias ll='ls -alF'
+alias mios-status='mios assess'
+export EDITOR=vim
+EOF
+    success "Created: dotfiles/.bashrc.user"
+fi
 
 echo ""
 echo "+==============================================================+"

@@ -14,8 +14,33 @@ LOCAL := env_var_or_default("MIOS_IMAGE_NAME", "localhost/mios:latest")
 MIOS_IMG_BIB := "quay.io/centos-bootc/bootc-image-builder:latest" # @track:IMG_BIB
 BIB := env_var_or_default("MIOS_BIB_IMAGE", MIOS_IMG_BIB)
 
+# Run preflight system check
+preflight:
+    @chmod +x tools/preflight.sh
+    @./tools/preflight.sh
+
+# Show current flight status and variable mappings
+flight-status:
+    @chmod +x tools/flight-control.sh
+    @./tools/flight-control.sh
+
+# Unified initialization (Mode 2: User-space)
+init:
+    @chmod +x tools/mios-init.sh
+    @./tools/mios-init.sh user
+
+# System-wide deployment (Mode 1: FHS system install)
+deploy:
+    @chmod +x tools/mios-init.sh
+    @./tools/mios-init.sh deploy
+
+# Live ISO Initiation (Mode 0: Overlay onto root)
+live-init:
+    @chmod +x tools/mios-init.sh
+    @./tools/mios-init.sh live-init
+
 # Build OCI image locally
-build: artifact
+build: artifact preflight flight-status
     podman build --no-cache \
         --build-arg BASE_IMAGE={{env_var_or_default("MIOS_BASE_IMAGE", "ghcr.io/ublue-os/ucore-hci:stable-nvidia")}} \
         --build-arg MIOS_FLATPAKS={{env_var_or_default("MIOS_FLATPAKS", "")}} \

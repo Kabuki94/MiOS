@@ -11,9 +11,10 @@ LINE_RE = re.compile(r'^(?P<content>.*?)#\s*@track:(?P<tag>\S+)\s*$')
 
 # Matchers for the content part
 # 1. Quoted value: [prefix][quote][value][quote][mid]
-CONTENT_RE_QUOTED = re.compile(r'^(?P<prefix>.*?(?:[:]=|=|\s|[:]-))(?P<quote>["\'])(?P<value>.*?)(?P<quote2>(?P=quote))(?P<mid>\s*)$')
-# 2. Unquoted value: [prefix][value][mid] (prefix must end with assignment or space)
-CONTENT_RE_UNQUOTED = re.compile(r'^(?P<prefix>.*?(?:[:]=|=|\s|[:]-))(?P<value>\S+)(?P<mid>\s*)$')
+# Prefix captures everything up to the LAST assignment operator (=, :=, :-) or space.
+CONTENT_RE_QUOTED = re.compile(r'^(?P<prefix>.*(?:[:]=|=|\s|[:]-))(?P<quote>["\'])(?P<value>.*?)(?P<quote2>(?P=quote))(?P<mid>\s*)$')
+# 2. Unquoted value: [prefix][value][mid]
+CONTENT_RE_UNQUOTED = re.compile(r'^(?P<prefix>.*(?:[:]=|=|\s|[:]-))(?P<value>\S+)(?P<mid>\s*)$')
 
 MAX_FILE_SIZE = 5 * 1024 * 1024
 

@@ -48,6 +48,12 @@ run_preflight() {
 }
 
 bootstrap_source() {
+    # Skip bootstrap if --no-clone is passed or if we are already in the target dir
+    if [[ "${NO_CLONE:-false}" == "true" ]]; then
+        info "Skipping source bootstrap (--no-clone active)."
+        return
+    fi
+
     if [[ ! -d "${MIOS_SRC_DIR}/.git" ]]; then
         info "Bootstrapping MiOS source to ${MIOS_SRC_DIR}..."
         mkdir -p "$(dirname "${MIOS_SRC_DIR}")"
@@ -144,7 +150,7 @@ EOF
     echo "+==============================================================+"
     echo ""
     info "Next steps:"
-    echo "  1. Initialize user-space: ${CYAN}mios init-user-space${NC}"
+    echo "  1. Initialize user-space: ${CYAN}mios user${NC}"
     echo "  2. Build your OS image:  ${CYAN}mios build${NC}"
     echo ""
 }
@@ -165,7 +171,13 @@ uninstall_mios() {
 }
 
 main() {
-    [[ "${1:-}" == "--uninstall" ]] && { check_root; uninstall_mios; exit 0; }
+    NO_CLONE=false
+    for arg in "$@"; do
+        case $arg in
+            --uninstall) check_root; uninstall_mios; exit 0 ;;
+            --no-clone)  NO_CLONE=true ;;
+        esac
+    done
     check_root
     install_mios
 }

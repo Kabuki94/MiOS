@@ -13,58 +13,58 @@ case "$CMD" in
         echo ""
         echo "  USAGE: mios <command> [options]"
         echo ""
+        echo "  INITIALIZATION"
+        echo "    init            Initialize user-space (~/.config/mios)"
+        echo "    deploy          System-wide FHS deployment (/usr/src/mios)"
+        echo "    live-init       Live ISO initiation (overlay onto root)"
+        echo ""
         echo "  SYSTEM"
         echo "    update          Check for & apply OS updates (bootc)"
         echo "    rebuild         Clone repo, build from source, push to GHCR"
         echo "    build           Local OCI build only (no push)"
         echo "    preflight       Check and install build prerequisites"
-        echo "    deploy <image>  Switch to a different MiOS image"
+        echo "    deploy-image    Switch to a different MiOS image (deploy)"
         echo "    backup          Snapshot /etc + /var/home"
         echo "    status          Show system & service status"
         echo "    assess          Run automated system assessment"
         echo ""
         echo "  DESKTOP"
-        echo "    toggle-headless  Switch between desktop and headless mode (toggle_headless)"
+        echo "    toggle-headless  Switch between desktop and headless mode"
         echo "    dash             Dynamic auto-updating diagnostic dashboard"
         echo "    test             Run system health checks"
         echo ""
         echo "  VIRTUALIZATION"
-        echo "    vfio-toggle      Bind/unbind GPU from vfio-pci (vfio_toggle)"
-        echo "    vfio-check       Validate VFIO passthrough readiness (vfio_check)"
+        echo "    vfio-toggle      Bind/unbind GPU from vfio-pci"
+        echo "    vfio-check       Validate VFIO passthrough readiness"
         echo "    iommu-groups     List IOMMU groups (iommu)"
-        echo "    cpu-isolate      Configure core isolation (X3D optimized) (cpu_isolate)"
+        echo "    cpu-isolate      Configure core isolation (X3D optimized)"
         echo ""
         echo "  CONTAINERS"
         echo "    gc               Run Podman garbage collection now"
-        echo "    gc-status        Show Podman disk usage (gc_status)"
+        echo "    gc-status        Show Podman disk usage"
         echo ""
         echo "  AI & LLM"
-        echo "    ai               Show status of Ollama, AIChat, and AIChat-NG"
-        echo "    ai-logs          Tail Ollama container logs (ai_logs)"
-        echo "    ai-pull <m>      Pull a model into Ollama (default: llama3) (ai_pull)"
+        echo "    ai               Show status of Ollama and AIChat"
+        echo "    ai-logs          Tail Ollama container logs"
+        echo "    ai-pull <m>      Pull a model into Ollama"
         echo ""
         echo "  SECURITY"
-        echo "    scan-malware     ClamAV container scan of /home (scan_malware, scan)"
-        echo "    sb-audit         Secure Boot CA 2023 readiness audit (2026 deadline) (sb_audit)"
-        echo "    sb-keygen        Generate Machine Owner Key (MOK) for signing (sb_keygen)"
-        echo "    tpm-enroll       Enroll TPM 2.0 for passwordless LUKS boot (tpm_enroll)"
-        echo ""
-        echo "  SYSTEM"
-        echo "    sysext          Manage systemd-sysext extensions"
-        echo "    role            Manage system roles"
-        echo "    version         Show MiOS version"
-        echo "    motd            Show management dashboard"
-        echo "    help            Show this help"
-        echo ""
+        echo "    scan-malware     ClamAV container scan of /home"
+        echo "    sb-audit         Secure Boot CA 2023 readiness audit"
+        echo "    sb-keygen        Generate Machine Owner Key (MOK)"
+        echo "    tpm-enroll       Enroll TPM 2.0 for passwordless boot"
         ;;
     version|--version|-v)
         echo "MiOS v${VERSION}"
         ;;
+    init)        exec /usr/share/mios/tools/mios-init.sh user "$@" ;;
+    deploy)      exec /usr/share/mios/tools/mios-init.sh deploy "$@" ;;
+    live-init)   exec /usr/share/mios/tools/mios-init.sh live-init "$@" ;;
     update)      exec /usr/bin/mios-update "$@" ;;
     rebuild)     exec /usr/bin/mios-rebuild "$@" ;;
     build)       exec /usr/bin/mios-build "$@" ;;
     preflight)   exec /usr/libexec/mios/preflight "$@" ;;
-    deploy)      exec /usr/bin/mios-deploy "$@" ;;
+    deploy-image) exec /usr/bin/mios-deploy "$@" ;;
     backup)      exec /usr/bin/mios-backup "$@" ;;
     status)      exec /usr/bin/mios-status "$@" ;;
     assess)      exec /usr/libexec/mios/assess "$@" ;;
@@ -83,8 +83,6 @@ case "$CMD" in
         echo ""
         echo "AIChat Version:"
         aichat --version || echo "AIChat not installed"
-        echo "AIChat-NG Version:"
-        aichat-ng --version || echo "AIChat-NG not installed"
         ;;
     ai-logs|ai_logs)     exec podman logs -f ollama ;;
     ai-pull|ai_pull)
