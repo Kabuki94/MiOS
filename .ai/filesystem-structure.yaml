@@ -1,0 +1,451 @@
+# MiOS Filesystem Structure - FHS 3.0 Compliant
+# Variable storage aligned with Linux native patterns
+# Bootc/OCI compatible layer management
+
+version: 1.0.0
+standard: FHS 3.0
+bootc_version: 1.1.x
+
+# ============================================================================
+# Immutable System Directories (OCI Image Layers)
+# ============================================================================
+immutable_layers:
+  /usr:
+    description: "System binaries, libraries, and read-only data"
+    mutability: immutable
+    layer_type: bootc_base + mios_overlay
+    managed_by: rpm-ostree + podman build
+
+    subdirectories:
+      /usr/bin:
+        purpose: "User executable binaries"
+        examples:
+          - mios
+          - bootc
+          - podman
+        variables: []
+
+      /usr/lib:
+        purpose: "System libraries and internal binaries"
+        subdirs:
+          /usr/lib/bootc:
+            purpose: "bootc configuration"
+            files:
+              - kargs.d/*.toml
+              - bound-images.d/*.container (symlinks)
+
+          /usr/lib/systemd/system:
+            purpose: "System unit files"
+            files:
+              - mios-*.service
+              - ollama.service
+              - guacamole.service
+
+          /usr/lib/mios:
+            purpose: "MiOS internal scripts and libraries"
+            files:
+              - logs/build.log
+              - scripts/*.sh
+
+          /usr/lib/tmpfiles.d:
+            purpose: "Automatic /var directory creation"
+            files:
+              - mios.conf
+            variables:
+              - Declares all /var/lib/mios/* paths
+
+          /usr/lib/sysusers.d:
+            purpose: "Automatic user/group creation"
+            files:
+              - mios.conf
+            variables:
+              - MIOS_USER (declared, not set)
+
+      /usr/libexec:
+        purpose: "Internal executables (not in PATH)"
+        subdirs:
+          /usr/libexec/mios:
+            files:
+              - mios-flatpak-install.sh
+              - copy-build-log.sh
+              - ai-tools/*.sh
+
+      /usr/share:
+        purpose: "Architecture-independent data"
+        subdirs:
+          /usr/share/mios:
+            purpose: "MiOS default data and templates"
+            files:
+              - PACKAGES.md (Package SSOT)
+              - defaults.env (Default variable values)
+              - flatpak-list (Default Flatpak apps)
+            variables:
+              - PACKAGES_MD=/ctx/PACKAGES.md (build-time)
+
+          /usr/share/doc/mios:
+            purpose: "Documentation"
+            files:
+              - README.md
+              - INDEX.md
+
+          /usr/share/licenses/mios:
+            purpose: "License files"
+            files:
+              - LICENSE
+
+# ============================================================================
+# Configuration Directories (Admin/User Editable)
+# ============================================================================
+configuration_layers:
+  /etc:
+    description: "System-wide configuration (admin editable)"
+    mutability: admin_editable
+    layer_type: persistent_overlay
+    managed_by: admin + ostree 3-way merge
+
+    subdirectories:
+      /etc/mios:
+        purpose: "MiOS system configuration"
+        files:
+          runtime.env:
+            description: "Runtime environment variables"
+            variables:
+              - MIOS_AI_ENDPOINT
+              - MIOS_AI_MODEL
+            mutability: admin_editable
+            systemd_integration: "EnvironmentFile="
+
+          ignition.toml:
+            description: "Build ignition configuration"
+            variables:
+              - MIOS_BASE_IMAGE
+              - MIOS_IMAGE_NAME
+            mutability: admin_editable
+
+      /etc/sysconfig:
+        purpose: "Service-specific configuration"
+        files:
+          - mios-ollama
+          - mios-guacamole
+
+      /etc/systemd/system:
+        purpose: "Local unit file overrides"
+        files:
+          - mios-*.service.d/*.conf (drop-ins)
+
+  ~/.config/mios:
+    description: "User configuration (XDG Base Directory)"
+    mutability: user_editable
+    layer_type: user_home
+    managed_by: user
+
+    files:
+      env.toml:
+        description: "User environment variables"
+        format: TOML
+        variables:
+          - MIOS_AI_KEY
+          - MIOS_AI_MODEL
+          - MIOS_AI_ENDPOINT
+        mutability: user_editable
+        security: "May contain secrets, exclude from git"
+
+      images.toml:
+        description: "User image selections"
+        format: TOML
+        variables:
+          - MIOS_BASE_IMAGE
+          - MIOS_IMAGE_NAME
+          - MIOS_BIB_IMAGE
+        mutability: user_editable
+
+      build.toml:
+        description: "User build preferences"
+        format: TOML
+        variables:
+          - BUILD_CACHE
+          - OUTPUT_FORMAT
+        mutability: user_editable
+
+      flatpaks.list:
+        description: "User Flatpak applications"
+        format: "One app ID per line"
+        variables:
+          - MIOS_FLATPAKS (sourced from this file)
+        mutability: user_editable
+
+      ai.env:
+        description: "User AI configuration (secrets)"
+        format: "KEY=value"
+        variables:
+          - MIOS_AI_KEY
+          - OPENAI_API_KEY
+        mutability: user_editable
+        security: "NEVER commit, add to .gitignore"
+
+# ============================================================================
+# State and Cache Directories (System Managed)
+# ============================================================================
+state_layers:
+  /var:
+    description: "Variable state data"
+    mutability: system_managed
+    layer_type: persistent_state
+    managed_by: systemd-tmpfiles
+
+    subdirectories:
+      /var/lib/mios:
+        purpose: "MiOS persistent state"
+        tmpfiles_declaration: "d /var/lib/mios 0755 root root -"
+
+        subdirs:
+          /var/lib/mios/state:
+            purpose: "System state detection"
+            files:
+              role:
+                content: "desktop | k3s | ha"
+                generated_by: "automation/38-vm-gating.sh"
+                mutability: system_managed
+
+              gpu:
+                content: "nvidia | amd | intel | none"
+                generated_by: "automation/34-gpu-detect.sh"
+                mutability: system_managed
+
+              platform:
+                content: "none | wsl | microsoft | kvm | qemu"
+                generated_by: "systemd-detect-virt"
+                mutability: system_managed
+
+          /var/lib/mios/memory:
+            purpose: "AI memory system"
+            subdirs:
+              /var/lib/mios/memory/journal:
+                files:
+                  v1.jsonl:
+                    description: "Episodic memory (JSONL)"
+                    format: "One JSON object per line"
+                    mutability: append_only
+
+          /var/lib/mios/snapshots:
+            purpose: "Build snapshots and artifacts"
+            files:
+              - latest-build.log
+              - artifacts/*.tar.gz
+
+      /var/cache/mios:
+        purpose: "Cached data (safe to delete)"
+        tmpfiles_declaration: "d /var/cache/mios 0755 root root -"
+
+        subdirs:
+          /var/cache/mios/build-cache:
+            purpose: "Build artifact cache"
+            mutability: ephemeral
+
+          /var/cache/mios/embeddings:
+            purpose: "AI embedding cache"
+            files:
+              - chromadb/
+              - faiss/
+            mutability: ephemeral
+
+      /var/log/mios:
+        purpose: "Log files"
+        tmpfiles_declaration: "d /var/log/mios 0755 root root -"
+        files:
+          - ai-rag.log
+          - build.log
+          - ignition.log
+
+# ============================================================================
+# User Data Directories
+# ============================================================================
+user_layers:
+  /home:
+    description: "User home directories"
+    mutability: user_managed
+    layer_type: persistent_user_data
+
+    subdirectories:
+      /home/mios:
+        purpose: "Default user home"
+        skeleton_source: "etc/skel/"
+        variables:
+          - MIOS_USER (determines username)
+
+  ~/.local/share/mios:
+    description: "User application data (XDG)"
+    mutability: user_managed
+    purpose: "User-specific application data"
+    files:
+      - projects/
+      - downloads/
+
+  ~/.local/state/mios:
+    description: "User state data (XDG)"
+    mutability: user_managed
+    purpose: "User-specific state and logs"
+    files:
+      - last-build.log
+      - session-state.json
+
+  ~/.cache/mios:
+    description: "User cache data (XDG)"
+    mutability: user_managed
+    purpose: "User-specific cache (safe to delete)"
+    files:
+      - podman-cache/
+      - build-cache/
+
+# ============================================================================
+# Temporary Directories
+# ============================================================================
+temporary_layers:
+  /tmp:
+    description: "Temporary files (cleared on boot)"
+    mutability: ephemeral
+    managed_by: systemd-tmpfiles
+
+  /run:
+    description: "Runtime state (tmpfs)"
+    mutability: ephemeral
+    managed_by: systemd
+
+    subdirectories:
+      /run/mios:
+        purpose: "MiOS runtime state"
+        tmpfiles_declaration: "d /run/mios 0755 root root -"
+
+  $XDG_RUNTIME_DIR/mios:
+    description: "User runtime directory"
+    mutability: ephemeral
+    purpose: "User-specific runtime state (cleared on logout)"
+
+# ============================================================================
+# Variable Propagation Through Filesystem
+# ============================================================================
+variable_flow:
+  build_time:
+    source:
+      - "~/.config/mios/*.toml (user input)"
+      - "Containerfile ARG directives"
+    processing:
+      - "tools/load-user-env.sh reads TOML"
+      - "Justfile uses env_var_or_default()"
+      - "podman build --build-arg passes to Containerfile"
+    destination:
+      - "/usr/share/mios/defaults.env (baked into image)"
+      - "OCI image layers (immutable)"
+
+  deployment_time:
+    source:
+      - "/usr/share/mios/defaults.env (from image)"
+      - "/etc/mios/runtime.env (admin override)"
+    processing:
+      - "systemd EnvironmentFile= reads variables"
+      - "Profile scripts source environment"
+    destination:
+      - "systemd units (service environment)"
+      - "Shell sessions (user environment)"
+
+  runtime:
+    source:
+      - "~/.config/mios/ai.env (user secrets)"
+      - "/var/lib/mios/state/* (system detection)"
+    processing:
+      - "Tools read state files"
+      - "Scripts source ai.env"
+    destination:
+      - "AI API calls (MIOS_AI_*)"
+      - "System behavior (role-based gating)"
+
+# ============================================================================
+# Bootc Layer Management
+# ============================================================================
+bootc_layers:
+  base_layer:
+    source: "ghcr.io/ublue-os/ucore-hci:stable-nvidia"
+    contents:
+      - Fedora packages
+      - Pre-signed NVIDIA kmods
+      - bootc tooling
+    mutability: immutable
+    update_method: "bootc upgrade"
+
+  mios_overlay_layer:
+    source: "localhost/mios:latest build"
+    contents:
+      - "/usr/share/mios/*"
+      - "/usr/lib/systemd/system/mios-*.service"
+      - "/etc/mios/* (templates)"
+    mutability: immutable
+    update_method: "bootc upgrade"
+
+  persistent_config_layer:
+    source: "Local filesystem (/etc, /var)"
+    contents:
+      - "/etc/mios/runtime.env"
+      - "/var/lib/mios/state/*"
+      - "/home/*"
+    mutability: persistent_across_upgrades
+    update_method: "3-way merge (ostree)"
+
+# ============================================================================
+# Merge-Only Deployment Pattern
+# ============================================================================
+deployment_merge_rules:
+  description: "Fedora Server ignition with MiOS overlay (NO OVERWRITES)"
+
+  phase_1_base_install:
+    action: "Install Fedora Server (minimal)"
+    filesystem_state: "Clean FHS structure"
+
+  phase_2_dependency_install:
+    action: "dnf install podman buildah just git"
+    merge_behavior: "Package manager installs to /usr (standard merge)"
+    conflict_resolution: "N/A - fresh system"
+
+  phase_3_mios_repository_clone:
+    action: "git clone MiOS-bootstrap && cd mios"
+    filesystem_state: "Repository in /path/to/mios/"
+
+  phase_4_mios_overlay_merge:
+    action: "./tools/mios-init.sh deploy"
+    merge_rules:
+      - "usr/ → /usr/ (MERGE: add new files, preserve existing Fedora files)"
+      - "etc/ → /etc/ (MERGE: install templates only, skip if exists)"
+      - "var/ → /var/ (DECLARE via tmpfiles.d, do not mkdir)"
+      - "home/ → /home/ (MERGE: install skeleton, preserve user data)"
+
+    conflict_resolution:
+      - "If /usr/bin/mios exists: SKIP (already deployed)"
+      - "If /etc/mios/runtime.env exists: PRESERVE (user edited)"
+      - "If /var/lib/mios exists: PRESERVE (has state data)"
+
+    implementation:
+      method: "rsync with --ignore-existing flag"
+      command: "rsync -av --ignore-existing mios/usr/ /usr/"
+
+  phase_5_tmpfiles_activation:
+    action: "systemd-tmpfiles --create /usr/lib/tmpfiles.d/mios.conf"
+    effect: "Creates /var/lib/mios/, /var/log/mios/, etc."
+
+  phase_6_user_init:
+    action: "./tools/init-user-space.sh"
+    effect: "Creates ~/.config/mios/*.toml from templates"
+
+  phase_7_build:
+    action: "just build"
+    effect: "Builds OCI image using user variables"
+
+# ============================================================================
+# Metadata
+# ============================================================================
+metadata:
+  generated: "2026-04-28T04:00:00Z"
+  version: "1.0.0"
+  fhs_compliance: "100%"
+  bootc_compatible: true
+  merge_only_deployment: true
+  total_directories: 30+
+  variable_storage_locations: 8

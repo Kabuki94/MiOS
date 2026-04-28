@@ -1,0 +1,156 @@
+{
+  "schema_version": "1.0.0",
+  "project": {
+    "name": "MiOS",
+    "version": "0.1.3",
+    "type": "bootc-immutable-os",
+    "description": "Unified immutable cloud-native workstation OS (desktop/k3s/ha/hybrid)",
+    "repository": "https://github.com/Kabuki94/MiOS-bootstrap",
+    "wiki": "https://github.com/Kabuki94/MiOS-bootstrap/wiki",
+    "proprietor": "MiOS-DEV",
+    "license": "Personal Property"
+  },
+  "api_compatibility": {
+    "protocol": "OpenAI v1 Compatible",
+    "supported_apis": [
+      "OpenAI (official + FOSS)",
+      "Ollama",
+      "llama.cpp",
+      "LocalAI",
+      "vLLM",
+      "LangChain",
+      "LlamaIndex"
+    ],
+    "environment_variables": {
+      "key": "MIOS_AI_KEY",
+      "model": "MIOS_AI_MODEL",
+      "endpoint": "MIOS_AI_ENDPOINT",
+      "temperature": "MIOS_AI_TEMPERATURE"
+    },
+    "default_endpoint": "http://localhost:8080/v1",
+    "function_calling": true,
+    "streaming": true,
+    "embeddings": true
+  },
+  "knowledge_base": {
+    "primary_files": [
+      {
+        "path": "INDEX.md",
+        "role": "system",
+        "weight": 1.0,
+        "type": "architecture_laws",
+        "description": "Single source of truth for AI agents - immutable laws and conventions"
+      },
+      {
+        "path": "AI-KNOWLEDGE-CONSOLIDATED.md",
+        "role": "system",
+        "weight": 0.95,
+        "type": "current_technical_knowledge",
+        "description": "Current technical patterns, FOSS AI integration, build pipeline"
+      },
+      {
+        "path": "HISTORICAL-KNOWLEDGE-COMPRESSED.md",
+        "role": "system",
+        "weight": 0.85,
+        "type": "historical_context",
+        "description": "Compressed history, critical decisions, lessons learned"
+      },
+      {
+        "path": "AI-AGENT-GUIDE.md",
+        "role": "system",
+        "weight": 0.9,
+        "type": "agent_instructions",
+        "description": "Hard rules for AI agents, protected files, deliverable contract"
+      }
+    ],
+    "live_documentation": {
+      "priority": "wiki_first",
+      "wiki_url": "https://github.com/Kabuki94/MiOS-bootstrap/wiki",
+      "update_frequency": "every_build",
+      "key_pages": [
+        "Home",
+        "AI-Integration-Index",
+        "Quick-Reference",
+        "AI-AGENT-GUIDE",
+        "INDEX"
+      ]
+    },
+    "manifests": {
+      "root": "root-manifest.json",
+      "usr": "usr/manifest.json",
+      "etc": "etc/manifest.json",
+      "var": "var/manifest.json",
+      "specs": "specs/manifest.json",
+      "automation": "automation/manifest.json",
+      "tools": "tools/manifest.json",
+      "artifacts": "artifacts/manifest.json.gz"
+    },
+    "embeddings": {
+      "model": "all-MiniLM-L6-v2",
+      "dimensions": 384,
+      "chunk_size": 512,
+      "chunk_overlap": 50,
+      "score_threshold": 0.7
+    }
+  },
+  "function_tools": {
+    "definition_file": ".well-known/ai-tools.json",
+    "available_functions": [
+      "mios_update",
+      "mios_status",
+      "mios_vfio_check",
+      "mios_vfio_toggle"
+    ],
+    "output_format": "json"
+  },
+  "memory_system": {
+    "episodic": {
+      "path": "var/lib/mios/memory/journal/v1.jsonl",
+      "format": "jsonl",
+      "interface": "JOURNAL.md"
+    },
+    "semantic": {
+      "path": ".ai/foundation/memories/",
+      "format": "markdown"
+    },
+    "working": {
+      "path": ".ai/foundation/shared-tmp/",
+      "format": "mixed"
+    }
+  },
+  "immutable_laws": [
+    "USR-OVER-ETC: Never write static system config to /etc/ at build time",
+    "NO-MKDIR-IN-VAR: Never mkdir /var/... in build scripts, use tmpfiles.d",
+    "MANAGED-SELINUX: semodule -i in Containerfile RUN layer is correct method",
+    "BOUND-IMAGES: Quadlet containers symlinked to /usr/lib/bootc/bound-images.d/",
+    "BOOT-SHIELDING: Use excludepkgs=\"shim-*,kernel*\" in DNF operations",
+    "NOVA-CORE-BLACKLIST: On Fedora 44+, blacklist nouveau AND nova_core",
+    "BOOTC-CONTAINER-LINT: Must be final instruction in Containerfile",
+    "NO-DNF-UPGRADE-UNCONDITIONAL: Never dnf -y upgrade without package names",
+    "UNIFIED-AI-REDIRECTS: Use MIOS_AI_* vars, target localhost:8080/v1"
+  ],
+  "build_pipeline": {
+    "entry_points": [
+      "Justfile (Linux/WSL2)",
+      "mios-build-local.ps1 (Windows)",
+      "bootstrap.sh (One-liner)"
+    ],
+    "master_runner": "automation/build.sh",
+    "base_image": "ghcr.io/ublue-os/ucore-hci:stable-nvidia",
+    "output_image": "localhost/mios:latest",
+    "containerfile": "Containerfile"
+  },
+  "compliance": {
+    "filesystem": "FHS 3.0",
+    "linux_standards": "USR-OVER-ETC",
+    "bootc_version": "1.1.x",
+    "state_management": "tmpfiles.d"
+  },
+  "metadata": {
+    "generated": "2026-04-28T03:49:00Z",
+    "generator": "MiOS AI Environment Flattening v1.0",
+    "total_knowledge_files": 4,
+    "total_lines": 1895,
+    "compression_ratio": "99.95%"
+  }
+}

@@ -1,0 +1,355 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "MiOS AI Tools API",
+    "version": "1.0.0",
+    "description": "OpenAI-compatible function calling interface for MiOS system operations"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/v1",
+      "description": "Local FOSS AI API endpoint"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "mios_update",
+        "description": "Check for and apply MiOS system updates via bootc. Returns current image status or stages new updates. Use this when the user asks about system updates or wants to upgrade MiOS.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": ["status", "check", "upgrade", "switch"],
+              "description": "Action to perform: 'status' shows current boot status, 'check' checks for updates, 'upgrade' stages new update, 'switch' switches to a specific image",
+              "default": "status"
+            },
+            "image": {
+              "type": "string",
+              "description": "Image to switch to (only used with action='switch'). Format: registry/name:tag",
+              "pattern": "^[a-z0-9.-]+/[a-z0-9.-]+:[a-z0-9.-]+$"
+            },
+            "json_output": {
+              "type": "boolean",
+              "description": "Return output in machine-readable JSON format. Mandatory for AI API calls.",
+              "default": true
+            }
+          },
+          "required": ["action", "json_output"]
+        },
+        "returns": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["success", "error", "pending"]
+            },
+            "current_image": {
+              "type": "string"
+            },
+            "staged_image": {
+              "type": "string"
+            },
+            "update_available": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mios_status",
+        "description": "Get detailed system and service status information for the MiOS node. Returns information about bootc status, systemd services, hardware, and running containers. Use this when the user asks about system health or what's running.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "component": {
+              "type": "string",
+              "enum": ["all", "bootc", "services", "containers", "hardware", "network"],
+              "description": "Which component to check: 'all' for everything, or specific component",
+              "default": "all"
+            },
+            "json_output": {
+              "type": "boolean",
+              "description": "Return output in machine-readable JSON format",
+              "default": true
+            }
+          },
+          "required": ["json_output"]
+        },
+        "returns": {
+          "type": "object",
+          "properties": {
+            "bootc": {
+              "type": "object"
+            },
+            "services": {
+              "type": "array"
+            },
+            "containers": {
+              "type": "array"
+            },
+            "hardware": {
+              "type": "object"
+            },
+            "network": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mios_vfio_check",
+        "description": "Check system readiness for VFIO GPU passthrough. Verifies IOMMU status, vfio-pci module availability, and lists devices suitable for passthrough. Use this when the user asks about GPU passthrough or VM setup.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "detailed": {
+              "type": "boolean",
+              "description": "Include detailed IOMMU group information",
+              "default": false
+            },
+            "json_output": {
+              "type": "boolean",
+              "description": "Return output in machine-readable JSON format",
+              "default": true
+            }
+          },
+          "required": ["json_output"]
+        },
+        "returns": {
+          "type": "object",
+          "properties": {
+            "iommu_enabled": {
+              "type": "boolean"
+            },
+            "vfio_loaded": {
+              "type": "boolean"
+            },
+            "devices": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "pci_slot": {
+                    "type": "string"
+                  },
+                  "device_name": {
+                    "type": "string"
+                  },
+                  "iommu_group": {
+                    "type": "integer"
+                  },
+                  "driver": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "recommendations": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mios_vfio_toggle",
+        "description": "Dynamically bind or unbind a PCIe device to the vfio-pci driver for VM passthrough. This allows hot-swapping devices between host and guest without reboot. Use this when the user wants to attach/detach a GPU or other PCIe device for VM passthrough.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "pci_slot": {
+              "type": "string",
+              "description": "PCI address of the device (e.g., 0000:01:00.0). Use mios_vfio_check to list available devices.",
+              "pattern": "^[0-9a-f]{4}:[0-9a-f]{2}:[0-9a-f]{2}\\.[0-9a-f]$"
+            },
+            "action": {
+              "type": "string",
+              "enum": ["bind", "unbind"],
+              "description": "'bind' attaches device to vfio-pci (for VM), 'unbind' returns to host driver"
+            },
+            "json_output": {
+              "type": "boolean",
+              "description": "Return output in machine-readable JSON format",
+              "default": true
+            }
+          },
+          "required": ["pci_slot", "action", "json_output"]
+        },
+        "returns": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["success", "error"]
+            },
+            "pci_slot": {
+              "type": "string"
+            },
+            "action": {
+              "type": "string"
+            },
+            "previous_driver": {
+              "type": "string"
+            },
+            "current_driver": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mios_package_search",
+        "description": "Search for packages in the MiOS PACKAGES.md SSOT. Returns package names, categories, and descriptions. Use this when the user asks what packages are installed or available.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Package name or keyword to search for"
+            },
+            "category": {
+              "type": "string",
+              "description": "Filter by package category (e.g., 'gpu-nvidia', 'virtualization', 'desktop')"
+            },
+            "json_output": {
+              "type": "boolean",
+              "description": "Return output in machine-readable JSON format",
+              "default": true
+            }
+          },
+          "required": ["query", "json_output"]
+        },
+        "returns": {
+          "type": "object",
+          "properties": {
+            "matches": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "package": {
+                    "type": "string"
+                  },
+                  "category": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "total_matches": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mios_build",
+        "description": "Trigger a MiOS image build with optional parameters. Use this when the user wants to rebuild the system image or test changes.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "target": {
+              "type": "string",
+              "enum": ["build", "iso", "raw", "all"],
+              "description": "Build target: 'build' for OCI image, 'iso' for installer, 'raw' for disk image, 'all' for everything",
+              "default": "build"
+            },
+            "no_cache": {
+              "type": "boolean",
+              "description": "Disable build cache (clean build)",
+              "default": false
+            },
+            "json_output": {
+              "type": "boolean",
+              "description": "Return output in machine-readable JSON format",
+              "default": true
+            }
+          },
+          "required": ["json_output"]
+        },
+        "returns": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["started", "running", "completed", "failed"]
+            },
+            "target": {
+              "type": "string"
+            },
+            "image_id": {
+              "type": "string"
+            },
+            "build_log": {
+              "type": "string"
+            },
+            "duration": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "Bearer token (MIOS_AI_KEY environment variable)"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "x-mios-metadata": {
+    "version": "0.1.3",
+    "generated": "2026-04-28T03:49:00Z",
+    "compatibility": [
+      "OpenAI Function Calling",
+      "Ollama Tools",
+      "LangChain Tools",
+      "LlamaIndex Tools"
+    ],
+    "implementation_files": [
+      "tools/mios-ai-tools.sh",
+      "usr/libexec/mios/ai-tools/"
+    ]
+  }
+}

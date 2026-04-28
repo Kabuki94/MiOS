@@ -1,0 +1,349 @@
+# MiOS RAG Configuration for FOSS AI APIs
+# OpenAI API Compatible | Ollama | llama.cpp | LocalAI | vLLM
+
+version: 1.0.0
+schema: openai-compatible
+
+# ============================================================================
+# Project Metadata
+# ============================================================================
+project:
+  name: MiOS
+  version: 0.1.3
+  type: bootc-immutable-os
+  description: Unified immutable cloud-native workstation OS
+  repository: https://github.com/Kabuki94/MiOS-bootstrap
+  wiki: https://github.com/Kabuki94/MiOS-bootstrap/wiki
+  license: Personal Property - MiOS-DEV
+
+# ============================================================================
+# Live Documentation (PRIMARY SOURCE)
+# ============================================================================
+live_documentation:
+  priority: wiki_first  # Always check Wiki before static files
+  wiki_url: https://github.com/Kabuki94/MiOS-bootstrap/wiki
+  bootstrap_url: https://github.com/Kabuki94/MiOS-bootstrap
+  update_frequency: every_build
+
+  # Key Wiki pages (check these first)
+  wiki_pages:
+    - name: Home
+      url: https://github.com/Kabuki94/MiOS-bootstrap/wiki/Home
+      type: overview
+
+    - name: AI Integration Index
+      url: https://github.com/Kabuki94/MiOS-bootstrap/wiki/AI-Integration-Index
+      type: ai_patterns
+
+    - name: Quick Reference
+      url: https://github.com/Kabuki94/MiOS-bootstrap/wiki/Quick-Reference
+      type: commands
+
+    - name: INDEX
+      url: https://github.com/Kabuki94/MiOS-bootstrap/wiki/INDEX
+      type: architecture
+
+    - name: AI Agent Guide
+      url: https://github.com/Kabuki94/MiOS-bootstrap/wiki/AI-AGENT-GUIDE
+      type: rules
+
+# ============================================================================
+# Knowledge Sources (Weighted by Importance)
+# ============================================================================
+knowledge_sources:
+  primary:
+    - file: INDEX.md
+      weight: 1.0
+      type: architecture_laws
+      lines: 364
+      role: system
+      description: "Immutable laws, architecture, AI agent hub"
+
+    - file: AI-KNOWLEDGE-CONSOLIDATED.md
+      weight: 0.95
+      type: technical_knowledge
+      lines: 713
+      role: system
+      description: "FOSS AI patterns, build pipeline, variables"
+
+    - file: AI-AGENT-GUIDE.md
+      weight: 0.9
+      type: agent_rules
+      lines: 174
+      role: system
+      description: "Hard rules, protected files, deliverables"
+
+    - file: HISTORICAL-KNOWLEDGE-COMPRESSED.md
+      weight: 0.85
+      type: historical_context
+      lines: 644
+      role: assistant
+      description: "Critical decisions, lessons learned"
+
+    - file: usr/share/mios/PACKAGES.md
+      weight: 0.8
+      type: package_ssot
+      role: user
+      description: "Single source of truth for all packages"
+
+  secondary:
+    - path: specs/core/
+      weight: 0.7
+      type: blueprints
+      description: "Strategic blueprints, operations, infrastructure"
+
+    - path: specs/engineering/
+      weight: 0.7
+      type: technical_specs
+      description: "Security, testing, self-build, FHS compliance"
+
+    - path: automation/
+      weight: 0.6
+      type: build_scripts
+      description: "Numbered build pipeline scripts"
+
+    - file: Containerfile
+      weight: 0.75
+      type: build_definition
+      description: "OCI image build definition"
+
+    - file: Justfile
+      weight: 0.65
+      type: build_automation
+      description: "Build entry points and targets"
+
+  memory:
+    - file: JOURNAL.md
+      weight: 0.5
+      type: episodic_memory
+      description: "Human-readable interface to journal"
+
+    - file: var/lib/mios/memory/journal/v1.jsonl
+      weight: 0.5
+      type: episodic_memory_raw
+      format: jsonl
+      description: "JSONL event store"
+
+    - path: .ai/foundation/memories/
+      weight: 0.5
+      type: semantic_memory
+      description: "Named topic files"
+
+# ============================================================================
+# Embedding Strategy
+# ============================================================================
+embeddings:
+  model: all-MiniLM-L6-v2  # HuggingFace embedding model
+  provider: sentence-transformers
+  dimensions: 384
+
+  chunking:
+    method: recursive_character
+    chunk_size: 512  # tokens
+    chunk_overlap: 50  # tokens
+    separators: ["\n\n", "\n", ". ", " ", ""]
+
+  metadata:
+    include_filename: true
+    include_line_numbers: true
+    include_section_headers: true
+    include_code_blocks: true
+
+# ============================================================================
+# Retrieval Strategy
+# ============================================================================
+retrieval:
+  method: hybrid  # semantic + keyword
+  top_k: 5
+  score_threshold: 0.7
+  rerank: true
+  reranker_model: cross-encoder/ms-marco-MiniLM-L-6-v2
+
+  filters:
+    by_type: true
+    by_weight: true
+    by_recency: false
+
+  context_window:
+    max_tokens: 8192
+    reserve_for_response: 2048
+    reserve_for_system: 1024
+
+# ============================================================================
+# FOSS AI API Configurations
+# ============================================================================
+foss_ai_apis:
+  ollama:
+    endpoint: http://localhost:11434
+    api_path: /api/generate
+    models:
+      - llama3.1:8b
+      - llama3.1:70b
+      - codellama:13b
+      - mistral:7b
+      - mixtral:8x7b
+    context_window: 8192
+    temperature: 0.7
+    top_p: 0.9
+
+  llama_cpp:
+    endpoint: http://localhost:8080
+    api_path: /v1/chat/completions
+    model_path: /models/
+    context_window: 4096
+    temperature: 0.7
+    n_gpu_layers: -1  # all layers on GPU
+
+  localai:
+    endpoint: http://localhost:8080
+    api_path: /v1/chat/completions
+    models_path: /models
+    embeddings_model: all-MiniLM-L6-v2
+    context_window: 8192
+
+  vllm:
+    endpoint: http://localhost:8000
+    api_path: /v1/chat/completions
+    model: meta-llama/Llama-3.1-8B-Instruct
+    tensor_parallel: 1
+    gpu_memory_utilization: 0.9
+    max_model_len: 8192
+
+# ============================================================================
+# Function Calling (OpenAI Compatible)
+# ============================================================================
+function_calling:
+  enabled: true
+  definition_file: .well-known/ai-tools.json
+  output_format: json
+  parallel_calls: true
+
+  available_functions:
+    - name: mios_update
+      description: "Check for and apply MiOS system updates via bootc"
+
+    - name: mios_status
+      description: "Get detailed system and service status"
+
+    - name: mios_vfio_check
+      description: "Check VFIO GPU passthrough readiness"
+
+    - name: mios_vfio_toggle
+      description: "Bind/unbind PCIe device to vfio-pci driver"
+
+# ============================================================================
+# Indexing Configuration
+# ============================================================================
+indexing:
+  include_patterns:
+    - "**/*.md"
+    - "**/*.sh"
+    - "**/*.py"
+    - "**/*.toml"
+    - "**/*.yaml"
+    - "**/*.json"
+    - "Containerfile"
+    - "Justfile"
+
+  exclude_patterns:
+    - ".git/**"
+    - "*.lock"
+    - "node_modules/**"
+    - "*.log"
+    - "output/**"
+    - "*.tar.gz"
+    - "*.xz"
+    - ".vscode/**"
+    - "__pycache__/**"
+
+  file_size_limit: 1048576  # 1 MB
+
+  metadata_extraction:
+    extract_frontmatter: true
+    extract_code_blocks: true
+    extract_links: true
+    extract_json_knowledge: true  # json:knowledge blocks
+
+# ============================================================================
+# Vector Store Configuration
+# ============================================================================
+vector_store:
+  backend: chromadb  # or faiss, qdrant, weaviate
+  collection_name: mios-knowledge-v0.1.3
+  distance_metric: cosine
+  persist_directory: .ai/vector-store
+
+  indexing_batch_size: 100
+  query_batch_size: 10
+
+  metadata_fields:
+    - file_path
+    - file_type
+    - weight
+    - role
+    - section
+    - line_start
+    - line_end
+
+# ============================================================================
+# Response Generation
+# ============================================================================
+response:
+  system_prompt_file: .ai/system-prompt.md
+  temperature: 0.7
+  top_p: 0.9
+  max_tokens: 2048
+
+  formatting:
+    use_markdown: true
+    include_citations: true
+    citation_format: "[{filename}:{line}]({filepath}#L{line})"
+    code_blocks: true
+
+  validation:
+    check_immutable_laws: true
+    verify_fhs_compliance: true
+    check_protected_files: true
+
+# ============================================================================
+# Monitoring and Logging
+# ============================================================================
+monitoring:
+  log_queries: true
+  log_responses: false  # privacy
+  log_retrieval: true
+  log_file: var/log/mios/ai-rag.log
+
+  metrics:
+    track_latency: true
+    track_token_usage: true
+    track_retrieval_quality: true
+
+  anonymization:
+    redact_secrets: true
+    redact_passwords: true
+    redact_api_keys: true
+
+# ============================================================================
+# Cache Configuration
+# ============================================================================
+cache:
+  enabled: true
+  backend: redis  # or memory, disk
+  ttl: 3600  # seconds
+  max_entries: 1000
+
+  cache_embeddings: true
+  cache_retrievals: true
+  cache_responses: false
+
+# ============================================================================
+# Metadata
+# ============================================================================
+metadata:
+  generated: "2026-04-28T03:49:00Z"
+  generator: "MiOS AI Environment Flattening v1.0"
+  schema_version: "1.0.0"
+  total_knowledge_files: 4
+  total_knowledge_lines: 1895
+  total_secondary_files: 100+
