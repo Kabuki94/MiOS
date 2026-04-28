@@ -49,7 +49,7 @@ LABEL ostree.bootable="1"
 # Set /sbin/init as the default command for bootc compatibility
 CMD ["/sbin/init"]
 
-# Build-time user provisioning — injected by mios-build-local.ps1 via --build-arg.
+# Build-time user provisioning - injected by mios-build-local.ps1 via --build-arg.
 # 31-user.sh reads these as MIOS_USER / MIOS_PASSWORD_HASH env vars.
 # ARG values do NOT persist into the final image (unlike ENV).
 ARG MIOS_USER=mios
@@ -106,7 +106,7 @@ RUN rm -rf /var/log/* /var/tmp/* /var/cache/dnf/* /var/cache/libdnf5/* /tmp/* \
 # Install bootc bash completions
 RUN bootc completion bash > /etc/bash_completion.d/bootc
 
-# ── systemd-sysext consolidation ──────────
+# -- systemd-sysext consolidation ----------
 RUN mkdir -p /usr/lib/extensions/source \
  && chmod +x /ctx/tools/mios-sysext-pack.sh \
  && /ctx/tools/mios-sysext-pack.sh /usr/lib/extensions/source || true

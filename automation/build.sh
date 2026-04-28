@@ -1,5 +1,5 @@
 #!/bin/bash
-# MiOS 0.1.3 — Master build runner
+# MiOS 0.1.3 - Master build runner
 # Executes all numbered scripts in order with unified status reporting.
 set -euo pipefail
 
@@ -28,7 +28,7 @@ VERSION_RAW="$(cat "${SCRIPT_DIR}/../VERSION" 2>/dev/null || cat /ctx/VERSION 2>
 # Strip "MiOSv" or "v" if present
 VERSION_STR=$(echo "$VERSION_RAW" | sed 's/^MiOSv//;s/^v//')
 
-# ── Status Card Rendering ───────────────────────────────────────────────────
+# -- Status Card Rendering ---------------------------------------------------
 # Note: Removed cursor movement codes to prevent log duplication in non-TTY builds.
 render_status_card() {
     local phase="$1"
@@ -41,13 +41,13 @@ render_status_card() {
 
     {
         echo ""
-        echo "┌───────────────────────────────────────────────────────────────────────────┐"
-        printf "│ BUILDING: %-30s MiOS %-10s [%3d/%-3d] │\n" "$phase" "$VERSION_STR" "$current" "$total"
-        echo "├───────────────────────────────────────────────────────────────────────────┤"
-        printf "│  STATUS:  %-10s |  SUCCESS: %-4d |  WARN: %-4d |  FAIL: %-4d  │\n" \
+        echo "+---------------------------------------------------------------------------+"
+        printf "| BUILDING: %-30s MiOS %-10s [%3d/%-3d] |\n" "$phase" "$VERSION_STR" "$current" "$total"
+        echo "+---------------------------------------------------------------------------+"
+        printf "|  STATUS:  %-10s |  SUCCESS: %-4d |  WARN: %-4d |  FAIL: %-4d  |\n" \
             "$( [[ $fail_count -eq 0 ]] && echo "HEALTHY" || echo "DEGRADED" )" \
             "$ok_count" "$warn_count" "$fail_count"
-        echo "└───────────────────────────────────────────────────────────────────────────┘"
+        echo "+---------------------------------------------------------------------------+"
     } >&3
 }
 
@@ -59,7 +59,7 @@ if [[ ! -f "$PACKAGES_MD" ]]; then
     exit 1
 fi
 
-# ── Execute numbered scripts ────────────────────────────────────────────────
+# -- Execute numbered scripts ------------------------------------------------
 # All numbered scripts in automation/ are intended for the orchestrator.
 # 08-system-files-overlay.sh is run explicitly in Containerfile stage 1.
 CONTAINERFILE_SCRIPTS="08-system-files-overlay.sh"
@@ -103,18 +103,18 @@ done
 # Final Card Update
 render_status_card "FINISHING" "$ITER" "$TOTAL_SCRIPTS"
 
-# ── Bloat Removal ──────────
+# -- Bloat Removal ----------
 log_ts "==> Removing known bloat packages..."
 BLOAT_PACKAGES=$(source "${SCRIPT_DIR}/lib/packages.sh"; get_packages "bloat")
 if [[ -n "$BLOAT_PACKAGES" ]]; then
     $DNF_BIN "${DNF_SETOPT[@]}" remove -y "${DNF_OPTS[@]}" $BLOAT_PACKAGES >> "$BUILD_LOG" 2>&1 || true
 fi
 
-# ── Cleanup ─────────────────────────────────────────────────────────────────
+# -- Cleanup -----------------------------------------------------------------
 log_ts "==> Final build cleanup..."
 rm -rf /var/cache/dnf/* /var/cache/libdnf5/*
 
-# ── Artifact Unification: Snapshot Repository State ─────────────────────────
+# -- Artifact Unification: Snapshot Repository State -------------------------
 if [[ -d "/ctx" ]]; then
     log_ts "==> Creating repository artifact snapshot..."
     ARTIFACT_DIR="/usr/lib/mios/artifacts" # @track:PATH_ARTIFACTS
@@ -126,28 +126,28 @@ TOTAL_ELAPSED=$(( SECONDS - TOTAL_START ))
 MIN=$(( TOTAL_ELAPSED / 60 ))
 SEC=$(( TOTAL_ELAPSED % 60 ))
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# -----------------------------------------------------------------------------
 #  FINAL BUILD SUMMARY
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# -----------------------------------------------------------------------------
 {
 echo ""
-echo "╔═══════════════════════════════════════════════════════════════════════════╗"
-echo "║                          MiOS BUILD SUMMARY                               ║"
-echo "╠═══════════════════════════════════════════════════════════════════════════╣"
+echo "+===========================================================================+"
+echo "|                          MiOS BUILD SUMMARY                               |"
+echo "+===========================================================================+"
 echo "  Version:    ${VERSION_STR}"
 echo "  Duration:   ${MIN}m ${SEC}s"
 echo "  Steps:      ${ITER} executed"
 
 FAIL_COUNT=$(ls "$STATE_DIR"/*.fail 2>/dev/null | wc -l)
 if [[ $FAIL_COUNT -eq 0 ]]; then
-echo "  Status:     COMPLETE ✅"
+echo "  Status:     COMPLETE [OK]"
 else
 FAIL_LIST=$(ls "$STATE_DIR"/*.fail 2>/dev/null | xargs -n1 basename | sed 's/\.fail//' | tr '\n' ' ')
 echo "  Failures:   ${FAIL_LIST}"
-echo "  Status:     FAILED ❌"
+echo "  Status:     FAILED [FAIL]"
 fi
 echo "  Log File:   ${BUILD_LOG}"
-echo "╚═══════════════════════════════════════════════════════════════════════════╝"
+echo "+===========================================================================+"
 echo ""
 } >&3
 

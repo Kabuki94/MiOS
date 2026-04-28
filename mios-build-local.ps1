@@ -1,14 +1,14 @@
 <#
 .SYNOPSIS
-    MiOS v0.1.3 — MiOS Builder (Windows)
+    MiOS v0.1.3 - MiOS Builder (Windows)
 
 .DESCRIPTION
     Secure build orchestrator with workflow selection.
     Tokens/passwords NEVER appear in plain text in logs or terminal output.
 
     SECURITY FIXES in v0.1.1:
-      - Passwords pre-hashed (SHA-512) before injection — plaintext never in build log
-      - Registry token uses SecureString — never echoed, never in process args
+      - Passwords pre-hashed (SHA-512) before injection - plaintext never in build log
+      - Registry token uses SecureString - never echoed, never in process args
       - Workflow menu: Local Build, Push Build, Custom Build
       - Admin/origin-owner detection for default token inference
       - Hostname randomization option for HA clusters
@@ -18,14 +18,14 @@
       - MiOS image replaces alpine/python for all helper operations
       - Falls back to alpine/python only on first-ever build (no prior image)
       - MAKEFLAGS passed into build for parallel compilation (akmod, Looking Glass)
-      - MiOS image IS the builder — podman, buildah, bootc, BIB all baked in
+      - MiOS image IS the builder - podman, buildah, bootc, BIB all baked in
 #>
 
 $ErrorActionPreference = "Stop"
 
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
 #  UI HELPERS & MASKING ENGINE
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
 $BuildAudit = @()
 $Global:MiOS_MaskList = @()
 
@@ -53,16 +53,16 @@ function Write-Banner {
     param([string]$T) 
     $w=78; 
     $maskedT = Format-Masked $T
-    Write-Host "`n$("═"*$w)" -ForegroundColor Cyan; 
+    Write-Host "`n$("="*$w)" -ForegroundColor Cyan; 
     Write-Host ("  $maskedT") -ForegroundColor Cyan; 
-    Write-Host "$("═"*$w)`n" -ForegroundColor Cyan 
+    Write-Host "$("="*$w)`n" -ForegroundColor Cyan 
 }
 
 function Write-Phase { 
     param([string]$N,[string]$L) 
     $maskedL = Format-Masked $L
     Write-Host "`n  [$N] $maskedL" -ForegroundColor Yellow; 
-    Write-Host "  $("─"*70)" -ForegroundColor DarkGray 
+    Write-Host "  $("-"*70)" -ForegroundColor DarkGray 
     $script:BuildAudit += "PHASE ${N}: ${maskedL}"
     try {
         $percent = [int]($N) * 20
@@ -73,27 +73,27 @@ function Write-Phase {
 function Write-Step  { 
     param([string]$M) 
     $maskedM = Format-Masked $M
-    Write-Host "      » $maskedM" -ForegroundColor DarkCyan 
+    Write-Host "       $maskedM" -ForegroundColor DarkCyan 
 }
 
 function Write-OK { 
     param([string]$M) 
     $maskedM = Format-Masked $M
-    Write-Host "      ✓ $maskedM" -ForegroundColor Green; 
+    Write-Host "      [OK] $maskedM" -ForegroundColor Green; 
     $script:BuildAudit += "  [OK] $maskedM" 
 }
 
 function Write-Warn { 
     param([string]$M) 
     $maskedM = Format-Masked $M
-    Write-Host "      ⚠ $maskedM" -ForegroundColor Yellow; 
+    Write-Host "       $maskedM" -ForegroundColor Yellow; 
     $script:BuildAudit += "  [WARN] $maskedM" 
 }
 
 function Write-Fatal { 
     param([string]$M) 
     $maskedM = Format-Masked $M
-    Write-Host "`n  ✗ FATAL: $maskedM" -ForegroundColor Red; 
+    Write-Host "`n  [FAIL] FATAL: $maskedM" -ForegroundColor Red; 
     $script:BuildAudit += "  [FAIL] $maskedM"; 
     Show-StatusCard; 
     exit 1 
@@ -101,9 +101,9 @@ function Write-Fatal {
 
 function Show-StatusCard {
     $w = 78
-    Write-Host "`n╔$($("═"*($w-2)))╗" -ForegroundColor Cyan
-    Write-Host "║$($(" "*[math]::Floor(($w-18)/2)))MiOS BUILD SUMMARY$($(" "*[math]::Ceiling(($w-18)/2)))║" -ForegroundColor Cyan
-    Write-Host "╠$($("═"*($w-2)))╣" -ForegroundColor Cyan
+    Write-Host "`n+$($("="*($w-2)))+" -ForegroundColor Cyan
+    Write-Host "|$($(" "*[math]::Floor(($w-18)/2)))MiOS BUILD SUMMARY$($(" "*[math]::Ceiling(($w-18)/2)))|" -ForegroundColor Cyan
+    Write-Host "+$($("="*($w-2)))+" -ForegroundColor Cyan
     Write-Host "  Version:  $Version"
     Write-Host "  Status:   $([DateTime]::UtcNow.ToString('yyyy-MM-dd HH:mm:ss')) UTC"
     Write-Host "  Audit Log:"
@@ -115,10 +115,10 @@ function Show-StatusCard {
         elseif ($maskedLine -match "PHASE") { Write-Host "    $maskedLine" -ForegroundColor Cyan }
         else { Write-Host "    $maskedLine" -ForegroundColor Gray }
     }
-    Write-Host "╚$($("═"*($w-2)))╝`n" -ForegroundColor Cyan
+    Write-Host "+$($("="*($w-2)))+`n" -ForegroundColor Cyan
 }
 
-# ── Register initial secrets from environment (if present) ──
+# -- Register initial secrets from environment (if present) --
 @("MIOS_PASSWORD", "GHCR_TOKEN", "MIOS_GHCR_PUSH_TOKEN", "MIOS_PASSWORD_HASH") | ForEach-Object {
     if ($env:$_) { Register-Secret $env:$_ }
 }
@@ -189,14 +189,14 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     return
 }
 
-# ── Self-Build defaults (initialized early — referenced throughout) ──
+# -- Self-Build defaults (initialized early - referenced throughout) --
 $SelfBuild = $false
 $BibImage = "quay.io/centos-bootc/bootc-image-builder:latest"
 Set-StrictMode -Version Latest
 
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
 #  CONFIGURATION
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
 # Source .env.mios if present
 if (Test-Path ".env.mios") {
     Write-Phase "0.1" "Loading Unified Environment"
@@ -240,19 +240,19 @@ $HelperImage    = ""
 $FallbackHash   = "docker.io/library/alpine:latest"
 $FallbackConvert = "docker.io/library/alpine:latest"
 
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
 #  BANNER + WORKFLOW MENU
-# ══════════════════════════════════════════════════════════════════════════════
-Write-Banner "MiOS v$Version — MiOS Builder"
+# ==============================================================================
+Write-Banner "MiOS v$Version - MiOS Builder"
 
 $workflow = $env:MIOS_WORKFLOW
 if ([string]::IsNullOrWhiteSpace($workflow)) {
     Write-Host "  Select build workflow:" -ForegroundColor White
     Write-Host ""
-    Write-Host "    1) Local Build Only     — Build image, generate targets, NO registry push" -ForegroundColor Cyan
-    Write-Host "    2) Build + Push         — Full pipeline: build → targets → push to registry" -ForegroundColor Cyan
-    Write-Host "    3) Custom Build         — Custom user/pass/hostname/registry/token" -ForegroundColor Cyan
-    Write-Host "    4) Pull + Deploy Only   — Pull existing image from registry, generate targets" -ForegroundColor Cyan
+    Write-Host "    1) Local Build Only     - Build image, generate targets, NO registry push" -ForegroundColor Cyan
+    Write-Host "    2) Build + Push         - Full pipeline: build  targets  push to registry" -ForegroundColor Cyan
+    Write-Host "    3) Custom Build         - Custom user/pass/hostname/registry/token" -ForegroundColor Cyan
+    Write-Host "    4) Pull + Deploy Only   - Pull existing image from registry, generate targets" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "  Choice [1-4] (default 1): " -NoNewline -ForegroundColor Yellow
     $workflow = Read-Host
@@ -274,9 +274,9 @@ switch ($workflow) {
     default { Write-Fatal "Invalid choice: $workflow" }
 }
 
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
 #  PHASE 0: CONFIGURATION
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
 Write-Phase "0" "Configuration"
 
 if ($DoCustom) {
@@ -314,7 +314,7 @@ if ($DoCustom) {
 
 $GhcrImage = "${RegistryUrl}:${ImageTag}"
 
-# ── Registry credentials (only if pushing or pulling) ─────────────────────────
+# -- Registry credentials (only if pushing or pulling) -------------------------
 $RegistryUser  = ""
 $RegistryToken = ""
 
@@ -329,25 +329,25 @@ if ($DoPush -or $DoPull) {
     }
     if (-not $RegistryToken) {
         Write-Host ""
-        Write-Host "      ┌─────────────────────────────────────────────────────┐" -ForegroundColor DarkYellow
-        Write-Host "      │  Token input is masked. It will NEVER be displayed. │" -ForegroundColor DarkYellow
-        Write-Host "      └─────────────────────────────────────────────────────┘" -ForegroundColor DarkYellow
+        Write-Host "      +-----------------------------------------------------+" -ForegroundColor DarkYellow
+        Write-Host "      |  Token input is masked. It will NEVER be displayed. |" -ForegroundColor DarkYellow
+        Write-Host "      +-----------------------------------------------------+" -ForegroundColor DarkYellow
         $RegistryToken = Read-Timed "Registry token/PAT:" "" -Secret
     }
 
     if (-not $RegistryToken -and $DoPush) {
-        Write-Warn "No registry token provided — push will be skipped"
+        Write-Warn "No registry token provided - push will be skipped"
         $DoPush = $false
     }
 }
 
-# ── Summary (NEVER show token or password) ────────────────────────────────────
+# -- Summary (NEVER show token or password) ------------------------------------
 $tokenStatus = if ($RegistryToken) { "provided (masked)" } else { "none" }
 Write-Host ""
 Write-OK "User: $U | LUKS: $(if($UseLuks){'Yes'}else{'No'}) | Registry: $GhcrImage"
 Write-OK "Workflow: $(switch($workflow){'1'{'Local Build'}; '2'{'Build+Push'}; '3'{'Custom Build+Push'}; '4'{'Pull+Deploy'}}) | Token: $tokenStatus"
 
-# ── Validate prerequisites ───────────────────────────────────────────────────
+# -- Validate prerequisites ---------------------------------------------------
 Write-Phase "0.5" "System Validation"
 if (-not (Test-Path $OutputFolder)) { New-Item -ItemType Directory -Path $OutputFolder -Force | Out-Null }
 try { $pv = & podman --version 2>&1; Write-OK "Podman: $pv" } catch { Write-Fatal "Podman not found" }
@@ -357,14 +357,14 @@ Write-OK "CPU: $cpu cores | RAM: $ram MB"
 
 if ($DoBuild) {
     foreach ($f in "Containerfile","usr/share/mios/PACKAGES.md","VERSION","automation/build.sh","automation/31-user.sh") {
-        if (-not (Test-Path $f)) { Write-Fatal "Missing required file: $f — are you in the MiOS repo root?" }
+        if (-not (Test-Path $f)) { Write-Fatal "Missing required file: $f - are you in the MiOS repo root?" }
     }
     Write-OK "All repo files present"
 }
 
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
 #  PHASE 1: PODMAN BUILDER MACHINE
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
 Write-Phase "1" "Podman Builder Machine"
 $ErrorActionPreference = "Continue"
 
@@ -380,13 +380,13 @@ Write-OK "Builder connection set to: ${BuilderMachine}-root"
 $ErrorActionPreference = "Stop"
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-Write-Phase "1.5" "Self-Building — Pull MiOS Helper Image"
+# ==============================================================================
+Write-Phase "1.5" "Self-Building - Pull MiOS Helper Image"
 $ErrorActionPreference = "Continue"
 
 # Try to pull the existing MiOS image from the registry.
 # If it exists, use it as the helper image for ALL container operations
-# (hash generation, qemu-img conversion, etc.) — MiOS IS the builder.
+# (hash generation, qemu-img conversion, etc.) - MiOS IS the builder.
 # First build ever: no image exists yet, fall back to alpine/python.
 Write-Step "Checking for existing MiOS image at $GhcrImage..."
 
@@ -399,21 +399,21 @@ if ($RegistryToken) {
 & podman pull $GhcrImage 2>$null
 if ($LASTEXITCODE -eq 0) {
     $HelperImage = $GhcrImage
-    Write-OK "MiOS helper image pulled — self-building cycle active"
+    Write-OK "MiOS helper image pulled - self-building cycle active"
     Write-OK "All helper operations will use MiOS (openssl, qemu-img, etc.)"
 } else {
     # Check if it exists locally already (previous local build)
     & podman image exists $LocalImage 2>$null
     if ($LASTEXITCODE -eq 0) {
         $HelperImage = $LocalImage
-        Write-OK "Using local MiOS image as helper — self-building cycle active"
+        Write-OK "Using local MiOS image as helper - self-building cycle active"
     } else {
         $HelperImage = ""
-        Write-Warn "No existing MiOS image found — first build, using alpine/python fallbacks"
+        Write-Warn "No existing MiOS image found - first build, using alpine/python fallbacks"
         Write-Step "After this build completes and pushes, subsequent builds will self-build"
     }
 }
-# ── Self-Building BIB: Try MiOS as bootc-image-builder ────────────────────
+# -- Self-Building BIB: Try MiOS as bootc-image-builder --------------------
 # MiOS includes bootc-image-builder + osbuild as RPMs. If HelperImage is set,
 # verify it can serve as BIB. Falls back to centos-bootc on first build.
 $BIBSelfBuild = $false
@@ -425,13 +425,13 @@ if ($HelperImage) {
         $BIBSelfBuild = $true
         Write-OK "Self-building BIB: MiOS image will be used as bootc-image-builder"
     } else {
-        Write-Step "MiOS image lacks bootc-image-builder binary — using centos-bootc BIB"
+        Write-Step "MiOS image lacks bootc-image-builder binary - using centos-bootc BIB"
     }
 }
 $ErrorActionPreference = "Stop"
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
 if ($DoPull) {
     Write-Phase "2" "Pulling Image from Registry"
     if ($RegistryToken) {
@@ -447,7 +447,7 @@ if ($DoPull) {
 } elseif ($DoBuild) {
     Write-Phase "2" "OCI Container Build"
 
-    # ── Hash the password BEFORE injection ──
+    # -- Hash the password BEFORE injection --
     Write-Step "Pre-hashing credentials (plaintext will NOT appear in build log)..."
     $passHash = Get-SHA512Hash -SecretText $P
     if (-not $passHash -or $passHash -notmatch '^\$6\$') {
@@ -455,7 +455,7 @@ if ($DoPull) {
     }
     Write-OK "Password hashed (SHA-512)"
 
-    # ── Inject hostname (only if custom; restored via git checkout after build) ──
+    # -- Inject hostname (only if custom; restored via git checkout after build) --
     if ($HostIn -ne "mios") {
         Write-Step "Injecting static hostname: $HostIn ..."
         Set-Content "etc/hostname" "$HostIn" -Encoding ascii
@@ -485,9 +485,9 @@ if ($DoPull) {
     & git checkout etc/hostname 2>$null | Out-Null
 
     $buildMin = [math]::Round(((Get-Date) - $t0).TotalMinutes, 1)
-    Write-OK "Image built in $buildMin min → $LocalImage"
+    Write-OK "Image built in $buildMin min  $LocalImage"
 
-    # Tag with GHCR ref BEFORE BIB — sets permanent update origin
+    # Tag with GHCR ref BEFORE BIB - sets permanent update origin
     Write-Step "Tagging as $GhcrImage (sets update origin for bootc)..."
     & podman tag $LocalImage $GhcrImage
     Write-OK "Update origin set: $GhcrImage"
@@ -510,22 +510,22 @@ if ($DoPull) {
 
     Write-OK "Rechunk complete"
 
-    # Update helper image reference — this freshly built image IS the builder now
+    # Update helper image reference - this freshly built image IS the builder now
     $HelperImage = $LocalImage
     # Check if freshly built image can serve as BIB for deployment targets
     $null = & podman run --rm $LocalImage which bootc-image-builder 2>$null
     if ($LASTEXITCODE -eq 0) {
         $BIBImage = $LocalImage
         $BIBSelfBuild = $true
-        Write-OK "Helper image updated — self-building BIB active (MiOS IS the builder)"
+        Write-OK "Helper image updated - self-building BIB active (MiOS IS the builder)"
     } else {
         Write-OK "Helper image updated to freshly built $LocalImage (self-building ready)"
     }
 }
 
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
 #  PHASE 3: GENERATE DEPLOYMENT TARGETS
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
 Write-Phase "3" "Generating Deployment Targets"
 $ErrorActionPreference = "Continue"
 
@@ -544,13 +544,13 @@ if (Test-Path $bibConf) {
     }
     Write-OK "BIB config: 80 GiB minimum root (mounted as $bibMountPath)"
 } else {
-    Write-Warn "No BIB config found — disk may auto-size too small!"
+    Write-Warn "No BIB config found - disk may auto-size too small!"
     $bibConfDest = $null
 }
 
 $isoToml = Join-Path $PWD "iso.toml"
 $hasIsoToml = Test-Path $isoToml
-if ($hasIsoToml) { Write-OK "iso.toml found — kickstart will be injected into ISO" }
+if ($hasIsoToml) { Write-OK "iso.toml found - kickstart will be injected into ISO" }
 
 function Get-BIBArgs {
     param([string]$Type)
@@ -582,9 +582,9 @@ function Get-BIBArgs {
     return $bibArgs
 }
 
-# ── RAW ──
+# -- RAW --
 if ($SelectedTargets -contains 1) {
-    Write-Step "TARGET 1 — RAW disk image..."
+    Write-Step "TARGET 1 - RAW disk image..."
     Clear-BIBTemp
     $rawArgs = Get-BIBArgs "raw"
     & podman @rawArgs 2>&1
@@ -594,9 +594,9 @@ if ($SelectedTargets -contains 1) {
     } else { Write-Warn "RAW build failed" }
 }
 
-# ── VHDX ──
+# -- VHDX --
 if ($SelectedTargets -contains 2) {
-    Write-Step "TARGET 2 — VHD → VHDX (Hyper-V Gen2)..."
+    Write-Step "TARGET 2 - VHD  VHDX (Hyper-V Gen2)..."
     Clear-BIBTemp
     $vhdArgs = Get-BIBArgs "vhd"
     & podman @vhdArgs 2>&1
@@ -609,7 +609,7 @@ if ($SelectedTargets -contains 2) {
             if ($vhdFile.FullName -ne $vhdSrc) {
                 Move-Item $vhdFile.FullName $vhdSrc -Force
             }
-            Write-Step "Converting disk.vhd → VHDX (parallel coroutines)..."
+            Write-Step "Converting disk.vhd  VHDX (parallel coroutines)..."
             # -m 16 -W enables 16 parallel coroutines and out-of-order writes for massive speedup
             if ($HelperImage) {
                 & podman run --rm -v "${OutputFolder}:/data:z" $HelperImage `
@@ -621,16 +621,16 @@ if ($SelectedTargets -contains 2) {
             Remove-Item $vhdSrc -Force -ErrorAction SilentlyContinue
             Clear-BIBTemp
             if (Test-Path $TargetVhdx) { Write-OK "VHDX: $(Get-FileSize $TargetVhdx)" }
-            else { Write-Warn "VHDX conversion failed — qemu-img error" }
+            else { Write-Warn "VHDX conversion failed - qemu-img error" }
         } else {
             Write-Warn "VHD file not found in BIB output"
         }
     } else { Write-Warn "VHD build failed" }
 }
 
-# ── WSL ──
+# -- WSL --
 if ($SelectedTargets -contains 3) {
-    Write-Step "TARGET 3 — WSL2 tarball (via native bootc export)..."
+    Write-Step "TARGET 3 - WSL2 tarball (via native bootc export)..."
     if ($HelperImage) {
         & podman run --rm --privileged -v "${MiosDeployDir}:/output:z" $HelperImage bootc container export --format=tar "oci-archive:/output/wsl.oci" --output /output/mios-wsl.tar
         if ($LASTEXITCODE -ne 0) {
@@ -654,9 +654,9 @@ if ($SelectedTargets -contains 3) {
     else { Write-Warn "WSL export failed" }
 }
 
-# ── ISO ──
+# -- ISO --
 if ($SelectedTargets -contains 4) {
-    Write-Step "TARGET 4 — Anaconda installer ISO..."
+    Write-Step "TARGET 4 - Anaconda installer ISO..."
     Clear-BIBTemp
     $isoArgs = Get-BIBArgs "anaconda-iso"
     & podman @isoArgs 2>&1
@@ -669,9 +669,9 @@ if ($SelectedTargets -contains 4) {
 # Clean LUKS temp
 Remove-Item (Join-Path $OutputFolder ".luks-tmp") -Force -ErrorAction SilentlyContinue
 
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
 #  PHASE 3b: DEPLOYMENT (Hyper-V + WSL2)
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
 if ($env:MIOS_SKIP_DEPLOY -eq "1") {
     Write-OK "Deployment phase skipped (MIOS_SKIP_DEPLOY=1)"
 } else {
@@ -792,7 +792,7 @@ if ($env:MIOS_SKIP_DEPLOY -eq "1") {
                         $wslRAM = [Math]::Max(16, [Math]::Floor((Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum / 1GB * 0.75))
                         
                         $wslLines = @(
-                            "# MiOS v0.1.3 — WSL2 Configuration",
+                            "# MiOS v0.1.3 - WSL2 Configuration",
                             "[wsl2]",
                             "memory=${wslRAM}GB",
                             "processors=${wslCPUs}",
@@ -818,15 +818,15 @@ if ($env:MIOS_SKIP_DEPLOY -eq "1") {
 $ErrorActionPreference = "Stop"
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
 if ($DoPush -and $RegistryToken) {
-    Write-Phase "4" "Registry Push → $GhcrImage"
+    Write-Phase "4" "Registry Push  $GhcrImage"
     $ErrorActionPreference = "Continue"
     $registryHost = ($GhcrImage -split '/')[0]
 
-    Write-Step "Authenticating to $registryHost (token via stdin — NOT in process args)..."
+    Write-Step "Authenticating to $registryHost (token via stdin - NOT in process args)..."
     $RegistryToken | & podman login $registryHost --username $RegistryUser --password-stdin 2>&1 | Out-Null
-    if ($LASTEXITCODE -ne 0) { Write-Warn "Registry login failed — push may fail" }
+    if ($LASTEXITCODE -ne 0) { Write-Warn "Registry login failed - push may fail" }
 
     & podman push $GhcrImage
     if ($LASTEXITCODE -eq 0) {
@@ -848,23 +848,23 @@ if ($DoPush -and $RegistryToken) {
     $ErrorActionPreference = "Stop"
 
 } elseif ($DoPush) {
-    Write-Warn "Skipping push — no registry token provided"
+    Write-Warn "Skipping push - no registry token provided"
 }
 
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
 #  PHASE 5: SUMMARY
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
 Write-Phase "5" "Build Summary"
 Write-Host ""
 
 # Self-building status
 if ($HelperImage) {
-    Write-OK "Self-building: ACTIVE — MiOS image used as builder"
+    Write-OK "Self-building: ACTIVE - MiOS image used as builder"
     if ($BIBSelfBuild) { Write-OK "  BIB: Self-building (MiOS used as bootc-image-builder)" }
     else { Write-OK "  BIB: External (centos-bootc)" }
     Write-OK "  Next build will pull this image and use it for all operations"
 } else {
-    Write-Warn "Self-building: BOOTSTRAP — first build used fallback images"
+    Write-Warn "Self-building: BOOTSTRAP - first build used fallback images"
     Write-OK "  After push, subsequent builds will self-build from $GhcrImage"
 }
 Write-Host ""
@@ -878,7 +878,7 @@ foreach ($t in $targets) { Write-OK $t }
 Write-Host ""
 Write-OK "Output folder: $OutputFolder"
 
-# ── Copy Manifests ──
+# -- Copy Manifests --
 if (-not (Test-Path $MiosManifestsDir)) { New-Item -ItemType Directory -Path $MiosManifestsDir -Force | Out-Null }
 $manifests = @("root-manifest.json", "ai-context.json")
 foreach ($mf in $manifests) {
@@ -887,7 +887,7 @@ foreach ($mf in $manifests) {
 Write-OK "Manifests staged in $MiosManifestsDir"
 
 Write-Host ""
-Write-Host "  MiOS is self-replicating: pull → build → push → repeat" -ForegroundColor Cyan
+Write-Host "  MiOS is self-replicating: pull  build  push  repeat" -ForegroundColor Cyan
 Write-Host "  On deployed MiOS:  mios-rebuild" -ForegroundColor Cyan
 Write-Host "  On any machine:       podman pull $GhcrImage" -ForegroundColor Cyan
 Write-Host ""

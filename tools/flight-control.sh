@@ -17,12 +17,12 @@ NC='\033[0m'
 source ./tools/load-user-env.sh
 
 echo -e "${CYAN}"
-echo "╔═══════════════════════════════════════════════════════════════════════════╗"
-echo "║                          MIOS FLIGHT CONTROL                              ║"
-echo "╠═══════════════════════════════════════════════════════════════════════════╣"
+echo "+===========================================================================+"
+echo "|                          MIOS FLIGHT CONTROL                              |"
+echo "+===========================================================================+"
 echo -e "${NC}"
 
-# ── USER-SPACE MAPPING ──────────────────────────────────────────────────────
+# -- USER-SPACE MAPPING ------------------------------------------------------
 echo -e "${YELLOW}[DIR] User-Space Mappings (XDG Native)${NC}"
 printf "  %-20s %s\n" "Config:" "${MIOS_CONFIG_DIR}"
 printf "  %-20s %s\n" "Data:"   "${MIOS_DATA_DIR}"
@@ -30,7 +30,7 @@ printf "  %-20s %s\n" "Cache:"  "${MIOS_CACHE_DIR}"
 printf "  %-20s %s\n" "State:"  "${MIOS_STATE_DIR}"
 echo ""
 
-# ── FLIGHT VARIABLES (MUTABLE) ──────────────────────────────────────────────
+# -- FLIGHT VARIABLES (MUTABLE) ----------------------------------------------
 echo -e "${YELLOW}[VAR] Flight Variables (User-Set / Mutable)${NC}"
 printf "  %-20s %s\n" "User:"     "${MIOS_USER}"
 printf "  %-20s %s\n" "Hostname:" "${MIOS_HOSTNAME}"
@@ -38,7 +38,7 @@ printf "  %-20s %s\n" "Image:"    "${MIOS_IMAGE_NAME}"
 printf "  %-20s %s\n" "Flatpaks:" "${MIOS_FLATPAKS:-(default system set)}"
 echo ""
 
-# ── SYSTEM TAGS (IMMUTABLE/TRACKED) ─────────────────────────────────────────
+# -- SYSTEM TAGS (IMMUTABLE/TRACKED) -----------------------------------------
 echo -e "${YELLOW}[TAG] System Tags (Immutable / Tracked)${NC}"
 # Parse tags from registry.toml
 if [[ -f "config/registry.toml" ]]; then
@@ -56,7 +56,7 @@ if [[ -f "config/registry.toml" ]]; then
 fi
 echo ""
 
-# ── PREFLIGHT CHECKS ────────────────────────────────────────────────────────
+# -- PREFLIGHT CHECKS --------------------------------------------------------
 echo -e "${YELLOW}[CHK] Preflight Diagnostics${NC}"
 
 check_cmd() {
@@ -91,5 +91,5 @@ else
 fi
 
 echo ""
-echo -e "${CYAN}╚═══════════════════════════════════════════════════════════════════════════╝${NC}"
+echo -e "${CYAN}+===========================================================================+${NC}"
 echo ""

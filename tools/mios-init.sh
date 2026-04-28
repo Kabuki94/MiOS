@@ -24,7 +24,7 @@ error() { echo -e "${RED}[FAIL]${NC} $*" >&2; }
 show_help() {
     echo ""
     echo "  MiOS Unified Initialization"
-    echo "  ═══════════════════════════"
+    echo "  ==========================="
     echo ""
     echo "  USAGE: mios-init <verb> [options]"
     echo ""
@@ -41,9 +41,9 @@ show_help() {
 # Constraint: folder merges only, no overwrites to system files.
 do_live_init() {
     echo ""
-    echo "┌───────────────────────────────────────────────────────────────────────────┐"
-    echo "│ MiOS Mode 0: Live ISO Initiation                                          │"
-    echo "└───────────────────────────────────────────────────────────────────────────┘"
+    echo "+---------------------------------------------------------------------------+"
+    echo "| MiOS Mode 0: Live ISO Initiation                                          |"
+    echo "+---------------------------------------------------------------------------+"
     echo ""
 
     if [[ $EUID -ne 0 ]]; then
