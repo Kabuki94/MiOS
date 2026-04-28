@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -22,19 +22,19 @@
 > **Source Reference:** MiOS-Core-v0.1.3
 ---
 
-# 🪟 Windows 11 Build & Deployment Workflow
+#  Windows 11 Build & Deployment Workflow
 > **Proprietor:** MiOS-DEV
 > **Infrastructure:** Self-Building Infrastructure (Personal Property)
 > **License:** Licensed as personal property to MiOS-DEV
 > **Source Reference:** MiOS-Core-v0.1.3
 ---
 
-## 🚀 Overview
+## [START] Overview
 MiOS is optimized for development and synthesis on **Windows 11** using **Podman Desktop** and **WSL2**. This workflow utilizes a specialized PowerShell orchestration layer to handle everything from repository fetching to multi-artifact deployment (RAW, VHDX, ISO, WSL).
 
 ---
 
-## 🛠️ Prerequisites
+## [ENG] Prerequisites
 1.  **Windows 11** (Pro or Enterprise recommended for Hyper-V features).
 2.  **Podman Desktop** installed and initialized.
 3.  **WSL2** enabled (`wsl --install`).
@@ -43,7 +43,7 @@ MiOS is optimized for development and synthesis on **Windows 11** using **Podman
 
 ---
 
-## 🔄 The "One-Click" Workflow
+## [SYNC] The "One-Click" Workflow
 
 ### 1. Fetch & Initialize
 The easiest way to start is using the `install.ps1` script directly from the upstream repository. This handles the git fetch and environment pre-flight.
@@ -80,7 +80,7 @@ The `mios-build-local.ps1` script is the primary master orchestrator. It manages
 
 ---
 
-## 🏗️ Building in WSL2/g
+## [BUILD] Building in WSL2/g
 If you prefer to work entirely within a WSL2 environment:
 
 1.  **Clone the Repo:** `git clone https://github.com/Kabuki94/MiOS-bootstrap.git`
@@ -93,7 +93,7 @@ If you prefer to work entirely within a WSL2 environment:
 
 ---
 
-## 📦 Deployment Artifacts
+## [PKG] Deployment Artifacts
 Upon completion, the Windows workflow populates `.\mios-deploy-out\` with:
 -   `mios-bootable.raw`: For bare-metal flashing.
 -   `mios-hyperv.vhdx`: For immediate use in Hyper-V Manager.
@@ -102,17 +102,17 @@ Upon completion, the Windows workflow populates `.\mios-deploy-out\` with:
 
 ---
 
-## 🩺 Diagnostic Logging
+##  Diagnostic Logging
 Every Windows-side action is logged with high-resolution timestamps.
 -   **Build Logs:** Captured in `/usr/lib/mios/logs/` inside the image.
 -   **Orchestration Logs:** Outputted to the PowerShell console and mirrored in the project root during execution.
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

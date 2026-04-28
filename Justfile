@@ -6,10 +6,13 @@
 # This sources $HOME/.config/mios/*.toml files and exports MIOS_* variables
 _load_env := `bash -c 'source ./tools/load-user-env.sh 2>/dev/null || true'`
 
-IMAGE_NAME := env_var_or_default("MIOS_IMAGE_NAME", "ghcr.io/kabuki94/mios")
-VERSION := `cat VERSION 2>/dev/null || echo "v0.1.3"`
+MIOS_REGISTRY_DEFAULT := "ghcr.io/kabuki94/mios" # @track:REGISTRY_DEFAULT
+IMAGE_NAME := env_var_or_default("MIOS_IMAGE_NAME", MIOS_REGISTRY_DEFAULT)
+MIOS_VAR_VERSION := "0.1.3" # @track:VAR_VERSION
+VERSION := `cat VERSION 2>/dev/null || echo {{MIOS_VAR_VERSION}}`
 LOCAL := env_var_or_default("MIOS_IMAGE_NAME", "localhost/mios:latest")
-BIB := env_var_or_default("MIOS_BIB_IMAGE", "quay.io/centos-bootc/bootc-image-builder:latest")
+MIOS_IMG_BIB := "quay.io/centos-bootc/bootc-image-builder:latest" # @track:IMG_BIB
+BIB := env_var_or_default("MIOS_BIB_IMAGE", MIOS_IMG_BIB)
 
 # Build OCI image locally
 build: artifact

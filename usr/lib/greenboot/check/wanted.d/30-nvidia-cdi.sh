@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-# Wanted (warning only, not rollback): NVIDIA CDI spec exists when a GPU is present
+# Wanted ([WARN] only, not rollback): NVIDIA CDI spec exists when a GPU is present
 set -euo pipefail
 if compgen -G "/dev/nvidia*" >/dev/null; then
     if [[ -s /var/run/cdi/nvidia.yaml ]] || [[ -s /etc/cdi/nvidia.yaml ]]; then

@@ -1,9 +1,9 @@
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 # MiOS CI/CD Pipeline
-# Build → Rechunk → Sign → Push → SBOM → Cleanup
+# Build  Rechunk  Sign  Push  SBOM  Cleanup
 #
 # v2.1.0: Hardened triggers and automated maintenance.
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 name: Build MiOS
 
 on:
@@ -17,7 +17,7 @@ on:
       - ".github/ISSUE_TEMPLATE/**"
       - ".github/PULL_REQUEST_TEMPLATE.md"
   schedule:
-    # Weekly rebuild — picks up base image updates (kernel, Mesa, systemd)
+    # Weekly rebuild  picks up base image updates (kernel, Mesa, systemd)
     - cron: "0 6 * * 1"
   workflow_dispatch:
     inputs:
@@ -42,7 +42,7 @@ permissions:
   id-token: write    # Required for cosign keyless (OIDC) signing
 
 jobs:
-  # ─── Build Job ─────────────────────────────────────────────────────────────
+  # --- Build Job -------------------------------------------------------------
   build:
     runs-on: ubuntu-24.04
     outputs:
@@ -197,7 +197,7 @@ jobs:
           oras attach --artifact-type application/spdx+json "${IMAGE}@${DIGEST}" mios-sbom.spdx.json
           oras attach --artifact-type application/vnd.cyclonedx+json "${IMAGE}@${DIGEST}" mios-sbom.cyclonedx.json
 
-  # ─── Boot Validation ──────────────────────────────────────────────────────
+  # --- Boot Validation ------------------------------------------------------
   boot-validation:
     name: QEMU Boot Validation
     runs-on: ubuntu-24.04
@@ -215,7 +215,7 @@ jobs:
       - name: Run boot-test
         run: just boot-test
 
-  # ─── Automated Cleanup ─────────────────────────────────────────────────────
+  # --- Automated Cleanup -----------------------------------------------------
   cleanup:
     name: Maintain Repository Health
     runs-on: ubuntu-latest

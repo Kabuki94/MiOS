@@ -1,16 +1,16 @@
 #!/bin/bash
-# MiOS v0.1.3 — 01-repos: Fedora 44 overlay on ucore (base kernel preserved)
+# MiOS v0.1.3  01-repos: Fedora 44 overlay on ucore (base kernel preserved)
 #
 # FIX v0.1.3: Two-phase distro-sync to handle filesystem scriptlet failure.
 # The filesystem package's lua %posttrans fails in container builds, aborting
 # the entire 1162-package transaction. Without this fix, the system boots with
-# F43 core libs but F44 desktop packages — a broken ABI mismatch.
+# F43 core libs but F44 desktop packages  a broken ABI mismatch.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
 source "${SCRIPT_DIR}/lib/common.sh"
 
-# ── Global DNF config ───────────────────────────────────────────────────────
+# -- Global DNF config -------------------------------------------------------
 echo "[01-repos] Setting install_weak_deps=False globally..."
 DNF_CONF="/usr/lib/dnf/dnf.conf"
 if [ ! -f "$DNF_CONF" ]; then
@@ -25,7 +25,7 @@ if [ -f "$DNF_CONF" ]; then
 fi
 
 
-# ── Protect Base Repos from Third-Party Ties ───────────────────────────────
+# -- Protect Base Repos from Third-Party Ties -------------------------------
 echo "[01-repos] Elevating base repos to priority 98..."
 if [ -d /etc/yum.repos.d ]; then
     for repo in /etc/yum.repos.d/fedora*.repo /etc/yum.repos.d/ublue-os*.repo; do
@@ -35,7 +35,7 @@ if [ -d /etc/yum.repos.d ]; then
     done
 fi
 
-# ── Fedora 44 repo overlay ─────────────────────────────────────────────────
+# -- Fedora 44 repo overlay -------------------------------------------------
 echo "[01-repos] Adding Fedora 44 repository..."
 cat > /etc/yum.repos.d/fedora-44.repo <<'EOREPO'
 [fedora-44]
@@ -65,7 +65,7 @@ skip_if_unavailable=True
 priority=95
 EOREPO
 
-# ── Distro-sync to Fedora 44 (TWO-PHASE) ───────────────────────────────────
+# -- Distro-sync to Fedora 44 (TWO-PHASE) -----------------------------------
 echo "[01-repos] Distro-sync to Fedora 44 (this takes a while)..."
 
 echo "[01-repos] Phase 1: Pre-upgrading DNF, RPM, and core systemd/filesystem..."
@@ -74,7 +74,7 @@ echo "[01-repos] Phase 1: Pre-upgrading DNF, RPM, and core systemd/filesystem...
 # 1100+ package distro-sync transaction, preventing a fractured RPM database.
 $DNF_BIN "${DNF_SETOPT[@]}" upgrade -y --allowerasing --best \
     dnf rpm fedora-release fedora-repos filesystem systemd glibc dbus-broker 2>&1 || {
-    echo "[01-repos] NOTE: Pre-upgrade had warnings (likely filesystem lua scriptlet), continuing..."
+    echo "[01-repos] NOTE: Pre-upgrade had [WARN]s (likely filesystem lua scriptlet), continuing..."
 }
 
 echo "[01-repos] Phase 2: Distro-upgrade and userspace alignment..."
@@ -89,15 +89,15 @@ $DNF_BIN "${DNF_SETOPT[@]}" --setopt=excludepkgs="shim-*,kernel*" distro-sync -y
 echo "[01-repos] Verifying core package versions..."
 rpm -q systemd glibc dbus-broker filesystem || true
 
-# ── Pre-install F44 ca-certificates ────────────────────────────────────────
+# -- Pre-install F44 ca-certificates ----------------------------------------
 echo "[01-repos] Ensuring F44 ca-certificates is installed..."
 $DNF_BIN "${DNF_SETOPT[@]}" install -y ca-certificates p11-kit-trust 2>&1 | tail -5 || true
 
-# ── RPMFusion ───────────────────────────────────────────────────────────────
-echo "[01-repos] Installing RPMFusion Free + Nonfree for Rawhide..."
+# -- RPMFusion ---------------------------------------------------------------
+echo "[01-repos] Installing RPMFusion Free + Nonfree for Fedora 44..."
 $DNF_BIN "${DNF_SETOPT[@]}" install -y \
-    "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-rawhide.noarch.rpm" \
-    "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-rawhide.noarch.rpm" \
+    "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-44.noarch.rpm" \
+    "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-44.noarch.rpm" \
     2>&1 | tail -15 || true
 
 
@@ -109,7 +109,7 @@ for repo in rpmfusion-free rpmfusion-free-updates rpmfusion-nonfree rpmfusion-no
     fi
 done
 
-# ── Terra repo ──────────────────────────────────────────────────────────────
+# -- Terra repo --------------------------------------------------------------
 echo "[01-repos] Installing Terra repo..."
 $DNF_BIN "${DNF_SETOPT[@]}" install -y --repofrompath 'terra,https://repos.fyralabs.com/terra44' \
     --setopt='terra.gpgcheck=1' --setopt='terra.gpgkey=https://repos.fyralabs.com/terra44/key.asc' \
@@ -128,7 +128,7 @@ if [ -f /etc/yum.repos.d/terra.repo ]; then
     sed -i 's/^repo_gpgcheck=1/repo_gpgcheck=0/' /etc/yum.repos.d/terra.repo
 fi
 
-# ── CrowdSec repo ──────────────────────────────────────────────────────────
+# -- CrowdSec repo ----------------------------------------------------------
 echo "[01-repos] Adding CrowdSec repo..."
 cat > /etc/yum.repos.d/crowdsec.repo <<'EOREPO'
 [crowdsec]
@@ -140,7 +140,7 @@ repo_gpgcheck=0
 priority=80
 EOREPO
 
-# ── NVIDIA Container Toolkit repo ──────────────────────────────────────────
+# -- NVIDIA Container Toolkit repo ------------------------------------------
 echo "[01-repos] Adding NVIDIA Container Toolkit repo (EXPERIMENTAL for 1.18+)..."
 if ! [ -f /etc/yum.repos.d/nvidia-container-toolkit.repo ]; then
     cat > /etc/yum.repos.d/nvidia-container-toolkit.repo <<'EOREPO'

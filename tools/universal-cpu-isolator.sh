@@ -31,14 +31,14 @@ declare -A NUMA_MAP
 
 # Logging
 log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
-log_success() { echo -e "${GREEN}[âœ“]${NC} $1"; }
-log_warning() { echo -e "${YELLOW}[âš ]${NC} $1"; }
-log_error() { echo -e "${RED}[âœ—]${NC} $1"; }
+log_success() { echo -e "${GREEN}[]${NC} $1"; }
+log_[WARN]() { echo -e "${YELLOW}[]${NC} $1"; }
+log_error() { echo -e "${RED}[]${NC} $1"; }
 log_header() {
     echo ""
-    echo -e "${CYAN}â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—${NC}"
-    echo -e "${CYAN}â•‘${NC} ${BOLD}$1${NC}"
-    echo -e "${CYAN}â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
+    echo -e "${CYAN}******************************************************************${NC}"
+    echo -e "${CYAN}*${NC} ${BOLD}$1${NC}"
+    echo -e "${CYAN}******************************************************************${NC}"
     echo ""
 }
 
@@ -131,7 +131,7 @@ detect_intel_hybrid() {
         
         # Parse P-core and E-core counts (requires detailed lscpu parsing)
         # This is a simplified detection
-        log_warning "Intel Hybrid detected - manual verification recommended"
+        log_[WARN] "Intel Hybrid detected - manual verification recommended"
     fi
 }
 
@@ -142,19 +142,19 @@ display_cpu_topology() {
     local total_cpus=${CPU_INFO[threads]}
     local smt_enabled=$([[ ${CPU_INFO[threads_per_core]} -eq 2 ]] && echo "Yes" || echo "No")
     
-    echo -e "${CYAN}â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—${NC}"
-    echo -e "${CYAN}â•‘${NC} ${BOLD}CPU Configuration${NC}"
-    echo -e "${CYAN}â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•£${NC}"
-    echo -e "${CYAN}â•‘${NC} Model:        ${CPU_INFO[model]}"
-    echo -e "${CYAN}â•‘${NC} Cores:        ${CPU_INFO[cores]} physical"
-    echo -e "${CYAN}â•‘${NC} Threads:      ${CPU_INFO[threads]} logical (SMT: $smt_enabled)"
-    echo -e "${CYAN}â•‘${NC} NUMA Nodes:   ${CPU_INFO[numa_nodes]}"
+    echo -e "${CYAN}******************************************************************${NC}"
+    echo -e "${CYAN}*${NC} ${BOLD}CPU Configuration${NC}"
+    echo -e "${CYAN}******************************************************************${NC}"
+    echo -e "${CYAN}*${NC} Model:        ${CPU_INFO[model]}"
+    echo -e "${CYAN}*${NC} Cores:        ${CPU_INFO[cores]} physical"
+    echo -e "${CYAN}*${NC} Threads:      ${CPU_INFO[threads]} logical (SMT: $smt_enabled)"
+    echo -e "${CYAN}*${NC} NUMA Nodes:   ${CPU_INFO[numa_nodes]}"
     
     if [[ -n "${CPU_INFO[has_ccds]}" ]]; then
-        echo -e "${CYAN}â•‘${NC} CCDs:         ${CPU_INFO[ccd_count]} (AMD X3D)"
+        echo -e "${CYAN}*${NC} CCDs:         ${CPU_INFO[ccd_count]} (AMD X3D)"
     fi
     
-    echo -e "${CYAN}â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
+    echo -e "${CYAN}******************************************************************${NC}"
     echo ""
     
     # Visual CPU grid
@@ -707,7 +707,7 @@ select_exclude_cores() {
 # Performance cores (Intel Hybrid)
 select_performance_cores() {
     if [[ -z "${CPU_INFO[has_hybrid]}" ]]; then
-        log_warning "Hybrid architecture not detected - using generic selection"
+        log_[WARN] "Hybrid architecture not detected - using generic selection"
     fi
     
     echo ""
@@ -786,7 +786,7 @@ review_selection() {
     fi
     
     if [[ ${#HOST_CPUS[@]} -lt 2 ]]; then
-        log_warning "Host has only ${#HOST_CPUS[@]} CPU(s) - may cause performance issues"
+        log_[WARN] "Host has only ${#HOST_CPUS[@]} CPU(s) - may cause performance issues"
     fi
     
     echo ""
@@ -849,7 +849,7 @@ configure_isolcpus() {
     elif [[ -f /etc/default/grub ]]; then
         configure_isolcpus_grub "$isolcpus_param"
     else
-        log_warning "Bootloader not detected - manual configuration required"
+        log_[WARN] "Bootloader not detected - manual configuration required"
         echo "Add this to kernel parameters:"
         echo "  isolcpus=$isolcpus_param nohz_full=$isolcpus_param rcu_nocbs=$isolcpus_param"
     fi
@@ -1083,7 +1083,7 @@ case "\$1" in
         
         echo -e "\rProgress: \$((moved + failed))/\$total processes processed... Done!"
         echo ""
-        echo "âœ“ Successfully moved \$moved processes to host cores"
+        echo " Successfully moved \$moved processes to host cores"
         echo "  (Failed: \$failed - expected for kernel threads)"
         echo ""
         echo "Isolation active. Check with 'htop' to verify."
@@ -1106,7 +1106,7 @@ case "\$1" in
             fi
         done
         
-        echo "âœ“ Restored access to all CPUs for \$moved processes"
+        echo " Restored access to all CPUs for \$moved processes"
         echo "  (Failed: \$failed - expected for kernel threads)"
         ;;
     status)
@@ -1201,7 +1201,7 @@ generate_summary() {
     
     # Check if systemd affinity was configured
     if grep -q "^CPUAffinity=" /etc/systemd/system.conf 2>/dev/null; then
-        echo -e "${GREEN}âœ“ systemd CPUAffinity is active (processes already moved)${NC}"
+        echo -e "${GREEN} systemd CPUAffinity is active (processes already moved)${NC}"
         echo "  You can verify with: htop (press 't' for tree view)"
         echo "  Host cores should show activity, VM cores should be idle"
         echo ""
@@ -1247,14 +1247,14 @@ main() {
     configure_isolation
     generate_summary
     
-    echo -e "${YELLOW}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
+    echo -e "${YELLOW}****************************************************************${NC}"
     read -p "Reboot now to apply kernel changes? [y/N]: " reboot_now
     
     if [[ "$reboot_now" =~ ^[Yy]$ ]]; then
         log_info "Rebooting system..."
         systemctl reboot
     else
-        log_warning "Remember to reboot for isolcpus changes to take effect!"
+        log_[WARN] "Remember to reboot for isolcpus changes to take effect!"
         echo ""
         echo "After reboot, run: cpu-verify"
     fi

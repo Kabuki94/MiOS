@@ -1,5 +1,5 @@
 {
-  "_comment": "VSCodium / VSCode workspace settings for MiOS. WSL terminal profile removed — having it defined at all causes VSCodium to prefer it when extensions request 'a shell,' and Windows routes bare `bash` through WSL which spawns external popups. On a Windows 11 host, everything runs through PowerShell. Run shell tasks inside WSL manually with `wsl` if needed.",
+  "_comment": "VSCodium / VSCode workspace settings for MiOS. WSL terminal profile removed  having it defined at all causes VSCodium to prefer it when extensions request 'a shell,' and Windows routes bare `bash` through WSL which spawns external popups. On a Windows 11 host, everything runs through PowerShell. Run shell tasks inside WSL manually with `wsl` if needed.",
 
   "files.associations": {
     "Containerfile": "dockerfile",
@@ -520,7 +520,7 @@
   "shellcheck.enable": true,
   "shellcheck.run": "onSave",
   "shellcheck.useWorkspaceRootAsCwd": true,
-  "shellcheck.customArgs": ["-S", "warning"],
+  "shellcheck.customArgs": ["-S", "[WARN]"],
   "shellcheck.exclude": [],
 
   "[dockerfile]": {
@@ -583,7 +583,7 @@
   "git.confirmSync": true,
   "git.enableSmartCommit": false,
 
-  "_terminal_comment": "PowerShell is the ONLY terminal profile on Windows. No WSL, no Git Bash, no Cygwin — having those defined at all makes VSCodium and System Code pick them up as available shells, and running bare `bash` on Windows spawns external WSL popups. If you need a Linux shell, `wsl` is a one-word command in PowerShell.",
+  "_terminal_comment": "PowerShell is the ONLY terminal profile on Windows. No WSL, no Git Bash, no Cygwin  having those defined at all makes VSCodium and System Code pick them up as available shells, and running bare `bash` on Windows spawns external WSL popups. If you need a Linux shell, `wsl` is a one-word command in PowerShell.",
   "terminal.integrated.defaultProfile.windows": "PowerShell",
   "terminal.integrated.profiles.windows": {
     "PowerShell": {
@@ -614,7 +614,7 @@
   },
   "terminal.external.windowsExec": "",
 
-  ".ai/foundation_comment": "Pin System Code's shell to PowerShell. Multiple key variants because the extension's schema changes across versions — unknown keys ignored, known ones take effect.",
+  ".ai/foundation_comment": "Pin System Code's shell to PowerShell. Multiple key variants because the extension's schema changes across versions  unknown keys ignored, known ones take effect.",
   .ai/foundation-code.projectContextFile": "INDEX.md",
   .ai/foundation-code.enableProjectAgents": true,
   .ai/foundation-code.enableSlashCommands": true,

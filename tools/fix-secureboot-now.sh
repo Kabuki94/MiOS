@@ -11,9 +11,9 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-echo -e "${BOLD}${RED}══════════════════════════════════════════════════════════${NC}"
+echo -e "${BOLD}${RED}==========================================================${NC}"
 echo -e "${BOLD}${RED}   Secure Boot Troubleshooting & Alternative Methods${NC}"
-echo -e "${BOLD}${RED}══════════════════════════════════════════════════════════${NC}\n"
+echo -e "${BOLD}${RED}==========================================================${NC}\n"
 
 if [ "$EUID" -ne 0 ]; then
     echo -e "${RED}Run as root: sudo $0${NC}\n"
@@ -30,15 +30,15 @@ echo
 
 echo -e "${YELLOW}Checking for firmware features:${NC}"
 if grep -q "enrolled-keys" /tmp/xbox-check.xml; then
-    echo -e "  ${GREEN}✓ enrolled-keys feature found${NC}"
+    echo -e "  ${GREEN}[OK] enrolled-keys feature found${NC}"
 else
-    echo -e "  ${RED}✗ enrolled-keys feature NOT found${NC}"
+    echo -e "  ${RED}[FAIL] enrolled-keys feature NOT found${NC}"
 fi
 
 if grep -q 'firmware="efi"' /tmp/xbox-check.xml; then
-    echo -e "  ${GREEN}✓ firmware='efi' attribute found${NC}"
+    echo -e "  ${GREEN}[OK] firmware='efi' attribute found${NC}"
 else
-    echo -e "  ${RED}✗ firmware='efi' attribute NOT found${NC}"
+    echo -e "  ${RED}[FAIL] firmware='efi' attribute NOT found${NC}"
 fi
 
 echo -e "\n${BLUE}[2] Checking NVRAM file...${NC}\n"
@@ -54,9 +54,9 @@ else
     echo -e "${RED}NVRAM doesn't exist!${NC}"
 fi
 
-echo -e "\n${BOLD}${YELLOW}══════════════════════════════════════════════════════════${NC}"
+echo -e "\n${BOLD}${YELLOW}==========================================================${NC}"
 echo -e "${BOLD}${YELLOW}   Alternative Solutions${NC}"
-echo -e "${BOLD}${YELLOW}══════════════════════════════════════════════════════════${NC}\n"
+echo -e "${BOLD}${YELLOW}==========================================================${NC}\n"
 
 echo -e "${CYAN}The auto-enrollment method failed. Here are alternatives:${NC}\n"
 
@@ -97,7 +97,7 @@ case $choice in
         for url in "${SOURCES[@]}"; do
             echo -e "${CYAN}Trying: $url${NC}"
             if wget -q --timeout=30 --tries=2 "$url" -O ovmf.rpm 2>/dev/null; then
-                echo -e "${GREEN}✓ Download successful${NC}"
+                echo -e "${GREEN}[OK] Download successful${NC}"
                 SUCCESS=true
                 break
             fi
@@ -112,7 +112,7 @@ case $choice in
             if wget -q "$VARS_URL" -O OVMF_VARS.fd; then
                 cp OVMF_VARS.fd /usr/share/edk2/x64/OVMF_VARS.secboot.4m.fd
                 chmod 644 /usr/share/edk2/x64/OVMF_VARS.secboot.4m.fd
-                echo -e "${GREEN}✓ Installed VARS file${NC}"
+                echo -e "${GREEN}[OK] Installed VARS file${NC}"
             else
                 echo -e "${RED}Failed to download${NC}"
                 exit 1
@@ -130,7 +130,7 @@ case $choice in
             if [ -n "$VARS" ]; then
                 cp "$VARS" /usr/share/edk2/x64/OVMF_VARS.secboot.4m.fd
                 chmod 644 /usr/share/edk2/x64/OVMF_VARS.secboot.4m.fd
-                echo -e "${GREEN}✓ Installed: /usr/share/edk2/x64/OVMF_VARS.secboot.4m.fd${NC}"
+                echo -e "${GREEN}[OK] Installed: /usr/share/edk2/x64/OVMF_VARS.secboot.4m.fd${NC}"
             fi
         fi
 
@@ -148,13 +148,13 @@ case $choice in
         virsh define /tmp/xbox-check.xml
         virsh start Xbox
 
-        echo -e "${GREEN}✓ VM restarted with enrolled VARS${NC}"
+        echo -e "${GREEN}[OK] VM restarted with enrolled VARS${NC}"
         ;;
 
     2)
         echo -e "\n${BLUE}Checking for virt-firmware...${NC}"
         if ! command -v virt-fw-vars &>/dev/null; then
-            echo -e "${RED}✗ virt-firmware is missing! Must be installed via PACKAGES.md.${NC}"
+            echo -e "${RED}[FAIL] virt-firmware is missing! Must be installed via PACKAGES.md.${NC}"
             exit 1
         fi
 
@@ -169,7 +169,7 @@ case $choice in
                      --secure-boot
 
         virsh start Xbox
-        echo -e "${GREEN}✓ Keys enrolled${NC}"
+        echo -e "${GREEN}[OK] Keys enrolled${NC}"
         ;;
 
     3)
@@ -201,7 +201,7 @@ case $choice in
             virsh define /tmp/xbox-check.xml
             virsh start Xbox
 
-            echo -e "${GREEN}✓ Installed Ubuntu OVMF VARS${NC}"
+            echo -e "${GREEN}[OK] Installed Ubuntu OVMF VARS${NC}"
         fi
         ;;
 

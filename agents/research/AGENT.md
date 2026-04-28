@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -22,7 +22,7 @@
 
 ---
 
-# 🤖 Agent Integration
+#  Agent Integration
 
 This sub-project is a component of the **MiOS repository**. All AI agents MUST adhere to the architecture laws and conventions defined in the root [INDEX.md](../INDEX.md).
 
@@ -42,10 +42,10 @@ MiOS maintains a **Unified Knowledge Base** for RAG.
 If you have ADK skills available, use those instead of fetching the URLs below.
 
 Otherwise, fetch these resources as needed:
-- **ADK Cheatsheet**: https://raw.githubusercontent.com/CloudCloudPlatform/agent-starter-pack/refs/heads/main/agent_starter_pack/resources/specs/adk-cheatsheet.md — Agent definitions, tools, callbacks, orchestration
-- **Evaluation Guide**: https://raw.githubusercontent.com/CloudCloudPlatform/agent-starter-pack/refs/heads/main/agent_starter_pack/resources/specs/adk-eval-guide.md — Eval config, metrics, gotchas
-- **Deployment Guide**: https://raw.githubusercontent.com/CloudCloudPlatform/agent-starter-pack/refs/heads/main/agent_starter_pack/resources/specs/adk-deploy-guide.md — Infrastructure, CI/CD, testing deployed agents
-- **Development Guide**: https://raw.githubusercontent.com/CloudCloudPlatform/agent-starter-pack/refs/heads/main/specs/guide/development-guide.md — Full development workflow
+- **ADK Cheatsheet**: https://raw.githubusercontent.com/CloudCloudPlatform/agent-starter-pack/refs/heads/main/agent_starter_pack/resources/specs/adk-cheatsheet.md  Agent definitions, tools, callbacks, orchestration
+- **Evaluation Guide**: https://raw.githubusercontent.com/CloudCloudPlatform/agent-starter-pack/refs/heads/main/agent_starter_pack/resources/specs/adk-eval-guide.md  Eval config, metrics, gotchas
+- **Deployment Guide**: https://raw.githubusercontent.com/CloudCloudPlatform/agent-starter-pack/refs/heads/main/agent_starter_pack/resources/specs/adk-deploy-guide.md  Infrastructure, CI/CD, testing deployed agents
+- **Development Guide**: https://raw.githubusercontent.com/CloudCloudPlatform/agent-starter-pack/refs/heads/main/specs/guide/development-guide.md  Full development workflow
 - **ADK Docs**: https://google.github.io/adk-specs/llms.txt
 
 ---
@@ -95,11 +95,11 @@ Ask the user: Option A (simple single-project) or Option B (full CI/CD pipeline 
 - **Terraform conflicts** (Error 409): Use `terraform import` instead of retrying creation.
 
 ---
-### 📚 Bootc Ecosystem & Resources
+###  Bootc Ecosystem & Resources
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osautomation/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Sole Proprietor:** MiOS-DEV
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

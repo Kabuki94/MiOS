@@ -16,9 +16,9 @@ def test_models():
             try:
                 model = GenerativeModel(model_name)
                 response = model.generate_content("Hi")
-                print(f"✅ {model_name} in {region} success!")
+                print(f"[OK] {model_name} in {region} success!")
             except Exception as e:
-                print(f"❌ {model_name} in {region} failed: {str(e)[:100]}")
+                print(f"[FAIL] {model_name} in {region} failed: {str(e)[:100]}")
 
 if __name__ == "__main__":
     test_models()

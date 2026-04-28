@@ -17,7 +17,7 @@ jobs:
         uses: ludeeus/action-shellcheck@v2.0.0
         with:
           scandir: automation/
-          severity: warning
+          severity: [WARN]
 
       - name: Hadolint (Containerfile)
         uses: hadolint/hadolint-action@v3.3.0

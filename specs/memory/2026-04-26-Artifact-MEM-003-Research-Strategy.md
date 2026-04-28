@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -82,11 +82,11 @@ This document outlines the comprehensive research and remediation plan for the 1
 This plan aims to trace and rectify all missing components and issues affecting the MiOS project. Tracking progress through the Kanban matrix will ensure transparency and accountability throughout the process.
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

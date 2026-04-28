@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -22,7 +22,7 @@
 > **Source Reference:** MiOS-Core-v0.1.3
 ---
 
-# 🧪 MiOS System Validation
+#  MiOS System Validation
 
 ```json
 {
@@ -34,9 +34,9 @@
 
 ---
 
-## 🛠️ Validation Suites
+## [ENG] Validation Suites
 
-### 🩺 Smoke Testing
+###  Smoke Testing
 Basic system integrity and service readiness checks.
 
 ```json
@@ -50,7 +50,7 @@ Basic system integrity and service readiness checks.
 }
 ```
 
-### 🎮 Virtualization Stabiliy
+### [GAME] Virtualization Stabiliy
 Verifying the integrity of the KVM/VFIO stack.
 
 | Test | Objective | Target |
@@ -61,7 +61,7 @@ Verifying the integrity of the KVM/VFIO stack.
 
 ---
 
-## 📋 Software Bill of Materials (SBOM)
+## [CLIP] Software Bill of Materials (SBOM)
 
 MiOS generates signed manifests for every build.
 
@@ -72,11 +72,11 @@ MiOS generates signed manifests for every build.
 ---
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

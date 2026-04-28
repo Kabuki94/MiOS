@@ -1,4 +1,4 @@
-# MiOS — CrowdSec Metabase dashboard (Podman Quadlet)
+# MiOS -- CrowdSec Metabase dashboard (Podman Quadlet)
 # Only runs on bare-metal/VM; WSL2 lacks the dbus/socket environment needed
 # for reliable container startup. Restart=on-failure prevents infinite loops
 # when crowdsec itself is not yet enrolled.

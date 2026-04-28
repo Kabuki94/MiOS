@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -22,7 +22,7 @@
 > **Source Reference:** MiOS-Core-v0.1.3
 ---
 
-# 🛠️ MiOS Operational Handbook
+# [ENG] MiOS Operational Handbook
 
 ```json
 {
@@ -34,9 +34,9 @@
 
 ---
 
-## 🚀 Deployment & Installation
+## [START] Deployment & Installation
 
-### 💻 WSL2 Quickstart
+### [PC] WSL2 Quickstart
 MiOS is optimized for Windows Subsystem for Linux with automated pathing and systemd enablement.
 
 ```json
@@ -55,9 +55,9 @@ MiOS is optimized for Windows Subsystem for Linux with automated pathing and sys
 
 ---
 
-## 🔄 Lifecycle Management
+## [SYNC] Lifecycle Management
 
-### 📥 System Upgrades
+###  System Upgrades
 MiOS uses transactional atomic swaps.
 
 | Method | Command | Behavior |
@@ -68,9 +68,9 @@ MiOS uses transactional atomic swaps.
 
 ---
 
-## 💾 Backup & Persistence
+##  Backup & Persistence
 
-### 🛡️ Data Retention
+### [SEC] Data Retention
 Only `/var` and `/etc` contain mutable state. All other changes are lost on upgrade.
 
 ```json
@@ -91,11 +91,11 @@ Only `/var` and `/etc` contain mutable state. All other changes are lost on upgr
 ---
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

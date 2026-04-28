@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS AI Integration
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS AI Integration
 
 ```json:knowledge
 {
@@ -143,7 +143,7 @@ vectorstore = Chroma.from_documents(
     embedding=embeddings,
     persist_directory="~/mios-rag-db"
 )
-print(f"✓ Indexed {len(splits)} chunks")
+print(f"[OK] Indexed {len(splits)} chunks")
 PYTHON
 ```
 
@@ -169,27 +169,27 @@ QUERY
 
 ## Knowledge Preservation
 
-### ✅ All Documentation Intact
+### [OK] All Documentation Intact
 - INDEX.md (AI agent hub, immutable laws)
 - PACKAGES.md (package SSOT)
 - SELF-BUILD.md (4 build modes)
 - SECURITY.md (hardening checklist)
 - All specs/ (blueprints, research, engineering)
 
-### ✅ All Scripts Functional
+### [OK] All Scripts Functional
 - automation/01-repos.sh through 99-cleanup.sh
 - automation/build.sh (master orchestrator)
 - automation/lib/packages.sh (package management)
 - tools/ (utilities, monitors, builders)
 - evals/ (smoke tests, validation)
 
-### ✅ All Memories Retained
+### [OK] All Memories Retained
 - JOURNAL.md (episodic memory)
 - .ai/foundation/memories/ (semantic memory)
 - ai-context.json (structured manifest)
 
-### ✅ All Patterns Documented
-- Build pipeline (ctx stage → main stage)
+### [OK] All Patterns Documented
+- Build pipeline (ctx stage  main stage)
 - Package installation (install_packages <category>)
 - Platform detection (systemd-detect-virt)
 - Immutable laws (USR-OVER-ETC, NO-MKDIR-IN-VAR, etc.)
@@ -255,12 +255,12 @@ tar -xzf mios-context-*.tar.gz -C test-extract
 
 # Check script syntax
 for script in test-extract/automation/*.sh; do
-  bash -n "$script" && echo "✓ $script" || echo "✗ $script"
+  bash -n "$script" && echo "[OK] $script" || echo "[FAIL] $script"
 done
 
 # Verify key files
-test -f test-extract/INDEX.md && echo "✓ INDEX.md"
-test -f test-extract/Containerfile && echo "✓ Containerfile"
+test -f test-extract/INDEX.md && echo "[OK] INDEX.md"
+test -f test-extract/Containerfile && echo "[OK] Containerfile"
 ```
 
 ---
@@ -283,4 +283,4 @@ test -f test-extract/Containerfile && echo "✓ Containerfile"
 **MiOS Version:** 0.1.3
 
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

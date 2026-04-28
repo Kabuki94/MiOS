@@ -4,7 +4,7 @@
 # ----------------------------------------------------------------------------
 # Enable external DNF repositories for MiOS (Fedora 44 / Rawhide).
 # Idempotent; fails fast; uses ${DNF_SETOPT[@]} from automation/lib/common.sh.
-# RPM Fusion is intentionally NOT handled here — see 01-repos.sh.
+# RPM Fusion is intentionally NOT handled here  see 01-repos.sh.
 #
 # v2.3 CHANGES:
 #   - Added Kubernetes stable v1.32 repo (kubectl not in Fedora repos).
@@ -33,7 +33,7 @@ if [[ ! -f "${REPO_DIR}/terra.repo" ]]; then
         https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo \
         -o "${REPO_DIR}/terra.repo"
 else
-    log "Terra repo already present — skipping"
+    log "Terra repo already present  skipping"
 fi
 
 # --- 2. Visual Studio Code (Microsoft) --------------------------------------
@@ -52,7 +52,7 @@ gpgcheck=1
 gpgkey=https://packages.microsoft.com/keys/microsoft.asc
 EOF
 else
-    log "VS Code repo already present — skipping"
+    log "VS Code repo already present  skipping"
 fi
 
 # --- 3. 1Password -----------------------------------------------------------
@@ -69,7 +69,7 @@ gpgcheck=1
 gpgkey=https://downloads.1password.com/linux/keys/1password.asc
 EOF
 else
-    log "1Password repo already present — skipping"
+    log "1Password repo already present  skipping"
 fi
 
 # --- 4. Tailscale -----------------------------------------------------------
@@ -79,7 +79,7 @@ if [[ ! -f "${REPO_DIR}/tailscale.repo" ]]; then
         --overwrite \
         --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo
 else
-    log "Tailscale repo already present — skipping"
+    log "Tailscale repo already present  skipping"
 fi
 
 # --- 5. Docker CE (required when podman-docker is removed) ------------------
@@ -89,7 +89,7 @@ if [[ ! -f "${REPO_DIR}/docker-ce.repo" ]]; then
         --overwrite \
         --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
 else
-    log "Docker CE repo already present — skipping"
+    log "Docker CE repo already present  skipping"
 fi
 
 # --- 6. Cloud Chrome -------------------------------------------------------
@@ -106,11 +106,11 @@ gpgcheck=1
 gpgkey=https://dl.google.com/linux/linux_signing_key.pub
 EOF
 else
-    log "Cloud Chrome repo already present — skipping"
+    log "Cloud Chrome repo already present  skipping"
 fi
 
 # --- 7. Kubernetes stable v1.32 (kubectl) -----------------------------------
-# kubectl is NOT in standard Fedora repos — must come from the Kubernetes
+# kubectl is NOT in standard Fedora repos  must come from the Kubernetes
 # project's own RPM repository. Pinned to v1.32 (current stable).
 # Only kubectl is installed from here; kubeadm/kubelet are intentionally
 # excluded (k3s is used for the cluster runtime, not kubeadm).
@@ -127,7 +127,7 @@ repo_gpgcheck=1
 exclude=kubelet kubeadm cri-tools kubernetes-cni
 EOF
 else
-    log "Kubernetes repo already present — skipping"
+    log "Kubernetes repo already present  skipping"
 fi
 
 # --- 8. ublue-os/packages COPR (uupd + greenboot) ---------------------------
@@ -144,15 +144,15 @@ if [[ ! -f "${REPO_DIR}/ublue-os-packages.repo" ]]; then
         sed -i '/^\[/a priority=75' "${REPO_DIR}/ublue-os-packages.repo"
     fi
 else
-    log "ublue-os/packages COPR already present — skipping"
+    log "ublue-os/packages COPR already present  skipping"
 fi
 
-# ── Waydroid (Aleasto) ───────────────────────────────────────────────────
+# -- Waydroid (Aleasto) ---------------------------------------------------
 if ! [ -f /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:aleasto:waydroid.repo ]; then
     log "enabling aleasto/waydroid COPR (GNOME 50 fix)"
     $DNF_BIN "${DNF_SETOPT[@]}" copr enable -y aleasto/waydroid
 else
-    log "aleasto/waydroid COPR already present — skipping"
+    log "aleasto/waydroid COPR already present  skipping"
 fi
 
 log "external repos enabled; refreshing metadata"

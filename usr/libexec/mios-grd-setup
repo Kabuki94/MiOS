@@ -22,7 +22,7 @@ if [ -f "$SENTINEL" ]; then
 fi
 
 if ! command -v grdctl >/dev/null 2>&1; then
-    log "grdctl not found — gnome-remote-desktop is not installed; skipping."
+    log "grdctl not found -- gnome-remote-desktop is not installed; skipping."
     exit 0
 fi
 

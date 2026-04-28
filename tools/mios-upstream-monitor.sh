@@ -1,5 +1,5 @@
 #!/bin/bash
-# MiOS v0.1.3 — Upstream Feed Monitor
+# MiOS v0.1.3  Upstream Feed Monitor
 # ----------------------------------------------------------------------------
 # Automates checking for updates from core MiOS dependencies.
 # Uses GitHub API and other feeds to identify new versions.
@@ -27,9 +27,9 @@ get_latest_tag() {
 # CORE MONITORING
 # ----------------------------------------------------------------------------
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  MiOS UPSTREAM MONITOR — $(date)"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "  MiOS UPSTREAM MONITOR  $(date)"
+echo ""
 
 # 1. Fedora Release Status (live Bodhi API)
 printf '\e[36m[monitor]\e[0m Checking Fedora 44 release state (Bodhi)...\n'
@@ -63,4 +63,4 @@ printf '\e[36m[monitor]\e[0m Checking Waydroid CDI Issue #1883...\n'
 WAYDROID_STATUS=$(gh_api "waydroid/waydroid" "issues/1883" | grep -Po '"state": "\K.*?(?=")' || echo "Unknown")
 echo "  Issue Status: $WAYDROID_STATUS"
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""

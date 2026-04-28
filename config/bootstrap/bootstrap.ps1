@@ -1,4 +1,4 @@
-# MiOS Public Bootstrap — Windows (PowerShell 5.1+)
+# MiOS Public Bootstrap  Windows (PowerShell 5.1+)
 # Repository: Kabuki94/MiOS-bootstrap
 # Usage: irm https://raw.githubusercontent.com/Kabuki94/MiOS-bootstrap/main/bootstrap.ps1 | iex
 
@@ -109,13 +109,13 @@ Write-Host "  |  MiOS -- Local Build Configuration                          |" -
 Write-Host "  +==============================================================+" -ForegroundColor Cyan
 Write-Host ""
 
-# ── Stage Directories ──────────────────────────────────────────────────────
+# -- Stage Directories ------------------------------------------------------
 Write-Host "  Staging MiOS environment..." -ForegroundColor Gray
 foreach ($d in @($MiosConfigDir, $MiosEnvDir, $MiosRepoDir, $MiosBuildsDir, $MiosDeployDir, $MiosManifestsDir, $MiosImagesDir)) {
     if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }
 }
 
-# ── Configure Windows Subsystem for Linux (.wslconfig) ───────────────────
+# -- Configure Windows Subsystem for Linux (.wslconfig) -------------------
 Write-Host "  Configuring WSL2 for MiOS..." -ForegroundColor Gray
 try {
     $wslConfigPath = Join-Path $env:USERPROFILE ".wslconfig"
@@ -123,7 +123,7 @@ try {
     $wslRAM = [Math]::Max(16, [Math]::Floor($totalRAM / 1GB * 0.80))
     $wslCPUs = (Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors
     $wslLines = @(
-        "# MiOS v0.1.3 — WSL2 Configuration",
+        "# MiOS v0.1.3  WSL2 Configuration",
         "[wsl2]",
         "memory=${wslRAM}GB",
         "processors=${wslCPUs}",
@@ -150,7 +150,7 @@ try {
     Write-Host "  [!] Failed to configure .wslconfig: $_" -ForegroundColor DarkGray
 }
 
-# ── Load saved build config ───────────────────────────────────────────────
+# -- Load saved build config -----------------------------------------------
 if (Test-Path $EnvFile) {
     Write-Host "  Found saved config: $EnvFile" -ForegroundColor DarkGray
     $loadOk = Read-Host "  Load previous build variables? [Y/n]"
@@ -162,7 +162,7 @@ if (Test-Path $EnvFile) {
     }
 }
 
-# ── GitHub PAT (required for private repo access) ───────────────────────────
+# -- GitHub PAT (required for private repo access) ---------------------------
 if (-not $env:GHCR_TOKEN) {
     $env:GHCR_TOKEN = Read-Secret "GitHub PAT (requires 'repo' scope):"
 }
@@ -174,14 +174,14 @@ Write-Host ""
 Write-Host "  -- Build Configuration -----------------------------------------" -ForegroundColor Yellow
 Write-Host ""
 
-# ── Admin username ────────────────────────────────────────────────────────────
+# -- Admin username ------------------------------------------------------------
 if (-not $env:MIOS_USER) {
     $env:MIOS_USER = Read-WithDefault "Admin username:" "mios"
 } else {
     Write-Host "  Admin username: $($env:MIOS_USER)  (env)" -ForegroundColor DarkGray
 }
 
-# ── Admin password ────────────────────────────────────────────────────────────
+# -- Admin password ------------------------------------------------------------
 if (-not $env:MIOS_PASSWORD) {
     while ($true) {
         $pw1 = Read-Secret "Admin password:"
@@ -194,7 +194,7 @@ if (-not $env:MIOS_PASSWORD) {
     Write-Host "  Admin password: (env -- masked)" -ForegroundColor DarkGray
 }
 
-# ── Hostname ──────────────────────────────────────────────────────────────────
+# -- Hostname ------------------------------------------------------------------
 # Suffix is generated first so the user sees the full hostname in the prompt.
 if (-not $env:MIOS_HOSTNAME) {
     $suffix = '{0:D5}' -f (Get-Random -Minimum 10000 -Maximum 99999)
@@ -208,7 +208,7 @@ if (-not $env:MIOS_HOSTNAME) {
     Write-Host "  Hostname: $($env:MIOS_HOSTNAME)  (env)" -ForegroundColor DarkGray
 }
 
-# ── Optional: GHCR push credentials ──────────────────────────────────────────
+# -- Optional: GHCR push credentials ------------------------------------------
 if (-not $env:MIOS_GHCR_USER) {
     Write-Host ""
     $env:MIOS_GHCR_USER = Read-WithDefault "GHCR push username [skip]:" ""
@@ -218,7 +218,7 @@ if ($env:MIOS_GHCR_USER -and -not $env:MIOS_GHCR_PUSH_TOKEN) {
     $env:MIOS_GHCR_PUSH_TOKEN = if ($pt) { $pt } else { $env:GHCR_TOKEN }
 }
 
-# ── Summary ────────────────────────────────────────────────────────────────────
+# -- Summary --------------------------------------------------------------------
 Write-Host ""
 Write-Host "  -- Summary -----------------------------------------------------" -ForegroundColor Yellow
 Write-Host ""
@@ -232,11 +232,11 @@ Write-Host ""
 $ok = Read-Host "  Proceed? [Y/n]"
 if ($ok -and $ok.ToLower() -eq "n") { Write-Host "  Aborted."; exit 0 }
 
-# ── Save build config ─────────────────────────────────────────────────────────
+# -- Save build config ---------------------------------------------------------
 Export-EnvFile $EnvFile
 Write-Host "  [OK] Build config saved -> $EnvFile" -ForegroundColor Green
 
-# ── Fetch and execute private installer ───────────────────────────────────────
+# -- Fetch and execute private installer ---------------------------------------
 $env:MIOS_AUTOINSTALL = "1"
 $env:MIOS_DIR = $MiosRepoDir
 $env:MIOS_BUILDS_DIR = $MiosBuildsDir

@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-# generate-mok-key.sh — one-shot MiOS MOK key generator.
+# generate-mok-key.sh  one-shot MiOS MOK key generator.
 #
 # Generates a 2048-bit RSA key (NOT 4096: shim compatibility) with:
 #   - codeSigning EKU
@@ -99,7 +99,7 @@ chmod 0644 "$DER_CERT" "$PEM_CERT"
 rm -f "$EXTFILE"
 
 echo ""
-echo "═══════════════════════════════════════════════════════════════"
+echo "==============================================================="
 echo "Key files created:"
 echo "  Private key (encrypted PEM): $PRIV_KEY"
 echo "  Certificate (DER):           $DER_CERT"
@@ -110,9 +110,9 @@ echo ""
 echo "Fingerprint: $FINGERPRINT"
 echo ""
 echo "GitHub secrets to set:"
-echo "  COSIGN_PRIVATE_KEY  — for cosign key-based signing (separate cosign keypair)"
-echo "  MIOS_MOK_KEY_B64 — content of $B64_PRIV"
-echo "  MIOS_MOK_KEY_PASSWORD — your passphrase"
+echo "  COSIGN_PRIVATE_KEY   for cosign key-based signing (separate cosign keypair)"
+echo "  MIOS_MOK_KEY_B64  content of $B64_PRIV"
+echo "  MIOS_MOK_KEY_PASSWORD  your passphrase"
 echo ""
 echo "Commit the DER cert to the repo:"
 echo "  cp $DER_CERT etc/pki/mios/mok.der"
@@ -120,4 +120,4 @@ echo "  git add etc/pki/mios/mok.der"
 echo ""
 echo "Never commit the private key. Add to .gitignore:"
 echo "  /etc/pki/mios/mok.priv"
-echo "═══════════════════════════════════════════════════════════════"
+echo "==============================================================="

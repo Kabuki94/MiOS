@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -40,15 +40,15 @@ Updated the `universal-cpu-isolator.sh` script to optimize the **Host Priority**
 ### New Configuration (Host Priority - Optimized)
 ```
 AMD Ryzen 9950X3D (32 threads, dual-CCD):
-┌─────────────────────────────────────────────────┐
-│ CCD0 (Cores 0-7, V-Cache: 96MB L3 Total)        │
-│  Host:  Core 0,1 = CPUs 0,1,16,17  (2 cores)    │
-│  VMs:   Core 2-7 = CPUs 2-7,18-23  (6 cores) ✓✓✓│
-├─────────────────────────────────────────────────┤
-│ CCD1 (Cores 8-15, High Frequency: 32MB L3)      │
-│  Host:  Core 8,9 = CPUs 8,9,24,25  (2 cores)    │
-│  VMs:   Core 10-15 = CPUs 10-15,26-31 (6 cores) │
-└─────────────────────────────────────────────────┘
++-------------------------------------------------+
+| CCD0 (Cores 0-7, V-Cache: 96MB L3 Total)        |
+|  Host:  Core 0,1 = CPUs 0,1,16,17  (2 cores)    |
+|  VMs:   Core 2-7 = CPUs 2-7,18-23  (6 cores) [OK][OK][OK]|
++-------------------------------------------------+
+| CCD1 (Cores 8-15, High Frequency: 32MB L3)      |
+|  Host:  Core 8,9 = CPUs 8,9,24,25  (2 cores)    |
+|  VMs:   Core 10-15 = CPUs 10-15,26-31 (6 cores) |
++-------------------------------------------------+
 
 Total Allocation:
   Host:  CPUs 0,1,8,9,16,17,24,25 (8 threads, 4 cores)
@@ -102,14 +102,14 @@ Choose isolation strategy:
      ...
 
 Selection [1-5]: 1
-Preset [1-4]: 4  ← Select Host Priority
+Preset [1-4]: 4   Select Host Priority
 ```
 
 ### What You'll See
 ```
-✓ Host CPUs (cores 0,1,8,9): 0 1 8 9 16 17 24 25
-✓ VM CPUs (remaining cores): 2 3 4 5 6 7 10 11 12 13 14 15 18 19 20 21 22 23 26 27 28 29 30 31
-✓ Total: Host 8 threads (4 cores), VMs 24 threads (12 cores)
+[OK] Host CPUs (cores 0,1,8,9): 0 1 8 9 16 17 24 25
+[OK] VM CPUs (remaining cores): 2 3 4 5 6 7 10 11 12 13 14 15 18 19 20 21 22 23 26 27 28 29 30 31
+[OK] Total: Host 8 threads (4 cores), VMs 24 threads (12 cores)
 ```
 
 ---
@@ -289,22 +289,22 @@ sudo cpu-isolate on
 
 | Preset | Host Cores | VM Cores | V-Cache for VMs | Use Case |
 |--------|-----------|----------|-----------------|----------|
-| Gaming VM | 8 (CCD1) | 8 (CCD0) | ✓✓✓ 100% of CCD0 | Single gaming VM |
-| Compute | 8 (CCD0) | 8 (CCD1) | ✗ None | Render/compile VM |
-| Balanced | 8 (mixed) | 8 (mixed) | ✓ ~50% V-Cache | Equal priority |
-| **Host Priority (NEW)** | **4 (both)** | **12 (both)** | **✓✓✓ 75% V-Cache** | **Multiple VMs** |
+| Gaming VM | 8 (CCD1) | 8 (CCD0) | [OK][OK][OK] 100% of CCD0 | Single gaming VM |
+| Compute | 8 (CCD0) | 8 (CCD1) | [FAIL] None | Render/compile VM |
+| Balanced | 8 (mixed) | 8 (mixed) | [OK] ~50% V-Cache | Equal priority |
+| **Host Priority (NEW)** | **4 (both)** | **12 (both)** | **[OK][OK][OK] 75% V-Cache** | **Multiple VMs** |
 
 ---
 
 ## Recommended Use Cases
 
-### ✓ Ideal For:
+### [OK] Ideal For:
 - **Running 2+ VMs simultaneously** (1 gaming + 1 workstation)
 - **Maximum VM performance** while maintaining usable host
 - **Development environments** with multiple test VMs
 - **Gaming + streaming** (VM games, host encodes)
 
-### ✗ Not Ideal For:
+### [FAIL] Not Ideal For:
 - **Heavy host workloads** (video editing, compilation on host)
 - **Single VM only** (use Gaming/Compute presets instead)
 - **Systems with <16 cores** (too little for host)
@@ -326,9 +326,9 @@ This optimized preset complements the MiOS-Build virtualization framework by:
 ### Thread to Core Mapping (9950X3D)
 ```
 CCD0 (Cores 0-7, V-Cache):
-  Core 0: CPU 0, 16  ← Host
-  Core 1: CPU 1, 17  ← Host
-  Core 2: CPU 2, 18  ← VMs start
+  Core 0: CPU 0, 16   Host
+  Core 1: CPU 1, 17   Host
+  Core 2: CPU 2, 18   VMs start
   Core 3: CPU 3, 19
   Core 4: CPU 4, 20
   Core 5: CPU 5, 21
@@ -336,9 +336,9 @@ CCD0 (Cores 0-7, V-Cache):
   Core 7: CPU 7, 23
 
 CCD1 (Cores 8-15, High Freq):
-  Core 8:  CPU 8, 24  ← Host
-  Core 9:  CPU 9, 25  ← Host
-  Core 10: CPU 10, 26 ← VMs start
+  Core 8:  CPU 8, 24   Host
+  Core 9:  CPU 9, 25   Host
+  Core 10: CPU 10, 26  VMs start
   Core 11: CPU 11, 27
   Core 12: CPU 12, 28
   Core 13: CPU 13, 29
@@ -376,11 +376,11 @@ CCD1 (Cores 8-15, High Freq):
 **Framework**: MiOS-Build Professional Virtualization Host
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

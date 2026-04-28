@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -91,9 +91,9 @@ Looking Glass provides **near-native gaming performance** by:
 ## Complete Setup Guide
 
 ### Prerequisites
-âœ“ IOMMU enabled in BIOS  
-âœ“ GPU passed through to VM  
-âœ“ Windows 11 VM created  
+ IOMMU enabled in BIOS  
+ GPU passed through to VM  
+ Windows 11 VM created  
 
 ### Step 1: Run MiOS-Build Installer
 ```bash
@@ -101,7 +101,7 @@ sudo ./mios-build.sh
 ```
 
 When prompted:
-- **Install Looking Glass?** â†’ Yes
+- **Install Looking Glass?**  Yes
 - Script will build and configure everything automatically
 
 ### Step 2: Create Windows 11 VM
@@ -125,15 +125,15 @@ virt-install --name win11-gaming --memory 16384 --vcpus 12 \
 ### Step 3: Install Windows + VirtIO Drivers
 During Windows installation:
 1. When prompted for disk, click **"Load driver"**
-2. Browse to virtio-win CD â†’ `vioscsi/w11/amd64` â†’ Install
+2. Browse to virtio-win CD  `vioscsi/w11/amd64`  Install
 3. Continue Windows installation normally
 4. After first boot, install network driver: `NetKVM/w11/amd64`
 
 ### Step 4: Install IVSHMEM Driver (Critical!)
 In Windows Device Manager:
 1. Expand **System Devices**
-2. Right-click **"PCI RAM Controller"** (yellow warning)
-3. **Update driver** â†’ Browse my computer
+2. Right-click **"PCI RAM Controller"** (yellow [WARN])
+3. **Update driver**  Browse my computer
 4. Point to virtio-win CD: `Win10/amd64` folder
 5. Install **"Red Hat IVSHMEM Device"** driver
 
@@ -161,13 +161,13 @@ Add **before** `</devices>`:
 
 **Memory size calculation:**
 ```
-width Ã— height Ã— 4 Ã— 2 = bytes
-bytes Ã· 1024 Ã· 1024 = MB (round up to power of 2)
+width  height  4  2 = bytes
+bytes  1024  1024 = MB (round up to power of 2)
 
 Examples:
-1920Ã—1080 â†’ 32 MB
-2560Ã—1440 â†’ 64 MB  
-3840Ã—2160 â†’ 128 MB
+19201080  32 MB
+25601440  64 MB  
+38402160  128 MB
 ```
 
 Also find and change:
@@ -348,12 +348,12 @@ looking-glass-start VM_NAME
 ## Version History
 
 **v0.1.3** (2025-01-18)
-- âœ“ Added Looking Glass B7 installation
-- âœ“ Integrated upstream VirtIO ISO with IVSHMEM driver
-- âœ“ Created looking-glass-start helper script
-- âœ“ Enhanced create-win11-vm with Looking Glass instructions
-- âœ“ Added IVSHMEM device configuration
-- âœ“ Automated shared memory permissions setup
+-  Added Looking Glass B7 installation
+-  Integrated upstream VirtIO ISO with IVSHMEM driver
+-  Created looking-glass-start helper script
+-  Enhanced create-win11-vm with Looking Glass instructions
+-  Added IVSHMEM device configuration
+-  Automated shared memory permissions setup
 
 **v0.1.3** (Previous)
 - Initial MiOS-Build release
@@ -363,14 +363,14 @@ looking-glass-start VM_NAME
 
 ---
 
-**Enjoy near-native gaming performance in your VMs! ðŸš€**
+**Enjoy near-native gaming performance in your VMs! **
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 📦 MiOS Package Manifest
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [PKG] MiOS Package Manifest
 
 ```json:knowledge
 {
@@ -24,7 +24,7 @@
 > **Source Reference:** MiOS-Core-v0.1.3
 ---
 
-# MiOS v0.1.3 — Package Manifest
+# MiOS v0.1.3  Package Manifest
 
 This file is both documentation and the **single source of truth** for all packages installed in MiOS.
 Build scripts parse the fenced code blocks below using `automation/lib/packages.sh`.
@@ -56,9 +56,9 @@ To add a package, add it to the appropriate section. One package per line.
 - Added missing audited tools: strace, lsof, iotop, ntfs-3g, efibootmgr, nm-connection-editor
 
 **CHANGELOG v0.1.3 (previous):**
-- Added bootupd (unified bootloader updates — Fedora 44 phase 1)
+- Added bootupd (unified bootloader updates  Fedora 44 phase 1)
 - Added dnf5-plugins (versionlock support for critical package pinning)
-- Added systemd-boot-unsigned (UKI preparation — future composefs+UKI chain)
+- Added systemd-boot-unsigned (UKI preparation  future composefs+UKI chain)
 - Added libsss_nss_idmap (fixes sssd-related dep resolution on F44)
 - Added tpm2-tools (TPM2 support for measured boot / future attestation)
 - Added clevis, clevis-luks (automated LUKS unlock via TPM2/Tang)
@@ -88,7 +88,7 @@ dnf5-plugins
 ## Kernel
 
 Kernel extras + development headers for akmod-nvidia and DKMS builds.
-Base kernel ships with fedora-bootc:rawhide — NEVER upgrade it in-container.
+Base kernel ships with fedora-bootc:rawhide  NEVER upgrade it in-container.
 Upgrading triggers dracut under tmpfs which breaks the initramfs.
 
 ```packages-kernel
@@ -103,7 +103,7 @@ python3
 
 ## GNOME 50 Desktop
 
-MINIMAL GNOME shell — infrastructure ONLY. NO viewer/editor apps as RPMs.
+MINIMAL GNOME shell  infrastructure ONLY. NO viewer/editor apps as RPMs.
 Epiphany (Flatpak browser) handles documents, photos, and media natively.
 Steam, Wine, virt-manager, Waydroid are RPM exceptions (need system-level access).
 
@@ -112,75 +112,75 @@ manager was removed. Full systemd user session support is required.
 GNOME 50: X11 session removed upstream. Wayland-only (Fedora 43+ dropped X11).
 
 ```packages-gnome
-# ── Core shell (auto-pulls: mutter, gjs, gtk4, libadwaita, gnome-desktop4,
+# -- Core shell (auto-pulls: mutter, gjs, gtk4, libadwaita, gnome-desktop4,
 #    gnome-session, gnome-settings-daemon, gsettings-desktop-schemas, colord,
-#    dconf, adwaita-icon-theme, adwaita-cursor-theme, pipewire, polkit) ──
+#    dconf, adwaita-icon-theme, adwaita-cursor-theme, pipewire, polkit) --
 gnome-shell
 gnome-session-wayland-session
 gnome-control-center
 gnome-keyring
 gdm
-# ── Desktop apps ──
+# -- Desktop apps --
 ptyxis
 nautilus
 gnome-software
 gnome-remote-desktop
 gnome-backgrounds
-# ── Extensions ──
+# -- Extensions --
 gnome-shell-extension-appindicator
 gnome-shell-extension-dash-to-dock
-# ── Portals ──
+# -- Portals --
 xdg-user-dirs
 xdg-utils
 xdg-desktop-portal
 xdg-desktop-portal-gnome
 xdg-desktop-portal-gtk
-# ── Audio ──
+# -- Audio --
 pipewire-alsa
 pipewire-pulseaudio
 wireplumber
-# ── GStreamer (MUST be explicit — ucore fc43 base ships older GStreamer that
+# -- GStreamer (MUST be explicit  ucore fc43 base ships older GStreamer that
 #    is ABI-incompatible with GNOME 50. Without these, gnome-shell crashes on
-#    launch with "undefined symbol: gst_state_get_name" in libgstplay) ──
+#    launch with "undefined symbol: gst_state_get_name" in libgstplay) --
 gstreamer1
 gstreamer1-plugins-base
 gstreamer1-plugins-good
-# ── Hardware ──
+# -- Hardware --
 upower
 gnome-bluetooth
 bluez
 bluez-tools
-# ── Flatpak (gnome-software manages these — no rpm-ostree plugin needed) ──
+# -- Flatpak (gnome-software manages these  no rpm-ostree plugin needed) --
 flatpak
-# ── Filesystem access ──
+# -- Filesystem access --
 gvfs
 gvfs-smb
 gvfs-mtp
-# ── Networking ──
+# -- Networking --
 NetworkManager-wifi
 NetworkManager-openvpn-gnome
 nm-connection-editor
-# ── Locale ──
+# -- Locale --
 glibc-langpack-en
-# ── Qt Adwaita theming ──
+# -- Qt Adwaita theming --
 qt6-qtbase-gui
 qt6-qtwayland
 qadwaitadecorations-qt5
 adw-gtk3-theme
 ```
 
-## GNOME Core Apps (OPTIONAL — uncomment to include)
+## GNOME Core Apps (OPTIONAL  uncomment to include)
 
-Optional GNOME Core Apps. ALL commented out by default — uncomment to include.
+Optional GNOME Core Apps. ALL commented out by default  uncomment to include.
 Epiphany (Flatpak browser) handles documents, photos, and media natively.
 
 ```packages-gnome-core-apps
-# ── Viewers (uncomment to include) ──
+# -- Viewers (uncomment to include) --
 # papers
 # loupe
 # showtime
 # gnome-text-editor
-# ── Utilities ──
+# -- Utilities --
 # gnome-disk-utility
 # gnome-system-monitor
 # baobab
@@ -196,12 +196,12 @@ Epiphany (Flatpak browser) handles documents, photos, and media natively.
 # gnome-maps
 # gnome-characters
 # gnome-font-viewer
-# ── Media ──
+# -- Media --
 # gnome-music
 # snapshot
 # decibels
 # cheese
-# ── System ──
+# -- System --
 # gnome-logs
 # deja-dup
 # simple-scan
@@ -209,7 +209,7 @@ Epiphany (Flatpak browser) handles documents, photos, and media natively.
 # gnome-boxes
 ```
 
-## GPU Drivers — Mesa (AMD / Intel / software fallback)
+## GPU Drivers  Mesa (AMD / Intel / software fallback)
 
 Universal Mesa stack supporting all AMD and Intel GPUs out of the box.
 Mesa 26: ACO is now default shader compiler for RadeonSI.
@@ -225,7 +225,7 @@ linux-firmware
 # microcode_ctl removed: redundant on F44+
 ```
 
-## GPU Drivers — AMD Compute (optional, fault-tolerant)
+## GPU Drivers  AMD Compute (optional, fault-tolerant)
 
 ROCm OpenCL/HIP for AMD compute workloads.
 
@@ -237,11 +237,11 @@ rocm-smi
 rocminfo
 ```
 
-## GPU Drivers — Intel Compute (oneAPI Level Zero)
+## GPU Drivers  Intel Compute (oneAPI Level Zero)
 
 Intel GPU compute runtime for OpenCL and Level Zero API.
 Supports Intel Arc, Iris Xe, and integrated GPUs.
-All packages are in official Fedora repos — no extra repo needed.
+All packages are in official Fedora repos  no extra repo needed.
 
 ```packages-gpu-intel-compute
 intel-compute-runtime
@@ -250,12 +250,12 @@ intel-media-driver
 # intel-gpu-tools REMOVED: needs libproc2.so.0 missing in F44.
 ```
 
-## GPU Drivers — NVIDIA (akmod, builds for any NVIDIA card)
+## GPU Drivers  NVIDIA (akmod, builds for any NVIDIA card)
 
 NVIDIA proprietary drivers via RPMFusion akmod. Builds kmod at image time.
 Driver 590+: Open kernel modules are DEFAULT for Turing (RTX 20+) and newer.
-Blackwell (RTX 50): Open modules are the ONLY option — proprietary incompatible.
-WARNING: RTX 50-series has a VFIO reset bug — see /usr/share/doc/mios-vfio-warning.txt
+Blackwell (RTX 50): Open modules are the ONLY option  proprietary incompatible.
+WARNING: RTX 50-series has a VFIO reset bug  see /usr/share/doc/mios-vfio-[WARN].txt
 CDI is now the default mode in nvidia-container-toolkit v1.19+.
 
 ```packages-gpu-nvidia
@@ -269,7 +269,7 @@ xorg-x11-drv-nvidia-power
 nvidia-container-selinux
 ```
 
-## Virtualization — KVM / QEMU / Libvirt
+## Virtualization  KVM / QEMU / Libvirt
 
 Full KVM stack with virt-manager GUI and firmware/security tooling.
 
@@ -332,7 +332,7 @@ cmake
 golang
 podman-plugins
 cosign
-# REMOVED — podman-docker: conflicts with moby-engine from ucore-hci base
+# REMOVED  podman-docker: conflicts with moby-engine from ucore-hci base
 ```
 
 ## Self-Building Tools (Experimental/Repository dependent)
@@ -510,13 +510,13 @@ ceph-selinux
 ## K3s Lightweight Kubernetes
 
 K3s binary is downloaded directly (not via dnf).
-k3s-selinux only exists for RHEL/CentOS — not available on Fedora Rawhide.
+k3s-selinux only exists for RHEL/CentOS  not available on Fedora Rawhide.
 
 ```packages-k3s
 container-selinux
 ```
 
-## High Availability — Pacemaker / Corosync
+## High Availability  Pacemaker / Corosync
 
 Full HA cluster stack with fence agents and SBD.
 
@@ -586,7 +586,7 @@ syft
 oras-cli
 ```
 
-## Android — Waydroid
+## Android  Waydroid
 
 Waydroid container runtime for Android apps.
 Note: NVIDIA GPUs lack full 3D acceleration in Waydroid (Mesa/AMD/Intel only).
@@ -595,7 +595,7 @@ Note: NVIDIA GPUs lack full 3D acceleration in Waydroid (Mesa/AMD/Intel only).
 waydroid
 ```
 
-## Looking Glass B7 — Build Dependencies
+## Looking Glass B7  Build Dependencies
 
 These packages are installed during the build to compile Looking Glass B7.
 They are REMOVED after compilation to keep the image small.
@@ -635,7 +635,7 @@ npm
 gettext
 ```
 
-## Network Discovery — Avahi / mDNS
+## Network Discovery  Avahi / mDNS
 
 mDNS/DNS-SD for automatic .local hostname discovery on LAN.
 Every MiOS instance advertises Cockpit and RDP services.
@@ -694,7 +694,7 @@ redis
 sqlite
 ```
 
-## Internal — Critical Validation
+## Internal  Critical Validation
 
 These packages MUST be present in the final image. Build scripts use this
 section for post-build verification.
@@ -715,7 +715,7 @@ chrony
 openssh-server
 ```
 
-## Internal — Bloat Removal
+## Internal  Bloat Removal
 
 These packages are explicitly removed during the build to keep the image
 lean and free of unwanted UI components.
@@ -742,11 +742,11 @@ usbutils
 ```
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

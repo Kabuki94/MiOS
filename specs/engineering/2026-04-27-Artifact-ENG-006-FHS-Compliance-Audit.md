@@ -1,4 +1,4 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 # Linux Filesystem Hierarchy Standard (FHS) Compliance Audit
 
 ```json:knowledge
@@ -37,7 +37,7 @@
 
 ## Executive Summary
 
-**Compliance Status:** ✅ **COMPLIANT**
+**Compliance Status:** [OK] **COMPLIANT**
 
 MiOS implements a **rootfs-native repository architecture** that mirrors the Linux Filesystem Hierarchy Standard (FHS 3.0) with bootc-specific enhancements. The repository structure is designed to be directly deployable as a Linux root filesystem within an OCI container image.
 
@@ -52,32 +52,32 @@ MiOS implements a **rootfs-native repository architecture** that mirrors the Lin
 
 ## FHS 3.0 Core Directory Compliance
 
-### ✅ usr/ — User System Resources (Immutable)
+### [OK] usr/  User System Resources (Immutable)
 
 **FHS Requirement:** Read-only system data and executables
 
 **MiOS Implementation:**
 ```
 usr/
-├── bin/               # User commands
-├── lib/               # Libraries and system configuration
-│   ├── bootc/        # bootc-specific (kargs.d, bound-images.d)
-│   ├── systemd/      # systemd units and drop-ins
-│   ├── tmpfiles.d/   # /var directory declarations
-│   ├── sysctl.d/     # kernel parameter tuning
-│   ├── ostree/       # ostree/composefs config
-│   └── [services]/   # Service-specific configs (firewalld, cockpit, etc.)
-├── libexec/           # Internal binaries
-│   └── mios/         # MiOS-specific executables
-├── local/             # Local additions (via /var/usrlocal symlink)
-└── share/             # Architecture-independent data
-    ├── applications/ # .desktop files
-    ├── icons/        # Icon themes
-    ├── mios/         # MiOS documentation and data
-    └── [resources]/  # Application resources
++-- bin/               # User commands
++-- lib/               # Libraries and system configuration
+|   +-- bootc/        # bootc-specific (kargs.d, bound-images.d)
+|   +-- systemd/      # systemd units and drop-ins
+|   +-- tmpfiles.d/   # /var directory declarations
+|   +-- sysctl.d/     # kernel parameter tuning
+|   +-- ostree/       # ostree/composefs config
+|   +-- [services]/   # Service-specific configs (firewalld, cockpit, etc.)
++-- libexec/           # Internal binaries
+|   +-- mios/         # MiOS-specific executables
++-- local/             # Local additions (via /var/usrlocal symlink)
++-- share/             # Architecture-independent data
+    +-- applications/ # .desktop files
+    +-- icons/        # Icon themes
+    +-- mios/         # MiOS documentation and data
+    +-- [resources]/  # Application resources
 ```
 
-**Compliance:** ✅ **FULL**
+**Compliance:** [OK] **FULL**
 - Follows USR-OVER-ETC immutable law
 - All static system configuration in `/usr/lib/<service>.d/`
 - No hardcoded paths in `/etc/` at build time
@@ -85,18 +85,18 @@ usr/
 
 ---
 
-### ✅ etc/ — Host-Specific Configuration (Runtime Templates)
+### [OK] etc/  Host-Specific Configuration (Runtime Templates)
 
 **FHS Requirement:** Host-specific system configuration files
 
 **MiOS Implementation:**
 ```
 etc/
-└── skel/             # User skeleton files
-    └── .config/      # User config templates
++-- skel/             # User skeleton files
+    +-- .config/      # User config templates
 ```
 
-**Compliance:** ✅ **FULL**
+**Compliance:** [OK] **FULL**
 - Minimal `/etc/` content at build time (USR-OVER-ETC law)
 - All other `/etc/` directories created via `tmpfiles.d`:
   - `/etc/mios`
@@ -118,22 +118,22 @@ d /etc/pki/containers         0755 root root -
 
 ---
 
-### ✅ var/ — Variable Data (Mutable System State)
+### [OK] var/  Variable Data (Mutable System State)
 
 **FHS Requirement:** Variable data files
 
 **MiOS Implementation:**
 ```
 var/
-├── lib/              # Persistent application state
-│   └── mios/        # MiOS-specific state
-│       ├── memory/  # AI agent memory (tmpfiles.d managed)
-│       └── journal/ # System journal
-└── log/              # Log files
-    └── mios/        # MiOS-specific logs
++-- lib/              # Persistent application state
+|   +-- mios/        # MiOS-specific state
+|       +-- memory/  # AI agent memory (tmpfiles.d managed)
+|       +-- journal/ # System journal
++-- log/              # Log files
+    +-- mios/        # MiOS-specific logs
 ```
 
-**Compliance:** ✅ **FULL + NO-MKDIR-IN-VAR LAW ENFORCED**
+**Compliance:** [OK] **FULL + NO-MKDIR-IN-VAR LAW ENFORCED**
 
 All `/var` directories declared via tmpfiles.d:
 
@@ -176,23 +176,23 @@ $ grep -n "mkdir.*var" Containerfile
 
 ---
 
-### ✅ home/ — User Home Directories
+### [OK] home/  User Home Directories
 
 **FHS Requirement:** User home directories
 
 **MiOS Implementation:**
 ```
 home/
-└── mios/             # Default user home directory template
-    ├── .config/      # User configuration
-    ├── .local/       # User-local data
-    │   ├── bin/      # User executables
-    │   ├── share/    # User data
-    │   └── state/    # User state
-    └── Documents/    # User documents
++-- mios/             # Default user home directory template
+    +-- .config/      # User configuration
+    +-- .local/       # User-local data
+    |   +-- bin/      # User executables
+    |   +-- share/    # User data
+    |   +-- state/    # User state
+    +-- Documents/    # User documents
 ```
 
-**Compliance:** ✅ **FULL**
+**Compliance:** [OK] **FULL**
 - `/home` symlinked to `/var/home` (FCOS/bootc standard)
 - Template user directories staged in repository
 - Applied via `automation/08-system-files-overlay.sh` Stage 5
@@ -210,7 +210,7 @@ if [ ! -L /home ] && [ -d /home ] && [ ! "$(ls -A /home)" ]; then
 
 ## bootc-Specific Extensions
 
-### ✅ usr/lib/ostree/ — OSTree/Composefs Configuration
+### [OK] usr/lib/ostree/  OSTree/Composefs Configuration
 
 **usr/lib/ostree/prepare-root.conf:**
 ```toml
@@ -221,33 +221,33 @@ enabled = verity  # fsverity-based integrity checking
 readonly = true   # Immutable root filesystem
 
 [etc]
-# transient = no (default) — /etc is persistent for workstation use
+# transient = no (default)  /etc is persistent for workstation use
 ```
 
 **Purpose:** Configures composefs content-addressed filesystem with verified boot
 
-**Compliance:** ✅ bootc best practice for tamper-evident root
+**Compliance:** [OK] bootc best practice for tamper-evident root
 
 ---
 
-### ✅ usr/lib/bootc/ — bootc Runtime Configuration
+### [OK] usr/lib/bootc/  bootc Runtime Configuration
 
 ```
 usr/lib/bootc/
-├── kargs.d/              # Kernel boot arguments
-│   ├── 00-mios.toml     # Base hardening
-│   ├── 01-mios-hardening.toml  # Security
-│   ├── 10-nvidia.toml   # NVIDIA driver
-│   ├── 20-vfio.toml     # GPU passthrough
-│   └── 30-security.toml # SecureBlue extended
-├── bound-images.d/       # Quadlet sidecar containers
-└── install/              # Install-time configuration
-    └── 00-mios.toml     # Disk layout, users, etc.
++-- kargs.d/              # Kernel boot arguments
+|   +-- 00-mios.toml     # Base hardening
+|   +-- 01-mios-hardening.toml  # Security
+|   +-- 10-nvidia.toml   # NVIDIA driver
+|   +-- 20-vfio.toml     # GPU passthrough
+|   +-- 30-security.toml # SecureBlue extended
++-- bound-images.d/       # Quadlet sidecar containers
++-- install/              # Install-time configuration
+    +-- 00-mios.toml     # Disk layout, users, etc.
 ```
 
 **Purpose:** bootc-native configuration (no GRUB editing needed)
 
-**Compliance:** ✅ bootc v1.1.0+ standard
+**Compliance:** [OK] bootc v1.1.0+ standard
 
 ---
 
@@ -257,18 +257,18 @@ These directories exist in the repository but are **NOT deployed** to the final 
 
 | Directory | Purpose | Deployed? |
 |-----------|---------|-----------|
-| `specs/` | Architectural blueprints & research | ❌ No (build context only) |
-| `automation/` | Build scripts & configuration | ❌ No (used during build, not copied) |
-| `artifacts/` | Generated AI RAG packages | ❌ No (distribution only) |
-| `tools/` | Utility scripts | ❌ No (developer tooling) |
-| `config/` | BIB configs & bootstrap files | ❌ No (build artifacts) |
-| `evals/` | System validation tests | ❌ No (CI/test tooling) |
-| `agents/` | AI agent sub-projects | ❌ No (development tooling) |
-| `.ai/` | AI foundation & memories | ❌ No (local AI context) |
-| `.github/` | GitHub workflows & CI | ❌ No (CI/CD only) |
-| `.vscode/` | VSCode configuration | ❌ No (developer tooling) |
-| `.devcontainer/` | Dev container config | ❌ No (developer tooling) |
-| `.well-known/` | llms.txt for AI ingestion | ❌ No (web scraper discovery) |
+| `specs/` | Architectural blueprints & research | [FAIL] No (build context only) |
+| `automation/` | Build scripts & configuration | [FAIL] No (used during build, not copied) |
+| `artifacts/` | Generated AI RAG packages | [FAIL] No (distribution only) |
+| `tools/` | Utility scripts | [FAIL] No (developer tooling) |
+| `config/` | BIB configs & bootstrap files | [FAIL] No (build artifacts) |
+| `evals/` | System validation tests | [FAIL] No (CI/test tooling) |
+| `agents/` | AI agent sub-projects | [FAIL] No (development tooling) |
+| `.ai/` | AI foundation & memories | [FAIL] No (local AI context) |
+| `.github/` | GitHub workflows & CI | [FAIL] No (CI/CD only) |
+| `.vscode/` | VSCode configuration | [FAIL] No (developer tooling) |
+| `.devcontainer/` | Dev container config | [FAIL] No (developer tooling) |
+| `.well-known/` | llms.txt for AI ingestion | [FAIL] No (web scraper discovery) |
 
 **Containerfile ctx Stage (Lines 1-8):**
 ```dockerfile
@@ -287,7 +287,7 @@ COPY usr/share/mios/PACKAGES.md /ctx/PACKAGES.md
 
 ## Immutable Laws Compliance
 
-### 1. USR-OVER-ETC ✅
+### 1. USR-OVER-ETC [OK]
 
 **Law:** Never write static system config to `/etc/` at build time. Use `/usr/lib/<component>.d/`.
 
@@ -306,7 +306,7 @@ All system config in:
 
 ---
 
-### 2. NO-MKDIR-IN-VAR ✅
+### 2. NO-MKDIR-IN-VAR [OK]
 
 **Law:** Never `mkdir /var/...` in build scripts. Declare all `/var` dirs via `tmpfiles.d`.
 
@@ -326,7 +326,7 @@ All `/var` directories declared in 15 tmpfiles.d configs:
 
 ---
 
-### 3. MANAGED-SELINUX ✅
+### 3. MANAGED-SELINUX [OK]
 
 **Law:** `semodule -i` in Containerfile RUN layer (primary method) for custom modules (bootc v1.1.0+ resolved instability). Fallback: stage in `/usr/share/selinux/packages/` for runtime loading if build-time compilation is impossible.
 
@@ -334,7 +334,7 @@ All `/var` directories declared in 15 tmpfiles.d configs:
 
 ---
 
-### 4. BOUND-IMAGES ✅
+### 4. BOUND-IMAGES [OK]
 
 **Law:** All Quadlet sidecar containers symlinked into `/usr/lib/bootc/bound-images.d/`.
 
@@ -350,7 +350,7 @@ done
 
 ---
 
-### 5. BOOTC-CONTAINER-LINT ✅
+### 5. BOOTC-CONTAINER-LINT [OK]
 
 **Law:** `RUN bootc container lint` must be the final Containerfile instruction.
 
@@ -365,7 +365,7 @@ done
 
 ## FHS Deviations (Justified)
 
-### 1. /usr/local → /var/usrlocal
+### 1. /usr/local  /var/usrlocal
 
 **Deviation:** `/usr/local` is a symlink to `/var/usrlocal` (inherited from ucore-hci base)
 
@@ -375,7 +375,7 @@ done
 
 ---
 
-### 2. /home → /var/home
+### 2. /home  /var/home
 
 **Deviation:** `/home` is a symlink to `/var/home`
 
@@ -391,7 +391,7 @@ done
 
 **Justification:** Workstation use case requires persistent SSH configs, NetworkManager keyfiles, and user preferences
 
-**Config:** `usr/lib/ostree/prepare-root.conf` → `[etc]` section has no `transient = true` (defaults to persistent)
+**Config:** `usr/lib/ostree/prepare-root.conf`  `[etc]` section has no `transient = true` (defaults to persistent)
 
 ---
 
@@ -399,19 +399,19 @@ done
 
 ### Kernel Boot Parameters (usr/lib/bootc/kargs.d/)
 
-- `slab_nomerge` — Heap isolation
-- `init_on_alloc=1` / `init_on_free=1` — Memory zeroing
-- `lockdown=confidentiality` — Kernel lockdown mode
-- `pti=on` — Page Table Isolation (Meltdown)
-- `vsyscall=none` — Disable legacy vsyscall
+- `slab_nomerge`  Heap isolation
+- `init_on_alloc=1` / `init_on_free=1`  Memory zeroing
+- `lockdown=confidentiality`  Kernel lockdown mode
+- `pti=on`  Page Table Isolation (Meltdown)
+- `vsyscall=none`  Disable legacy vsyscall
 
 ### Sysctl Hardening (usr/lib/sysctl.d/99-mios-hardening.conf)
 
-- `kernel.kptr_restrict=2` — Hide kernel pointers
-- `kernel.dmesg_restrict=1` — Restrict dmesg to root
-- `kernel.yama.ptrace_scope=2` — Only root can ptrace
-- `kernel.unprivileged_bpf_disabled=1` — Block unprivileged eBPF
-- `net.ipv4.tcp_syncookies=1` — SYN flood protection
+- `kernel.kptr_restrict=2`  Hide kernel pointers
+- `kernel.dmesg_restrict=1`  Restrict dmesg to root
+- `kernel.yama.ptrace_scope=2`  Only root can ptrace
+- `kernel.unprivileged_bpf_disabled=1`  Block unprivileged eBPF
+- `net.ipv4.tcp_syncookies=1`  SYN flood protection
 
 ### File Permissions
 
@@ -424,10 +424,10 @@ find /usr/lib/systemd -type f \( -name "*.service" -o -name "*.timer" \) -exec c
 
 ## Recommendations
 
-1. ✅ **Maintain current FHS compliance** — No changes needed
-2. ✅ **Continue tmpfiles.d for all /var additions** — Enforced by bootc lint
-3. ✅ **Document all symlinks** — Already done in automation/08-system-files-overlay.sh
-4. ✅ **Preserve non-FHS directories as build-time only** — Do not deploy to final image
+1. [OK] **Maintain current FHS compliance**  No changes needed
+2. [OK] **Continue tmpfiles.d for all /var additions**  Enforced by bootc lint
+3. [OK] **Document all symlinks**  Already done in automation/08-system-files-overlay.sh
+4. [OK] **Preserve non-FHS directories as build-time only**  Do not deploy to final image
 
 ---
 
@@ -437,7 +437,7 @@ MiOS v0.1.3 is **fully compliant** with Linux Filesystem Hierarchy Standard (FHS
 
 **Compliance Score:** 100%
 
-**Audit Status:** ✅ PASSED
+**Audit Status:** [OK] PASSED
 
 ---
 
@@ -447,8 +447,8 @@ MiOS v0.1.3 is **fully compliant** with Linux Filesystem Hierarchy Standard (FHS
 - [bootc Documentation](https://bootc.pages.dev/)
 - [systemd tmpfiles.d](https://www.freedesktop.org/software/systemd/man/tmpfiles.d.html)
 - [OSTree/Composefs](https://ostreedev.github.io/ostree/composefs/)
-- MiOS INDEX.md — Immutable Appliance Laws
+- MiOS INDEX.md  Immutable Appliance Laws
 
 ---
 
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

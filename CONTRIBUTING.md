@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -30,10 +30,10 @@ MiOS is an immutable, cloud-native workstation OS built on Fedora Rawhide bootc.
 
 - **Architectural Purity (Single Source of Truth):** ALL system configuration files, units, rules, and kargs MUST reside in the `` overlay. Top-level configuration directories are forbidden to prevent build-time path desynchronization.
 - **Declarative State (No Mkdir in Var):** In the bootc model, `/var` is a persistent volume. Any new directory or configuration required in `/var` MUST be declared in a `tmpfiles.d` file within the overlay. Manual `mkdir -p /var/...` calls in provisioning scripts are strictly forbidden.
-- **Pure build-up for GNOME** — only the explicitly needed ~25 GNOME packages are installed. No `dnf remove` bloat blocks. All user-facing apps are Flatpaks; RPMs are restricted to kernel modules, drivers, virtualization stack, container runtime, system tools, and GNOME infrastructure.
-- **PACKAGES.md is the single source of truth** — all package lists live in fenced code blocks parsed by `automation/lib/packages.sh`. Scripts use `install_packages`/`get_packages` helpers. Never add packages outside this system.
-- **Nothing gets removed without explicit permission** — if a file or package exists in the repo, do not remove it in your PR without discussing it first.
-- **Deliver complete files only** — never submit patches, diffs, fragments, or "paste this into X" instructions. Every contribution must be a drop-in replacement file.
+- **Pure build-up for GNOME**  only the explicitly needed ~25 GNOME packages are installed. No `dnf remove` bloat blocks. All user-facing apps are Flatpaks; RPMs are restricted to kernel modules, drivers, virtualization stack, container runtime, system tools, and GNOME infrastructure.
+- **PACKAGES.md is the single source of truth**  all package lists live in fenced code blocks parsed by `automation/lib/packages.sh`. Scripts use `install_packages`/`get_packages` helpers. Never add packages outside this system.
+- **Nothing gets removed without explicit permission**  if a file or package exists in the repo, do not remove it in your PR without discussing it first.
+- **Deliver complete files only**  never submit patches, diffs, fragments, or "paste this into X" instructions. Every contribution must be a drop-in replacement file.
 
 ## Getting Started
 
@@ -68,7 +68,7 @@ The PowerShell script handles Podman machine creation, credential injection, ima
 ### Shell scripts
 
 - Always start with `set -euo pipefail` (except `build.sh` which uses `set -uo pipefail` for per-script error handling).
-- Use `VAR=$((VAR + 1))` for arithmetic. Never use `((VAR++))` — it exits 1 when the result is 0, which kills the script under `set -e`.
+- Use `VAR=$((VAR + 1))` for arithmetic. Never use `((VAR++))`  it exits 1 when the result is 0, which kills the script under `set -e`.
 - Use the `install_packages` / `install_packages_strict` / `install_packages_optional` helpers from `automation/lib/packages.sh`.
 - Numbered script naming: `NN-name.sh` where NN is the execution order (01, 02, 10, 11, 12, 20, 99).
 
@@ -82,7 +82,7 @@ The PowerShell script handles Podman machine creation, credential injection, ima
 
 - Configuration that should be immutable goes in `/usr/lib/` (sysctl, systemd units, bootc kargs).
 - Configuration that admins may override goes in `/etc/`.
-- The `` directory mirrors the root filesystem — files are copied via `cp -a` in the Containerfile.
+- The `` directory mirrors the root filesystem  files are copied via `cp -a` in the Containerfile.
 
 ### SELinux
 
@@ -109,20 +109,20 @@ The PowerShell script handles Podman machine creation, credential injection, ima
 
 Use the GitHub issue templates:
 
-- **Bug Report** — for things that are broken
-- **Feature Request** — for new functionality
-- **Security** — for vulnerabilities (use private reporting for sensitive issues)
+- **Bug Report**  for things that are broken
+- **Feature Request**  for new functionality
+- **Security**  for vulnerabilities (use private reporting for sensitive issues)
 
 ## License
 
 By contributing, you agree that your contributions will be licensed under the same terms as the project (see LICENSE file).
 
 ---
-### 📚 Bootc Ecosystem & Resources
+###  Bootc Ecosystem & Resources
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osautomation/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Sole Proprietor:** MiOS-DEV
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -34,15 +34,15 @@ The **Deep Search Agent Development Kit (ADK) Quickstart** is a production-ready
   </thead>
   <tbody>
     <tr>
-      <td>🏗️</td>
+      <td>[BUILD]</td>
       <td><strong>Fullstack & Production-Ready:</strong> A complete React frontend and ADK-powered FastAPI backend, with deployment options for <a href="https://cloud.google.com/run">Cloud Cloud Run</a> and <a href="https://cloud.google.com/vertex-ai/generative-ai/specs/agent-engine/overview">Vertex AI Agent Engine</a>.</td>
     </tr>
     <tr>
-      <td>🧠</td>
+      <td>[MEM]</td>
       <td><strong>Advanced Agentic Workflow:</strong> The agent uses Agent to <strong>strategize</strong> a multi-step plan, <strong>reflect</strong> on findings to identify gaps, and <strong>synthesize</strong> a final, comprehensive report.</td>
     </tr>
     <tr>
-      <td>🔄</td>
+      <td>[SYNC]</td>
       <td><strong>Iterative & Human-in-the-Loop Research:</strong> Involves the user for plan approval, then autonomously loops through searching (via Agent function calling) and refining its results until it has gathered sufficient information.</td>
     </tr>
   </tbody>
@@ -304,11 +304,11 @@ This agent sample is provided for illustrative purposes only. It serves as a bas
 Users are solely responsible for any further development, testing, security hardening, and deployment of agents based on this sample. We recommend thorough review, testing, and the implementation of appropriate safeguards before using any derived agent in a live or critical system.
 
 ---
-### 📚 Bootc Ecosystem & Resources
+###  Bootc Ecosystem & Resources
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osautomation/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Sole Proprietor:** MiOS-DEV
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

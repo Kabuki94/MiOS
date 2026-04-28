@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/mios-project/mios -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/mios-project/mios -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -21,21 +21,21 @@
 > **License:** Licensed as personal property to MiOS-DEV
 ---
 ---
-description: Dry-run the MiOS hard-rules audit against the working tree or a proposed change — PowerShell-native, no WSL popups
+description: Dry-run the MiOS hard-rules audit against the working tree or a proposed change  PowerShell-native, no WSL popups
 argument-hint: [file-or-directory]
 ---
 
-Run the MiOS hard-rules audit defined in `INDEX.md` §3
+Run the MiOS hard-rules audit defined in `INDEX.md` 3
 against `$1` (or the whole working tree if no argument given). Report
 violations by rule number so they trace back to the INDEX.md section.
 
-**Never invoke bare `bash` on Windows** — it spawns external WSL
+**Never invoke bare `bash` on Windows**  it spawns external WSL
 windows. Use PowerShell-native pipelines, or `Select-String` in place
 of `grep`, or `Get-ChildItem | Where-Object` in place of `find`.
 
 Check every item. Do not skip any.
 
-### §3.1 — Containerfile / DNF
+### 3.1  Containerfile / DNF
 
 Search `Containerfile` for kernel upgrades (only -modules-extra,
 -devel, -headers allowed):
@@ -49,7 +49,7 @@ Get-ChildItem -Recurse -File -Include '*.sh','*.yml','*.yaml','*.ps1','Container
   Select-String -Pattern '--squash-all'
 ```
 
-### §3.2 — Bash under set -euo pipefail
+### 3.2  Bash under set -euo pipefail
 
 ```powershell
 Get-ChildItem -Recurse -File -Filter '*.sh' |
@@ -61,7 +61,7 @@ Run shellcheck on every changed `*.sh` (see `/lint-all`). SC2038,
 SC2206, SC2013, SC2012, SC2155, SC2015, SC2059, SC2162, SC2010, SC2054
 are blockers.
 
-### §3.3 — kargs.d TOML
+### 3.3  kargs.d TOML
 
 For every `kargs.d/*.toml` and `usr/lib/bootc/kargs.d/*.toml`:
 ```powershell
@@ -72,7 +72,7 @@ Get-ChildItem -Recurse -Filter '*.toml' -Path kargs.d,usr/lib/bootc/kargs.d -Err
   }
 ```
 
-### §3.4 — GNOME / theming
+### 3.4  GNOME / theming
 
 ```powershell
 Get-ChildItem -Recurse system_files,scripts |
@@ -87,7 +87,7 @@ Get-ChildItem -Recurse system_files,scripts |
 Select-String -Path specs/PACKAGES.md -Pattern '^\s*xorgxrdp\b(?!-glamor)'
 ```
 
-### §3.5 — NVIDIA / VM gating
+### 3.5  NVIDIA / VM gating
 
 ```powershell
 Test-Path etc/modprobe.d/mios-nvidia-blacklist.conf
@@ -101,7 +101,7 @@ Get-ChildItem -Recurse -Filter '*.service' system_files,systemd |
   Select-String -Pattern 'ConditionVirtualization='
 ```
 
-### §3.6 — User setup
+### 3.6  User setup
 
 ```powershell
 Select-String -Path automation/31-user.sh -Pattern 'useradd'
@@ -109,21 +109,21 @@ Get-ChildItem -Recurse -Include '*.sh','*.ps1' |
   Select-String -Pattern '(token|password)\s*=\s*"[^"$]' -CaseSensitive:$false
 ```
 
-### §3.7 — SELinux
+### 3.7  SELinux
 
 ```powershell
 Get-ChildItem -Recurse -Filter '*.te' |
   Where-Object { (Get-Content $_).Count -gt 15 }
 ```
 
-### §3.8 — PowerShell
+### 3.8  PowerShell
 
 ```powershell
 Get-ChildItem -Recurse -Filter '*.ps1' |
   Select-String -Pattern 'Invoke-Expression|catch\s*\{\s*\}|ConvertTo-SecureString.*-AsPlainText\s+["'']'
 ```
 
-### §3.9 — Package manifest
+### 3.9  Package manifest
 
 ```powershell
 Select-String -Path specs/PACKAGES.md -Pattern '```packages-'
@@ -143,23 +143,23 @@ Get-Content specs/PACKAGES.md | ForEach-Object {
 Print one line per finding:
 
 ```
-[PASS/FAIL] §3.N rule-short-name  path:line  short description
+[PASS/FAIL] 3.N rule-short-name  path:line  short description
 ```
 
 Then a summary:
 
 ```
-SUMMARY: X passed, Y failed, Z warnings.
+SUMMARY: X passed, Y failed, Z [WARN]s.
 ```
 
 If any FAIL: **DO NOT SHIP.**
 
 ---
-### 📚 Bootc Ecosystem & Resources
+###  Bootc Ecosystem & Resources
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osautomation/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
 - **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
 - **Sole Proprietor:** MiOS-DEV
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

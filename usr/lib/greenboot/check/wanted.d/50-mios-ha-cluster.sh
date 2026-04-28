@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 # Wanted check: High Availability (Pacemaker) Cluster Health
-# Fails emit warnings in greenboot-status but do NOT trigger OS rollback.
+# Fails emit [WARN]s in greenboot-status but do NOT trigger OS rollback.
 set -euo pipefail
 
 # If pacemaker isn't active (e.g., gated out because this is a VM or WSL2),

@@ -8,10 +8,10 @@
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 
-echo "════════════ MiOS Build-Time Validation ════════════"
+echo "============ MiOS Build-Time Validation ============"
 
 # 1. OpenSSH Version Check (CVE-2026-4631 / Cockpit RCE mitigation)
-# Requirement: ≥ 9.6
+# Requirement:  9.6
 log "Checking OpenSSH version..."
 if ! command -v sshd >/dev/null 2>&1; then
     die "sshd not found in image (required for Podman-machine & remote mgmt)"
@@ -24,7 +24,7 @@ log "  Found: OpenSSH $SSH_VER_RAW"
 if [[ $(printf '%s\n9.6' "$SSH_VER_RAW" | sort -V | head -n1) != "9.6" ]]; then
     die "OpenSSH version $SSH_VER_RAW is below required 9.6 (Vulnerable to CVE-2026-4631 in Cockpit context)"
 fi
-log "  ✓ OpenSSH version is safe"
+log "  [OK] OpenSSH version is safe"
 
 # 2. Cockpit Security Posture
 log "Checking Cockpit configuration..."
@@ -41,9 +41,9 @@ if [[ -f "$COCKPIT_CONF" ]]; then
     if ! grep -q "LoginTo = false" "$COCKPIT_CONF"; then
         die "Cockpit LoginTo mitigation missing in $COCKPIT_CONF (CVE-2026-4631)"
     fi
-    log "  ✓ Cockpit LoginTo = false is enforced"
+    log "  [OK] Cockpit LoginTo = false is enforced"
 else
-    log "  ⚠ Cockpit config not found at expected paths; skipping check"
+    log "  [WARN] Cockpit config not found at expected paths; skipping check"
 fi
 
 # 3. Kernel Argument Validation (Schema Strictness Preparation)
@@ -54,7 +54,7 @@ if [[ -d /usr/lib/bootc/kargs.d ]]; then
         # Future: run 'bootc container lint' or specialized schema check
         log "  found karg: $(basename "$f")"
     done
-    log "  ✓ kargs.d presence verified"
+    log "  [OK] kargs.d presence verified"
 fi
 
 # 4. Critical Package Verification
@@ -64,7 +64,7 @@ for tool in "${CRITICAL_TOOLS[@]}"; do
     if ! command -v "$tool" >/dev/null 2>&1; then
         die "Critical tool '$tool' is missing from the image"
     fi
-    log "  ✓ $tool present"
+    log "  [OK] $tool present"
 done
 
 # 5. NVIDIA Container Toolkit Version Check
@@ -75,7 +75,7 @@ if command -v nvidia-ctk >/dev/null 2>&1; then
     if [[ $(printf '%s\n1.18' "$NCT_VER" | sort -V | head -n1) != "1.18" ]]; then
         die "nvidia-container-toolkit version $NCT_VER is below required 1.18"
     fi
-    log "  ✓ NVIDIA Container Toolkit version is safe"
+    log "  [OK] NVIDIA Container Toolkit version is safe"
 fi
 
 # 6. Cockpit Version Check (for CVE-2026-4631)
@@ -85,11 +85,11 @@ if rpm -q cockpit >/dev/null 2>&1; then
     log "  Found: Cockpit $COCKPIT_VER"
     # CVE fixed in 360. MiOS targets 361+ for Fedora 44 GA stability.
     if [[ $(printf '%s\n361' "$COCKPIT_VER" | sort -V | head -n1) != "361" ]]; then
-        log "  ⚠ Cockpit version $COCKPIT_VER is below 361 (Risk: CVE-2026-4631 / Regressions)"
+        log "  [WARN] Cockpit version $COCKPIT_VER is below 361 (Risk: CVE-2026-4631 / Regressions)"
     else
-        log "  ✓ Cockpit version is safe"
+        log "  [OK] Cockpit version is safe"
     fi
 fi
 
-echo "═════════════ Validation SUCCESSFUL ═════════════"
+echo "============= Validation SUCCESSFUL ============="
 exit 0

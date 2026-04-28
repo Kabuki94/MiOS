@@ -83,9 +83,9 @@ echo "Validating XML..."
 
 # Validate the XML
 if sudo virt-xml-validate /tmp/xbox-edit.xml 2>/dev/null; then
-    echo "âœ“ XML validation passed"
+    echo " XML validation passed"
 else
-    echo "âš  Warning: XML validation skipped (virt-xml-validate not found)"
+    echo " Warning: XML validation skipped (virt-xml-validate not found)"
 fi
 
 echo ""
@@ -102,7 +102,7 @@ if [[ "$confirm" =~ ^[Yy]$ ]]; then
     
     echo ""
     echo "=========================================="
-    echo "âœ“ Configuration Applied!"
+    echo " Configuration Applied!"
     echo "=========================================="
     echo ""
     echo "Verification:"

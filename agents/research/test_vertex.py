@@ -20,9 +20,9 @@ def test_models():
             print(f"Testing {model_name}...")
             model = GenerativeModel(model_name)
             response = model.generate_content("Hello, identify yourself.")
-            print(f"✅ {model_name} success: {response.text[:50]}...")
+            print(f"[OK] {model_name} success: {response.text[:50]}...")
         except Exception as e:
-            print(f"❌ {model_name} failed: {e}")
+            print(f"[FAIL] {model_name} failed: {e}")
 
 if __name__ == "__main__":
     test_models()

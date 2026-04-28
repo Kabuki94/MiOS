@@ -1,17 +1,17 @@
 #!/bin/bash
-# MiOS v0.1.3 — 37-selinux: Build-time SELinux policy fixes
+# MiOS v0.1.3  37-selinux: Build-time SELinux policy fixes
 # Custom per-rule modules for known Fedora Rawhide / systemd 260 denials.
 set -euo pipefail
 
 echo "[37-selinux] Applying SELinux build-time fixes..."
 
-# ═══ Restorecon — fix labels for all major trees ═══
+# === Restorecon  fix labels for all major trees ===
 if command -v restorecon &>/dev/null; then
     echo "[37-selinux] Running restorecon on /boot /etc /usr /var..."
     restorecon -R /boot /etc /usr /var 2>/dev/null || true
 fi
 
-# ═══ Semanage import — atomic booleans + fcontexts ═══
+# === Semanage import  atomic booleans + fcontexts ===
 if command -v semanage &>/dev/null; then
     echo "[37-selinux] Applying SELinux booleans and fcontexts..."
     semanage import <<'EOSEM' 2>/dev/null || true
@@ -32,10 +32,10 @@ EOSEM
     restorecon -v /boot/bootupd-state.json 2>/dev/null || true
     restorecon -R /usr/share/accountsservice 2>/dev/null || true
     restorecon -R /var/lib/gnome-remote-desktop 2>/dev/null || true
-    echo "[37-selinux] ✓ Booleans and fcontexts applied"
+    echo "[37-selinux] [OK] Booleans and fcontexts applied"
 fi
 
-# ═══ Custom policy modules ═══
+# === Custom policy modules ===
 if command -v checkmodule &>/dev/null && command -v semodule_package &>/dev/null; then
     echo "[37-selinux] Building custom SELinux policy modules..."
 

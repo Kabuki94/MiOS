@@ -1,10 +1,10 @@
 #!/bin/bash
-# MiOS v0.1.3 — 37-flatpak-env: Capture Flatpak environment for boot-time install
+# MiOS v0.1.3  37-flatpak-env: Capture Flatpak environment for boot-time install
 set -euo pipefail
 
-echo "——————————————————————?"
-echo "  MiOS v0.1.3 — Flatpak Environment"
-echo "——————————————————————?"
+echo "?"
+echo "  MiOS v0.1.3  Flatpak Environment"
+echo "?"
 
 # Directory for MiOS system-level environment definitions (USR-OVER-ETC compliance)
 # Using /usr/lib/mios/env.d as a "venv/env" style storage

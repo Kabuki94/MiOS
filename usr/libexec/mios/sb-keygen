@@ -18,7 +18,7 @@ if [[ -f "$KEY_DIR/mios-mok.key" ]]; then
     exit 0
 fi
 
-echo "${W}═══ MiOS Secure Boot Key Generation ═══${N}"
+echo "${W}=== MiOS Secure Boot Key Generation ===${N}"
 
 log "Generating 2048-bit RSA Machine Owner Key (MOK)..."
 openssl req -new -x509 -newkey rsa:2048 -nodes \

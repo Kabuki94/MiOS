@@ -1,4 +1,4 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 ```json:knowledge
 {
   "summary": "- [Core-Blueprint](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/core/2026-04-26-Artifact-COR-001-...",
@@ -15,27 +15,27 @@
   }
 }
 ```
-## 🌐 MiOS Navigation
+## [NET] MiOS Navigation
 
-### 🏛️ Core Foundation
+### [SEED] Core Foundation
 - [Core-Blueprint](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/core/2026-04-26-Artifact-COR-001-Blueprint.md)
 - [Core-Infrastructure](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/core/2026-04-26-Artifact-COR-002-Infrastructure.md)
 - [Core-Manifest](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/core/2026-04-26-Artifact-COR-003-Manifest.md)
 - [Core-Operations](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/core/2026-04-26-Artifact-COR-004-Operations.md)
 
-### 🧠 Shared Memory
+### [MEM] Shared Memory
 - [Memory-Journal](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/memory/2026-04-26-Artifact-MEM-001-Journal.md)
 - [Memory-Work-Plan](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/memory/2026-04-26-Artifact-MEM-004-Work-Plan.md)
 - [Memory-Research-Plan](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/memory/2026-04-26-Artifact-MEM-002-Research-Plan.md)
 - [Memory-Research-Strategy](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/memory/2026-04-26-Artifact-MEM-003-Research-Strategy.md)
 
-### 🛠️ Engineering
+### [ENG] Engineering
 - [Engineering-Packages](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/usr/share/mios/PACKAGES.md)
 - [Engineering-Security](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/engineering/2026-04-26-Artifact-ENG-002-Security.md)
 - [Engineering-Self-Build](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/engineering/2026-04-26-Artifact-ENG-003-Self-Build.md)
 - [Engineering-Testing](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/engineering/2026-04-26-Artifact-ENG-004-Testing.md)
 
-### 📚 Knowledge Base
+###  Knowledge Base
 - [Upstream Research 2026-04-26](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/knowledge/research/2026-04-26-Artifact-KBX-019-upstream-research-2026-04-26.md)
 - [Bootc Composefs Native](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/knowledge/research/2026-04-26-Artifact-KBX-018-upstream-bootc-composefs-native.md)
 - [Bootc Ecosystem 2025-2026](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/knowledge/research/2026-04-26-Artifact-KBX-017-upstream-bootc-ecosystem-2025-2026.md)
@@ -48,7 +48,7 @@
 - [AI Integration](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/knowledge/archive/2026-04-26-Artifact-KBX-021-AI-INTEGRATION.md)
 - [OpenAI Parsability & Agent Standards](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/knowledge/archive/2026-04-26-Artifact-KBX-024-OpenAI-Integration.md)
 
-### 📜 Historical Audit
+### [LOG] Historical Audit
 - [Changelog v0.1.3](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/changelogs/2026-04-26-Artifact-CHL-003-v0.1.3.md)
 - [Changelog Cumulative](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/changelogs/archive/2026-04-26-Artifact-CHL-001-Cumulative.md)
 - [Research April 2026](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/audit/2026-04-26-Artifact-ADT-002-Research-April2026.md)
@@ -56,4 +56,4 @@
 
 ---
 [Home](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md) | [llms.txt](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/llms.txt)
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🏗️ MiOS Strategic Blueprint
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [BUILD] MiOS Strategic Blueprint
 
 ```json:knowledge
 {
@@ -31,19 +31,19 @@
 
 ---
 
-## 🚀 Executive Summary
+## [START] Executive Summary
 MiOS is a container-native, immutable workstation engineered for high-performance virtualization and Generative AI development. It bridges the gap between OCI image-based deployment and bare-metal hardware acceleration.
 
-### 🛡️ Core Pillars
+### [SEC] Core Pillars
 - **Transactional Immutability:** The entire userspace is a cryptographically sealed OCI image.
 - **Hardware Agnosticism:** Unified support for Intel, AMD, and NVIDIA silicon.
 - **Zero-Trust Security:** Strict execution whitelisting via `fapolicyd` and `CrowdSec`.
 
 ---
 
-## 🛠️ Technical Specifications
+## [ENG] Technical Specifications
 
-### 💾 Filesystem Hierarchy
+###  Filesystem Hierarchy
 | Path | Type | Persistence | Purpose |
 | :--- | :--- | :--- | :--- |
 | `/usr` | `composefs` | Immutable | Core OS Binaries & Libraries |
@@ -51,7 +51,7 @@ MiOS is a container-native, immutable workstation engineered for high-performanc
 | `/var` | `ext4/btrfs` | Persistent | User Data & State |
 | `/home` | `symlink` | Persistent | Points to `/var/home` |
 
-### ⚡ Kernel Optimizations
+### [FAST] Kernel Optimizations
 ```json
 {
   "scheduler": "BORE (Burst-Oriented Response Enhancer)",
@@ -66,7 +66,7 @@ MiOS is a container-native, immutable workstation engineered for high-performanc
 
 ---
 
-## 📦 Deployment Matrix
+## [PKG] Deployment Matrix
 The system is synthesized into multiple bootable artifacts via `bootc-image-builder`.
 
 | Target | Format | Environment |
@@ -80,11 +80,11 @@ The system is synthesized into multiple bootable artifacts via `bootc-image-buil
 ---
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

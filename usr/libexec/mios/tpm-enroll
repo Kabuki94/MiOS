@@ -7,7 +7,7 @@ C=$'\033[0;36m'; W=$'\033[1;37m'; G=$'\033[0;32m'; Y=$'\033[0;33m'; R=$'\033[0;3
 log() { printf "  ${C}TPM-ENROLL:${N} %s\n" "$*"; }
 fail() { printf "  ${R}ERROR:${N} %s\n" "$*"; exit 1; }
 
-echo "${W}═══ MiOS TPM 2.0 LUKS Enrollment ═══${N}"
+echo "${W}=== MiOS TPM 2.0 LUKS Enrollment ===${N}"
 
 if [[ $EUID -ne 0 ]]; then
    fail "This script must be run as root."

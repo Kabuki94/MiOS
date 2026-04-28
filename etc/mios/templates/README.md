@@ -2,14 +2,14 @@
 
 This directory contains **system default configuration templates** that ship with MiOS.
 
-## 📁 Template Files
+## [DIR] Template Files
 
 - `default.env.toml` - Environment configuration template
 - `default.images.toml` - OCI image references template
 - `default.build.toml` - Build configuration template
 - `flatpaks.list` - Flatpak applications template
 
-## 🏠 User Configuration Location
+##  User Configuration Location
 
 **DO NOT EDIT THESE FILES DIRECTLY!**
 
@@ -17,14 +17,14 @@ These templates are read-only system defaults. User configurations belong in:
 
 ```
 $HOME/.config/mios/
-├── env.toml           # Your environment config
-├── images.toml        # Your OCI image preferences
-├── build.toml         # Your build configuration
-├── flatpaks.list      # Your Flatpak applications
-└── credentials/       # Your credentials (never committed)
++-- env.toml           # Your environment config
++-- images.toml        # Your OCI image preferences
++-- build.toml         # Your build configuration
++-- flatpaks.list      # Your Flatpak applications
++-- credentials/       # Your credentials (never committed)
 ```
 
-## 🚀 First-Time Setup
+## [START] First-Time Setup
 
 Initialize your user-space configuration:
 
@@ -42,7 +42,7 @@ This will:
 3. Set up credentials directory with `.gitignore`
 4. Create XDG Base Directory structure
 
-## 📝 Customizing Configuration
+## [DOC] Customizing Configuration
 
 After initialization, edit your user configuration files:
 
@@ -60,7 +60,7 @@ $EDITOR ~/.config/mios/build.toml
 $EDITOR ~/.config/mios/flatpaks.list
 ```
 
-## 🔐 Adding Credentials
+##  Adding Credentials
 
 Store sensitive data in the credentials directory:
 
@@ -80,7 +80,7 @@ chmod 600 ~/.config/mios/credentials/ssh-keys/*
 
 **IMPORTANT:** The credentials directory is automatically `.gitignore`'d and will **never** be committed to version control.
 
-## 🔄 Configuration Priority
+## [SYNC] Configuration Priority
 
 Variables are loaded in priority order (later overrides earlier):
 
@@ -89,7 +89,7 @@ Variables are loaded in priority order (later overrides earlier):
 3. **Environment Variables** (e.g., `MIOS_BASE_IMAGE`) - Shell environment
 4. **Command-Line Arguments** - Direct overrides (highest priority)
 
-## 🌐 XDG Base Directory Compliance
+## [NET] XDG Base Directory Compliance
 
 MiOS follows the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html):
 
@@ -101,7 +101,7 @@ MiOS follows the [XDG Base Directory Specification](https://specifications.freed
 | State (logs) | `~/.local/state/mios/` | `$XDG_STATE_HOME/mios/` |
 | Runtime | `/run/user/$UID/mios/` | `$XDG_RUNTIME_DIR/mios/` |
 
-## 📚 Documentation
+##  Documentation
 
 For more information, see:
 - [User-Space Separation Spec](../../specs/engineering/2026-04-27-Artifact-ENG-008-UserSpace-Separation.md)

@@ -212,11 +212,13 @@ if (Test-Path ".env.mios") {
 $v = Get-Content "VERSION" -ErrorAction SilentlyContinue; $Version = if ($v) { $v.Trim() } else { "v0.1.1" }
 $ImageName      = if ($env:MIOS_IMAGE_NAME) { ($env:MIOS_IMAGE_NAME -split '/')[-1] -replace ':.*$','' } else { "mios" }
 $ImageTag       = "latest"
-$DefUser        = if ($env:MIOS_USER) { $env:MIOS_USER } elseif ($env:MIOS_DEFAULT_USER) { $env:MIOS_DEFAULT_USER } else { "mios" }
+$MIOS_USER_ADMIN = "mios" # @track:USER_ADMIN
+$DefUser        = if ($env:MIOS_USER) { $env:MIOS_USER } elseif ($env:MIOS_DEFAULT_USER) { $env:MIOS_DEFAULT_USER } else { $MIOS_USER_ADMIN }
 $DefPass        = if ($env:MIOS_PASSWORD) { $env:MIOS_PASSWORD } elseif ($env:MIOS_DEFAULT_USER_PASSWORD) { $env:MIOS_DEFAULT_USER_PASSWORD } else { "mios" }
 $DefHostname    = if ($env:MIOS_HOSTNAME) { $env:MIOS_HOSTNAME } else { "mios" }
-$DefRegistry    = if ($env:MIOS_IMAGE_NAME) { $env:MIOS_IMAGE_NAME -replace ':.*$','' } else { "ghcr.io/kabuki94/mios" }
-$BibImage       = if ($env:MIOS_BIB_IMAGE) { $env:MIOS_BIB_IMAGE } else { "quay.io/centos-bootc/bootc-image-builder:latest" }
+$MIOS_REGISTRY_DEFAULT = "ghcr.io/kabuki94/mios" # @track:REGISTRY_DEFAULT
+$DefRegistry    = if ($env:MIOS_IMAGE_NAME) { $env:MIOS_IMAGE_NAME -replace ':.*$','' } else { $MIOS_REGISTRY_DEFAULT }
+$BibImage       = if ($env:MIOS_BIB_IMAGE) { $env:MIOS_BIB_IMAGE } else { "quay.io/centos-bootc/bootc-image-builder:latest" quay.io/centos-bootc/bootc-image-builder:latest # @track:IMG_BIB
 $BuilderMachine = "mios-builder"
 $LocalImage     = "localhost/${ImageName}:${ImageTag}"
 $MiosDocsDir      = Join-Path ([Environment]::GetFolderPath("MyDocuments")) "MiOS"
@@ -224,7 +226,8 @@ $MiosDeployDir    = Join-Path $MiosDocsDir "deployments"
 $MiosManifestsDir = Join-Path $MiosDocsDir "manifests"
 $MiosImagesDir    = Join-Path $MiosDocsDir "images"
 $OutputFolder     = $MiosDeployDir
-$RechunkImage     = "quay.io/centos-bootc/centos-bootc:stream10"
+$MIOS_IMG_RECHUNK = "quay.io/centos-bootc/centos-bootc:stream10" # @track:IMG_RECHUNK
+$RechunkImage     = $MIOS_IMG_RECHUNK
 $Timeout          = 30
 
 $RawImg         = Join-Path $MiosImagesDir "mios-bootable.raw"

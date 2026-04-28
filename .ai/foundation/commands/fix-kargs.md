@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/mios-project/mios -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/mios-project/mios -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -21,14 +21,14 @@
 > **License:** Licensed as personal property to MiOS-DEV
 ---
 ---
-description: Rewrite a kargs.d/*.toml file to the canonical flat-array form that bootc accepts. PowerShell / native-python only — no bare bash invocations.
+description: Rewrite a kargs.d/*.toml file to the canonical flat-array form that bootc accepts. PowerShell / native-python only  no bare bash invocations.
 argument-hint: <path-to-kargs.d-file>
 ---
 
 Read `$1` and rewrite it to the canonical bootc `kargs.d` form
-defined in `INDEX.md` §3.3.
+defined in `INDEX.md` 3.3.
 
-**Never invoke bare `bash` on Windows during this operation** — it
+**Never invoke bare `bash` on Windows during this operation**  it
 spawns external WSL popups. Use PowerShell or direct `python` calls
 only; both stay in the integrated terminal.
 
@@ -45,8 +45,8 @@ kargs = [
 
 ### Things to remove
 
-- `[kargs]` section headers — bootc rejects these.
-- `delete = [...]`, `delete_kargs = [...]`, `remove = [...]` — no
+- `[kargs]` section headers  bootc rejects these.
+- `delete = [...]`, `delete_kargs = [...]`, `remove = [...]`  no
   such key exists in bootc. Deletion happens via merging (last
   drop-in wins).
 - Inline tables, arrays-of-tables, nested structures.
@@ -69,7 +69,7 @@ kargs = [
    taplo check $1
    ```
 
-3. Validate the schema semantically with Python — runs natively on
+3. Validate the schema semantically with Python  runs natively on
    Windows without WSL:
    ```powershell
    python -c "import tomllib,pathlib,sys; p='$1'; d=tomllib.loads(pathlib.Path(p).read_text()); assert 'kargs' in d and isinstance(d['kargs'],list) and all(isinstance(x,str) for x in d['kargs']) and 'delete' not in d, 'invalid kargs.d'; print(p + ': ok')"
@@ -89,7 +89,7 @@ kargs = [
 6. If anything changed, remind the user to include `$1` in the next
    push script.
 
-### Example — broken (Copilot-authored) input
+### Example  broken (Copilot-authored) input
 
 ```toml
 [kargs]
@@ -97,7 +97,7 @@ kargs = [ "quiet", "rhgb" ]
 delete = [ "systemd.show-status=true" ]
 ```
 
-### Example — canonical output
+### Example  canonical output
 
 ```toml
 # VM-boot kargs: suppress splash and enable verbose boot status.
@@ -107,14 +107,14 @@ kargs = [
 ```
 
 The deletion of `quiet` / `rhgb` happens via merging (another drop-in
-omits them) — bootc has no direct `delete` mechanism.
+omits them)  bootc has no direct `delete` mechanism.
 
 ---
-### 📚 Bootc Ecosystem & Resources
+###  Bootc Ecosystem & Resources
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osautomation/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
 - **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
 - **Sole Proprietor:** MiOS-DEV
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

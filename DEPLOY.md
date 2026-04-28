@@ -5,13 +5,13 @@
 
 ---
 
-## 📖 Overview
+##  Overview
 
 This guide explains how to deploy MiOS as a **Linux filesystem-native integrated build environment** on a minimal Fedora server. The repository installs itself into FHS-compliant system locations and becomes a fully integrated system for building and deploying MiOS images.
 
 ---
 
-## 🎯 Deployment Model
+## [GOAL] Deployment Model
 
 ### Concept
 
@@ -35,7 +35,7 @@ $HOME/.config/mios/     # User configuration (XDG)
 
 ---
 
-## 🚀 Quick Start - Minimal Fedora Server
+## [START] Quick Start - Minimal Fedora Server
 
 ### Prerequisites
 
@@ -136,70 +136,70 @@ mios build-and-log
 
 ---
 
-## 📁 Filesystem Layout After Installation
+## [DIR] Filesystem Layout After Installation
 
 ### System Directories (Root-Owned)
 
 ```
 /usr/share/mios/                    # Application installation
-├── Containerfile                   # OCI build instructions
-├── Justfile                        # Build orchestration
-├── VERSION                         # MiOS version
-├── automation/                     # Build automation scripts
-├── etc/                            # System files (copied to image)
-├── usr/                            # User files (copied to image)
-├── var/                            # Variable data (tmpfiles.d)
-├── specs/                          # Specifications and docs
-└── tools/                          # Build and deployment tools
++-- Containerfile                   # OCI build instructions
++-- Justfile                        # Build orchestration
++-- VERSION                         # MiOS version
++-- automation/                     # Build automation scripts
++-- etc/                            # System files (copied to image)
++-- usr/                            # User files (copied to image)
++-- var/                            # Variable data (tmpfiles.d)
++-- specs/                          # Specifications and docs
++-- tools/                          # Build and deployment tools
 
 /etc/mios/                          # System configuration
-├── templates/                      # Configuration templates
-│   ├── default.env.toml            # Environment template
-│   ├── default.images.toml         # OCI images template
-│   ├── default.build.toml          # Build config template
-│   └── flatpaks.list               # Flatpak apps template
-└── manifest.json                   # Installation manifest
++-- templates/                      # Configuration templates
+|   +-- default.env.toml            # Environment template
+|   +-- default.images.toml         # OCI images template
+|   +-- default.build.toml          # Build config template
+|   +-- flatpaks.list               # Flatpak apps template
++-- manifest.json                   # Installation manifest
 
 /var/lib/mios/                      # State data (created by tmpfiles.d)
-├── artifacts/                      # Built artifacts
-├── snapshots/                      # Build snapshots
-└── images/                         # Downloaded images
++-- artifacts/                      # Built artifacts
++-- snapshots/                      # Build snapshots
++-- images/                         # Downloaded images
 
 /var/log/mios/                      # Build logs (created by tmpfiles.d)
-└── builds/                         # Per-build logs
++-- builds/                         # Per-build logs
 
 /usr/local/bin/
-└── mios                            # CLI command wrapper
++-- mios                            # CLI command wrapper
 
 /etc/tmpfiles.d/
-└── mios.conf                       # /var directory declarations
++-- mios.conf                       # /var directory declarations
 ```
 
 ### User Directories (Per-User, XDG)
 
 ```
 $HOME/.config/mios/                 # User configuration
-├── env.toml                        # Environment overrides
-├── images.toml                     # OCI image preferences
-├── build.toml                      # Build configuration
-├── flatpaks.list                   # Flatpak applications
-└── credentials/                    # Credentials (gitignored)
++-- env.toml                        # Environment overrides
++-- images.toml                     # OCI image preferences
++-- build.toml                      # Build configuration
++-- flatpaks.list                   # Flatpak applications
++-- credentials/                    # Credentials (gitignored)
 
 $HOME/.local/share/mios/            # User data
-├── artifacts/                      # User artifacts
-└── templates/                      # User templates
++-- artifacts/                      # User artifacts
++-- templates/                      # User templates
 
 $HOME/.cache/mios/                  # User cache
-├── podman/                         # Podman build cache
-└── downloads/                      # Temporary downloads
++-- podman/                         # Podman build cache
++-- downloads/                      # Temporary downloads
 
 $HOME/.local/state/mios/            # User state
-└── logs/                           # User build logs
++-- logs/                           # User build logs
 ```
 
 ---
 
-## 🔧 MiOS Command Reference
+## [TOOL] MiOS Command Reference
 
 The `mios` command is a wrapper around `just` that runs in the installed directory.
 
@@ -259,7 +259,7 @@ mios rechunk
 
 ---
 
-## 🌐 Deployment Scenarios
+## [NET] Deployment Scenarios
 
 ### Scenario 1: Local Development Workstation
 
@@ -348,7 +348,7 @@ mios build
 
 ---
 
-## 🔄 Update and Maintenance
+## [SYNC] Update and Maintenance
 
 ### Update MiOS Installation
 
@@ -389,7 +389,7 @@ rm -rf ~/.local/state/mios/logs/*.log
 
 ---
 
-## 🗑️  Uninstallation
+## [CLEAN]  Uninstallation
 
 ### Remove MiOS from System
 
@@ -435,7 +435,7 @@ rm -rf ~/.config/mios ~/.local/share/mios ~/.cache/mios ~/.local/state/mios
 
 ---
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 ### Issue: "mios: command not found"
 
@@ -498,7 +498,7 @@ mios edit-images
 
 ---
 
-## 📊 Verification
+## [STAT] Verification
 
 ### Verify Installation
 
@@ -545,7 +545,7 @@ ls -la ~/.local/state/mios/logs/
 
 ---
 
-## 📚 References
+##  References
 
 - **Installation Script:** [install.sh](install.sh)
 - **User-Space Guide:** [USER-SPACE-GUIDE.md](USER-SPACE-GUIDE.md)

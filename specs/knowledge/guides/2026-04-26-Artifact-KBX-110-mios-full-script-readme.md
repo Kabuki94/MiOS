@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -32,27 +32,27 @@ A **single, comprehensive bash script** (4,500+ lines) that provides complete Mi
 
 ## Features
 
-### ðŸ” System Assessment
+###  System Assessment
 - Quick virtualization readiness check (30 seconds)
 - IOMMU group analysis for GPU passthrough
 - CPU topology detection (AMD X3D, Intel Hybrid aware)
 - Full system profiling with exportable reports
 
-### ðŸ“¦ MiOS-Build Installation (17 Phases)
+###  MiOS-Build Installation (17 Phases)
 - Desktop mode (GNOME + full virtualization)
 - Headless mode (Cockpit + CLI)
 - Minimal mode (just libvirt/QEMU)
 - Automatic hardware detection
 - Progress tracking and logging
 
-### ðŸŽ® VFIO GPU Passthrough
+###  VFIO GPU Passthrough
 - Multi-vendor support (NVIDIA, AMD, Intel Arc)
 - Automatic bootloader detection (systemd-boot, GRUB, rEFInd)
 - IOMMU group validation
 - Initramfs configuration
 - Helper scripts (vfio-verify, iommu-groups)
 
-### âš¡ CPU Core Isolation
+###  CPU Core Isolation
 - AMD X3D optimized presets (V-Cache aware)
 - Intel Hybrid architecture support
 - Custom isolation specification
@@ -60,14 +60,14 @@ A **single, comprehensive bash script** (4,500+ lines) that provides complete Mi
 - systemd affinity configuration
 - Immediate and persistent changes
 
-### ðŸ”§ VM CPU Pin Manager
+###  VM CPU Pin Manager
 - List VMs with current pinning
 - Interactive pinning configuration
 - Libvirt hook installation
 - Per-VM configuration files
 - XML snippet generator
 
-### âœ… Verification & Diagnostics
+### ... Verification & Diagnostics
 - Service status checks
 - VFIO binding verification
 - CPU isolation confirmation
@@ -120,24 +120,24 @@ sudo ./mios-full.sh version     # Show version
 ## Main Menu Structure
 
 ```
-â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
-â•‘                          MAIN MENU                                        â•‘
-â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•£
-â•‘   1) System Assessment              [Status indicator]                    â•‘
-â•‘   2) MiOS-Build Installation          [Status indicator]                    â•‘
-â• â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•£
-â•‘  Post-Install Configuration                                               â•‘
-â•‘   3) VFIO GPU Passthrough           [GPU isolation]                       â•‘
-â•‘   4) CPU Core Isolation             [Performance]                         â•‘
-â•‘   5) VM CPU Pin Manager             [Per-VM config]                       â•‘
-â• â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•£
-â•‘  Tools & Diagnostics                                                      â•‘
-â•‘   6) Verify Installation            [Health check]                        â•‘
-â•‘   7) Troubleshoot & Diagnose        [Fix issues]                          â•‘
-â•‘   8) IOMMU Group Viewer             [GPU analysis]                        â•‘
-â• â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•£
-â•‘   s) System Status    l) Logs    h) Help    q) Quit                       â•‘
-â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+*****************************************************************************
+*                          MAIN MENU                                        *
+*****************************************************************************
+*   1) System Assessment              [Status indicator]                    *
+*   2) MiOS-Build Installation          [Status indicator]                    *
+**
+*  Post-Install Configuration                                               *
+*   3) VFIO GPU Passthrough           [GPU isolation]                       *
+*   4) CPU Core Isolation             [Performance]                         *
+*   5) VM CPU Pin Manager             [Per-VM config]                       *
+**
+*  Tools & Diagnostics                                                      *
+*   6) Verify Installation            [Health check]                        *
+*   7) Troubleshoot & Diagnose        [Fix issues]                          *
+*   8) IOMMU Group Viewer             [GPU analysis]                        *
+**
+*   s) System Status    l) Logs    h) Help    q) Quit                       *
+*****************************************************************************
 ```
 
 ---
@@ -145,18 +145,18 @@ sudo ./mios-full.sh version     # Show version
 ## Typical Workflow
 
 ### New Installation
-1. **Assess** â†’ Run quick assessment to check compatibility
-2. **Install** â†’ Choose Desktop/Headless/Minimal mode
-3. **Reboot** â†’ Apply kernel changes
-4. **VFIO** â†’ Configure GPU passthrough (if needed)
-5. **CPU** â†’ Set up core isolation for VMs
-6. **Verify** â†’ Confirm everything works
+1. **Assess**  Run quick assessment to check compatibility
+2. **Install**  Choose Desktop/Headless/Minimal mode
+3. **Reboot**  Apply kernel changes
+4. **VFIO**  Configure GPU passthrough (if needed)
+5. **CPU**  Set up core isolation for VMs
+6. **Verify**  Confirm everything works
 
 ### Existing System
-1. **Status** â†’ Check current state
-2. **Configure** â†’ VFIO, CPU, or VM pinning as needed
-3. **Verify** â†’ Validate configuration
-4. **Diagnose** â†’ If issues arise
+1. **Status**  Check current state
+2. **Configure**  VFIO, CPU, or VM pinning as needed
+3. **Verify**  Validate configuration
+4. **Diagnose**  If issues arise
 
 ---
 
@@ -215,7 +215,7 @@ CPU Thread Layout:
      0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15   <- CCD0 (V-Cache)
     16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31   <- CCD1 (High Freq)
 
-Legend: â–  CCD0 (V-Cache)  â–  CCD1 (High Freq)
+Legend:  CCD0 (V-Cache)   CCD1 (High Freq)
 ```
 
 ---
@@ -352,11 +352,11 @@ For issues or questions:
 3. Review IOMMU groups: `sudo ./mios-full.sh iommu`
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

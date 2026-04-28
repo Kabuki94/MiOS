@@ -39,19 +39,19 @@ NC='\033[0m' # No Color
 
 # Helper functions
 info() {
-    echo -e "${BLUE}ℹ️  ${NC}$*"
+    echo -e "${BLUE}  ${NC}$*"
 }
 
 success() {
-    echo -e "${GREEN}✅${NC} $*"
+    echo -e "${GREEN}[OK]${NC} $*"
 }
 
 warn() {
-    echo -e "${YELLOW}⚠️  ${NC}$*"
+    echo -e "${YELLOW}[WARN]  ${NC}$*"
 }
 
 error() {
-    echo -e "${RED}❌${NC} $*" >&2
+    echo -e "${RED}[FAIL]${NC} $*" >&2
 }
 
 # Check if templates exist
@@ -62,9 +62,9 @@ if [[ ! -d "$TEMPLATE_DIR" ]]; then
 fi
 
 echo ""
-echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║       MiOS User-Space Initialization (XDG Compliant)        ║"
-echo "╚══════════════════════════════════════════════════════════════╝"
+echo "+==============================================================+"
+echo "       MiOS User-Space Initialization (XDG Compliant)        "
+echo "+==============================================================+"
 echo ""
 
 info "Initializing MiOS user-space directories..."
@@ -149,11 +149,11 @@ success "Created: credentials/.gitignore"
 cat > "${MIOS_CONFIG_DIR}/credentials/README.md" <<'EOF'
 # MiOS Credentials Directory
 
-**⚠️  IMPORTANT: This directory is automatically ignored by git.**
+**[WARN]  IMPORTANT: This directory is automatically ignored by git.**
 
 This directory stores sensitive data and credentials. Files here will **never** be committed to version control.
 
-## 📝 Credential Files
+## [DOC] Credential Files
 
 ### GitHub Personal Access Token
 ```bash
@@ -199,7 +199,7 @@ mv MOK.priv mok-key.priv
 mv MOK.pem mok-cert.pem
 ```
 
-## 🔒 Security Best Practices
+## [LOCK] Security Best Practices
 
 1. **Never commit credentials to git** (this directory is gitignored)
 2. **Use appropriate file permissions** (600 for private keys, 644 for public)
@@ -207,7 +207,7 @@ mv MOK.pem mok-cert.pem
 4. **Use environment-specific credentials** (different tokens for dev/prod)
 5. **Back up credentials securely** (encrypted backup, password manager)
 
-## 🗂️  Credential File Reference
+##   Credential File Reference
 
 | File | Purpose | Permissions |
 |------|---------|-------------|
@@ -243,22 +243,22 @@ cat > "${MIOS_CONFIG_DIR}/README.md" <<EOF
 
 This directory contains your personal MiOS configuration files. These settings override system defaults and are **not** committed to version control.
 
-## 📁 Directory Structure
+## [DIR] Directory Structure
 
 \`\`\`
 ${MIOS_CONFIG_DIR}/
-├── env.toml           # Environment configuration
-├── images.toml        # OCI image references
-├── build.toml         # Build configuration
-├── flatpaks.list      # Flatpak applications
-├── credentials/       # Sensitive data (gitignored)
-│   ├── github-token
-│   ├── registry-auth.json
-│   └── ssh-keys/
-└── README.md          # This file
++-- env.toml           # Environment configuration
++-- images.toml        # OCI image references
++-- build.toml         # Build configuration
++-- flatpaks.list      # Flatpak applications
++-- credentials/       # Sensitive data (gitignored)
+|   +-- github-token
+|   +-- registry-auth.json
+|   +-- ssh-keys/
++-- README.md          # This file
 \`\`\`
 
-## 🚀 Quick Start
+## [START] Quick Start
 
 1. **Edit your environment:**
    \`\`\`bash
@@ -287,7 +287,7 @@ ${MIOS_CONFIG_DIR}/
    chmod 600 ${MIOS_CONFIG_DIR}/credentials/github-token
    \`\`\`
 
-## 🔧 Configuration Files
+## [TOOL] Configuration Files
 
 ### env.toml
 Environment configuration including:
@@ -319,7 +319,7 @@ com.visualstudio.code
 org.blender.Blender
 \`\`\`
 
-## 🌐 XDG Base Directories
+## [NET] XDG Base Directories
 
 MiOS follows XDG standards for user files:
 
@@ -331,16 +331,16 @@ MiOS follows XDG standards for user files:
 | State (logs) | \`${MIOS_STATE_DIR}\` |
 | Runtime | \`${MIOS_RUNTIME_DIR}\` |
 
-## 🔄 Configuration Priority
+## [SYNC] Configuration Priority
 
 Variables are loaded in order (later overrides earlier):
 
 1. System defaults (\`/usr/share/mios/config/\`)
-2. **User configuration** (this directory) ⬅ You are here
+2. **User configuration** (this directory)  You are here
 3. Environment variables (\`MIOS_*\`)
 4. Command-line arguments (highest priority)
 
-## 📚 Documentation
+##  Documentation
 
 - [User-Space Separation Spec](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/engineering/2026-04-27-Artifact-ENG-008-UserSpace-Separation.md)
 - [System Templates](https://github.com/Kabuki94/MiOS-bootstrap/tree/main/etc/mios/templates)
@@ -354,26 +354,26 @@ EOF
 success "Created: README.md"
 
 echo ""
-echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║                  ✅ Initialization Complete                  ║"
-echo "╚══════════════════════════════════════════════════════════════╝"
+echo "+==============================================================+"
+echo "                  [OK] Initialization Complete                  "
+echo "+==============================================================+"
 echo ""
 
 info "User-space directories created:"
-echo "   📁 Config:  ${MIOS_CONFIG_DIR}"
-echo "   📁 Data:    ${MIOS_DATA_DIR}"
-echo "   📁 Cache:   ${MIOS_CACHE_DIR}"
-echo "   📁 State:   ${MIOS_STATE_DIR}"
+echo "   [DIR] Config:  ${MIOS_CONFIG_DIR}"
+echo "   [DIR] Data:    ${MIOS_DATA_DIR}"
+echo "   [DIR] Cache:   ${MIOS_CACHE_DIR}"
+echo "   [DIR] State:   ${MIOS_STATE_DIR}"
 if [[ -d "$MIOS_RUNTIME_DIR" ]]; then
-    echo "   📁 Runtime: ${MIOS_RUNTIME_DIR}"
+    echo "   [DIR] Runtime: ${MIOS_RUNTIME_DIR}"
 fi
 
 echo ""
 info "Configuration files copied:"
-echo "   📝 env.toml"
-echo "   📝 images.toml"
-echo "   📝 build.toml"
-echo "   📝 flatpaks.list"
+echo "   [DOC] env.toml"
+echo "   [DOC] images.toml"
+echo "   [DOC] build.toml"
+echo "   [DOC] flatpaks.list"
 
 echo ""
 info "Next steps:"

@@ -1,14 +1,14 @@
 # ============================================================================
-# push-to-github.ps1 — MiOS release deliverable (v0.1.3 baseline)
+# push-to-github.ps1  MiOS release deliverable (v0.1.3 baseline)
 # ----------------------------------------------------------------------------
-# Single source of truth for the release pipeline. Per INDEX.md §4 + the
+# Single source of truth for the release pipeline. Per INDEX.md 4 + the
 # /push-version skill, this script is rewritten per release and never split
 # into push-vX.Y.Z.ps1 siblings.
 #
 # Behaviour:
 #   1. Clone github.com/Kabuki94/MiOS-bootstrap into a temp directory.
 #   2. Optionally overlay a staged companion directory (-StagedDir) onto the
-#      working tree, preserving layout relative to repo root. Files-only —
+#      working tree, preserving layout relative to repo root. Files-only 
 #      directories are walked and replaced file by file. Nothing is deleted.
 #   3. Bump VERSION to -Version (default: read from local VERSION file).
 #   4. Stamp CHANGELOG.md with a top-of-file release block dated today.
@@ -53,7 +53,7 @@ if ($StagedDir) {
     $StagedDir = (Resolve-Path -LiteralPath $StagedDir).Path
 }
 
-# Token discovery — never echoed to stdout.
+# Token discovery  never echoed to stdout.
 $token = $env:GH_TOKEN
 if (-not $token) { $token = $env:GITHUB_TOKEN }
 if (-not $token) {
@@ -68,7 +68,7 @@ try {
     $cloneUrl = if ($token) { "https://x-access-token:$token@$Repo.git" } else { "https://$Repo.git" }
     $safeUrl  = "https://$Repo.git"
 
-    Write-Step "Cloning $safeUrl ($Branch) — full history."
+    Write-Step "Cloning $safeUrl ($Branch)  full history."
     git clone --branch $Branch $cloneUrl $workDir 2>&1 | ForEach-Object { Write-Verbose $_ }
     if ($LASTEXITCODE -ne 0) { throw "git clone failed (exit $LASTEXITCODE)." }
 
@@ -103,7 +103,7 @@ try {
             }
     }
 
-    Write-Step "Bumping VERSION → $Version"
+    Write-Step "Bumping VERSION  $Version"
     Set-Content -LiteralPath (Join-Path $workDir 'VERSION') -Value $Version -NoNewline -Encoding utf8
 
     $changelog = Join-Path $workDir 'CHANGELOG.md'
@@ -117,7 +117,7 @@ try {
         Set-Content -LiteralPath $changelog -Value ($header + "`r`n" + $newBlock + $body) -Encoding utf8
         Write-Ok "CHANGELOG.md stamped v$Version ($today)"
     } else {
-        Write-Warn "CHANGELOG.md missing in clone — skipping changelog stamp."
+        Write-Warn "CHANGELOG.md missing in clone  skipping changelog stamp."
     }
 
     Push-Location $workDir
@@ -129,9 +129,9 @@ try {
             return
         }
 
-        $commitMsg = "release: v$Version — $Message"
+        $commitMsg = "release: v$Version  $Message"
         if ($DryRun) {
-            Write-Step "DRY RUN — skipping commit/push. Pending changes:"
+            Write-Step "DRY RUN  skipping commit/push. Pending changes:"
             Write-Host $status
             return
         }

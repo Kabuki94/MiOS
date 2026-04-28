@@ -38,11 +38,11 @@ eval-all:
 	@echo "==============================================================================="
 	@for evalset in evals/eval/evalsets/*.evalset.json; do \
 		echo ""; \
-		echo "▶ Running: $$evalset"; \
+		echo "[RUN] Running: $$evalset"; \
 		$(MAKE) eval EVALSET=$$evalset || exit 1; \
 	done
 	@echo ""
-	@echo "✅ All evalsets completed"
+	@echo "[OK] All evalsets completed"
 
 test:
 	uv sync --dev

@@ -35,26 +35,26 @@ JSON_DATA="{"
 
 print_header() {
     local title="$1"
-    echo -e "\n${BOLD}${CYAN}â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—${NC}"
-    echo -e "${BOLD}${CYAN}â•‘ ${title}${NC}"
-    echo -e "${BOLD}${CYAN}â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}\n"
+    echo -e "\n${BOLD}${CYAN}******************************************************************${NC}"
+    echo -e "${BOLD}${CYAN}* ${title}${NC}"
+    echo -e "${BOLD}${CYAN}******************************************************************${NC}\n"
 }
 
 print_section() {
     local section="$1"
-    echo -e "\n${BOLD}${YELLOW}â–¶ ${section}${NC}\n"
+    echo -e "\n${BOLD}${YELLOW} ${section}${NC}\n"
 }
 
 print_info() {
-    echo -e "${GREEN}âœ“${NC} $1"
+    echo -e "${GREEN}${NC} $1"
 }
 
-print_warning() {
-    echo -e "${YELLOW}âš ${NC} $1"
+print_[WARN]() {
+    echo -e "${YELLOW}${NC} $1"
 }
 
 print_error() {
-    echo -e "${RED}âœ—${NC} $1"
+    echo -e "${RED}${NC} $1"
 }
 
 command_exists() {
@@ -68,7 +68,7 @@ safe_exec() {
     if eval "$cmd" 2>/dev/null; then
         return 0
     else
-        print_warning "$description: Command not available or failed"
+        print_[WARN] "$description: Command not available or failed"
         return 1
     fi
 }
@@ -95,7 +95,7 @@ check_tools() {
         if command_exists "$tool"; then
             print_info "$tool is available"
         else
-            print_warning "$tool is not installed"
+            print_[WARN] "$tool is not installed"
             missing_tools+=("$tool")
         fi
     done
@@ -464,7 +464,7 @@ collect_sensors_thermal() {
     if [ -d /sys/class/thermal ]; then
         for zone in /sys/class/thermal/thermal_zone*; do
             if [ -e "$zone/type" ]; then
-                echo "$(cat $zone/type): $(cat $zone/temp 2>/dev/null || echo 'N/A')Â°C" | tee -a "$OUTPUT_FILE"
+                echo "$(cat $zone/type): $(cat $zone/temp 2>/dev/null || echo 'N/A')C" | tee -a "$OUTPUT_FILE"
             fi
         done
     fi
@@ -592,7 +592,7 @@ main() {
     
     # Check for root/sudo
     if [ "$EUID" -ne 0 ]; then
-        print_warning "Some commands require sudo/root access"
+        print_[WARN] "Some commands require sudo/root access"
         echo "Run with sudo for complete information"
         echo ""
     fi
@@ -636,8 +636,8 @@ main() {
     
     # Final summary
     print_header "PROFILE COMPLETE"
-    echo -e "${GREEN}âœ“${NC} Full system profile saved to: ${BOLD}$OUTPUT_FILE${NC}"
-    echo -e "${GREEN}âœ“${NC} Profile directory: ${BOLD}$OUTPUT_DIR${NC}"
+    echo -e "${GREEN}${NC} Full system profile saved to: ${BOLD}$OUTPUT_FILE${NC}"
+    echo -e "${GREEN}${NC} Profile directory: ${BOLD}$OUTPUT_DIR${NC}"
     echo ""
     echo -e "${CYAN}File size: $(du -h "$OUTPUT_FILE" | cut -f1)${NC}"
     echo -e "${CYAN}Total sections: 22${NC}"

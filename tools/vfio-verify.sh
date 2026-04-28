@@ -16,23 +16,23 @@ FAIL=0
 WARN=0
 
 check_pass() {
-    echo -e "${GREEN}✓${NC} $1"
+    echo -e "${GREEN}[OK]${NC} $1"
     PASS=$((PASS + 1))
 }
 
 check_fail() {
-    echo -e "${RED}✗${NC} $1"
+    echo -e "${RED}[FAIL]${NC} $1"
     FAIL=$((FAIL + 1))
 }
 
 check_warn() {
-    echo -e "${YELLOW}⚠${NC} $1"
+    echo -e "${YELLOW}[WARN]${NC} $1"
     WARN=$((WARN + 1))
 }
 
-echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+echo -e "${BLUE}===========================================================${NC}"
 echo -e "${GREEN}MiOS VFIO Configuration Verification${NC}"
-echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+echo -e "${BLUE}===========================================================${NC}"
 echo ""
 
 # Test 1: Check IOMMU is enabled in kernel
@@ -59,9 +59,9 @@ VFIO_MODULES=("vfio" "vfio_pci" "vfio_iommu_type1")
 ALL_LOADED=true
 for module in "${VFIO_MODULES[@]}"; do
     if lsmod | grep -q "^$module"; then
-        echo "  ${GREEN}✓${NC} $module loaded"
+        echo "  ${GREEN}[OK]${NC} $module loaded"
     else
-        echo "  ${RED}✗${NC} $module not loaded"
+        echo "  ${RED}[FAIL]${NC} $module not loaded"
         ALL_LOADED=false
     fi
 done
@@ -165,7 +165,7 @@ if [[ -L "/sys/bus/pci/devices/0000:$TARGET_GPU_PCI/iommu_group" ]]; then
     echo "  Devices in group: $GROUP_DEVICES"
     
     if [[ $GROUP_DEVICES -le 3 ]]; then
-        check_pass "Good IOMMU isolation (≤3 devices in group)"
+        check_pass "Good IOMMU isolation (3 devices in group)"
     else
         check_warn "Multiple devices in IOMMU group ($GROUP_DEVICES)"
         echo "  Consider ACS override patch if this causes issues"
@@ -226,9 +226,9 @@ fi
 
 # Summary
 echo ""
-echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+echo -e "${BLUE}===========================================================${NC}"
 echo -e "${GREEN}Verification Summary${NC}"
-echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+echo -e "${BLUE}===========================================================${NC}"
 echo ""
 echo -e "${GREEN}Passed:  $PASS${NC}"
 echo -e "${YELLOW}Warnings: $WARN${NC}"
@@ -236,16 +236,16 @@ echo -e "${RED}Failed:  $FAIL${NC}"
 echo ""
 
 if [[ $FAIL -eq 0 ]]; then
-    echo -e "${GREEN}✓ VFIO configuration is correct for your hardware!${NC}"
+    echo -e "${GREEN}[OK] VFIO configuration is correct for your hardware!${NC}"
     echo ""
     echo "Environment: $(systemd-detect-virt)"
     echo ""
 elif [[ $FAIL -le 2 && $PASS -ge 6 ]]; then
-    echo -e "${YELLOW}⚠ Configuration mostly correct with minor issues${NC}"
+    echo -e "${YELLOW}[WARN] Configuration mostly correct with minor issues${NC}"
 else
-    echo -e "${RED}✗ VFIO configuration has significant issues${NC}"
+    echo -e "${RED}[FAIL] VFIO configuration has significant issues${NC}"
 fi
 
-echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+echo -e "${BLUE}===========================================================${NC}"
 echo ""
 exit $FAIL

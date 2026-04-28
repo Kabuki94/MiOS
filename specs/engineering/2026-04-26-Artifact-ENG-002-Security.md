@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -22,7 +22,7 @@
 > **Source Reference:** MiOS-Core-v0.1.3
 ---
 
-# 🛡️ MiOS Security Guide
+# [SEC] MiOS Security Guide
 
 ```json
 {
@@ -34,9 +34,9 @@
 
 ---
 
-## 🔒 Hardened Layers
+## [LOCK] Hardened Layers
 
-### 🧠 Execution Control
+### [MEM] Execution Control
 MiOS implements strict binary whitelisting to prevent unauthorized execution.
 
 ```json
@@ -49,7 +49,7 @@ MiOS implements strict binary whitelisting to prevent unauthorized execution.
 }
 ```
 
-### ⚡ Cryptographic Integrity
+### [FAST] Cryptographic Integrity
 The core system is sealed using `composefs` and the Linux kernel's `fs-verity` subsystem.
 
 1. **Seal:** Root partition is hashed during build.
@@ -58,9 +58,9 @@ The core system is sealed using `composefs` and the Linux kernel's `fs-verity` s
 
 ---
 
-## 🔌 Physical Security
+## [PLUG] Physical Security
 
-### ⌨️ Peripheral Gating
+### [KB] Peripheral Gating
 USBGuard intercepts unauthorized devices at the kernel level.
 
 | Device Type | Policy | Implementation |
@@ -71,7 +71,7 @@ USBGuard intercepts unauthorized devices at the kernel level.
 
 ---
 
-## 🌐 Network Defense
+## [NET] Network Defense
 Firewalld is configured for maximum isolation.
 
 ```json
@@ -86,9 +86,9 @@ Firewalld is configured for maximum isolation.
 
 ---
 
-## 🛠️ Infrastructure Hardening
+## [ENG] Infrastructure Hardening
 
-### 🧠 Kernel Hardening
+### [MEM] Kernel Hardening
 MiOS implements the **SecureBlue 29-parameter kernel hardening** standard.
 
 | Parameter | Rationale |
@@ -106,11 +106,11 @@ MiOS implements the **SecureBlue 29-parameter kernel hardening** standard.
 ---
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

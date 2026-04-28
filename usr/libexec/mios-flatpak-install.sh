@@ -1,9 +1,9 @@
 #!/bin/bash
-# MiOS v0.1.3 — Flatpak First-Boot Installer
+# MiOS v0.1.3  Flatpak First-Boot Installer
 # Dictated by global environment and user space profiles.
 set -euo pipefail
 
-# Suppress DBus/dconf warnings in headless automation/early-boot environments
+# Suppress DBus/dconf [WARN]s in headless automation/early-boot environments
 export GIO_USE_VFS=local
 export GSETTINGS_BACKEND=memory
 

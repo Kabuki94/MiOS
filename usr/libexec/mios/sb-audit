@@ -10,7 +10,7 @@ warn() { printf "  ${Y}WARNING:${N} %s\n" "$*"; }
 fail() { printf "  ${R}CRITICAL:${N} %s\n" "$*"; }
 pass() { printf "  ${G}SUCCESS:${N} %s\n" "$*"; }
 
-echo "${W}═══ Secure Boot CA 2023 Readiness Audit ═══${N}"
+echo "${W}=== Secure Boot CA 2023 Readiness Audit ===${N}"
 
 # 1. Check if Secure Boot is even enabled
 if command -v mokutil &>/dev/null; then

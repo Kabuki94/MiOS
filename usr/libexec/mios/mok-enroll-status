@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-# mok-enroll-status — machine-readable MOK enrollment state probe.
+# mok-enroll-status -- machine-readable MOK enrollment state probe.
 # Emits one line to stdout: enrolled | pending | not-enrolled | no-secureboot | conflict | error
 set -euo pipefail
 

@@ -28,7 +28,7 @@ fi
 # — USER CREATION —
 # Password is pre-hashed (SHA-512) by the orchestrator — plaintext NEVER in build log.
 # Defaults for CI builds or when environment variables are not provided:
-C_USER="${MIOS_USER:-mios}"
+C_USER="mios" # @track:USER_ADMIN
 # Note: MIOS_PASSWORD_HASH should be a SHA-512 crypt-style hash
 C_HASH="${MIOS_PASSWORD_HASH:-}"
 

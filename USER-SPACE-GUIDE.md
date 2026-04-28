@@ -5,19 +5,19 @@
 
 ---
 
-## 📖 Overview
+##  Overview
 
 MiOS v0.1.3 introduces **user-space separation** following the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html). This separates mutable user configuration from the immutable system repository, enabling:
 
-✅ **Environment-independent configuration** - Move between machines without conflicts
-✅ **Secure credential management** - Credentials never committed to git
-✅ **Multi-user support** - Each user has their own configuration
-✅ **TOML-based configuration** - Structured, human-readable config files
-✅ **Backwards compatible** - Legacy `.env` still works (deprecated)
+[OK] **Environment-independent configuration** - Move between machines without conflicts
+[OK] **Secure credential management** - Credentials never committed to git
+[OK] **Multi-user support** - Each user has their own configuration
+[OK] **TOML-based configuration** - Structured, human-readable config files
+[OK] **Backwards compatible** - Legacy `.env` still works (deprecated)
 
 ---
 
-## 🚀 Quick Start
+## [START] Quick Start
 
 ### 1. Initialize User-Space
 
@@ -76,64 +76,64 @@ just build-and-log
 
 ---
 
-## 📁 Directory Structure
+## [DIR] Directory Structure
 
 ### XDG Base Directory Layout
 
 ```
 $HOME/
-├── .config/mios/              # XDG_CONFIG_HOME - Configuration files
-│   ├── env.toml               # Environment configuration
-│   ├── images.toml            # OCI image references
-│   ├── build.toml             # Build configuration
-│   ├── flatpaks.list          # Flatpak applications
-│   ├── credentials/           # Credentials (gitignored)
-│   │   ├── github-token       # GitHub PAT
-│   │   ├── registry-auth.json # Container registry auth
-│   │   └── ssh-keys/          # SSH keys
-│   └── README.md              # Quick reference
-│
-├── .local/share/mios/         # XDG_DATA_HOME - User data
-│   ├── artifacts/             # Downloaded artifacts
-│   ├── images/                # Downloaded OCI images
-│   ├── templates/             # User templates
-│   └── plugins/               # User plugins
-│
-├── .cache/mios/               # XDG_CACHE_HOME - Cache files
-│   ├── podman/                # Podman build cache
-│   ├── downloads/             # Temporary downloads
-│   └── build-cache/           # Build artifacts cache
-│
-└── .local/state/mios/         # XDG_STATE_HOME - Logs & state
-    ├── logs/                  # Build logs
-    │   └── build-*.log
-    ├── history.log            # Command history
-    └── last-build.json        # Last build metadata
++-- .config/mios/              # XDG_CONFIG_HOME - Configuration files
+|   +-- env.toml               # Environment configuration
+|   +-- images.toml            # OCI image references
+|   +-- build.toml             # Build configuration
+|   +-- flatpaks.list          # Flatpak applications
+|   +-- credentials/           # Credentials (gitignored)
+|   |   +-- github-token       # GitHub PAT
+|   |   +-- registry-auth.json # Container registry auth
+|   |   +-- ssh-keys/          # SSH keys
+|   +-- README.md              # Quick reference
+|
++-- .local/share/mios/         # XDG_DATA_HOME - User data
+|   +-- artifacts/             # Downloaded artifacts
+|   +-- images/                # Downloaded OCI images
+|   +-- templates/             # User templates
+|   +-- plugins/               # User plugins
+|
++-- .cache/mios/               # XDG_CACHE_HOME - Cache files
+|   +-- podman/                # Podman build cache
+|   +-- downloads/             # Temporary downloads
+|   +-- build-cache/           # Build artifacts cache
+|
++-- .local/state/mios/         # XDG_STATE_HOME - Logs & state
+    +-- logs/                  # Build logs
+    |   +-- build-*.log
+    +-- history.log            # Command history
+    +-- last-build.json        # Last build metadata
 ```
 
 ### Repository Structure (System Files)
 
 ```
 mios/                          # Repository root (SYSTEM ONLY)
-├── etc/mios/templates/        # System default templates
-│   ├── default.env.toml       # Environment template
-│   ├── default.images.toml    # Images template
-│   ├── default.build.toml     # Build template
-│   └── flatpaks.list          # Flatpaks template
-├── Containerfile              # OCI build instructions
-├── Justfile                   # Build orchestration
-├── VERSION                    # System version
-├── usr/                       # System files (copied to image)
-├── etc/                       # System configuration
-├── var/                       # System variable data
-└── automation/                # Build automation scripts
++-- etc/mios/templates/        # System default templates
+|   +-- default.env.toml       # Environment template
+|   +-- default.images.toml    # Images template
+|   +-- default.build.toml     # Build template
+|   +-- flatpaks.list          # Flatpaks template
++-- Containerfile              # OCI build instructions
++-- Justfile                   # Build orchestration
++-- VERSION                    # System version
++-- usr/                       # System files (copied to image)
++-- etc/                       # System configuration
++-- var/                       # System variable data
++-- automation/                # Build automation scripts
 ```
 
 **Key Principle:** Repository contains **system defaults only**. User configuration lives in `$HOME/.config/mios/`.
 
 ---
 
-## ⚙️  Configuration Files
+##   Configuration Files
 
 ### 1. env.toml - Environment Configuration
 
@@ -250,7 +250,7 @@ org.gimp.GIMP
 
 ---
 
-## 🔐 Credential Management
+##  Credential Management
 
 ### GitHub Personal Access Token
 
@@ -301,7 +301,7 @@ chmod 600 ~/.config/mios/credentials/mok-key.priv
 
 ---
 
-## 🔄 Configuration Priority
+## [SYNC] Configuration Priority
 
 Variables are loaded in priority order (later overrides earlier):
 
@@ -338,7 +338,7 @@ export MIOS_BASE_IMAGE="ghcr.io/custom/image:latest"
 
 ---
 
-## 🛠️  Common Tasks
+## [ENG]  Common Tasks
 
 ### Check User-Space Status
 
@@ -355,9 +355,9 @@ MiOS User-Space Directories:
   State:   /home/user/.local/state/mios/
 
 Configuration files:
-  ✅ env.toml
-  ✅ images.toml
-  ✅ build.toml
+  [OK] env.toml
+  [OK] images.toml
+  [OK] build.toml
 ```
 
 ### Show Loaded Environment Variables
@@ -400,7 +400,7 @@ rm .env
 
 ---
 
-## 🌐 Multi-Environment Portability
+## [NET] Multi-Environment Portability
 
 User-space configuration is designed to be portable across environments:
 
@@ -433,7 +433,7 @@ The repository stays the same - only user configuration changes!
 
 ---
 
-## 🧹 Cleanup
+## [CLEAN] Cleanup
 
 ### Remove User-Space Configuration
 
@@ -457,7 +457,7 @@ rm -rf ~/.local/state/mios/logs/*.log
 
 ---
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 ### "User config not found" Error
 
@@ -503,7 +503,7 @@ chmod 600 ~/.config/mios/credentials/*
 
 ---
 
-## 📚 References
+##  References
 
 - **Engineering Spec:** [ENG-008: User-Space Separation](specs/engineering/2026-04-27-Artifact-ENG-008-UserSpace-Separation.md)
 - **XDG Spec:** https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
@@ -512,7 +512,7 @@ chmod 600 ~/.config/mios/credentials/*
 
 ---
 
-## 💡 Tips & Best Practices
+## [TIP] Tips & Best Practices
 
 1. **Use version control for your user configs** (optional)
    - Create a private dotfiles repo

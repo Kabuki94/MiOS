@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🧬 MiOS Technology & Architectural Patterns
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [TECH] MiOS Technology & Architectural Patterns
 
 ```json:knowledge
 {
@@ -19,7 +19,7 @@ This document serves as the **AI-Native Map** for MiOS, connecting specific tech
 
 ---
 
-## 🏗️ Core OS & Immutability
+## [BUILD] Core OS & Immutability
 | Technology | Pattern | implementation / Source |
 | :--- | :--- | :--- |
 | **bootc** | OCI-native bootable containers | `Containerfile`, `usr/lib/bootc/` |
@@ -27,7 +27,7 @@ This document serves as the **AI-Native Map** for MiOS, connecting specific tech
 | **ostree** | Atomic updates & rollback | `automation/99-cleanup.sh` |
 | **systemd-sysext** | Dynamic system extensions | `specs/knowledge/archive/*-sysext-*` |
 
-## 🛡️ Security & Hardening
+## [SEC] Security & Hardening
 | Technology | Pattern | implementation / Source |
 | :--- | :--- | :--- |
 | **Kernel Hardening** | Kargs + Sysctl precedence | `usr/lib/bootc/kargs.d/`, `usr/lib/sysctl.d/` |
@@ -36,7 +36,7 @@ This document serves as the **AI-Native Map** for MiOS, connecting specific tech
 | **USBGuard** | USB physical security | `automation/47-hardening.sh` |
 | **Secure Boot** | MOK-signed proprietary modules | `automation/generate-mok-key.sh`, `automation/enroll-mok.sh` |
 
-## ⚡ Virtualization & GPU
+## [FAST] Virtualization & GPU
 | Technology | Pattern | implementation / Source |
 | :--- | :--- | :--- |
 | **VFIO** | Dynamic PCIe GPU passthrough | `usr/bin/mios-vfio-toggle`, `usr/lib/bootc/kargs.d/20-vfio.toml` |
@@ -44,7 +44,7 @@ This document serves as the **AI-Native Map** for MiOS, connecting specific tech
 | **CDI** | Container Device Interface | `automation/45-nvidia-cdi-refresh.sh` |
 | **Waydroid** | LXC-based Android containers | `automation/35-waydroid.toml` (kargs), `PACKAGES.md` |
 
-## ☁️ Cloud & Orchestration
+##  Cloud & Orchestration
 | Technology | Pattern | implementation / Source |
 | :--- | :--- | :--- |
 | **K3s** | Lightweight Kubernetes | `automation/13-ceph-k3s.sh`, `usr/lib/greenboot/check/wanted.d/60-k3s.sh` |
@@ -52,7 +52,7 @@ This document serves as the **AI-Native Map** for MiOS, connecting specific tech
 | **Quadlet** | Systemd-native Podman containers | `usr/share/containers/systemd/*.container` |
 | **GCP Integration** | GCE guest agent + UEFI features | `specs/knowledge/archive/*-GCP-*` |
 
-## 🤖 AI & Tooling
+##  AI & Tooling
 | Technology | Pattern | implementation / Source |
 | :--- | :--- | :--- |
 | **MCP** | Model Context Protocol | `specs/engineering/2026-04-27-Artifact-ENG-004-AI-Tool-Interface.md` |
@@ -60,10 +60,10 @@ This document serves as the **AI-Native Map** for MiOS, connecting specific tech
 | **JSON CLI** | Machine-readable tool output | `usr/bin/mios-update`, `usr/bin/mios-status`, `usr/bin/mios-vfio-*` |
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

@@ -6,7 +6,7 @@ labels: security
 assignees: Kabuki94
 ---
 
-> **If this vulnerability could be actively exploited or involves credentials/keys, do NOT file a public issue.** Instead, contact the maintainer directly via GitHub private vulnerability reporting (Security tab → Report a vulnerability).
+> **If this vulnerability could be actively exploited or involves credentials/keys, do NOT file a public issue.** Instead, contact the maintainer directly via GitHub private vulnerability reporting (Security tab  Report a vulnerability).
 
 ## Affected component
 
@@ -23,10 +23,10 @@ assignees: Kabuki94
 
 ## Severity
 
-- [ ] Critical — remote code execution, privilege escalation, credential exposure
-- [ ] High — local privilege escalation, authentication bypass
-- [ ] Medium — information disclosure, denial of service
-- [ ] Low — hardening improvement, defense-in-depth
+- [ ] Critical  remote code execution, privilege escalation, credential exposure
+- [ ] High  local privilege escalation, authentication bypass
+- [ ] Medium  information disclosure, denial of service
+- [ ] Low  hardening improvement, defense-in-depth
 
 ## Description
 

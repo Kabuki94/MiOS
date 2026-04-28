@@ -23,28 +23,28 @@ print_banner() {
     clear
     echo -e "${BOLD}${CYAN}"
     cat << 'EOF'
-╔═══════════════════════════════════════════════════════════════╗
-║         MiOS-Build HARDWARE ASSESSMENT TOOL                     ║
-║         Complete System Analysis & Compatibility Check        ║
-╚═══════════════════════════════════════════════════════════════╝
++===============================================================+
+         MiOS-Build HARDWARE ASSESSMENT TOOL                     
+         Complete System Analysis & Compatibility Check        
++===============================================================+
 EOF
     echo -e "${NC}\n"
 }
 
 print_step() {
-    echo -e "\n${BOLD}${YELLOW}▶ $1${NC}\n"
+    echo -e "\n${BOLD}${YELLOW}[RUN] $1${NC}\n"
 }
 
 print_success() {
-    echo -e "${GREEN}✓${NC} $1"
+    echo -e "${GREEN}[OK]${NC} $1"
 }
 
 print_warning() {
-    echo -e "${YELLOW}⚠${NC} $1"
+    echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
 print_error() {
-    echo -e "${RED}✗${NC} $1"
+    echo -e "${RED}[FAIL]${NC} $1"
 }
 
 check_requirements() {
@@ -149,18 +149,18 @@ generate_compatibility_report() {
     local report="$ASSESSMENT_DIR/00-COMPATIBILITY-REPORT.txt"
     
     {
-        echo "╔═══════════════════════════════════════════════════════════════╗"
-        echo "║         MiOS-Build COMPATIBILITY REPORT                         ║"
-        echo "╚═══════════════════════════════════════════════════════════════╝"
+        echo "+===============================================================+"
+        echo "         MiOS-Build COMPATIBILITY REPORT                         "
+        echo "+===============================================================+"
         echo ""
         echo "Generated: $(date)"
         echo "Hostname: $(hostname)"
         echo "Assessment Directory: $ASSESSMENT_DIR"
         echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
         echo ""
         echo "SYSTEM OVERVIEW"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
         echo ""
         grep -A4 "SYSTEM" "$ASSESSMENT_DIR/01-quick-summary.txt" | tail -4
         echo ""
@@ -169,46 +169,46 @@ generate_compatibility_report() {
         grep -A3 "MEMORY" "$ASSESSMENT_DIR/01-quick-summary.txt" | tail -3
         echo ""
         
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
         echo "GRAPHICS & PASSTHROUGH CAPABILITY"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
         echo ""
         
         if [ -f "$ASSESSMENT_DIR/02-iommu-analysis.txt" ]; then
             if grep -q "Isolated GPUs" "$ASSESSMENT_DIR/02-iommu-analysis.txt"; then
-                echo "✓ GPU PASSTHROUGH: READY"
+                echo "[OK] GPU PASSTHROUGH: READY"
                 echo ""
                 grep -A10 "Isolated GPUs" "$ASSESSMENT_DIR/02-iommu-analysis.txt"
             else
-                echo "⚠ GPU PASSTHROUGH: LIMITED"
+                echo "[WARN] GPU PASSTHROUGH: LIMITED"
                 echo ""
                 echo "GPUs are not in isolated IOMMU groups."
                 echo "Passthrough may require ACS override patch."
             fi
         else
-            echo "✗ GPU PASSTHROUGH: NOT AVAILABLE"
+            echo "[FAIL] GPU PASSTHROUGH: NOT AVAILABLE"
             echo ""
             echo "IOMMU not enabled or not supported."
         fi
         
         echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
         echo "VIRTUALIZATION READINESS"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
         echo ""
         grep -A20 "VIRTUALIZATION" "$ASSESSMENT_DIR/01-quick-summary.txt" | grep -E "(IOMMU|KVM|GPU Grp|CPU Virt)"
         
         echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
         echo "SECURITY FEATURES"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
         echo ""
         grep -A10 "SECURITY" "$ASSESSMENT_DIR/01-quick-summary.txt" | grep -E "(Boot|TPM|SecBoot)"
         
         echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
         echo "OVERALL ASSESSMENT"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
         echo ""
         
         # Determine overall readiness
@@ -217,75 +217,75 @@ generate_compatibility_report() {
         local max_score=10
         
         # Check critical requirements
-        if grep -q "CPU Virtualization.*✓" "$ASSESSMENT_DIR/01-quick-summary.txt"; then
-            echo "✓ CPU Virtualization Support"
+        if grep -q "CPU Virtualization.*[OK]" "$ASSESSMENT_DIR/01-quick-summary.txt"; then
+            echo "[OK] CPU Virtualization Support"
             score=$((score + 2))
         else
-            echo "✗ CPU Virtualization Support"
+            echo "[FAIL] CPU Virtualization Support"
             ready=false
         fi
         
-        if grep -q "IOMMU.*✓" "$ASSESSMENT_DIR/01-quick-summary.txt"; then
-            echo "✓ IOMMU Support"
+        if grep -q "IOMMU.*[OK]" "$ASSESSMENT_DIR/01-quick-summary.txt"; then
+            echo "[OK] IOMMU Support"
             score=$((score + 2))
         else
-            echo "✗ IOMMU Support"
+            echo "[FAIL] IOMMU Support"
             ready=false
         fi
         
-        if grep -q "KVM.*✓" "$ASSESSMENT_DIR/01-quick-summary.txt"; then
-            echo "✓ KVM Available"
+        if grep -q "KVM.*[OK]" "$ASSESSMENT_DIR/01-quick-summary.txt"; then
+            echo "[OK] KVM Available"
             score=$((score + 2))
         else
-            echo "✗ KVM Available"
+            echo "[FAIL] KVM Available"
             ready=false
         fi
         
         if grep -q "GPU.*isolated" "$ASSESSMENT_DIR/02-iommu-analysis.txt" 2>/dev/null; then
-            echo "✓ GPU Passthrough Ready"
+            echo "[OK] GPU Passthrough Ready"
             score=$((score + 2))
         else
-            echo "⚠ GPU Passthrough Limited"
+            echo "[WARN] GPU Passthrough Limited"
             score=$((score + 1))
         fi
         
         if grep -q "UEFI" "$ASSESSMENT_DIR/01-quick-summary.txt"; then
-            echo "✓ UEFI Boot Mode"
+            echo "[OK] UEFI Boot Mode"
             score=$((score + 1))
         else
-            echo "⚠ Legacy BIOS (UEFI recommended)"
+            echo "[WARN] Legacy BIOS (UEFI recommended)"
         fi
         
         if grep -q "TPM.*Present" "$ASSESSMENT_DIR/01-quick-summary.txt"; then
-            echo "✓ TPM 2.0 Present"
+            echo "[OK] TPM 2.0 Present"
             score=$((score + 1))
         else
-            echo "⚠ No TPM (required for Windows 11)"
+            echo "[WARN] No TPM (required for Windows 11)"
         fi
         
         echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
         echo "SCORE: $score / $max_score"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
         echo ""
         
         if [ "$ready" = true ] && [ $score -ge 8 ]; then
-            echo "✓ VERDICT: EXCELLENT - Ready for MiOS-Build deployment"
+            echo "[OK] VERDICT: EXCELLENT - Ready for MiOS-Build deployment"
             echo ""
             echo "Your system meets all requirements and is highly suitable for"
             echo "Cloud Workstation usage with GPU passthrough capabilities."
         elif [ "$ready" = true ] && [ $score -ge 6 ]; then
-            echo "✓ VERDICT: GOOD - Ready with minor limitations"
+            echo "[OK] VERDICT: GOOD - Ready with minor limitations"
             echo ""
             echo "Your system meets core requirements. Some optional features"
             echo "may be missing but MiOS-Build will work well."
         elif [ $score -ge 4 ]; then
-            echo "⚠ VERDICT: PARTIAL - Limited functionality expected"
+            echo "[WARN] VERDICT: PARTIAL - Limited functionality expected"
             echo ""
             echo "Your system can run MiOS-Build but some features may not work."
             echo "GPU passthrough may require additional configuration."
         else
-            echo "✗ VERDICT: NOT READY - Critical requirements missing"
+            echo "[FAIL] VERDICT: NOT READY - Critical requirements missing"
             echo ""
             echo "Your system does not meet minimum requirements for MiOS-Build."
             echo "Please enable virtualization features in BIOS and ensure"
@@ -293,12 +293,12 @@ generate_compatibility_report() {
         fi
         
         echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
         echo "RECOMMENDATIONS"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
         echo ""
         
-        if ! grep -q "IOMMU.*✓" "$ASSESSMENT_DIR/01-quick-summary.txt"; then
+        if ! grep -q "IOMMU.*[OK]" "$ASSESSMENT_DIR/01-quick-summary.txt"; then
             echo "1. Enable IOMMU/VT-d/AMD-Vi in BIOS settings"
             echo "2. Add kernel parameters: intel_iommu=on iommu=pt (Intel)"
             echo "                      or: amd_iommu=on iommu=pt (AMD)"
@@ -306,19 +306,19 @@ generate_compatibility_report() {
         fi
         
         if ! grep -q "TPM.*Present" "$ASSESSMENT_DIR/01-quick-summary.txt"; then
-            echo "• Enable TPM 2.0 in BIOS for Windows 11 VM support"
+            echo "* Enable TPM 2.0 in BIOS for Windows 11 VM support"
             echo ""
         fi
         
         if ! grep -q "GPU.*isolated" "$ASSESSMENT_DIR/02-iommu-analysis.txt" 2>/dev/null; then
-            echo "• GPU is not isolated - consider ACS override patch"
-            echo "• Check motherboard documentation for PCIe slot isolation"
+            echo "* GPU is not isolated - consider ACS override patch"
+            echo "* Check motherboard documentation for PCIe slot isolation"
             echo ""
         fi
         
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
         echo "DETAILED FILES"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
         echo ""
         echo "Quick Summary:    01-quick-summary.txt"
         echo "IOMMU Analysis:   02-iommu-analysis.txt"
@@ -327,7 +327,7 @@ generate_compatibility_report() {
         echo "For complete details, review files in:"
         echo "$ASSESSMENT_DIR"
         echo ""
-        echo "═══════════════════════════════════════════════════════════════"
+        echo "==============================================================="
         
     } > "$report"
     
@@ -337,24 +337,24 @@ generate_compatibility_report() {
 show_summary() {
     print_step "Assessment Complete!"
     
-    echo -e "${BOLD}${GREEN}═══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${BOLD}${GREEN}===============================================================${NC}"
     echo -e "${BOLD}${GREEN}                    RESULTS SUMMARY${NC}"
-    echo -e "${BOLD}${GREEN}═══════════════════════════════════════════════════════════════${NC}\n"
+    echo -e "${BOLD}${GREEN}===============================================================${NC}\n"
     
     # Show the verdict from the report
     grep -A20 "OVERALL ASSESSMENT" "$ASSESSMENT_DIR/00-COMPATIBILITY-REPORT.txt" | head -30
     
     echo ""
-    echo -e "${BOLD}📁 All assessment files saved to:${NC}"
+    echo -e "${BOLD}[DIR] All assessment files saved to:${NC}"
     echo -e "   ${CYAN}$ASSESSMENT_DIR${NC}"
     echo ""
-    echo -e "${BOLD}📄 Files generated:${NC}"
-    echo -e "   ${GREEN}✓${NC} 00-COMPATIBILITY-REPORT.txt  (START HERE)"
-    echo -e "   ${GREEN}✓${NC} 01-quick-summary.txt"
-    echo -e "   ${GREEN}✓${NC} 02-iommu-analysis.txt"
-    echo -e "   ${GREEN}✓${NC} 03-full-profile.txt"
+    echo -e "${BOLD}[FILE] Files generated:${NC}"
+    echo -e "   ${GREEN}[OK]${NC} 00-COMPATIBILITY-REPORT.txt  (START HERE)"
+    echo -e "   ${GREEN}[OK]${NC} 01-quick-summary.txt"
+    echo -e "   ${GREEN}[OK]${NC} 02-iommu-analysis.txt"
+    echo -e "   ${GREEN}[OK]${NC} 03-full-profile.txt"
     echo ""
-    echo -e "${BOLD}💡 Next Steps:${NC}"
+    echo -e "${BOLD}[TIP] Next Steps:${NC}"
     echo -e "   1. Review: ${CYAN}cat $ASSESSMENT_DIR/00-COMPATIBILITY-REPORT.txt${NC}"
     echo -e "   2. Check details: ${CYAN}less $ASSESSMENT_DIR/03-full-profile.txt${NC}"
     echo -e "   3. If ready, proceed with MiOS-Build setup"
@@ -390,9 +390,9 @@ main() {
     generate_compatibility_report
     show_summary
     
-    echo -e "${BOLD}${CYAN}═══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${BOLD}${CYAN}===============================================================${NC}"
     echo -e "${BOLD}${CYAN}            Assessment Complete - Happy Building!${NC}"
-    echo -e "${BOLD}${CYAN}═══════════════════════════════════════════════════════════════${NC}\n"
+    echo -e "${BOLD}${CYAN}===============================================================${NC}\n"
 }
 
 main "$@"

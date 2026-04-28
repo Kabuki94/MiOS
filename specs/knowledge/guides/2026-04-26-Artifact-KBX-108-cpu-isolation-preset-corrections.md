@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -33,29 +33,29 @@ This document provides corrected implementations for the CPU isolation presets i
 ## 9950X3D CPU Topology Reference
 
 ```
-╔═══════════════════════════════════════════════════════════════════════╗
-║ AMD Ryzen 9 9950X3D (32 threads, 16 cores, 2 CCDs)                    ║
-╠═══════════════════════════════════════════════════════════════════════╣
-║ CCD0 (V-Cache: 96MB L3 Total) - OPTIMAL FOR GAMING                    ║
-║   Physical Core 0: CPU 0  + SMT sibling CPU 16                        ║
-║   Physical Core 1: CPU 1  + SMT sibling CPU 17                        ║
-║   Physical Core 2: CPU 2  + SMT sibling CPU 18                        ║
-║   Physical Core 3: CPU 3  + SMT sibling CPU 19                        ║
-║   Physical Core 4: CPU 4  + SMT sibling CPU 20                        ║
-║   Physical Core 5: CPU 5  + SMT sibling CPU 21                        ║
-║   Physical Core 6: CPU 6  + SMT sibling CPU 22                        ║
-║   Physical Core 7: CPU 7  + SMT sibling CPU 23                        ║
-╠═══════════════════════════════════════════════════════════════════════╣
-║ CCD1 (High Frequency: 32MB L3) - HIGHER BOOST CLOCKS                  ║
-║   Physical Core 8:  CPU 8  + SMT sibling CPU 24                       ║
-║   Physical Core 9:  CPU 9  + SMT sibling CPU 25                       ║
-║   Physical Core 10: CPU 10 + SMT sibling CPU 26                       ║
-║   Physical Core 11: CPU 11 + SMT sibling CPU 27                       ║
-║   Physical Core 12: CPU 12 + SMT sibling CPU 28                       ║
-║   Physical Core 13: CPU 13 + SMT sibling CPU 29                       ║
-║   Physical Core 14: CPU 14 + SMT sibling CPU 30                       ║
-║   Physical Core 15: CPU 15 + SMT sibling CPU 31                       ║
-╚═══════════════════════════════════════════════════════════════════════╝
++=======================================================================+
+ AMD Ryzen 9 9950X3D (32 threads, 16 cores, 2 CCDs)                    
++=======================================================================+
+ CCD0 (V-Cache: 96MB L3 Total) - OPTIMAL FOR GAMING                    
+   Physical Core 0: CPU 0  + SMT sibling CPU 16                        
+   Physical Core 1: CPU 1  + SMT sibling CPU 17                        
+   Physical Core 2: CPU 2  + SMT sibling CPU 18                        
+   Physical Core 3: CPU 3  + SMT sibling CPU 19                        
+   Physical Core 4: CPU 4  + SMT sibling CPU 20                        
+   Physical Core 5: CPU 5  + SMT sibling CPU 21                        
+   Physical Core 6: CPU 6  + SMT sibling CPU 22                        
+   Physical Core 7: CPU 7  + SMT sibling CPU 23                        
++=======================================================================+
+ CCD1 (High Frequency: 32MB L3) - HIGHER BOOST CLOCKS                  
+   Physical Core 8:  CPU 8  + SMT sibling CPU 24                       
+   Physical Core 9:  CPU 9  + SMT sibling CPU 25                       
+   Physical Core 10: CPU 10 + SMT sibling CPU 26                       
+   Physical Core 11: CPU 11 + SMT sibling CPU 27                       
+   Physical Core 12: CPU 12 + SMT sibling CPU 28                       
+   Physical Core 13: CPU 13 + SMT sibling CPU 29                       
+   Physical Core 14: CPU 14 + SMT sibling CPU 30                       
+   Physical Core 15: CPU 15 + SMT sibling CPU 31                       
++=======================================================================+
 ```
 
 ---
@@ -64,10 +64,10 @@ This document provides corrected implementations for the CPU isolation presets i
 
 | Preset | Current Behavior | Expected Behavior | Status |
 |--------|------------------|-------------------|--------|
-| Gaming Optimized | Host: CPUs 28-31, VM: 0-15 | Host: 0,16 + CCD1 (8-15,24-31), VM: 1-7,17-23 | ❌ Wrong |
-| Multi-VM Balanced | Host: 0-7, VM: 8-31 | Host: 0,1,8,9,16,17,24,25 (8 threads), VM pools per CCD | ❌ Wrong |
-| Host Priority | Host: 0-15 (V-Cache!), VM: 16-31 | Host: CCD0 (0-7,16-23), VM: CCD1 (8-15,24-31) | ❌ **INVERTED** |
-| Default Selection | Option 1 | Option 2 (Balanced) | ❌ Wrong |
+| Gaming Optimized | Host: CPUs 28-31, VM: 0-15 | Host: 0,16 + CCD1 (8-15,24-31), VM: 1-7,17-23 | [FAIL] Wrong |
+| Multi-VM Balanced | Host: 0-7, VM: 8-31 | Host: 0,1,8,9,16,17,24,25 (8 threads), VM pools per CCD | [FAIL] Wrong |
+| Host Priority | Host: 0-15 (V-Cache!), VM: 16-31 | Host: CCD0 (0-7,16-23), VM: CCD1 (8-15,24-31) | [FAIL] **INVERTED** |
+| Default Selection | Option 1 | Option 2 (Balanced) | [FAIL] Wrong |
 
 ---
 
@@ -312,8 +312,8 @@ cpu_preset_x3d_balanced() {
     
     echo ""
     echo -e "    ${C_INFO}Pool Allocation:${NC}"
-    echo -e "      • Gaming VM: Use CPUs $GAMING_VM_CPUS"
-    echo -e "      • Containers/Services: Use CPUs $SERVICE_POOL_CPUS"
+    echo -e "      * Gaming VM: Use CPUs $GAMING_VM_CPUS"
+    echo -e "      * Containers/Services: Use CPUs $SERVICE_POOL_CPUS"
 }
 ```
 
@@ -961,7 +961,7 @@ vm_apply_pinning_only() {
     
     for ((i=0; i<vcpu_count && i<${#pin_cpus[@]}; i+=1)); do
         if virsh vcpupin "$selected_vm" $i ${pin_cpus[$i]} --config >> "$DEBUG_LOG" 2>&1; then
-            msg_success "vCPU $i → CPU ${pin_cpus[$i]}"
+            msg_success "vCPU $i  CPU ${pin_cpus[$i]}"
         else
             msg_fail "Failed to pin vCPU $i"
         fi
@@ -1025,18 +1025,18 @@ EOF
 
 ### Key Fixes
 
-- ✅ Host Priority no longer gives host the V-Cache CCD (was inverted)
-- ✅ Gaming Optimized correctly reserves only one V-Cache core for host
-- ✅ Multi-VM Balanced is now the default selection
-- ✅ VM template stripped of hardware-specific devices
-- ✅ Secure Boot variables correctly templated per-VM
+- [OK] Host Priority no longer gives host the V-Cache CCD (was inverted)
+- [OK] Gaming Optimized correctly reserves only one V-Cache core for host
+- [OK] Multi-VM Balanced is now the default selection
+- [OK] VM template stripped of hardware-specific devices
+- [OK] Secure Boot variables correctly templated per-VM
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

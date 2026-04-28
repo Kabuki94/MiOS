@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -24,7 +24,7 @@
 
 This directory contains **standalone out-of-image tooling** that runs
 *on a booted MiOS host* (or any Fedora/RHEL-family host, in
-most cases). These scripts are **not part of the image build** — the
+most cases). These scripts are **not part of the image build**  the
 image-build scripts live in [`../automation/`](../automation/) and the
 overlays live in [`../`](../).
 
@@ -32,7 +32,7 @@ Use these tools when you need to configure VFIO passthrough, isolate
 CPUs for VM pinning, profile a host before deploying MiOS to it, or
 troubleshoot Secure Boot / OVMF enrollment for Windows VMs.
 
-> **All rules from [`../INDEX.md`](../INDEX.md) §3.2 (Bash) apply
+> **All rules from [`../INDEX.md`](../INDEX.md) 3.2 (Bash) apply
 > here too.** No `((VAR++))` under `set -euo pipefail`, quote every
 > expansion, prefer `compgen -G` / `find -exec` / `read -ra`, etc.
 
@@ -47,7 +47,7 @@ for full documentation.
 | Script | Purpose |
 |--------|---------|
 | `rtx4090-vfio-configurator.sh` | Opinionated RTX 4090 VFIO setup (Kabu's primary GPU) |
-| `universal-vfio-configurator.sh` | Generic VFIO configurator — any GPU, any USB controller |
+| `universal-vfio-configurator.sh` | Generic VFIO configurator  any GPU, any USB controller |
 | `vfio-verify.sh` | Verify VFIO binding, IOMMU groups, host lockout |
 | `iommu-visualizer.sh` | Pretty-print IOMMU group membership |
 
@@ -61,7 +61,7 @@ at [`../specs/knowledge/guides/cpu-isolation-guide.md`](../specs/knowledge/guide
 
 | Script | Purpose |
 |--------|---------|
-| `universal-cpu-isolator.sh` | Generic CPU isolation — grub kargs, systemd cpuset, irqbalance tuning |
+| `universal-cpu-isolator.sh` | Generic CPU isolation  grub kargs, systemd cpuset, irqbalance tuning |
 | `vm-cpu-pin-manager.sh` | Pin specific VM vCPUs to host physical cores |
 | `configure-xbox-cpu.sh` | Xbox-VM-specific CPU configuration (8 dedicated cores) |
 
@@ -76,7 +76,7 @@ deployment readiness.
 | Script | Purpose |
 |--------|---------|
 | `system-profiler.sh` | CPU / memory / GPU / storage inventory |
-| `system-assess.sh` | Full system assessment — virtualization, IOMMU, Secure Boot, TPM |
+| `system-assess.sh` | Full system assessment  virtualization, IOMMU, Secure Boot, TPM |
 | `mios-build-assess.sh` | MiOS-specific readiness check |
 | `run-all-profilers.sh` | Chain every profiler, produce consolidated report |
 | `profiler-menu.sh` | Interactive menu wrapping the profilers |
@@ -101,7 +101,7 @@ and enrollment.
 | `fix-secureboot-now.sh` | Emergency Secure Boot fixer |
 | `fix-xbox-secureboot.sh` | Xbox-VM-specific Secure Boot fix |
 | `Xbox-AutoEnroll.xml` | libvirt domain with PK/KEK/db/dbx auto-enrollment |
-| `Xbox-Final-NoAutoSelect.xml` | libvirt domain — final config, no boot menu auto-select |
+| `Xbox-Final-NoAutoSelect.xml` | libvirt domain  final config, no boot menu auto-select |
 | `win11-secureboot-template.xml` | Generic Windows 11 + Secure Boot libvirt template |
 
 ---
@@ -116,12 +116,12 @@ and enrollment.
 
 ## Legacy mega-scripts
 
-Kept for reference. New work should **not** extend these — they
+Kept for reference. New work should **not** extend these  they
 predate the current `automation/NN-*.sh` modular design.
 
 | Script | Purpose |
 |--------|---------|
-| `mios-full.sh` | Standalone one-shot MiOS provisioner (188 KB — everything in one file, pre-refactor) |
+| `mios-full.sh` | Standalone one-shot MiOS provisioner (188 KB  everything in one file, pre-refactor) |
 | `mios-build.sh` | Earlier Linux-side orchestrator (superseded by `Justfile` + `../mios-build-local.ps1`) |
 
 If you find yourself wanting to modify either of these, stop and work
@@ -132,7 +132,7 @@ on the modular replacement in `../automation/` instead.
 ## How these scripts interact with the bootc image
 
 - The **image build** (Containerfile + `../automation/`) produces the OS.
-- These **toolkit scripts** run on a host that's already booted —
+- These **toolkit scripts** run on a host that's already booted 
   either a MiOS host, or a Fedora/RHEL host preparing to
   become one.
 - Nothing in this directory is copied into the image by default.
@@ -143,16 +143,16 @@ on the modular replacement in `../automation/` instead.
 
 ---
 
-*See [`../INDEX.md`](../INDEX.md) §8 for what System Code / other AI
+*See [`../INDEX.md`](../INDEX.md) 8 for what System Code / other AI
 agents should not do in this directory (summary: don't modernize
 working scripts unprompted, don't rewrite bash into other languages).*
 
 ---
-### 📚 Bootc Ecosystem & Resources
+###  Bootc Ecosystem & Resources
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osautomation/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Sole Proprietor:** MiOS-DEV
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

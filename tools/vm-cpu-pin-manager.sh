@@ -38,14 +38,14 @@ declare -A VM_CONFIGS
 
 # Logging
 log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
-log_success() { echo -e "${SUCCESS}[Ã¢Å“"]${NC} $1"; }
-log_warning() { echo -e "${YELLOW}[Ã¢Å¡ ]${NC} $1"; }
-log_error() { echo -e "${CORAL}[Ã¢Å“â€”]${NC} $1"; }
+log_success() { echo -e "${SUCCESS}["]${NC} $1"; }
+log_[WARN]() { echo -e "${YELLOW}[ ]${NC} $1"; }
+log_error() { echo -e "${CORAL}[]${NC} $1"; }
 log_header() {
     echo ""
-    echo -e "${TEAL}Ã¢â€¢"Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢â€”${NC}"
-    echo -e "${TEAL}Ã¢â€¢'${NC} ${BOLD}$1${NC}"
-    echo -e "${TEAL}Ã¢â€¢Å¡Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢${NC}"
+    echo -e "${TEAL}"${NC}"
+    echo -e "${TEAL}'${NC} ${BOLD}$1${NC}"
+    echo -e "${TEAL}${NC}"
     echo ""
 }
 
@@ -115,7 +115,7 @@ list_vms() {
     local all_vms=$(virsh list --all --name 2>/dev/null | grep -v "^$")
     
     if [[ -z "$all_vms" ]]; then
-        log_warning "No VMs found. Create VMs with virt-manager first."
+        log_[WARN] "No VMs found. Create VMs with virt-manager first."
         return 1
     fi
     
@@ -124,19 +124,19 @@ list_vms() {
 
 # Display CPU topology visualization
 display_cpu_topology() {
-    echo -e "${CYAN}Ã¢â€¢"Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢â€”${NC}"
-    echo -e "${CYAN}Ã¢â€¢'${NC} ${BOLD}CPU Configuration${NC}"
-    echo -e "${CYAN}Ã¢â€¢ Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Â£${NC}"
-    echo -e "${CYAN}Ã¢â€¢'${NC} Model:        ${CPU_INFO[model]}"
-    echo -e "${CYAN}Ã¢â€¢'${NC} Cores:        ${CPU_INFO[cores]} physical"
-    echo -e "${CYAN}Ã¢â€¢'${NC} Threads:      ${CPU_INFO[threads]} logical"
-    echo -e "${CYAN}Ã¢â€¢'${NC} NUMA Nodes:   ${CPU_INFO[numa_nodes]}"
+    echo -e "${CYAN}"${NC}"
+    echo -e "${CYAN}'${NC} ${BOLD}CPU Configuration${NC}"
+    echo -e "${CYAN} ${NC}"
+    echo -e "${CYAN}'${NC} Model:        ${CPU_INFO[model]}"
+    echo -e "${CYAN}'${NC} Cores:        ${CPU_INFO[cores]} physical"
+    echo -e "${CYAN}'${NC} Threads:      ${CPU_INFO[threads]} logical"
+    echo -e "${CYAN}'${NC} NUMA Nodes:   ${CPU_INFO[numa_nodes]}"
     
     if [[ -n "${CPU_INFO[has_ccds]}" ]]; then
-        echo -e "${CYAN}Ã¢â€¢'${NC} CCDs:         ${CPU_INFO[ccd_count]} (AMD X3D)"
+        echo -e "${CYAN}'${NC} CCDs:         ${CPU_INFO[ccd_count]} (AMD X3D)"
     fi
     
-    echo -e "${CYAN}Ã¢â€¢Å¡Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢${NC}"
+    echo -e "${CYAN}${NC}"
     echo ""
     
     # Visual CPU grid
@@ -259,9 +259,9 @@ configure_vm_pinning() {
         
         # Check if already configured
         if [[ -f "$CONFIG_DIR/${vm}.conf" ]]; then
-            echo -e "     ${SUCCESS}Ã¢Å“" Configured${NC}"
+            echo -e "     ${SUCCESS}" Configured${NC}"
         else
-            echo -e "     ${CORAL}Ã¢Å“â€“ Not configured${NC}"
+            echo -e "     ${CORAL} Not configured${NC}"
         fi
         echo ""
         
@@ -595,7 +595,7 @@ select_mixed_ccd() {
     local vcpu_count="$2"
     
     echo ""
-    log_warning "Mixed CCD allocation may cause cross-CCD latency"
+    log_[WARN] "Mixed CCD allocation may cause cross-CCD latency"
     echo ""
     echo "Enter cores from each CCD (comma-separated)"
     echo "Example: 0-3,16-19 (4 from CCD0, 4 from CCD1)"
@@ -756,7 +756,7 @@ view_configurations() {
     log_header "Current VM Configurations"
     
     if [[ ! -d "$CONFIG_DIR" ]] || [[ -z "$(ls -A "$CONFIG_DIR" 2>/dev/null)" ]]; then
-        log_warning "No VM configurations found"
+        log_[WARN] "No VM configurations found"
         echo ""
         read -p "Press Enter to return to menu..."
         main_menu
@@ -770,21 +770,21 @@ view_configurations() {
         # Source config
         source "$config"
         
-        echo -e "${CYAN}Ã¢â€¢"Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢â€”${NC}"
-        echo -e "${CYAN}Ã¢â€¢'${NC} ${BOLD}${counter}. VM: ${vm_name}${NC}"
-        echo -e "${CYAN}Ã¢â€¢ Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Â£${NC}"
-        echo -e "${CYAN}Ã¢â€¢'${NC} Description:    ${DESCRIPTION}"
-        echo -e "${CYAN}Ã¢â€¢'${NC} vCPU cores:     ${VCPU_CPUS}"
-        echo -e "${CYAN}Ã¢â€¢'${NC} Emulator cores: ${EMULATOR_CPUS}"
+        echo -e "${CYAN}"${NC}"
+        echo -e "${CYAN}'${NC} ${BOLD}${counter}. VM: ${vm_name}${NC}"
+        echo -e "${CYAN} ${NC}"
+        echo -e "${CYAN}'${NC} Description:    ${DESCRIPTION}"
+        echo -e "${CYAN}'${NC} vCPU cores:     ${VCPU_CPUS}"
+        echo -e "${CYAN}'${NC} Emulator cores: ${EMULATOR_CPUS}"
         
         # Check hook status
         if [[ -x "$HOOK_DIR/qemu.d/${vm_name}/prepare/begin/cpu-pin.sh" ]]; then
-            echo -e "${CYAN}Ã¢â€¢'${NC} Hook status:    ${SUCCESS}Ã¢Å“" Active${NC}"
+            echo -e "${CYAN}'${NC} Hook status:    ${SUCCESS}" Active${NC}"
         else
-            echo -e "${CYAN}Ã¢â€¢'${NC} Hook status:    ${CORAL}Ã¢Å“â€“ Missing${NC}"
+            echo -e "${CYAN}'${NC} Hook status:    ${CORAL} Missing${NC}"
         fi
         
-        echo -e "${CYAN}Ã¢â€¢Å¡Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢Ã¢â€¢${NC}"
+        echo -e "${CYAN}${NC}"
         echo ""
         
         counter=$((counter + 1))
@@ -799,7 +799,7 @@ remove_configuration() {
     log_header "Remove VM Configuration"
     
     if [[ ! -d "$CONFIG_DIR" ]] || [[ -z "$(ls -A "$CONFIG_DIR" 2>/dev/null)" ]]; then
-        log_warning "No VM configurations found"
+        log_[WARN] "No VM configurations found"
         echo ""
         read -p "Press Enter to return to menu..."
         main_menu
@@ -835,7 +835,7 @@ remove_configuration() {
     fi
     
     echo ""
-    log_warning "This will remove:"
+    log_[WARN] "This will remove:"
     echo "  - Configuration file: $CONFIG_DIR/${selected_vm}.conf"
     echo "  - Hook directory: $HOOK_DIR/qemu.d/${selected_vm}"
     echo ""
@@ -859,7 +859,7 @@ test_hook() {
     log_header "Test Hook Execution"
     
     if [[ ! -d "$CONFIG_DIR" ]] || [[ -z "$(ls -A "$CONFIG_DIR" 2>/dev/null)" ]]; then
-        log_warning "No VM configurations found"
+        log_[WARN] "No VM configurations found"
         echo ""
         read -p "Press Enter to return to menu..."
         main_menu
@@ -928,7 +928,7 @@ view_allocation_map() {
     display_cpu_topology
     
     if [[ ! -d "$CONFIG_DIR" ]] || [[ -z "$(ls -A "$CONFIG_DIR" 2>/dev/null)" ]]; then
-        log_warning "No VM configurations found"
+        log_[WARN] "No VM configurations found"
         echo ""
         read -p "Press Enter to return to menu..."
         main_menu
@@ -965,9 +965,9 @@ view_allocation_map() {
     done
     
     # Display allocation
-    echo -e "${CYAN}Ã¢"Å’Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"Â¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"${NC}"
-    echo -e "${CYAN}Ã¢"â€š${NC} CPU ${CYAN}Ã¢"â€š${NC} Allocated To              ${CYAN}Ã¢"â€š${NC}"
-    echo -e "${CYAN}Ã¢"Å“Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"Â¼Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"Â¤${NC}"
+    echo -e "${CYAN}"""""""""""""""""""""""""""""""""""""""""${NC}"
+    echo -e "${CYAN}"${NC} CPU ${CYAN}"${NC} Allocated To              ${CYAN}"${NC}"
+    echo -e "${CYAN}"""""""""""""""""""""""""""""""""""""""""${NC}"
     
     for ((cpu=0; cpu<${CPU_INFO[threads]}; cpu+=1)); do
         local alloc="${cpu_alloc[$cpu]}"
@@ -977,10 +977,10 @@ view_allocation_map() {
             color="$SUCCESS"
         fi
         
-        printf "${CYAN}Ã¢"â€š${NC} %3d ${CYAN}Ã¢"â€š${NC} ${color}%-25s${NC} ${CYAN}Ã¢"â€š${NC}\n" "$cpu" "$alloc"
+        printf "${CYAN}"${NC} %3d ${CYAN}"${NC} ${color}%-25s${NC} ${CYAN}"${NC}\n" "$cpu" "$alloc"
     done
     
-    echo -e "${CYAN}Ã¢""Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"Â´Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"Ëœ${NC}"
+    echo -e "${CYAN}""""""""""""""""""""""""""""""""""""""""""${NC}"
     
     echo ""
     read -p "Press Enter to return to menu..."
@@ -992,7 +992,7 @@ generate_xml_snippets() {
     log_header "Generate libvirt XML Snippets"
     
     if [[ ! -d "$CONFIG_DIR" ]] || [[ -z "$(ls -A "$CONFIG_DIR" 2>/dev/null)" ]]; then
-        log_warning "No VM configurations found"
+        log_[WARN] "No VM configurations found"
         echo ""
         read -p "Press Enter to return to menu..."
         main_menu
@@ -1171,7 +1171,7 @@ export_configs() {
     local export_file="/home/$SUDO_USER/vm-cpu-configs-$(date +%Y%m%d-%H%M%S).tar.gz"
     
     if [[ ! -d "$CONFIG_DIR" ]] || [[ -z "$(ls -A "$CONFIG_DIR" 2>/dev/null)" ]]; then
-        log_warning "No configurations to export"
+        log_[WARN] "No configurations to export"
         sleep 2
         main_menu
         return
@@ -1217,7 +1217,7 @@ import_configs() {
         mkdir -p "$vm_hook_dir/release/end"
         
         # Note: Hooks need to be regenerated with current paths
-        log_warning "Hooks for $vm_name need to be regenerated"
+        log_[WARN] "Hooks for $vm_name need to be regenerated"
     done
     
     log_success "Import complete - regenerate hooks via Option 1"
@@ -1231,7 +1231,7 @@ verify_hooks() {
     log_header "Hook Integrity Verification"
     
     if [[ ! -d "$CONFIG_DIR" ]] || [[ -z "$(ls -A "$CONFIG_DIR" 2>/dev/null)" ]]; then
-        log_warning "No configurations found"
+        log_[WARN] "No configurations found"
         echo ""
         read -p "Press Enter to return to menu..."
         main_menu
@@ -1247,34 +1247,34 @@ verify_hooks() {
         
         # Check config file
         if [[ ! -f "$config" ]]; then
-            echo -e "  ${CORAL}Ã¢Å“â€” Config file missing${NC}"
+            echo -e "  ${CORAL} Config file missing${NC}"
             errors=$((errors + 1))
         else
-            echo -e "  ${SUCCESS}Ã¢Å“" Config file present${NC}"
+            echo -e "  ${SUCCESS}" Config file present${NC}"
         fi
         
         # Check hook directory
         if [[ ! -d "$HOOK_DIR/qemu.d/${vm_name}" ]]; then
-            echo -e "  ${CORAL}Ã¢Å“â€” Hook directory missing${NC}"
+            echo -e "  ${CORAL} Hook directory missing${NC}"
             errors=$((errors + 1))
         else
-            echo -e "  ${SUCCESS}Ã¢Å“" Hook directory present${NC}"
+            echo -e "  ${SUCCESS}" Hook directory present${NC}"
         fi
         
         # Check prepare hook
         if [[ ! -x "$HOOK_DIR/qemu.d/${vm_name}/prepare/begin/cpu-pin.sh" ]]; then
-            echo -e "  ${CORAL}Ã¢Å“â€” Prepare hook missing or not executable${NC}"
+            echo -e "  ${CORAL} Prepare hook missing or not executable${NC}"
             errors=$((errors + 1))
         else
-            echo -e "  ${SUCCESS}Ã¢Å“" Prepare hook executable${NC}"
+            echo -e "  ${SUCCESS}" Prepare hook executable${NC}"
         fi
         
         # Check release hook
         if [[ ! -x "$HOOK_DIR/qemu.d/${vm_name}/release/end/cpu-cleanup.sh" ]]; then
-            echo -e "  ${CORAL}Ã¢Å“â€” Release hook missing or not executable${NC}"
+            echo -e "  ${CORAL} Release hook missing or not executable${NC}"
             errors=$((errors + 1))
         else
-            echo -e "  ${SUCCESS}Ã¢Å“" Release hook executable${NC}"
+            echo -e "  ${SUCCESS}" Release hook executable${NC}"
         fi
         
         echo ""
@@ -1283,7 +1283,7 @@ verify_hooks() {
     if [[ $errors -eq 0 ]]; then
         log_success "All hooks verified successfully"
     else
-        log_warning "Found $errors issue(s)"
+        log_[WARN] "Found $errors issue(s)"
     fi
     
     echo ""

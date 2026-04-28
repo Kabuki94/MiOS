@@ -1,5 +1,5 @@
 #!/bin/bash
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 # MiOS CI Smoke Test
 #
 # Validates that a built MiOS image meets minimum requirements.
@@ -11,9 +11,9 @@
 #   ./evals/smoke-test.sh localhost/mios:dev
 #
 # Exit codes:
-#   0 — all tests passed
-#   1 — one or more tests failed
-# ─────────────────────────────────────────────────────────────────────────────
+#   0  all tests passed
+#   1  one or more tests failed
+# -----------------------------------------------------------------------------
 set -uo pipefail
 
 IMAGE="${1:-localhost/mios:dev}"
@@ -30,41 +30,41 @@ if [[ "$IMAGE" == *"/"* ]]; then
     podman pull "$IMAGE" || { echo "ERROR: Failed to pull $IMAGE"; exit 1; }
 fi
 
-# ── Formatting ──────────────────────────────────────────────────────────────
+# -- Formatting --------------------------------------------------------------
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-pass() { echo -e "  ${GREEN}✓ PASS${NC}: $1"; PASS=$((PASS + 1)); }
-fail() { echo -e "  ${RED}✗ FAIL${NC}: $1"; FAIL=$((FAIL + 1)); }
-warn() { echo -e "  ${YELLOW}⚠ WARN${NC}: $1"; WARN=$((WARN + 1)); }
-section() { echo -e "\n${CYAN}═══ $1 ═══${NC}"; }
+pass() { echo -e "  ${GREEN}[OK] PASS${NC}: $1"; PASS=$((PASS + 1)); }
+fail() { echo -e "  ${RED}[FAIL] FAIL${NC}: $1"; FAIL=$((FAIL + 1)); }
+warn() { echo -e "  ${YELLOW}[WARN] WARN${NC}: $1"; WARN=$((WARN + 1)); }
+section() { echo -e "\n${CYAN}=== $1 ===${NC}"; }
 
 echo "=====================================================================" > "$REPORT_FILE"
 echo " MiOS Full Stack Report - $(date)" >> "$REPORT_FILE"
 echo " Image: $IMAGE" >> "$REPORT_FILE"
 echo "=====================================================================" >> "$REPORT_FILE"
 
-echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║  MiOS Smoke Test                                   ║"
-echo "║  Image: ${IMAGE}$(printf '%*s' $((38 - ${#IMAGE})) '')║"
-echo "╚══════════════════════════════════════════════════════════════╝"
+echo "+==============================================================+"
+echo "  MiOS Smoke Test                                   "
+echo "  Image: ${IMAGE}$(printf '%*s' $((38 - ${#IMAGE})) '')"
+echo "+==============================================================+"
 
 # Helper: run a command inside the image
 run_in() {
     podman run --rm --entrypoint="" "$IMAGE" "$@" 2>/dev/null
 }
 
-# ── 1. Image metadata ──────────────────────────────────────────────────────
+# -- 1. Image metadata ------------------------------------------------------
 section "Image Metadata"
 
 # Check bootc labels
 if podman inspect "$IMAGE" 2>/dev/null | grep -q '"containers.bootc": "1"'; then
     pass "containers.bootc=1 label present"
 else
-    fail "containers.bootc=1 label MISSING — image is not bootc-compatible"
+    fail "containers.bootc=1 label MISSING  image is not bootc-compatible"
 fi
 
 if podman inspect "$IMAGE" 2>/dev/null | grep -q '"ostree.bootable": "1"'; then
@@ -77,10 +77,10 @@ fi
 if podman inspect "$IMAGE" 2>/dev/null | grep -q '"/sbin/init"'; then
     pass "CMD is /sbin/init"
 else
-    warn "CMD is not /sbin/init — may cause boot issues"
+    warn "CMD is not /sbin/init  may cause boot issues"
 fi
 
-# ── 2. bootc container lint ────────────────────────────────────────────────
+# -- 2. bootc container lint ------------------------------------------------
 section "bootc Container Lint"
 
 LINT_OUTPUT=$(run_in bootc container lint 2>&1)
@@ -91,7 +91,7 @@ else
     fail "bootc container lint FAILED: $LINT_OUTPUT"
 fi
 
-# ── 3. Critical packages ──────────────────────────────────────────────────
+# -- 3. Critical packages --------------------------------------------------
 section "Critical Packages"
 
 CRITICAL_PACKAGES=(
@@ -125,7 +125,7 @@ for pkg in "${CRITICAL_PACKAGES[@]}"; do
     fi
 done
 
-# ── 4. Footgun packages (should NOT be present) ───────────────────────────
+# -- 4. Footgun packages (should NOT be present) ---------------------------
 section "Footgun Check (packages that should NOT be present)"
 
 FOOTGUN_PACKAGES=(
@@ -140,13 +140,13 @@ FOOTGUN_PACKAGES=(
 
 for pkg in "${FOOTGUN_PACKAGES[@]}"; do
     if run_in rpm -q "$pkg" >/dev/null 2>&1; then
-        fail "$pkg IS installed (footgun — should be removed)"
+        fail "$pkg IS installed (footgun  should be removed)"
     else
         pass "$pkg not present"
     fi
 done
 
-# ── 5. systemd services ───────────────────────────────────────────────────
+# -- 5. systemd services ---------------------------------------------------
 section "systemd Service Enablement"
 
 EXPECTED_SERVICES=(
@@ -178,14 +178,14 @@ for svc in "${EXPECTED_SERVICES[@]}"; do
     fi
 done
 
-# ── 6. Filesystem structure ───────────────────────────────────────────────
+# -- 6. Filesystem structure -----------------------------------------------
 section "Filesystem Structure"
 
-# /opt → /var/opt symlink
+# /opt  /var/opt symlink
 if run_in test -L /opt; then
     LINK_TARGET=$(run_in readlink /opt)
     if [[ "$LINK_TARGET" == "/var/opt" || "$LINK_TARGET" == "var/opt" ]]; then
-        pass "/opt → /var/opt symlink exists"
+        pass "/opt  /var/opt symlink exists"
     else
         warn "/opt is a symlink but points to $LINK_TARGET (expected /var/opt)"
     fi
@@ -193,21 +193,21 @@ else
     fail "/opt is NOT a symlink to /var/opt"
 fi
 
-# /home → /var/home symlink (bootc convention)
+# /home  /var/home symlink (bootc convention)
 if run_in test -L /home; then
     pass "/home is a symlink (bootc convention)"
 else
-    warn "/home is not a symlink — may not be standard bootc layout"
+    warn "/home is not a symlink  may not be standard bootc layout"
 fi
 
 # /usr/share/skel/.bashrc exists
 if run_in test -f /usr/share/skel/.bashrc; then
     pass "/usr/share/skel/.bashrc exists"
 else
-    warn "/usr/share/skel/.bashrc missing — new users won't get fastfetch"
+    warn "/usr/share/skel/.bashrc missing  new users won't get fastfetch"
 fi
 
-# ── 7. Security hardening ─────────────────────────────────────────────────
+# -- 7. Security hardening -------------------------------------------------
 section "Security Hardening"
 
 # Sysctl hardening file
@@ -224,7 +224,7 @@ else
     fail "bootc kargs.d config MISSING at /usr/lib/bootc/kargs.d/00-mios.toml"
 fi
 
-# ── 8. MiOS Phase 3 Fixes & Hardware Hooks ─────────────────────────────
+# -- 8. MiOS Phase 3 Fixes & Hardware Hooks -----------------------------
 section "MiOS Custom Scripts & Hardware Hooks"
 
 # Fapolicyd composefs trust integration
@@ -263,14 +263,14 @@ else
     warn "Libvirt qemu hook missing or not executable"
 fi
 
-# UKI Cmdline Rendering Output (conditional — requires bootc render-kargs support)
+# UKI Cmdline Rendering Output (conditional  requires bootc render-kargs support)
 if run_in test -f /usr/lib/kernel/cmdline 2>/dev/null || run_in test -f /etc/kernel/cmdline 2>/dev/null; then
     pass "Unified Kernel Image (UKI) cmdline successfully rendered"
 else
-    warn "UKI cmdline not present (/etc/kernel/cmdline missing — bootc render-kargs may not be supported on this bootc version)"
+    warn "UKI cmdline not present (/etc/kernel/cmdline missing  bootc render-kargs may not be supported on this bootc version)"
 fi
 
-# ── 9. MiOS Kernel Arguments (kargs.d) ─────────────────────────────────
+# -- 9. MiOS Kernel Arguments (kargs.d) ---------------------------------
 section "Kernel Arguments (kargs.d)"
 
 KARG_FILES=(
@@ -304,7 +304,7 @@ else
     warn "Could not determine SELinux mode"
 fi
 
-# ── 10. GPU driver availability ───────────────────────────────────────────
+# -- 10. GPU driver availability -------------------------------------------
 section "GPU Stack"
 
 if run_in rpm -q mesa-vulkan-drivers >/dev/null 2>&1; then
@@ -328,7 +328,7 @@ else
     warn "NVIDIA driver not detected (expected on MiOS-2 / may need akmod rebuild on MiOS-1)"
 fi
 
-# ── 11. Flatpak remotes ──────────────────────────────────────────────────
+# -- 11. Flatpak remotes --------------------------------------------------
 section "Flatpak"
 
 if run_in flatpak remote-list --system 2>/dev/null | grep -q "flathub"; then
@@ -337,7 +337,7 @@ else
     warn "Flathub remote not found"
 fi
 
-# ── 12. Full Stack Report Generation ─────────────────────────────────────
+# -- 12. Full Stack Report Generation -------------------------------------
 section "Stack Manifest Generation"
 echo "Compiling complete stack artifact into $REPORT_FILE..."
 
@@ -355,7 +355,7 @@ podman inspect "$IMAGE" | grep -A 15 '"Labels":' >> "$REPORT_FILE"
 
 pass "Exhaustive stack manifest saved to $REPORT_FILE"
 
-# ── 13. Version info ─────────────────────────────────────────────────────
+# -- 13. Version info -----------------------------------------------------
 section "System Information"
 
 VERSION=$(run_in cat /etc/mios-version 2>/dev/null || run_in cat /usr/lib/mios-version 2>/dev/null || echo "not set")
@@ -364,20 +364,20 @@ echo "  MiOS version: $VERSION"
 KERNEL=$(run_in ls /lib/modules/ 2>/dev/null | sort -V | tail -1 || echo "unknown")
 echo "  Kernel: $KERNEL"
 
-# ── Summary ──────────────────────────────────────────────────────────────
+# -- Summary --------------------------------------------------------------
 echo ""
-echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║  Results: ${PASS} passed, ${FAIL} failed, ${WARN} warnings$(printf '%*s' $((23 - ${#PASS} - ${#FAIL} - ${#WARN})) '')║"
-echo "╚══════════════════════════════════════════════════════════════╝"
+echo "+==============================================================+"
+echo "  Results: ${PASS} passed, ${FAIL} failed, ${WARN} [WARN]s$(printf '%*s' $((23 - ${#PASS} - ${#FAIL} - ${#WARN})) '')"
+echo "+==============================================================+"
 
 if [[ $FAIL -gt 0 ]]; then
-    echo -e "${RED}SMOKE TEST FAILED — $FAIL critical issue(s) found.${NC}"
+    echo -e "${RED}SMOKE TEST FAILED  $FAIL critical issue(s) found.${NC}"
     exit 1
 else
     if [[ $WARN -gt 0 ]]; then
-        echo -e "${YELLOW}SMOKE TEST PASSED with $WARN warning(s).${NC}"
+        echo -e "${YELLOW}SMOKE TEST PASSED with $WARN [WARN](s).${NC}"
     else
-        echo -e "${GREEN}SMOKE TEST PASSED — all checks clean.${NC}"
+        echo -e "${GREEN}SMOKE TEST PASSED  all checks clean.${NC}"
     fi
     exit 0
 fi

@@ -11,9 +11,9 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-echo -e "${BOLD}${CYAN}══════════════════════════════════════════════════════════${NC}"
+echo -e "${BOLD}${CYAN}==========================================================${NC}"
 echo -e "${BOLD}${CYAN}   Microsoft Secure Boot OVMF File Locator/Installer${NC}"
-echo -e "${BOLD}${CYAN}══════════════════════════════════════════════════════════${NC}\n"
+echo -e "${BOLD}${CYAN}==========================================================${NC}\n"
 
 # Check current files
 echo -e "${BLUE}Scanning for OVMF Secure Boot files...${NC}\n"
@@ -42,22 +42,22 @@ fi
 
 echo -e "${BOLD}Status Check:${NC}"
 if [ "$HAVE_CODE_SECBOOT" = true ]; then
-    echo -e "  ${GREEN}✓${NC} OVMF_CODE.secboot (Secure Boot firmware)"
+    echo -e "  ${GREEN}[OK]${NC} OVMF_CODE.secboot (Secure Boot firmware)"
 else
-    echo -e "  ${RED}✗${NC} OVMF_CODE.secboot (Secure Boot firmware)"
+    echo -e "  ${RED}[FAIL]${NC} OVMF_CODE.secboot (Secure Boot firmware)"
 fi
 
 if [ "$HAVE_VARS_SECBOOT" = true ]; then
-    echo -e "  ${GREEN}✓${NC} OVMF_VARS.secboot (Microsoft-enrolled VARS)"
+    echo -e "  ${GREEN}[OK]${NC} OVMF_VARS.secboot (Microsoft-enrolled VARS)"
 else
-    echo -e "  ${RED}✗${NC} OVMF_VARS.secboot (Microsoft-enrolled VARS) ${RED}← MISSING!${NC}"
+    echo -e "  ${RED}[FAIL]${NC} OVMF_VARS.secboot (Microsoft-enrolled VARS) ${RED} MISSING!${NC}"
 fi
 echo
 
 if [ "$HAVE_VARS_SECBOOT" = true ]; then
-    echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
-    echo -e "${GREEN}✓ You already have Microsoft-enrolled OVMF VARS files!${NC}"
-    echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}\n"
+    echo -e "${GREEN}============================================================${NC}"
+    echo -e "${GREEN}[OK] You already have Microsoft-enrolled OVMF VARS files!${NC}"
+    echo -e "${GREEN}============================================================${NC}\n"
 
     # Find the exact path
     if [ -f "$X64_DIR/OVMF_VARS.secboot.4m.fd" ]; then
@@ -73,9 +73,9 @@ if [ "$HAVE_VARS_SECBOOT" = true ]; then
     exit 0
 fi
 
-echo -e "${RED}════════════════════════════════════════════════════════════${NC}"
-echo -e "${RED}✗ Microsoft-enrolled VARS files NOT found${NC}"
-echo -e "${RED}════════════════════════════════════════════════════════════${NC}\n"
+echo -e "${RED}============================================================${NC}"
+echo -e "${RED}[FAIL] Microsoft-enrolled VARS files NOT found${NC}"
+echo -e "${RED}============================================================${NC}\n"
 
 echo -e "${YELLOW}You need OVMF_VARS.secboot files with pre-enrolled Microsoft keys.${NC}"
 echo -e "${YELLOW}The standard edk2-ovmf package doesn't include these.${NC}\n"
@@ -180,9 +180,9 @@ case $choice in
         cd /
         rm -rf "$WORK_DIR"
 
-        echo -e "\n${GREEN}════════════════════════════════════════════════════════════${NC}"
-        echo -e "${GREEN}✓ Installation successful!${NC}"
-        echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}\n"
+        echo -e "\n${GREEN}============================================================${NC}"
+        echo -e "${GREEN}[OK] Installation successful!${NC}"
+        echo -e "${GREEN}============================================================${NC}\n"
 
         echo -e "${YELLOW}Installed file:${NC}"
         echo -e "  ${CYAN}$TARGET${NC}"
@@ -241,7 +241,7 @@ case $choice in
             cd /
             rm -rf "$WORK_DIR"
 
-            echo -e "\n${GREEN}✓ Installed: $TARGET${NC}"
+            echo -e "\n${GREEN}[OK] Installed: $TARGET${NC}"
             echo -e "  Size: $(stat -c%s "$TARGET" | numfmt --to=iec-i --suffix=B)\n"
         else
             echo -e "${RED}Could not find VARS in package${NC}"
@@ -262,10 +262,10 @@ case $choice in
     4)
         echo -e "${YELLOW}Manual installation${NC}"
         echo -e "\nOptions:"
-        echo -e "  • Download from: https://www.kraxel.org/repos/jenkins/edk2/"
-        echo -e "  • Or from: https://fedoraproject.org/"
-        echo -e "  • Extract OVMF_VARS.secboot*.fd files"
-        echo -e "  • Copy to: $X64_DIR/"
+        echo -e "  * Download from: https://www.kraxel.org/repos/jenkins/edk2/"
+        echo -e "  * Or from: https://fedoraproject.org/"
+        echo -e "  * Extract OVMF_VARS.secboot*.fd files"
+        echo -e "  * Copy to: $X64_DIR/"
         exit 0
         ;;
 

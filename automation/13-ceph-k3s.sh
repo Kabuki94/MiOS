@@ -1,5 +1,5 @@
 #!/bin/bash
-# MiOS v0.1.3 — 13-ceph-k3s: Ceph distributed storage + K3s Kubernetes
+# MiOS v0.1.3  13-ceph-k3s: Ceph distributed storage + K3s Kubernetes
 # Cephadm runs ALL server daemons as Podman containers.
 # Only client tools + orchestrator binary are baked into the image.
 #
@@ -14,17 +14,17 @@ source "$(dirname "$0")/lib/common.sh"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
 
-# ─── Ceph Client + Orchestrator ──────────────────────────────────────────────
+# --- Ceph Client + Orchestrator ----------------------------------------------
 echo "[13-ceph-k3s] Installing Ceph client tools and cephadm..."
 install_packages "ceph"
 
-# ─── K3s Prerequisites ───────────────────────────────────────────────────────
+# --- K3s Prerequisites -------------------------------------------------------
 echo "[13-ceph-k3s] Installing K3s prerequisites..."
 install_packages "k3s"
 
 # Note: k3s-selinux policy is compiled from source in 19-k3s-selinux.sh
 
-# ─── K3s Binary & Install Script ─────────────────────────────────────────────
+# --- K3s Binary & Install Script ---------------------------------------------
 echo "[13-ceph-k3s] Resolving latest K3s release tag..."
 # Retry 3 times for flaky networks
 K3S_TAG=""
@@ -54,7 +54,7 @@ if [[ -n "$K3S_TAG" ]]; then
        scurl -sfL "$K3S_INSTALL_URL" -o /tmp/k3s-dl/k3s-install.sh; then
         cd /tmp/k3s-dl
         if grep -E "  k3s$" sha256sum.txt | sha256sum -c - >/dev/null 2>&1; then
-            echo "[13-ceph-k3s] ✓ K3s SHA256 checksum verified"
+            echo "[13-ceph-k3s] [OK] K3s SHA256 checksum verified"
             mv k3s /usr/local/bin/k3s
             chmod 755 /usr/local/bin/k3s
 
@@ -77,10 +77,10 @@ if [[ -n "$K3S_TAG" ]]; then
     rm -rf /tmp/k3s-dl
 fi
 
-# ─── Make bootstrap script executable ────────────────────────────────────────
+# --- Make bootstrap script executable ----------------------------------------
 chmod 755 /usr/local/bin/ceph-bootstrap.sh 2>/dev/null || true
 
-# ─── NOTE: Service enables are in Containerfile STEP D ───────────────────────
+# --- NOTE: Service enables are in Containerfile STEP D -----------------------
 # k3s.service, mios-ceph-bootstrap.service, var-home.mount,
 # var-lib-containers.mount all live in  and are enabled
 # AFTER the COPY step in the Containerfile.

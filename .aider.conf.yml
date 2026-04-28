@@ -11,7 +11,7 @@ read:
   - INDEX.md
   - .ai/foundation/memory/MEMORY.md
 
-# Never auto-commit — changes need human review before pushing
+# Never auto-commit  changes need human review before pushing
 # Use push-to-github.ps1 for releases
 
 # Ignore generated/binary outputs

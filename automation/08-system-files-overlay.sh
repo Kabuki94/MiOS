@@ -87,7 +87,7 @@ if [[ -d "${QDIR}" ]]; then
     shopt -u nullglob
 fi
 
-# ═══ Pathing Compatibility ═══
+# === Pathing Compatibility ===
 log "08-overlay: applying pathing compatibility symlinks"
 
 # 1. WSL2 looks for /etc/wsl.conf, but we store it in /usr/lib/wsl.conf for immutability

@@ -41,13 +41,13 @@ def parse_metadata(content, file_path):
             if not line.strip().startswith("#"): continue
             
             # Look for MiOS vX.Y.Z headers
-            desc_match = re.search(r'#\s*MiOS\s+v[0-9.]+\s*—\s*(.+)$', line)
+            desc_match = re.search(r'#\s*MiOS\s+v[0-9.]+\s*--\s*(.+)$', line)
             if desc_match:
                 meta["title"] = desc_match.group(1).strip()
                 break
             
             # Fallback to first non-empty comment line (ignoring decoratives like === or ---)
-            fallback_match = re.search(r'#\s*([^#=─*?\n!/]+)$', line)
+            fallback_match = re.search(r'#\s*([^#=-*?\n!/]+)$', line)
             if fallback_match:
                 candidate = fallback_match.group(1).strip()
                 if candidate:
@@ -74,12 +74,12 @@ def parse_metadata(content, file_path):
 
 def generate_knowledge_hub_markdown(snapshot, output_path):
     """Generates a human-readable and AI-parsable Knowledge Hub index."""
-    print(f"📄 Generating Navigable Knowledge Hub: {output_path}...")
+    print(f"[FILE] Generating Navigable Knowledge Hub: {output_path}...")
     
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
     
-    hub_content = f"""<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🧠 MiOS Unified Knowledge Hub
+    hub_content = f"""<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [MEM] MiOS Unified Knowledge Hub
 
 ```json:knowledge
 {{
@@ -90,24 +90,24 @@ def generate_knowledge_hub_markdown(snapshot, output_path):
 }}
 ```
 
-## 📖 Overview
+##  Overview
 This hub provides a navigable map of the MiOS ecosystem, compacting research, memories, and engineering patterns into a unified structure.
 
 > **AI AGENT HINT:** Use this page to discover deep context paths. Structured JSON context is available at `/usr/share/mios/knowledge/mios-knowledge-graph.json`.
 
 ---
 
-## 🏛️ Knowledge Categories
+## [SEED] Knowledge Categories
 
 """
     
     categories = {
-        "core_foundation": ("🧱 Core Foundation", "Architectural laws and fundamental blueprints."),
-        "engineering": ("🔧 Engineering Patterns", "Implementation details and technical standards."),
-        "history": ("📜 Historical Context", "Journals, changelogs, and decision records."),
-        "automation": ("🤖 Automation Logic", "Build scripts and deployment orchestration."),
-        "validation": ("✅ Validation & Evals", "Health checks and smoke tests."),
-        "research": ("🔬 Research & Status", "Upstream analysis and upcoming features.")
+        "core_foundation": ("[BLOCK] Core Foundation", "Architectural laws and fundamental blueprints."),
+        "engineering": ("[TOOL] Engineering Patterns", "Implementation details and technical standards."),
+        "history": ("[LOG] Historical Context", "Journals, changelogs, and decision records."),
+        "automation": (" Automation Logic", "Build scripts and deployment orchestration."),
+        "validation": ("[OK] Validation & Evals", "Health checks and smoke tests."),
+        "research": ("[RES] Research & Status", "Upstream analysis and upcoming features.")
     }
     
     for cat_key, (cat_name, cat_desc) in categories.items():
@@ -126,7 +126,7 @@ This hub provides a navigable map of the MiOS ecosystem, compacting research, me
 
     hub_content += """---
 
-## 🤖 FOSS AI Native Discovery
+##  FOSS AI Native Discovery
 MiOS is designed for native parsing by local FOSS AI APIs.
 
 ### Parsing Instructions
@@ -140,19 +140,19 @@ MiOS is designed for native parsing by local FOSS AI APIs.
 - **LocalAI**: OpenAI-compatible endpoint for unified tool use.
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
 """
 
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(hub_content)
 
 def generate_unified_knowledge(output_file="artifacts/repo-rag-snapshot.json.gz", hub_file="specs/Knowledge-Hub.md"):
-    print(f"🧠 Flattening Historical Knowledge into UKB: {output_file}...")
+    print(f"[MEM] Flattening Historical Knowledge into UKB: {output_file}...")
     
     ignore_dirs = {".git", ".venv", "__pycache__", "node_modules", "artifacts", "output"}
     snapshot = {
@@ -238,7 +238,7 @@ def generate_unified_knowledge(output_file="artifacts/repo-rag-snapshot.json.gz"
                     })
 
             except Exception as e:
-                print(f"⚠️ Could not process {rel_path}: {e}")
+                print(f"[WARN] Could not process {rel_path}: {e}")
 
     # Ensure artifacts directory exists
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
@@ -247,7 +247,7 @@ def generate_unified_knowledge(output_file="artifacts/repo-rag-snapshot.json.gz"
     with gzip.open(output_file, 'wt', encoding='utf-8') as f:
         json.dump(snapshot, f, indent=2)
     
-    print(f"✅ Flattened UKB generated with {len(snapshot['knowledge_nodes'])} semantic nodes.")
+    print(f"[OK] Flattened UKB generated with {len(snapshot['knowledge_nodes'])} semantic nodes.")
     
     # Generate human-readable Hub
     generate_knowledge_hub_markdown(snapshot, hub_file)

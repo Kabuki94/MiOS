@@ -1,4 +1,4 @@
-# MiOS v0.1.3 — First-boot Flatpak install list
+# MiOS v0.1.3 -- First-boot Flatpak install list
 org.gnome.Epiphany
 org.gnome.Logs
 com.mattjakeman.ExtensionManager

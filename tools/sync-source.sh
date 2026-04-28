@@ -1,12 +1,12 @@
 #!/bin/bash
-# MiOS Source Sync — Unified Repository Synchronization
+# MiOS Source Sync  Unified Repository Synchronization
 # Ensures build environment is synced with latest upstream.
 set -euo pipefail
 
 MIOS_SRC_DIR="/usr/src/mios"
 REPO_URL="https://github.com/Kabuki94/MiOS-bootstrap.git"
 
-echo "▶️  Synchronizing MiOS source..."
+echo "[RUN]  Synchronizing MiOS source..."
 
 if [[ -d "${MIOS_SRC_DIR}/.git" ]]; then
     echo "  - Updating existing repo at $MIOS_SRC_DIR"
@@ -22,4 +22,4 @@ fi
 
 cd "$MIOS_SRC_DIR"
 VERSION=$(cat VERSION 2>/dev/null || echo "unknown")
-echo "✅ MiOS source synced: ${VERSION}"
+echo "[OK] MiOS source synced: ${VERSION}"

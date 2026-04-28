@@ -10,9 +10,9 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-echo -e "${BOLD}${CYAN}═══════════════════════════════════════════════════════${NC}"
+echo -e "${BOLD}${CYAN}=======================================================${NC}"
 echo -e "${BOLD}${CYAN}   Microsoft Secure Boot OVMF Enrollment Checker${NC}"
-echo -e "${BOLD}${CYAN}═══════════════════════════════════════════════════════${NC}\n"
+echo -e "${BOLD}${CYAN}=======================================================${NC}\n"
 
 echo -e "${YELLOW}The Problem:${NC}"
 echo -e "  Secure Boot needs VARS files PRE-ENROLLED with Microsoft keys"
@@ -24,13 +24,13 @@ echo -e "${BLUE}[1] Checking for pre-enrolled VARS files...${NC}\n"
 SECBOOT_VARS=$(find /usr/share -name "*VARS*secboot*.fd" 2>/dev/null | grep x64)
 
 if [ -n "$SECBOOT_VARS" ]; then
-    echo -e "${GREEN}✓ Found Secure Boot VARS files:${NC}"
+    echo -e "${GREEN}[OK] Found Secure Boot VARS files:${NC}"
     echo "$SECBOOT_VARS" | while read -r file; do
         size=$(stat -c%s "$file" | numfmt --to=iec-i --suffix=B)
-        echo -e "  ${GREEN}✓${NC} $file ($size)"
+        echo -e "  ${GREEN}[OK]${NC} $file ($size)"
     done
 else
-    echo -e "${RED}✗ No pre-enrolled Secure Boot VARS files found!${NC}"
+    echo -e "${RED}[FAIL] No pre-enrolled Secure Boot VARS files found!${NC}"
 fi
 
 echo -e "\n${BLUE}[2] Checking standard VARS files...${NC}\n"
@@ -38,10 +38,10 @@ echo -e "\n${BLUE}[2] Checking standard VARS files...${NC}\n"
 STANDARD_VARS=$(find /usr/share/edk2/x64 -name "*VARS*.fd" 2>/dev/null | grep -v secboot)
 
 if [ -n "$STANDARD_VARS" ]; then
-    echo -e "${YELLOW}⚠ Found standard (blank) VARS files:${NC}"
+    echo -e "${YELLOW}[WARN] Found standard (blank) VARS files:${NC}"
     echo "$STANDARD_VARS" | while read -r file; do
         size=$(stat -c%s "$file" | numfmt --to=iec-i --suffix=B)
-        echo -e "  ${YELLOW}⚠${NC} $file ($size) - NOT enrolled"
+        echo -e "  ${YELLOW}[WARN]${NC} $file ($size) - NOT enrolled"
     done
 fi
 
@@ -53,9 +53,9 @@ X64_DIR="/usr/share/edk2/x64"
 echo -e "${CYAN}Files in $X64_DIR:${NC}"
 ls -lh "$X64_DIR"/*.fd 2>/dev/null | awk '{printf "  %s  %s\n", $9, $5}'
 
-echo -e "\n${BOLD}${YELLOW}═══════════════════════════════════════════════════════${NC}"
+echo -e "\n${BOLD}${YELLOW}=======================================================${NC}"
 echo -e "${BOLD}${YELLOW}                   DIAGNOSIS${NC}"
-echo -e "${BOLD}${YELLOW}═══════════════════════════════════════════════════════${NC}\n"
+echo -e "${BOLD}${YELLOW}=======================================================${NC}\n"
 
 HAS_SECBOOT_VARS=false
 SECBOOT_VARS_PATH=""
@@ -70,18 +70,18 @@ elif [ -f "/usr/share/edk2/x64/OVMF_VARS.secboot.fd" ]; then
 fi
 
 if [ "$HAS_SECBOOT_VARS" = true ]; then
-    echo -e "${GREEN}✓ GOOD NEWS: You have pre-enrolled Secure Boot VARS!${NC}"
+    echo -e "${GREEN}[OK] GOOD NEWS: You have pre-enrolled Secure Boot VARS!${NC}"
     echo -e "  File: ${CYAN}$SECBOOT_VARS_PATH${NC}"
     echo -e "\n${YELLOW}Fix: Use this file as your NVRAM template${NC}"
 else
-    echo -e "${RED}✗ PROBLEM: You DON'T have pre-enrolled Secure Boot VARS!${NC}"
+    echo -e "${RED}[FAIL] PROBLEM: You DON'T have pre-enrolled Secure Boot VARS!${NC}"
     echo -e "\n${YELLOW}Your edk2-ovmf package is missing the enrolled VARS files.${NC}"
     echo -e "This is common on Arch-based distros.\n"
 fi
 
-echo -e "\n${BOLD}${CYAN}═══════════════════════════════════════════════════════${NC}"
+echo -e "\n${BOLD}${CYAN}=======================================================${NC}"
 echo -e "${BOLD}${CYAN}                     SOLUTIONS${NC}"
-echo -e "${BOLD}${CYAN}═══════════════════════════════════════════════════════${NC}\n"
+echo -e "${BOLD}${CYAN}=======================================================${NC}\n"
 
 if [ "$HAS_SECBOOT_VARS" = true ]; then
     echo -e "${GREEN}Solution: Update your VM XML to use the enrolled VARS file:${NC}\n"
@@ -114,7 +114,7 @@ else
     echo -e "  I can create this configuration for you"
 fi
 
-echo -e "\n${BOLD}${CYAN}═══════════════════════════════════════════════════════${NC}\n"
+echo -e "\n${BOLD}${CYAN}=======================================================${NC}\n"
 
 # Save results
 cat > /tmp/ovmf-diagnosis.txt << EOF
@@ -137,4 +137,4 @@ else
     echo "Need to obtain pre-enrolled VARS files - see solutions above" >> /tmp/ovmf-diagnosis.txt
 fi
 
-echo -e "${GREEN}✓ Report saved to: ${CYAN}/tmp/ovmf-diagnosis.txt${NC}\n"
+echo -e "${GREEN}[OK] Report saved to: ${CYAN}/tmp/ovmf-diagnosis.txt${NC}\n"

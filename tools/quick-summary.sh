@@ -17,15 +17,15 @@ readonly BOLD='\033[1m'
 readonly NC='\033[0m'
 
 print_header() {
-    echo -e "\n${BOLD}${CYAN}▶ $1${NC}"
-    echo -e "${CYAN}$(printf '─%.0s' {1..60})${NC}"
+    echo -e "\n${BOLD}${CYAN}[RUN] $1${NC}"
+    echo -e "${CYAN}$(printf '-%.0s' {1..60})${NC}"
 }
 
 check_status() {
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✓${NC}"
+        echo -e "${GREEN}[OK]${NC}"
     else
-        echo -e "${RED}✗${NC}"
+        echo -e "${RED}[FAIL]${NC}"
     fi
 }
 
@@ -33,9 +33,9 @@ main() {
     clear
     echo -e "${BOLD}${CYAN}"
     cat << 'EOF'
-╔══════════════════════════════════════════════════════════╗
-║           QUICK SYSTEM SUMMARY - MiOS-Build                ║
-╚══════════════════════════════════════════════════════════╝
++==========================================================+
+           QUICK SYSTEM SUMMARY - MiOS-Build                
++==========================================================+
 EOF
     echo -e "${NC}\n"
     
@@ -57,9 +57,9 @@ EOF
     # Check virtualization
     if grep -q -E '(vmx|svm)' /proc/cpuinfo; then
         local virt_type=$(grep -o -E '(vmx|svm)' /proc/cpuinfo | head -1)
-        echo -e "${BOLD}Virt:${NC}     ${GREEN}✓${NC} Enabled ($virt_type)"
+        echo -e "${BOLD}Virt:${NC}     ${GREEN}[OK]${NC} Enabled ($virt_type)"
     else
-        echo -e "${BOLD}Virt:${NC}     ${RED}✗${NC} Not detected"
+        echo -e "${BOLD}Virt:${NC}     ${RED}[FAIL]${NC} Not detected"
     fi
     
     # Memory
@@ -81,7 +81,7 @@ EOF
         
         # NVIDIA check
         if command -v nvidia-smi >/dev/null 2>&1; then
-            echo -e "${BOLD}NVIDIA:${NC}   ${GREEN}✓${NC} Driver loaded"
+            echo -e "${BOLD}NVIDIA:${NC}   ${GREEN}[OK]${NC} Driver loaded"
         fi
     else
         echo -e "${BOLD}GPU:${NC}      No discrete GPU detected"
@@ -99,7 +99,7 @@ EOF
     print_header "VIRTUALIZATION"
     if [ -d /sys/kernel/iommu_groups ]; then
         local iommu_groups=$(ls -1 /sys/kernel/iommu_groups/ | wc -l)
-        echo -e "${BOLD}IOMMU:${NC}    ${GREEN}✓${NC} Enabled ($iommu_groups groups)"
+        echo -e "${BOLD}IOMMU:${NC}    ${GREEN}[OK]${NC} Enabled ($iommu_groups groups)"
         
         # Quick GPU isolation check
         if [ "$gpu_count" -gt 0 ]; then
@@ -120,20 +120,20 @@ EOF
             done
             
             if [ "$isolated" -gt 0 ]; then
-                echo -e "          ${GREEN}✓${NC} $isolated GPU(s) in isolated group(s)"
+                echo -e "          ${GREEN}[OK]${NC} $isolated GPU(s) in isolated group(s)"
             else
-                echo -e "          ${YELLOW}⚠${NC} GPUs share IOMMU groups"
+                echo -e "          ${YELLOW}[WARN]${NC} GPUs share IOMMU groups"
             fi
         fi
     else
-        echo -e "${BOLD}IOMMU:${NC}    ${RED}✗${NC} Not available"
+        echo -e "${BOLD}IOMMU:${NC}    ${RED}[FAIL]${NC} Not available"
     fi
     
     # KVM
     if [ -e /dev/kvm ]; then
-        echo -e "${BOLD}KVM:${NC}      ${GREEN}✓${NC} Available"
+        echo -e "${BOLD}KVM:${NC}      ${GREEN}[OK]${NC} Available"
     else
-        echo -e "${BOLD}KVM:${NC}      ${RED}✗${NC} Not available"
+        echo -e "${BOLD}KVM:${NC}      ${RED}[FAIL]${NC} Not available"
     fi
     
     # Security
@@ -141,24 +141,24 @@ EOF
     
     # Boot mode
     if [ -d /sys/firmware/efi ]; then
-        echo -e "${BOLD}Boot:${NC}     ${GREEN}✓${NC} UEFI"
+        echo -e "${BOLD}Boot:${NC}     ${GREEN}[OK]${NC} UEFI"
     else
-        echo -e "${BOLD}Boot:${NC}     ${YELLOW}⚠${NC} Legacy BIOS"
+        echo -e "${BOLD}Boot:${NC}     ${YELLOW}[WARN]${NC} Legacy BIOS"
     fi
     
     # TPM
     if [ -e /dev/tpm0 ]; then
-        echo -e "${BOLD}TPM:${NC}      ${GREEN}✓${NC} Present (/dev/tpm0)"
+        echo -e "${BOLD}TPM:${NC}      ${GREEN}[OK]${NC} Present (/dev/tpm0)"
     else
-        echo -e "${BOLD}TPM:${NC}      ${RED}✗${NC} Not detected"
+        echo -e "${BOLD}TPM:${NC}      ${RED}[FAIL]${NC} Not detected"
     fi
     
     # Secure Boot
     if command -v mokutil >/dev/null 2>&1; then
         if mokutil --sb-state 2>/dev/null | grep -q "SecureBoot enabled"; then
-            echo -e "${BOLD}SecBoot:${NC}  ${GREEN}✓${NC} Enabled"
+            echo -e "${BOLD}SecBoot:${NC}  ${GREEN}[OK]${NC} Enabled"
         else
-            echo -e "${BOLD}SecBoot:${NC}  ${YELLOW}⚠${NC} Disabled"
+            echo -e "${BOLD}SecBoot:${NC}  ${YELLOW}[WARN]${NC} Disabled"
         fi
     fi
     
@@ -171,9 +171,9 @@ EOF
         local ip=$(echo $line | awk '{print $3}' | cut -d/ -f1)
         local state=$(echo $line | awk '{print $2}')
         if [ "$state" = "UP" ]; then
-            echo -e "          ${GREEN}✓${NC} $iface: $ip"
+            echo -e "          ${GREEN}[OK]${NC} $iface: $ip"
         else
-            echo -e "          ${YELLOW}○${NC} $iface: $state"
+            echo -e "          ${YELLOW}${NC} $iface: $state"
         fi
     done
     
@@ -181,64 +181,64 @@ EOF
     print_header "MiOS-Build READINESS"
     
     local ready=true
-    local warnings=0
+    local [WARN]s=0
     
     # Check critical components
     echo -e "\n${BOLD}Critical Components:${NC}"
     
     if grep -q -E '(vmx|svm)' /proc/cpuinfo; then
-        echo -e "  ${GREEN}✓${NC} CPU Virtualization"
+        echo -e "  ${GREEN}[OK]${NC} CPU Virtualization"
     else
-        echo -e "  ${RED}✗${NC} CPU Virtualization"
+        echo -e "  ${RED}[FAIL]${NC} CPU Virtualization"
         ready=false
     fi
     
     if [ -d /sys/kernel/iommu_groups ]; then
-        echo -e "  ${GREEN}✓${NC} IOMMU Support"
+        echo -e "  ${GREEN}[OK]${NC} IOMMU Support"
     else
-        echo -e "  ${RED}✗${NC} IOMMU Support"
+        echo -e "  ${RED}[FAIL]${NC} IOMMU Support"
         ready=false
     fi
     
     if [ -e /dev/kvm ]; then
-        echo -e "  ${GREEN}✓${NC} KVM Available"
+        echo -e "  ${GREEN}[OK]${NC} KVM Available"
     else
-        echo -e "  ${RED}✗${NC} KVM Available"
+        echo -e "  ${RED}[FAIL]${NC} KVM Available"
         ready=false
     fi
     
     if [ "$gpu_count" -gt 0 ]; then
-        echo -e "  ${GREEN}✓${NC} GPU Detected"
+        echo -e "  ${GREEN}[OK]${NC} GPU Detected"
     else
-        echo -e "  ${YELLOW}⚠${NC} No discrete GPU"
-        warnings=$((warnings + 1))
+        echo -e "  ${YELLOW}[WARN]${NC} No discrete GPU"
+        [WARN]s=$(([WARN]s + 1))
     fi
     
     echo -e "\n${BOLD}Recommended Components:${NC}"
     
     if [ -d /sys/firmware/efi ]; then
-        echo -e "  ${GREEN}✓${NC} UEFI Boot"
+        echo -e "  ${GREEN}[OK]${NC} UEFI Boot"
     else
-        echo -e "  ${YELLOW}⚠${NC} Legacy BIOS (UEFI recommended)"
-        warnings=$((warnings + 1))
+        echo -e "  ${YELLOW}[WARN]${NC} Legacy BIOS (UEFI recommended)"
+        [WARN]s=$(([WARN]s + 1))
     fi
     
     if [ -e /dev/tpm0 ]; then
-        echo -e "  ${GREEN}✓${NC} TPM 2.0"
+        echo -e "  ${GREEN}[OK]${NC} TPM 2.0"
     else
-        echo -e "  ${YELLOW}⚠${NC} No TPM (needed for Win11)"
-        warnings=$((warnings + 1))
+        echo -e "  ${YELLOW}[WARN]${NC} No TPM (needed for Win11)"
+        [WARN]s=$(([WARN]s + 1))
     fi
     
     # Final verdict
     echo ""
     if [ "$ready" = true ]; then
-        echo -e "${GREEN}${BOLD}✓ System ready for MiOS-Build setup!${NC}"
-        if [ "$warnings" -gt 0 ]; then
-            echo -e "${YELLOW}  Note: $warnings optional component(s) missing${NC}"
+        echo -e "${GREEN}${BOLD}[OK] System ready for MiOS-Build setup!${NC}"
+        if [ "$[WARN]s" -gt 0 ]; then
+            echo -e "${YELLOW}  Note: $[WARN]s optional component(s) missing${NC}"
         fi
     else
-        echo -e "${RED}${BOLD}✗ System not ready - check failed components${NC}"
+        echo -e "${RED}${BOLD}[FAIL] System not ready - check failed components${NC}"
     fi
     
     echo ""

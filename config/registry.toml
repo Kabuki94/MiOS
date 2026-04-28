@@ -1,0 +1,43 @@
+# MiOS Global Variable Registry
+# Single Source of Truth for images, versions, users, and credentials.
+# Managed by tools/propagate.py
+
+[tags.VAR_VERSION]
+value = "0.1.3"
+description = "Current MiOS release version"
+subscribers = ["VERSION", "root-manifest.json", "ai-context.json"]
+
+[tags.IMG_BASE]
+value = "ghcr.io/ublue-os/ucore-hci:stable-nvidia"
+description = "Upstream base image"
+subscribers = ["Containerfile", "Justfile", "image-versions.yml"]
+
+[tags.IMG_BIB]
+value = "quay.io/centos-bootc/bootc-image-builder:latest"
+description = "Bootc Image Builder (BIB) image"
+subscribers = ["Justfile", "mios-build-local.ps1"]
+
+[tags.IMG_RECHUNK]
+value = "quay.io/centos-bootc/centos-bootc:stream10"
+description = "Rechunker helper image"
+subscribers = ["Justfile", "mios-build-local.ps1"]
+
+[tags.IMG_RECHUNKER]
+value = "bootc-base-imagectl"
+description = "Rechunker tool name"
+subscribers = ["image-versions.yml"]
+
+[tags.USER_ADMIN]
+value = "mios"
+description = "Default administrative username"
+subscribers = ["automation/31-user.sh", "mios-build-local.ps1", "etc/mios/templates/default.env.toml"]
+
+[tags.REGISTRY_DEFAULT]
+value = "ghcr.io/kabuki94/mios"
+description = "Default OCI registry for MiOS images"
+subscribers = ["Justfile", "mios-build-local.ps1"]
+
+[tags.PATH_ARTIFACTS]
+value = "/usr/lib/mios/artifacts"
+description = "Global path for build artifacts"
+subscribers = ["automation/build.sh", "automation/90-generate-sbom.sh"]

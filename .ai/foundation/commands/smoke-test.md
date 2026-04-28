@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/mios-project/mios -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/mios-project/mios -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -32,7 +32,7 @@ seconds (default 300).
 This mirrors `.github/workflows/build-test.yml` so local runs match
 CI.
 
-**Hard rule:** never invoke bare `bash` on Windows — it routes through
+**Hard rule:** never invoke bare `bash` on Windows  it routes through
 `wsl.exe` and spawns external windows. Always use `wsl -e bash -c
 '...'` or `wsl --exec /bin/bash -c '...'` which keep output in the
 integrated terminal.
@@ -44,7 +44,7 @@ integrated terminal.
    - `automation/smoke-check.sh`
 
 2. **Prepare the image.**
-   - Local image (`localhost/…` or bare `mios:…`) → skip pull.
+   - Local image (`localhost/...` or bare `mios:...`)  skip pull.
    - Otherwise `podman pull $1`.
 
 3. **Generate disk image via BIB** using `config/bib.toml` (or a
@@ -62,7 +62,7 @@ wsl -e bash -c "./automation/bcvk-wrapper.sh --image automation/mios-smoke.qcow2
 ./automation/bcvk-wrapper.sh --image automation/mios-smoke.qcow2 --timeout $2 --serial-log automation/smoke-serial.log
 ```
 
-5. **Analyze serial log** — same `wsl -e` pattern on Windows:
+5. **Analyze serial log**  same `wsl -e` pattern on Windows:
 
 ```powershell
 wsl -e bash -c "./automation/smoke-check.sh automation/smoke-serial.log"
@@ -79,12 +79,12 @@ wsl -e bash -c "./automation/smoke-check.sh automation/smoke-serial.log"
 
 ## Exit codes
 
-- `0` — boot reached target, no errors.
-- `1` — lint / prerequisite failure.
-- `2` — boot timeout or kernel panic.
-- `3` — post-boot verification failed.
-- `4` — user-visible warning (e.g. NVIDIA modules loading in a VM
-  without a GPU — §3.5 regressed).
+- `0`  boot reached target, no errors.
+- `1`  lint / prerequisite failure.
+- `2`  boot timeout or kernel panic.
+- `3`  post-boot verification failed.
+- `4`  user-visible [WARN] (e.g. NVIDIA modules loading in a VM
+  without a GPU  3.5 regressed).
 
 ## Notes
 
@@ -94,11 +94,11 @@ wsl -e bash -c "./automation/smoke-check.sh automation/smoke-serial.log"
   is acceptable; bare `bash` is not.
 
 ---
-### 📚 Bootc Ecosystem & Resources
+###  Bootc Ecosystem & Resources
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osautomation/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
 - **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
 - **Sole Proprietor:** MiOS-DEV
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

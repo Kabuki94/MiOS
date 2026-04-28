@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -37,14 +37,14 @@ The VM CPU Core Pinning Hook Manager provides **granular, per-VM CPU core alloca
 
 ### Key Features
 
-Ã¢Å“â€¦ **Per-VM Configuration** - Each VM gets its own dedicated core assignment  
-Ã¢Å“â€¦ **Interactive Management** - User-friendly menus with visual CPU topology  
-Ã¢Å“â€¦ **AMD X3D Optimized** - Presets for CCD0 (V-Cache) and CCD1 (High Freq)  
-Ã¢Å“â€¦ **Automatic Hook Generation** - Creates libvirt hooks with zero manual editing  
-Ã¢Å“â€¦ **XML Snippet Generator** - Produces ready-to-paste libvirt XML configurations  
-Ã¢Å“â€¦ **Visual Allocation Map** - See which cores are assigned to which VMs  
-Ã¢Å“â€¦ **Configuration Import/Export** - Backup and restore VM core assignments  
-Ã¢Å“â€¦ **Hook Verification** - Built-in integrity checking for troubleshooting
+ **Per-VM Configuration** - Each VM gets its own dedicated core assignment  
+ **Interactive Management** - User-friendly menus with visual CPU topology  
+ **AMD X3D Optimized** - Presets for CCD0 (V-Cache) and CCD1 (High Freq)  
+ **Automatic Hook Generation** - Creates libvirt hooks with zero manual editing  
+ **XML Snippet Generator** - Produces ready-to-paste libvirt XML configurations  
+ **Visual Allocation Map** - See which cores are assigned to which VMs  
+ **Configuration Import/Export** - Backup and restore VM core assignments  
+ **Hook Verification** - Built-in integrity checking for troubleshooting
 
 ---
 
@@ -71,59 +71,59 @@ The interactive menu will guide you through:
 ### How It Works
 
 ```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ User runs vm-cpu-pin-manager.sh                     â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                  â”‚
+
+ User runs vm-cpu-pin-manager.sh                     
+
+                  
                   v
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ 1. Detects CPU topology (CCDs, NUMA, threads)       â”‚
-â”‚ 2. Lists available VMs from libvirt                 â”‚
-â”‚ 3. Presents core selection strategies               â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                  â”‚
+
+ 1. Detects CPU topology (CCDs, NUMA, threads)       
+ 2. Lists available VMs from libvirt                 
+ 3. Presents core selection strategies               
+
+                  
                   v
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ Creates per-VM configuration:                        â”‚
-â”‚   /etc/libvirt/vm-cpu-pins/vm-name.conf            â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                  â”‚
+
+ Creates per-VM configuration:                        
+   /etc/libvirt/vm-cpu-pins/vm-name.conf            
+
+                  
                   v
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ Generates libvirt hooks:                            â”‚
-â”‚   /etc/libvirt/hooks/qemu.d/vm-name/                â”‚
-â”‚     â”œâ”€â”€ prepare/begin/cpu-pin.sh                    â”‚
-â”‚     â””â”€â”€ release/end/cpu-cleanup.sh                  â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                  â”‚
+
+ Generates libvirt hooks:                            
+   /etc/libvirt/hooks/qemu.d/vm-name/                
+      prepare/begin/cpu-pin.sh                    
+      release/end/cpu-cleanup.sh                  
+
+                  
                   v
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ When VM starts:                                      â”‚
-â”‚   Hook pins vCPU threads to specified cores         â”‚
-â”‚   Hook pins emulator to separate cores              â”‚
-â”‚   Logs all actions to /var/log/libvirt/qemu/        â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+ When VM starts:                                      
+   Hook pins vCPU threads to specified cores         
+   Hook pins emulator to separate cores              
+   Logs all actions to /var/log/libvirt/qemu/        
+
 ```
 
 ### Directory Structure
 
 ```
 /etc/libvirt/
-â”œâ”€â”€ hooks/
-â”‚   â””â”€â”€ qemu.d/                    # Per-VM hooks
-â”‚       â”œâ”€â”€ gaming-vm/
-â”‚       â”‚   â”œâ”€â”€ prepare/
-â”‚       â”‚   â”‚   â””â”€â”€ begin/
-â”‚       â”‚   â”‚       â””â”€â”€ cpu-pin.sh     # Pins cores on VM start
-â”‚       â”‚   â””â”€â”€ release/
-â”‚       â”‚       â””â”€â”€ end/
-â”‚       â”‚           â””â”€â”€ cpu-cleanup.sh  # Cleanup on VM stop
-â”‚       â””â”€â”€ workstation-vm/
-â”‚           â””â”€â”€ ...
-â”‚
-â””â”€â”€ vm-cpu-pins/                   # Configuration storage
-    â”œâ”€â”€ gaming-vm.conf             # Core assignments
-    â””â”€â”€ workstation-vm.conf
+ hooks/
+    qemu.d/                    # Per-VM hooks
+        gaming-vm/
+           prepare/
+              begin/
+                  cpu-pin.sh     # Pins cores on VM start
+           release/
+               end/
+                   cpu-cleanup.sh  # Cleanup on VM stop
+        workstation-vm/
+            ...
+
+ vm-cpu-pins/                   # Configuration storage
+     gaming-vm.conf             # Core assignments
+     workstation-vm.conf
 ```
 
 ---
@@ -213,10 +213,10 @@ Pre-configured optimal allocations:
 
 | Preset | Cores | Best For | Performance |
 |--------|-------|----------|-------------|
-| Gaming VM (CCD0 Full) | 0-15 | Single gaming VM | Ã¢Å“â€¦Ã¢Å“â€¦Ã¢Å“â€¦Ã¢Å“â€¦Ã¢Å“â€¦ |
-| Gaming VM (CCD0 Partial) | 2-7,18-23 | Gaming + Host tasks | Ã¢Å“â€¦Ã¢Å“â€¦Ã¢Å“â€¦Ã¢Å“â€¦ |
-| Workstation (CCD1 Full) | 16-31 | CPU-heavy workloads | Ã¢Å“â€¦Ã¢Å“â€¦Ã¢Å“â€¦Ã¢Å“â€¦ |
-| Balanced | 0-7,16-23 | Mixed workloads | Ã¢Å“â€¦Ã¢Å“â€¦Ã¢Å“â€¦ |
+| Gaming VM (CCD0 Full) | 0-15 | Single gaming VM |  |
+| Gaming VM (CCD0 Partial) | 2-7,18-23 | Gaming + Host tasks |  |
+| Workstation (CCD1 Full) | 16-31 | CPU-heavy workloads |  |
+| Balanced | 0-7,16-23 | Mixed workloads |  |
 
 ### 2. Entire CCD
 
@@ -233,7 +233,7 @@ Choose specific cores within a CCD:
 
 ### 4. Mixed CCDs (Advanced)
 
-âš ï¸ **Warning**: Causes cross-CCD latency (~100ns penalty)
+ **Warning**: Causes cross-CCD latency (~100ns penalty)
 
 Use only when:
 - VM needs more cores than one CCD provides
@@ -312,20 +312,20 @@ Full control with comma-separated ranges:
 
 **Example Output**:
 ```
-â”Œâ”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ CPU â”‚ Allocated To              â”‚
-â”œâ”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚   0 â”‚ gaming-vm                 â”‚
-â”‚   1 â”‚ gaming-vm                 â”‚
-â”‚   2 â”‚ gaming-vm                 â”‚
-â”‚   3 â”‚ gaming-vm                 â”‚
-â”‚ ... â”‚ ...                       â”‚
-â”‚  16 â”‚ workstation-vm            â”‚
-â”‚  17 â”‚ workstation-vm            â”‚
-â”‚ ... â”‚ ...                       â”‚
-â”‚  24 â”‚ HOST                      â”‚
-â”‚  25 â”‚ HOST                      â”‚
-â””â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+ CPU  Allocated To              
+
+   0  gaming-vm                 
+   1  gaming-vm                 
+   2  gaming-vm                 
+   3  gaming-vm                 
+ ...  ...                       
+  16  workstation-vm            
+  17  workstation-vm            
+ ...  ...                       
+  24  HOST                      
+  25  HOST                      
+
 ```
 
 **When to use**: 
@@ -391,11 +391,11 @@ virsh edit vm-name
 **What it does**: Checks all VM configurations for issues
 
 **Verifies**:
-- Ã¢Å“" Config file exists and is readable
-- Ã¢Å“" Hook directory structure is correct
-- Ã¢Å“" Prepare hook is present and executable
-- Ã¢Å“" Release hook is present and executable
-- Ã¢Å“" All paths are valid
+- " Config file exists and is readable
+- " Hook directory structure is correct
+- " Prepare hook is present and executable
+- " Release hook is present and executable
+- " All paths are valid
 
 **When to use**: 
 - After manual hook modifications
@@ -457,9 +457,9 @@ The manager complements Cockpit by handling the CPU orchestration that Cockpit M
 
 ```
 Cockpit Web UI (Port 9090)
-  â”œâ”€â”€ Machines: Start/Stop VMs, view status
-  â”œâ”€â”€ Storage: Manage disk images
-  â””â”€â”€ [Terminal]: Run vm-cpu-pin-manager.sh for core configuration
+   Machines: Start/Stop VMs, view status
+   Storage: Manage disk images
+   [Terminal]: Run vm-cpu-pin-manager.sh for core configuration
 ```
 
 **Workflow**:
@@ -477,22 +477,22 @@ Cockpit Web UI (Port 9090)
 ### CPU Architecture
 
 ```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ Ryzen 9 9950X3D                                          â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚ CCD0 (Die 0)                 CCD1 (Die 1)                â”‚
-â”‚ â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”       â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”     â”‚
-â”‚ â”‚ Cores 0-7          â”‚       â”‚ Cores 8-15         â”‚     â”‚
-â”‚ â”‚ CPUs: 0-7,16-23    â”‚       â”‚ CPUs: 8-15,24-31   â”‚     â”‚
-â”‚ â”‚                    â”‚       â”‚                    â”‚     â”‚
-â”‚ â”‚ L3: 32MB           â”‚       â”‚ L3: 32MB           â”‚     â”‚
-â”‚ â”‚ V-Cache: +64MB     â”‚       â”‚ V-Cache: None      â”‚     â”‚
-â”‚ â”‚ Total: 96MB L3     â”‚       â”‚                    â”‚     â”‚
-â”‚ â”‚                    â”‚       â”‚ Higher boost freq  â”‚     â”‚
-â”‚ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜       â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜     â”‚
-â”‚                                                          â”‚
-â”‚ Infinity Fabric (Cross-CCD latency: ~100ns)             â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+ Ryzen 9 9950X3D                                          
+
+ CCD0 (Die 0)                 CCD1 (Die 1)                
+             
+  Cores 0-7                  Cores 8-15              
+  CPUs: 0-7,16-23            CPUs: 8-15,24-31        
+                                                     
+  L3: 32MB                   L3: 32MB                
+  V-Cache: +64MB             V-Cache: None           
+  Total: 96MB L3                                     
+                             Higher boost freq       
+             
+                                                          
+ Infinity Fabric (Cross-CCD latency: ~100ns)             
+
 ```
 
 ### Optimal Configurations
@@ -504,7 +504,7 @@ Preset: Gaming VM (CCD0 Full)
 Cores: 0-15 (all of CCD0)
 Emulator: 16-19 (from CCD1)
 
-Performance: Ã¢Å“â€¦Ã¢Å“â€¦Ã¢Å“â€¦Ã¢Å“â€¦Ã¢Å“â€¦ (Best possible)
+Performance:  (Best possible)
 Use case: Primary gaming workstation
 ```
 
@@ -521,7 +521,7 @@ Workstation VM:
 
 Host: 0-1,8-9,16-17,24-25 (8 threads, mixed)
 
-Performance: Ã¢Å“â€¦Ã¢Å“â€¦Ã¢Å“â€¦Ã¢Å“â€¦ (Excellent for both)
+Performance:  (Excellent for both)
 Use case: Simultaneous gaming + rendering
 ```
 
@@ -534,7 +534,7 @@ Test-VM-3: 8-11 (CCD1, 4 threads)
 Test-VM-4: 12-15 (CCD1, 4 threads)
 Host: 16-31 (16 threads)
 
-Performance: Ã¢Å“â€¦Ã¢Å“â€¦Ã¢Å“â€¦ (Good, low-overhead VMs)
+Performance:  (Good, low-overhead VMs)
 Use case: CI/CD, testing multiple distros
 ```
 
@@ -720,9 +720,9 @@ Running VMs inside VMs (e.g., for testing hypervisors):
 
 ```bash
 # Host: Ryzen 9950X3D
-#   â”œâ”€â”€ Parent VM: 16 threads on CCD0
-#   â”‚     â””â”€â”€ Nested VM: 8 threads (half of parent allocation)
-#   â””â”€â”€ Host: CCD1
+#    Parent VM: 16 threads on CCD0
+#         Nested VM: 8 threads (half of parent allocation)
+#    Host: CCD1
 ```
 
 **Requirements**:
@@ -763,7 +763,7 @@ echo 0-7 | sudo tee /proc/irq/$(cat /proc/interrupts | grep audio | awk '{print 
 
 ## Best Practices
 
-### Ã¢Å“â€¦ DO
+###  DO
 
 1. **Use Quick Presets** for AMD X3D systems
 2. **Pin gaming VMs to CCD0** (V-Cache)
@@ -775,7 +775,7 @@ echo 0-7 | sudo tee /proc/irq/$(cat /proc/interrupts | grep audio | awk '{print 
 8. **Match VM XML** to hook configuration (Option 6)
 9. **Reserve some cores** for host OS (minimum 4 threads)
 
-### Ã¢Å’ DON'T
+###  DON'T
 
 1. **Don't mix CCDs** for gaming VMs (causes latency)
 2. **Don't overlap core assignments** between VMs
@@ -877,15 +877,15 @@ MIT License - Use freely for personal or commercial MiOS-Build deployments
 
 ---
 
-**Made with Ã¢Â¤Ã¯Â¸ for the MiOS-Build virtualization framework**  
+**Made with  for the MiOS-Build virtualization framework**  
 *Professional-grade VM orchestration on MiOS*
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

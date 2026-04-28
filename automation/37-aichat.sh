@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🌐 MiOS
+# [NET] MiOS
 # 37-aichat: Install AIChat and AIChat-NG Rust CLI tools
 set -euo pipefail
 # shellcheck source=lib/common.sh
@@ -21,14 +21,14 @@ AICHAT_NG_TAG=$( (scurl -s https://api.github.com/repos/blob42/aichat-ng/release
 # Fallbacks if API fails
 if [[ -z "$AICHAT_TAG" ]]; then
     AICHAT_TAG="v0.25.0"
-    echo "[37-aichat]   AIChat API unavailable — using fallback ${AICHAT_TAG}"
+    echo "[37-aichat]   AIChat API unavailable  using fallback ${AICHAT_TAG}"
 else
     echo "[37-aichat]   Detected AIChat version: ${AICHAT_TAG}"
 fi
 
 if [[ -z "$AICHAT_NG_TAG" ]]; then
     AICHAT_NG_TAG="v0.25.0"
-    echo "[37-aichat]   AIChat-NG API unavailable — using fallback ${AICHAT_NG_TAG}"
+    echo "[37-aichat]   AIChat-NG API unavailable  using fallback ${AICHAT_NG_TAG}"
 else
     echo "[37-aichat]   Detected AIChat-NG version: ${AICHAT_NG_TAG}"
 fi

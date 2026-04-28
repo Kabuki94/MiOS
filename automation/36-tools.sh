@@ -1,5 +1,5 @@
 #!/bin/bash
-# MiOS v0.1.3 — 36-tools: CLI tools and consolidated mios command
+# MiOS v0.1.3  36-tools: CLI tools and consolidated mios command
 # Installs all mios-* tools to /usr/bin/ and the master 'mios' CLI.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -33,7 +33,7 @@ for tool in "${TOOLS[@]}"; do
     fi
 done
 
-# ═══ Install external scripts from build context ═══
+# === Install external scripts from build context ===
 # These are scripts that live in automation/ and are installed to /usr/bin/
 echo "[36-tools] Installing mios-toggle-headless and mios-test..."
 for ext_tool in mios-toggle-headless mios-test; do

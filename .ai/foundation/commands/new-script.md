@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/mios-project/mios -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/mios-project/mios -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -40,7 +40,7 @@ If `$1` collides with an existing script, stop and report the conflict.
 
 ```bash
 #!/usr/bin/env bash
-# automation/$1-$2.sh — <one-line description>
+# automation/$1-$2.sh  <one-line description>
 # Runs inside the Containerfile build stage as root.
 #
 # Contract:
@@ -68,10 +68,10 @@ step "done"
 
 ### Rules (enforced by `pr-lint.yml`)
 
-- Shebang is `#!/usr/bin/env bash` — always.
+- Shebang is `#!/usr/bin/env bash`  always.
 - `set -euo pipefail` is required.
-- **Never** use `((VAR++))` — use `VAR=$((VAR + 1))`. Violating this
-  is rule §3.2 in `INDEX.md`.
+- **Never** use `((VAR++))`  use `VAR=$((VAR + 1))`. Violating this
+  is rule 3.2 in `INDEX.md`.
 - Quote every variable expansion.
 - `find -exec` over `find | xargs`.
 - `compgen -G` over `ls | grep`.
@@ -80,7 +80,7 @@ step "done"
 - Separate declaration and assignment for command substitutions
   (`local KVER; KVER=$(uname -r)`).
 - If you install packages, they must come from `specs/PACKAGES.md` via
-  the `packages::` helper in `lib/packages.sh` — never inline the
+  the `packages::` helper in `lib/packages.sh`  never inline the
   package list.
 - Overlays go in ``, not this script.
 - systemd units go in `systemd/`, not this script.
@@ -88,18 +88,18 @@ step "done"
 ### After creating the file
 
 1. Make it executable: `chmod +x automation/$1-$2.sh`.
-2. Run `shellcheck -S warning automation/$1-$2.sh`.
+2. Run `shellcheck -S [WARN] automation/$1-$2.sh`.
 3. Add a reference to it in the Containerfile build sequence if the
    numbering doesn't auto-pick it up.
 4. Remind the user that the script will only land when the next push
    script ships it.
 
 ---
-### 📚 Bootc Ecosystem & Resources
+###  Bootc Ecosystem & Resources
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osautomation/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
 - **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
 - **Sole Proprietor:** MiOS-DEV
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

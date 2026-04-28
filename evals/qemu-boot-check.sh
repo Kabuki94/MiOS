@@ -46,18 +46,18 @@ while true; do
     ELAPSED=$((CURRENT_TIME - START_TIME))
 
     if grep -q "Reached target graphical.target" "$LOG_FILE" 2>/dev/null; then
-        echo "✓ SUCCESS: graphical.target reached in ${ELAPSED}s"
+        echo "[OK] SUCCESS: graphical.target reached in ${ELAPSED}s"
         exit 0
     fi
 
     if grep -q "Entering emergency mode" "$LOG_FILE" 2>/dev/null; then
-        echo "✗ FAILURE: System entered emergency mode"
+        echo "[FAIL] FAILURE: System entered emergency mode"
         tail -n 20 "$LOG_FILE"
         exit 1
     fi
 
     if [[ $ELAPSED -gt $TIMEOUT ]]; then
-        echo "✗ FAILURE: Boot timed out after ${TIMEOUT}s"
+        echo "[FAIL] FAILURE: Boot timed out after ${TIMEOUT}s"
         echo "Last 20 lines of serial log:"
         tail -n 20 "$LOG_FILE"
         exit 1

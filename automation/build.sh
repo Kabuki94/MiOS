@@ -117,7 +117,7 @@ rm -rf /var/cache/dnf/* /var/cache/libdnf5/*
 # ── Artifact Unification: Snapshot Repository State ─────────────────────────
 if [[ -d "/ctx" ]]; then
     log_ts "==> Creating repository artifact snapshot..."
-    ARTIFACT_DIR="/usr/lib/mios/artifacts"
+    ARTIFACT_DIR="/usr/lib/mios/artifacts" # @track:PATH_ARTIFACTS
     mkdir -p "$ARTIFACT_DIR"
     tar -cJf "${ARTIFACT_DIR}/repo-snapshot.tar.xz" -C /ctx . 2>/dev/null || true
 fi

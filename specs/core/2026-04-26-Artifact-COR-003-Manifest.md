@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -22,7 +22,7 @@
 > **Source Reference:** MiOS-Core-v0.1.3
 ---
 
-# 📋 MiOS Feature Index
+# [CLIP] MiOS Feature Index
 
 ```json
 {
@@ -33,9 +33,9 @@
 
 ---
 
-## 📦 Core System
+## [PKG] Core System
 
-### 🧱 System Foundation
+###  System Foundation
 The immutable core is built for stability and cryptographic assurance.
 
 ```json
@@ -47,7 +47,7 @@ The immutable core is built for stability and cryptographic assurance.
 }
 ```
 
-### 🖥️ Desktop Ecosystem
+### [PC] Desktop Ecosystem
 Modern Wayland-only GNOME environment.
 
 | Component | Standard |
@@ -59,9 +59,9 @@ Modern Wayland-only GNOME environment.
 
 ---
 
-## 🛠️ Workstation Toolkit
+## [ENG] Workstation Toolkit
 
-### 🏗️ Development Sandboxes
+### [BUILD] Development Sandboxes
 Mutable environments within the immutable host.
 
 {
@@ -76,7 +76,7 @@ Mutable environments within the immutable host.
 
 ---
 
-## 🛠️ Toolchain Index
+## [ENG] Toolchain Index
 
 | Binary | Purpose | Path |
 | :--- | :--- | :--- |
@@ -93,11 +93,11 @@ Mutable environments within the immutable host.
 ---
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

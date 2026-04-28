@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-27
 **Version:** MiOS v0.1.3
-**Status:** ✅ Complete
+**Status:** [OK] Complete
 **Author:** AI Agent (Claude)
 
 ---
@@ -52,63 +52,63 @@ The `Justfile` has been updated with dedicated user-space management targets:
 ```bash
 # User-specific data files
 XDG_DATA_HOME="${HOME}/.local/share"
-  → ${XDG_DATA_HOME}/mios/
+   ${XDG_DATA_HOME}/mios/
 
 # User-specific configuration files
 XDG_CONFIG_HOME="${HOME}/.config"
-  → ${XDG_CONFIG_HOME}/mios/
+   ${XDG_CONFIG_HOME}/mios/
 
 # User-specific cache files
 XDG_CACHE_HOME="${HOME}/.cache"
-  → ${XDG_CACHE_HOME}/mios/
+   ${XDG_CACHE_HOME}/mios/
 
 # User-specific state data (logs, history)
 XDG_STATE_HOME="${HOME}/.local/state"
-  → ${XDG_STATE_HOME}/mios/
+   ${XDG_STATE_HOME}/mios/
 
 # User-specific runtime files (sockets, PIDs)
 XDG_RUNTIME_DIR="/run/user/${UID}"
-  → ${XDG_RUNTIME_DIR}/mios/
+   ${XDG_RUNTIME_DIR}/mios/
 ```
 
 ### Proposed User-Space Structure
 
 ```
 $HOME/.config/mios/                    # XDG_CONFIG_HOME
-├── env.toml                           # User environment configuration (replaces .env)
-├── build.toml                         # Build-time configuration
-├── images.toml                        # OCI image references
-├── credentials/                       # Credentials (gitignored, never synced)
-│   ├── github-token                   # GitHub PAT
-│   ├── registry-auth.json             # Container registry auth
-│   └── ssh-keys/                      # SSH keys for repos
-├── flatpaks.list                      # User-selected Flatpak applications
-├── preferences.toml                   # User preferences (theme, etc.)
-└── dotfiles/                          # User dotfiles to install
-    ├── .bashrc.d/mios.sh              # Shell integration
-    ├── .vimrc                         # Editor configs
-    └── .gitconfig                     # Git configuration
++-- env.toml                           # User environment configuration (replaces .env)
++-- build.toml                         # Build-time configuration
++-- images.toml                        # OCI image references
++-- credentials/                       # Credentials (gitignored, never synced)
+|   +-- github-token                   # GitHub PAT
+|   +-- registry-auth.json             # Container registry auth
+|   +-- ssh-keys/                      # SSH keys for repos
++-- flatpaks.list                      # User-selected Flatpak applications
++-- preferences.toml                   # User preferences (theme, etc.)
++-- dotfiles/                          # User dotfiles to install
+    +-- .bashrc.d/mios.sh              # Shell integration
+    +-- .vimrc                         # Editor configs
+    +-- .gitconfig                     # Git configuration
 
 $HOME/.local/share/mios/               # XDG_DATA_HOME
-├── artifacts/                         # User-downloaded artifacts
-├── images/                            # Downloaded OCI images
-├── templates/                         # User templates
-└── plugins/                           # User plugins
++-- artifacts/                         # User-downloaded artifacts
++-- images/                            # Downloaded OCI images
++-- templates/                         # User templates
++-- plugins/                           # User plugins
 
 $HOME/.cache/mios/                     # XDG_CACHE_HOME
-├── podman/                            # Podman build cache
-├── downloads/                         # Temporary downloads
-└── build-cache/                       # Build artifacts cache
++-- podman/                            # Podman build cache
++-- downloads/                         # Temporary downloads
++-- build-cache/                       # Build artifacts cache
 
 $HOME/.local/state/mios/               # XDG_STATE_HOME
-├── logs/                              # User build logs
-│   └── build-20260427T*.log
-├── history.log                        # Command history
-└── last-build.json                    # Last build metadata
++-- logs/                              # User build logs
+|   +-- build-20260427T*.log
++-- history.log                        # Command history
++-- last-build.json                    # Last build metadata
 
 /run/user/${UID}/mios/                 # XDG_RUNTIME_DIR
-├── podman.sock                        # Rootless Podman socket
-└── build.lock                         # Build lock file
++-- podman.sock                        # Rootless Podman socket
++-- build.lock                         # Build lock file
 ```
 
 ---
@@ -119,48 +119,48 @@ $HOME/.local/state/mios/               # XDG_STATE_HOME
 
 ```
 mios/                                  # Repository root
-├── .env                               # ❌ User config in repo
-├── .editorconfig                      # ✅ Editor defaults (OK)
-├── .gitignore                         # ✅ Version control (OK)
-├── Containerfile                      # ✅ System (OK)
-├── Justfile                           # ✅ Build system (OK)
-├── VERSION                            # ✅ System (OK)
-├── logs/                              # ❌ Should be in XDG_STATE_HOME
-├── config/artifacts/*.toml            # ⚠️  System defaults (OK, but needs user override)
-└── ...
++-- .env                               # [FAIL] User config in repo
++-- .editorconfig                      # [OK] Editor defaults (OK)
++-- .gitignore                         # [OK] Version control (OK)
++-- Containerfile                      # [OK] System (OK)
++-- Justfile                           # [OK] Build system (OK)
++-- VERSION                            # [OK] System (OK)
++-- logs/                              # [FAIL] Should be in XDG_STATE_HOME
++-- config/artifacts/*.toml            # [WARN]  System defaults (OK, but needs user override)
++-- ...
 ```
 
 ### After (Separated)
 
 ```
 mios/                                  # Repository root (SYSTEM ONLY)
-├── .editorconfig                      # Editor defaults
-├── .gitignore                         # Version control
-├── Containerfile                      # OCI build instructions
-├── Justfile                           # Build orchestration
-├── VERSION                            # System version
-├── etc/                               # System configuration defaults
-│   └── mios/
-│       ├── default.env.toml           # Default environment (template)
-│       ├── default.build.toml         # Default build config (template)
-│       └── default.images.toml        # Default image references (template)
-├── config/artifacts/*.toml            # BIB system defaults (read-only)
-├── usr/                               # System files (installed to image)
-├── var/                               # System variable data (tmpfiles.d)
-├── home/                              # Home directory skeleton (for new users)
-│   └── mios/
-│       └── .config/mios/
-│           └── README.md              # Instructions for user setup
-└── automation/                        # Build automation (system)
++-- .editorconfig                      # Editor defaults
++-- .gitignore                         # Version control
++-- Containerfile                      # OCI build instructions
++-- Justfile                           # Build orchestration
++-- VERSION                            # System version
++-- etc/                               # System configuration defaults
+|   +-- mios/
+|       +-- default.env.toml           # Default environment (template)
+|       +-- default.build.toml         # Default build config (template)
+|       +-- default.images.toml        # Default image references (template)
++-- config/artifacts/*.toml            # BIB system defaults (read-only)
++-- usr/                               # System files (installed to image)
++-- var/                               # System variable data (tmpfiles.d)
++-- home/                              # Home directory skeleton (for new users)
+|   +-- mios/
+|       +-- .config/mios/
+|           +-- README.md              # Instructions for user setup
++-- automation/                        # Build automation (system)
 
 $HOME/.config/mios/                    # USER SPACE (mutable, transient)
-├── env.toml                           # User environment overrides
-├── build.toml                         # User build configuration
-├── images.toml                        # User OCI image preferences
-├── credentials/                       # User credentials (NEVER COMMITTED)
-│   ├── .gitignore                     # Ignore all credentials
-│   └── README.md                      # Credential setup instructions
-└── ...
++-- env.toml                           # User environment overrides
++-- build.toml                         # User build configuration
++-- images.toml                        # User OCI image preferences
++-- credentials/                       # User credentials (NEVER COMMITTED)
+|   +-- .gitignore                     # Ignore all credentials
+|   +-- README.md                      # Credential setup instructions
++-- ...
 
 $HOME/.local/share/mios/               # USER DATA
 $HOME/.cache/mios/                     # USER CACHE
@@ -325,7 +325,7 @@ Variables are loaded in priority order (later overrides earlier):
 # 1. Load system defaults
 source /usr/share/mios/config/default.env.sh
 
-# 2. Load user configuration (TOML → shell variables)
+# 2. Load user configuration (TOML  shell variables)
 if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/mios/env.toml" ]; then
     eval "$(toml-to-env ${XDG_CONFIG_HOME:-$HOME/.config}/mios/env.toml)"
 fi
@@ -356,7 +356,7 @@ XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 
-echo "🏗️  Initializing MiOS user-space..."
+echo "[BUILD]  Initializing MiOS user-space..."
 
 # Create XDG directories
 mkdir -p "${XDG_CONFIG_HOME}/mios/credentials"
@@ -391,13 +391,13 @@ This directory stores sensitive data and is automatically ignored by git.
 Never commit credentials!
 EOF
 
-echo "✅ User-space initialized at:"
+echo "[OK] User-space initialized at:"
 echo "   Config:  ${XDG_CONFIG_HOME}/mios/"
 echo "   Data:    ${XDG_DATA_HOME}/mios/"
 echo "   Cache:   ${XDG_CACHE_HOME}/mios/"
 echo "   State:   ${XDG_STATE_HOME}/mios/"
 echo ""
-echo "📝 Next steps:"
+echo "[DOC] Next steps:"
 echo "   1. Edit ${XDG_CONFIG_HOME}/mios/env.toml"
 echo "   2. Edit ${XDG_CONFIG_HOME}/mios/images.toml"
 echo "   3. Add credentials to ${XDG_CONFIG_HOME}/mios/credentials/"
@@ -420,13 +420,13 @@ if [ ! -f "$OLD_ENV" ]; then
     exit 0
 fi
 
-echo "🔄 Migrating .env → $NEW_TOML"
+echo "[SYNC] Migrating .env  $NEW_TOML"
 
 # Parse .env and convert to TOML
 # (Implementation would parse shell variables and convert to TOML format)
 
-echo "✅ Migration complete"
-echo "⚠️  Please review $NEW_TOML and remove $OLD_ENV if satisfied"
+echo "[OK] Migration complete"
+echo "[WARN]  Please review $NEW_TOML and remove $OLD_ENV if satisfied"
 ```
 
 ### Step 3: Update Build System
@@ -464,15 +464,15 @@ build: _load-env artifact
 
 | Type | Location | Committed | Mutable |
 |------|----------|-----------|---------|
-| System defaults | `/usr/share/mios/config/` | ✅ Yes | ❌ No |
-| User config | `$HOME/.config/mios/` | ❌ No | ✅ Yes |
-| User data | `$HOME/.local/share/mios/` | ❌ No | ✅ Yes |
-| User logs | `$HOME/.local/state/mios/` | ❌ No | ✅ Yes |
-| Credentials | `$HOME/.config/mios/credentials/` | ❌ No | ✅ Yes |
+| System defaults | `/usr/share/mios/config/` | [OK] Yes | [FAIL] No |
+| User config | `$HOME/.config/mios/` | [FAIL] No | [OK] Yes |
+| User data | `$HOME/.local/share/mios/` | [FAIL] No | [OK] Yes |
+| User logs | `$HOME/.local/state/mios/` | [FAIL] No | [OK] Yes |
+| Credentials | `$HOME/.config/mios/credentials/` | [FAIL] No | [OK] Yes |
 
 ### 3. Transient Across Environments
 
-User moves between machines → configurations remain in `$HOME`, repository stays clean.
+User moves between machines  configurations remain in `$HOME`, repository stays clean.
 
 ---
 
@@ -504,7 +504,7 @@ if mios_config.exists():
 - [x] Update `.gitignore` to exclude user-space
 - [x] Update documentation (README, SELF-BUILD)
 - [x] Test multi-environment portability
-- [x] Create spec: ENG-008-UserSpace-Separation.md ✅
+- [x] Create spec: ENG-008-UserSpace-Separation.md [OK]
 
 ---
 

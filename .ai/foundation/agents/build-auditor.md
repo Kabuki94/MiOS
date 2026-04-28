@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/mios-project/mios -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/mios-project/mios -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -31,7 +31,7 @@ You are the MiOS build auditor. Your sole job is to block bad changes from shipp
 Given a proposed change (staged files, a push script, or the current working tree), check every rule in INDEX.md section 3:
 
 - 3.1 Containerfile and DNF: no kernel upgrades in-container, no --squash-all, COPY paths match actual layout
-- 3.2 Bash: no ((VAR++)) under set -euo pipefail, shellcheck warning-level clean, SC2038/SC2206/SC2013/SC2012/SC2155/SC2015/SC2059/SC2162/SC2010/SC2054 fatal
+- 3.2 Bash: no ((VAR++)) under set -euo pipefail, shellcheck [WARN]-level clean, SC2038/SC2206/SC2013/SC2012/SC2155/SC2015/SC2059/SC2162/SC2010/SC2054 fatal
 - 3.3 kargs.d TOML: flat top-level kargs array only, no section header, no delete subkey, strings only
 - 3.4 GNOME: no GTK_THEME=Adwaita:dark, dconf profiles exist, no categories+apps coexistence, no gnome-session-xsession, xorgxrdp-glamor only
 - 3.5 NVIDIA and VM gating: blacklist by default, unblacklist only on bare metal via 34-gpu-detect.sh, no unconditional nvidia-drm.modeset
@@ -70,11 +70,11 @@ If marking a rule N/A, explain why. "I did not check" is not a valid N/A.
 Tone: direct, no hedging, no unnecessary praise. You are a reviewer, not a designer. Your only outputs are pass/fail findings and a ship/no-ship verdict.
 
 ---
-### 📚 Bootc Ecosystem & Resources
+###  Bootc Ecosystem & Resources
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osautomation/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
 - **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
 - **Sole Proprietor:** MiOS-DEV
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "Standardized AI tool interface for MiOS CLI commands.",
@@ -26,18 +26,18 @@
 > **Source Reference:** MiOS-Core-v0.1.3
 ---
 
-# 🔌 Programmable AI Tool Interface
+# [PLUG] Programmable AI Tool Interface
 
 MiOS implements the **OpenAI Function Calling** and **Model Context Protocol (MCP)** standards to allow FOSS-aligned AI agents (Ollama, LocalAI, LiteLLM) to natively interact with system management tools.
 
-## 🛠️ Implementation Architecture
+## [ENG] Implementation Architecture
 
 To ensure "Native to FOSS AI API patterns," MiOS provides:
 1.  **JSON Schema Definitions:** Located at `/.well-known/ai-tools.json`, these schemas define the parameters and expected outputs for MiOS CLI tools.
 2.  **MCP Integration:** MiOS tools are designed for ingestion by **MCP Servers**, which have become the industry standard in 2026 for connecting LLMs to external systems.
 3.  **Structured CLI Output:** Core tools (e.g., `mios-update`) support a `--json` flag to return machine-readable data, eliminating interactive prompts or decorative text that breaks LLM tool-calling logic.
 
-## 🤖 Supported Tools
+##  Supported Tools
 
 ### 1. `mios_update`
 - **CLI Command:** `mios-update --json [--check-only]`
@@ -51,7 +51,7 @@ To ensure "Native to FOSS AI API patterns," MiOS provides:
   }
   ```
 
-## 🔌 Integration Guide (LiteLLM/LocalAI)
+## [PLUG] Integration Guide (LiteLLM/LocalAI)
 
 To expose MiOS tools to your local LLM, configure your proxy to map the function names in `ai-tools.json` to the corresponding shell commands.
 
@@ -74,15 +74,15 @@ tools = [
 - **Mapping:** Proxy executes `sudo /usr/bin/mios-update --json --check-only`
 - **Return:** Proxy feeds the JSON stdout back to the LLM.
 
-## 📝 Conclusion
+## [DOC] Conclusion
 By adhering to OpenAI-compatible schemas, MiOS allows any standard AI agent to manage the workstation autonomously while preserving architectural purity and FOSS alignment.
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

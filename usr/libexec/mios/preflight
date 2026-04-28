@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# MiOS Preflight — Linux (Fedora/RHEL/CentOS)
+# MiOS Preflight -- Linux (Fedora/RHEL/CentOS)
 # Checks and installs build prerequisites.
 set -euo pipefail
 
@@ -10,27 +10,27 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 echo ""
-echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║           MiOS Preflight — Linux Build Readiness             ║"
-echo "╚══════════════════════════════════════════════════════════════╝"
+echo "+==============================================================+"
+echo "           MiOS Preflight -- Linux Build Readiness             "
+echo "+==============================================================+"
 echo ""
 
 check_root() {
     if [[ $EUID -ne 0 ]]; then
-        echo -e "${RED}❌ This script must be run with sudo/root permissions.${NC}"
+        echo -e "${RED}[FAIL] This script must be run with sudo/root permissions.${NC}"
         exit 1
     fi
 }
 
 check_distro() {
     if [[ -f /etc/fedora-release ]]; then
-        echo -e "${GREEN}✓ Fedora detected${NC}"
+        echo -e "${GREEN}[OK] Fedora detected${NC}"
         ID="fedora"
     elif [[ -f /etc/redhat-release ]]; then
-        echo -e "${GREEN}✓ RHEL/CentOS detected${NC}"
+        echo -e "${GREEN}[OK] RHEL/CentOS detected${NC}"
         ID="rhel"
     else
-        echo -e "${YELLOW}⚠️  Non-RedHat distro detected. Only Fedora ecosystems are supported for now.${NC}"
+        echo -e "${YELLOW}[WARN]  Non-RedHat distro detected. Only Fedora ecosystems are supported for now.${NC}"
         ID="unknown"
     fi
 }
@@ -39,7 +39,7 @@ install_deps() {
     local pkgs=(git podman just rsync tar xz python3 python3-pip curl)
     local missing=()
 
-    echo -e "${BLUE}▶ Checking dependencies...${NC}"
+    echo -e "${BLUE}[RUN] Checking dependencies...${NC}"
     for pkg in "${pkgs[@]}"; do
         if ! command -v "$pkg" &>/dev/null; then
             missing+=("$pkg")
@@ -53,35 +53,35 @@ install_deps() {
         elif command -v yum &>/dev/null; then
             yum install -y "${missing[@]}"
         else
-            echo -e "${RED}❌ No supported package manager found (dnf/yum). Please install: ${missing[*]}${NC}"
+            echo -e "${RED}[FAIL] No supported package manager found (dnf/yum). Please install: ${missing[*]}${NC}"
             exit 1
         fi
     else
-        echo -e "${GREEN}✓ All dependencies present${NC}"
+        echo -e "${GREEN}[OK] All dependencies present${NC}"
     fi
 }
 
 check_f44_readiness() {
-    echo -e "${BLUE}▶ Checking Fedora 44 GA readiness...${NC}"
+    echo -e "${BLUE}[RUN] Checking Fedora 44 GA readiness...${NC}"
     local os_ver=$(grep -oP '(?<=VERSION_ID=)\d+' /etc/os-release || echo "unknown")
     if [[ "$os_ver" == "44" ]]; then
-        echo -e "${GREEN}✓ Running Fedora 44 (April 2026 GA Baseline)${NC}"
+        echo -e "${GREEN}[OK] Running Fedora 44 (April 2026 GA Baseline)${NC}"
     elif [[ "$os_ver" -lt 44 ]]; then
-        echo -e "${YELLOW}⚠️  Running Fedora $os_ver. Fedora 44 GA is recommended for latest MiOS features.${NC}"
+        echo -e "${YELLOW}[WARN]  Running Fedora $os_ver. Fedora 44 GA is recommended for latest MiOS features.${NC}"
     fi
     
     # Check for bootc (Modern MiOS builds require bootc >= 1.1)
     if command -v bootc &>/dev/null; then
         local b_ver=$(bootc --version | awk '{print $2}')
-        echo -e "${GREEN}✓ bootc $b_ver detected${NC}"
+        echo -e "${GREEN}[OK] bootc $b_ver detected${NC}"
     else
-        echo -e "${YELLOW}⚠️  bootc not found. It will be installed in the MiOS build context.${NC}"
+        echo -e "${YELLOW}[WARN]  bootc not found. It will be installed in the MiOS build context.${NC}"
     fi
 }
 
 check_virtualization() {
     local virt=$(systemd-detect-virt 2>/dev/null || echo "none")
-    echo -e "${BLUE}▶ Virtualization: ${virt}${NC}"
+    echo -e "${BLUE}[RUN] Virtualization: ${virt}${NC}"
     if [[ "$virt" == "wsl" ]]; then
         echo -e "  - WSL2 detected. Applying compatibility workarounds during build."
     fi
@@ -95,7 +95,7 @@ install_deps
 check_f44_readiness
 
 echo ""
-echo -e "${GREEN}✅ MiOS Build Environment is Ready!${NC}"
+echo -e "${GREEN}[OK] MiOS Build Environment is Ready!${NC}"
 echo "Next steps:"
 echo "  1. Clone/Sync:   mios rebuild"
 echo "  2. Local Build:  mios build"

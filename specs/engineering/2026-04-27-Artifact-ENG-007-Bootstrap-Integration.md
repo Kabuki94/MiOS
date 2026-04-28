@@ -1,4 +1,4 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 # MiOS Bootstrap Repository Integration
 
 ```json:knowledge
@@ -40,11 +40,11 @@ The MiOS-bootstrap repository serves as the **distribution hub** for all MiOS ar
 
 ### Key Features
 
-1. **Automatic Artifact Logging** — Every build copies compressed artifacts to bootstrap repo
-2. **Build Log Tracking** — Latest build logs synced to `build-logs/VERSION/`
-3. **Wiki Auto-Update** — GitHub Wiki automatically updated with every artifact sync
-4. **Version-Specific Storage** — All artifacts organized by MiOS version
-5. **XZ Compression** — Primary artifacts use XZ (LZMA2) for 37% better compression than GZ
+1. **Automatic Artifact Logging**  Every build copies compressed artifacts to bootstrap repo
+2. **Build Log Tracking**  Latest build logs synced to `build-logs/VERSION/`
+3. **Wiki Auto-Update**  GitHub Wiki automatically updated with every artifact sync
+4. **Version-Specific Storage**  All artifacts organized by MiOS version
+5. **XZ Compression**  Primary artifacts use XZ (LZMA2) for 37% better compression than GZ
 
 ---
 
@@ -52,42 +52,42 @@ The MiOS-bootstrap repository serves as the **distribution hub** for all MiOS ar
 
 ```
 MiOS-bootstrap/
-├── ai-rag-packages/
-│   └── v0.1.3/
-│       ├── mios-complete-rag-TIMESTAMP.tar.xz       (509 KB) ← PRIMARY
-│       ├── mios-complete-rag-TIMESTAMP.tar.gz       (814 KB) [legacy]
-│       ├── mios-knowledge-complete-TIMESTAMP.tar.xz (4.2 KB)
-│       ├── repo-rag-snapshot.json.xz                (588 KB)
-│       ├── manifest.json.xz                         (588 KB)
-│       ├── mios-knowledge-graph.json
-│       ├── script-inventory.json
-│       ├── rag-manifest.yaml
-│       ├── manifest.json                            (metadata)
-│       └── README.md
-├── build-logs/
-│   └── v0.1.3/
-│       └── latest-build.log
-├── output/
-│   └── v0.1.3/
-│       ├── *.sha256                                 (checksums)
-│       ├── *.json                                   (metadata)
-│       └── *.txt                                    (build info)
-└── wiki/
-    └── v0.1.3/
-        ├── INDEX.md
-        ├── README.md
-        ├── AI-AGENT-GUIDE.md
-        ├── SELF-BUILD.md
-        ├── SECURITY.md
-        ├── llms.txt
-        ├── ai-integration/
-        │   ├── 2026-04-27-Artifact-AI-000-Index.md
-        │   ├── 2026-04-27-Artifact-AI-001-RAG-Integration.md
-        │   ├── 2026-04-27-Artifact-AI-002-Quick-Reference.md
-        │   ├── 2026-04-27-Artifact-AI-003-Prompts-Library.md
-        │   └── 2026-04-27-Artifact-AI-004-Knowledge-Graph.md
-        └── engineering/
-            └── 2026-04-27-Artifact-ENG-006-FHS-Compliance-Audit.md
++-- ai-rag-packages/
+|   +-- v0.1.3/
+|       +-- mios-complete-rag-TIMESTAMP.tar.xz       (509 KB)  PRIMARY
+|       +-- mios-complete-rag-TIMESTAMP.tar.gz       (814 KB) [legacy]
+|       +-- mios-knowledge-complete-TIMESTAMP.tar.xz (4.2 KB)
+|       +-- repo-rag-snapshot.json.xz                (588 KB)
+|       +-- manifest.json.xz                         (588 KB)
+|       +-- mios-knowledge-graph.json
+|       +-- script-inventory.json
+|       +-- rag-manifest.yaml
+|       +-- manifest.json                            (metadata)
+|       +-- README.md
++-- build-logs/
+|   +-- v0.1.3/
+|       +-- latest-build.log
++-- output/
+|   +-- v0.1.3/
+|       +-- *.sha256                                 (checksums)
+|       +-- *.json                                   (metadata)
+|       +-- *.txt                                    (build info)
++-- wiki/
+    +-- v0.1.3/
+        +-- INDEX.md
+        +-- README.md
+        +-- AI-AGENT-GUIDE.md
+        +-- SELF-BUILD.md
+        +-- SECURITY.md
+        +-- llms.txt
+        +-- ai-integration/
+        |   +-- 2026-04-27-Artifact-AI-000-Index.md
+        |   +-- 2026-04-27-Artifact-AI-001-RAG-Integration.md
+        |   +-- 2026-04-27-Artifact-AI-002-Quick-Reference.md
+        |   +-- 2026-04-27-Artifact-AI-003-Prompts-Library.md
+        |   +-- 2026-04-27-Artifact-AI-004-Knowledge-Graph.md
+        +-- engineering/
+            +-- 2026-04-27-Artifact-ENG-006-FHS-Compliance-Audit.md
 ```
 
 ---
@@ -126,7 +126,7 @@ just log-bootstrap
 # Build with unified logging + auto-log to bootstrap
 just build-and-log
 
-# Full pipeline: build → rechunk → log to bootstrap
+# Full pipeline: build  rechunk  log to bootstrap
 just all-bootstrap
 ```
 
@@ -196,11 +196,11 @@ Update `mios-build-local.ps1`:
 
 ```powershell
 # After successful build
-Write-Host "▶ Logging artifacts to bootstrap..." -ForegroundColor Cyan
+Write-Host "[RUN] Logging artifacts to bootstrap..." -ForegroundColor Cyan
 
 if (Test-Path "$env:USERPROFILE\MiOS-bootstrap\.git") {
     wsl bash -c "./tools/log-to-bootstrap.sh"
-    Write-Host "✓ Artifacts logged to bootstrap" -ForegroundColor Green
+    Write-Host "[OK] Artifacts logged to bootstrap" -ForegroundColor Green
 } else {
     Write-Warning "MiOS-bootstrap repository not found. Clone it first:"
     Write-Host "  git clone https://github.com/Kabuki94/MiOS-bootstrap $env:USERPROFILE\MiOS-bootstrap"
@@ -241,7 +241,7 @@ if (Test-Path "$env:USERPROFILE\MiOS-bootstrap\.git") {
 
 ### 2. Build Logs
 
-- Latest build log from `logs/build-*.log` → `build-logs/VERSION/latest-build.log`
+- Latest build log from `logs/build-*.log`  `build-logs/VERSION/latest-build.log`
 
 ### 3. Output Metadata
 
@@ -274,16 +274,16 @@ if (Test-Path "$env:USERPROFILE\MiOS-bootstrap\.git") {
 
 ### How It Works
 
-1. **Artifact Sync** — `tools/log-to-bootstrap.sh` runs after every build
-2. **Wiki Detection** — Script checks for `MiOS-bootstrap.wiki` repository at `${BOOTSTRAP_REPO}/../MiOS-bootstrap.wiki`
-3. **Documentation Sync** — All docs from `wiki/VERSION/` synced to Wiki repo
-4. **Index Generation** — `Home.md` automatically generated with:
+1. **Artifact Sync**  `tools/log-to-bootstrap.sh` runs after every build
+2. **Wiki Detection**  Script checks for `MiOS-bootstrap.wiki` repository at `${BOOTSTRAP_REPO}/../MiOS-bootstrap.wiki`
+3. **Documentation Sync**  All docs from `wiki/VERSION/` synced to Wiki repo
+4. **Index Generation**  `Home.md` automatically generated with:
    - Latest version number
    - Links to all AI integration docs
    - Links to core documentation
    - Links to engineering specs
    - Quick start guide
-5. **Auto-Commit** — Wiki changes auto-committed with message: `Auto-update Wiki for MiOS VERSION - DATE`
+5. **Auto-Commit**  Wiki changes auto-committed with message: `Auto-update Wiki for MiOS VERSION - DATE`
 
 ### Wiki Pages Created
 
@@ -484,13 +484,13 @@ git push
 
 ## Best Practices
 
-1. **Always log after builds** — Use `just log-bootstrap` after every successful build
-2. **Use XZ compression** — 37% smaller than GZ, included by default
-3. **Push regularly** — Keep bootstrap repo and Wiki in sync with main repo
-4. **Version artifacts** — All artifacts organized by VERSION from `VERSION` file
-5. **Verify sync** — Check `manifest.json` after logging to confirm all artifacts copied
-6. **Automate in CI/CD** — Add bootstrap logging to GitHub Actions workflows
-7. **Keep Wiki updated** — Script auto-commits, but manual push may be required
+1. **Always log after builds**  Use `just log-bootstrap` after every successful build
+2. **Use XZ compression**  37% smaller than GZ, included by default
+3. **Push regularly**  Keep bootstrap repo and Wiki in sync with main repo
+4. **Version artifacts**  All artifacts organized by VERSION from `VERSION` file
+5. **Verify sync**  Check `manifest.json` after logging to confirm all artifacts copied
+6. **Automate in CI/CD**  Add bootstrap logging to GitHub Actions workflows
+7. **Keep Wiki updated**  Script auto-commits, but manual push may be required
 
 ---
 
@@ -506,4 +506,4 @@ git push
 
 ---
 
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

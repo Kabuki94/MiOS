@@ -1,5 +1,5 @@
 #!/bin/bash
-# MiOS v0.1.3 — Boot Diagnostic & Log Collection
+# MiOS v0.1.3 -- Boot Diagnostic & Log Collection
 # Collects build-time and runtime logs into the user's home directory.
 
 log_ts() { date '+%Y-%m-%d %H:%M:%S'; }

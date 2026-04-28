@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/mios-project/mios -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/mios-project/mios -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -21,12 +21,12 @@
 > **License:** Licensed as personal property to MiOS-DEV
 ---
 ---
-description: Run the full CI lint pipeline locally — PowerShell-native on Windows, no external WSL popups
+description: Run the full CI lint pipeline locally  PowerShell-native on Windows, no external WSL popups
 ---
 
 Run every linter that `.github/workflows/pr-lint.yml` runs, using
 PowerShell on Windows or native shell on Linux. **Do not** invoke bare
-`bash` on Windows — it routes through `wsl.exe` and spawns external
+`bash` on Windows  it routes through `wsl.exe` and spawns external
 terminal windows. Use `pwsh -Command` for cross-platform, or explicit
 `wsl -e bash -c '...'` when a tool genuinely requires Linux.
 
@@ -36,11 +36,11 @@ PowerShell (Windows):
 ```powershell
 Get-ChildItem -Recurse -File -Filter '*.sh' |
   Where-Object { $_.FullName -notmatch '\\\.git\\' } |
-  ForEach-Object { shellcheck -S warning $_.FullName }
+  ForEach-Object { shellcheck -S [WARN] $_.FullName }
 ```
 
 Treat **SC2038, SC2206, SC2013, SC2012, SC2155, SC2015, SC2059,
-SC2162, SC2010, SC2054** as **fatal** — the CI runner does.
+SC2162, SC2010, SC2054** as **fatal**  the CI runner does.
 
 ## 2. shellcheck on extensionless scripts
 
@@ -62,7 +62,7 @@ SC2162, SC2010, SC2054** as **fatal** — the CI runner does.
   'usr/local/bin/mios-ceph-bootstrap',
   'usr/local/bin/phosh-session-wrapper'
 ) | Where-Object { Test-Path $_ } |
-    ForEach-Object { shellcheck -S warning $_ }
+    ForEach-Object { shellcheck -S [WARN] $_ }
 ```
 
 ## 3. hadolint on the Containerfile
@@ -85,7 +85,7 @@ Get-ChildItem -Recurse -File -Filter '*.toml' |
   ForEach-Object { taplo check $_.FullName }
 ```
 
-Plus the `kargs.d/*.toml` semantic check — Python with inline string
+Plus the `kargs.d/*.toml` semantic check  Python with inline string
 assembly, which runs cleanly under PowerShell:
 
 ```powershell
@@ -102,9 +102,9 @@ Invoke-ScriptAnalyzer -Path . -Recurse -Settings PSGallery -Severity Error,Warni
 ```
 
 Treat **PSAvoidUsingInvokeExpression** and
-**PSAvoidUsingEmptyCatchBlock** as fatal (INDEX.md §3.8).
+**PSAvoidUsingEmptyCatchBlock** as fatal (INDEX.md 3.8).
 
-## 7. `bootc container lint` — only on Linux
+## 7. `bootc container lint`  only on Linux
 
 `bootc` doesn't run natively on Windows. On a Linux host or inside the
 integrated WSL (explicit `wsl -e bash -c` so it stays embedded):
@@ -114,7 +114,7 @@ wsl -e bash -c "bootc container lint --image ghcr.io/kabuki94/mios:latest 2>&1 |
 ```
 
 Scan output for:
-- `Parsing .../kargs.d/...` errors (rule §3.3)
+- `Parsing .../kargs.d/...` errors (rule 3.3)
 - `composefs` verification failures
 
 ## 8. Summary
@@ -122,16 +122,16 @@ Scan output for:
 Print per-tool results as:
 
 ```
-shellcheck:        N files, X errors, Y warnings
+shellcheck:        N files, X errors, Y [WARN]s
 hadolint:          N issues
 yamllint:          N issues
 taplo:             N TOML files, X invalid
 kargs.d validator: N files, X invalid
-PSScriptAnalyzer:  N scripts, X errors, Y warnings
+PSScriptAnalyzer:  N scripts, X errors, Y [WARN]s
 bootc lint:        <pass/fail/skipped>
 ```
 
-If anything failed → **DO NOT PUSH**. Otherwise → **Safe to push.**
+If anything failed  **DO NOT PUSH**. Otherwise  **Safe to push.**
 
 ---
 
@@ -155,11 +155,11 @@ popup window, which defeats the whole point of running these checks
 inside the integrated terminal.
 
 ---
-### 📚 Bootc Ecosystem & Resources
+###  Bootc Ecosystem & Resources
 - **Core:** [containers/bootc](https://github.com/containers/bootc) | [bootc-image-builder](https://github.com/osautomation/bootc-image-builder) | [bootc.pages.dev](https://bootc.pages.dev/)
 - **Upstream:** [Fedora Bootc](https://github.com/fedora-cloud/fedora-bootc) | [CentOS Bootc](https://gitlab.com/CentOS/bootc) | [ublue-os/main](https://github.com/ublue-os/main)
 - **Tools:** [uupd](https://github.com/ublue-os/uupd) | [rechunk](https://github.com/hhd-dev/rechunk) | [cosign](https://github.com/sigstore/cosign)
 - **Project Repository:** [mios-project/mios](https://github.com/mios-project/mios)
 - **Sole Proprietor:** MiOS-DEV
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

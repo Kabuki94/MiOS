@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -22,15 +22,15 @@
 > **Source Reference:** MiOS-Core-v0.1.3
 ---
 
-# 🛡️ WSL2 Deployment & Security Guide
+# [SEC] WSL2 Deployment & Security Guide
 
 This document outlines the requirements and security considerations for deploying MiOS as a WSL2 distribution.
 
-## 🚨 SECURITY ADVISORY: CVE-2026-32178
+##  SECURITY ADVISORY: CVE-2026-32178
 
 A critical vulnerability (**CVE-2026-32178**) affecting the .NET runtime used in the WSL host has been identified. This vulnerability allows for SMTP header injection via `System.Net.Mail`.
 
-### 🛠️ Required Mitigation
+### [ENG] Required Mitigation
 To ensure the security of your MiOS deployment on Windows, you **MUST** upgrade your WSL host to version **0.1.1 or higher**.
 
 **Check your version:**
@@ -45,7 +45,7 @@ wsl --update
 
 ---
 
-## 🚀 Deployment Workflow
+## [START] Deployment Workflow
 
 MiOS is optimized for WSL2 through a specialized synthesis process that generates a compatible rootfs tarball.
 
@@ -70,7 +70,7 @@ wsl -d MiOS
 
 ---
 
-## 🔧 WSL2 Optimization
+## [TOOL] WSL2 Optimization
 
 ### Memory & CPU Scaling
 MiOS automatically requests optimal resources in WSL2. You can further customize this in your `%USERPROFILE%\.wslconfig`:
@@ -85,11 +85,11 @@ processors=8
 MiOS in WSL2 is pre-configured to handle Podman-native workloads. The `mios-builder` machine logic in `mios-build-local.ps1` ensures that build-time isolation is maintained even when running inside a Windows host.
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

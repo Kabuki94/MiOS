@@ -1,6 +1,6 @@
 {
   "version": "v2.1.0",
-  "_comment": "Tasks for MiOS. Every task runs under PowerShell on Windows — no bash, no WSL. The original bash-heavy tasks caused Windows to spawn external WSL popups because bare `bash` on Win11 with WSL installed routes through wsl.exe. Each task below uses PowerShell-native patterns or explicit `wsl -- <cmd>` invocations that stay in the integrated terminal. If you need to run bash tasks inside WSL, use `wsl -e bash -c '...'` explicitly; that keeps the output embedded.",
+  "_comment": "Tasks for MiOS. Every task runs under PowerShell on Windows  no bash, no WSL. The original bash-heavy tasks caused Windows to spawn external WSL popups because bare `bash` on Win11 with WSL installed routes through wsl.exe. Each task below uses PowerShell-native patterns or explicit `wsl -- <cmd>` invocations that stay in the integrated terminal. If you need to run bash tasks inside WSL, use `wsl -e bash -c '...'` explicitly; that keeps the output embedded.",
 
   "tasks": [
     {
@@ -13,7 +13,7 @@
       "command": "pwsh",
       "args": [
         "-NoProfile", "-NoLogo", "-Command",
-        "$ErrorActionPreference='Stop'; Write-Host '=== shellcheck ===' -ForegroundColor Cyan; Get-ChildItem -Recurse -File -Filter '*.sh' | Where-Object { $_.FullName -notmatch '\\\\\\.git\\\\' } | ForEach-Object { shellcheck -S warning $_.FullName }; Write-Host '=== hadolint ===' -ForegroundColor Cyan; hadolint Containerfile; Write-Host '=== yamllint ===' -ForegroundColor Cyan; yamllint .github/workflows/ renovate.json image-versions.yml; Write-Host '=== TOML ===' -ForegroundColor Cyan; Get-ChildItem -Recurse -File -Filter '*.toml' | Where-Object { $_.FullName -notmatch '\\\\\\.git\\\\' } | ForEach-Object { taplo check $_.FullName }; Write-Host 'ALL PASS' -ForegroundColor Green"
+        "$ErrorActionPreference='Stop'; Write-Host '=== shellcheck ===' -ForegroundColor Cyan; Get-ChildItem -Recurse -File -Filter '*.sh' | Where-Object { $_.FullName -notmatch '\\\\\\.git\\\\' } | ForEach-Object { shellcheck -S [WARN] $_.FullName }; Write-Host '=== hadolint ===' -ForegroundColor Cyan; hadolint Containerfile; Write-Host '=== yamllint ===' -ForegroundColor Cyan; yamllint .github/workflows/ renovate.json image-versions.yml; Write-Host '=== TOML ===' -ForegroundColor Cyan; Get-ChildItem -Recurse -File -Filter '*.toml' | Where-Object { $_.FullName -notmatch '\\\\\\.git\\\\' } | ForEach-Object { taplo check $_.FullName }; Write-Host 'ALL PASS' -ForegroundColor Green"
       ],
       "problemMatcher": [],
       "presentation": {
@@ -31,7 +31,7 @@
       "command": "pwsh",
       "args": [
         "-NoProfile", "-NoLogo", "-Command",
-        "Get-ChildItem -Recurse -File -Filter '*.sh' | Where-Object { $_.FullName -notmatch '\\\\\\.git\\\\' } | ForEach-Object { shellcheck -S warning $_.FullName }"
+        "Get-ChildItem -Recurse -File -Filter '*.sh' | Where-Object { $_.FullName -notmatch '\\\\\\.git\\\\' } | ForEach-Object { shellcheck -S [WARN] $_.FullName }"
       ],
       "group": "test",
       "problemMatcher": []
@@ -68,7 +68,7 @@
     },
 
     {
-      "label": "Build: Containerfile (context stage only — fast)",
+      "label": "Build: Containerfile (context stage only  fast)",
       "type": "shell",
       "command": "podman",
       "args": [

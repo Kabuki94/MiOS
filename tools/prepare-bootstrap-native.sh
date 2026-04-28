@@ -8,32 +8,32 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 BOOTSTRAP_REPO="${BOOTSTRAP_REPO:-${HOME}/MiOS-bootstrap}"
 MIOS_VERSION=$(cat "${REPO_ROOT}/VERSION" 2>/dev/null || echo "v0.1.3")
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
 echo "MiOS Bootstrap - Linux Filesystem Native Preparation"
 echo "Version: ${MIOS_VERSION}"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
 
 # Check if bootstrap repo exists
 if [[ ! -d "${BOOTSTRAP_REPO}/.git" ]]; then
-    echo "❌ MiOS-bootstrap repository not found at: ${BOOTSTRAP_REPO}"
+    echo "[FAIL] MiOS-bootstrap repository not found at: ${BOOTSTRAP_REPO}"
     echo ""
     echo "Clone it first:"
     echo "  git clone https://github.com/Kabuki94/MiOS-bootstrap ${BOOTSTRAP_REPO}"
     exit 1
 fi
 
-echo "✓ Bootstrap repository: ${BOOTSTRAP_REPO}"
+echo "[OK] Bootstrap repository: ${BOOTSTRAP_REPO}"
 echo ""
 
 # 1. Generate Unified Knowledge (compaction and mapping)
-echo "▶ Generating Unified Knowledge Hub and UKB snapshot..."
+echo "[RUN] Generating Unified Knowledge Hub and UKB snapshot..."
 if [[ -f "${SCRIPT_DIR}/generate-unified-knowledge.py" ]]; then
     python3 "${SCRIPT_DIR}/generate-unified-knowledge.py"
-    echo "✓ Knowledge Hub and UKB generated"
+    echo "[OK] Knowledge Hub and UKB generated"
 fi
 
 # 2. Create Linux FS native structure
-echo "▶ Creating Linux filesystem native structure..."
+echo "[RUN] Creating Linux filesystem native structure..."
 
 # /var/log - Build logs and runtime logs
 mkdir -p "${BOOTSTRAP_REPO}/var/log/mios"
@@ -56,21 +56,21 @@ mkdir -p "${BOOTSTRAP_REPO}/usr/share/mios/prompts"
 # /etc/mios - Configuration (manifests, indexes)
 mkdir -p "${BOOTSTRAP_REPO}/etc/mios"
 
-echo "✓ Directory structure created"
+echo "[OK] Directory structure created"
 echo ""
 
 # Copy build logs to /var/log
-echo "▶ Logging build artifacts to /var/log/mios..."
+echo "[RUN] Logging build artifacts to /var/log/mios..."
 if [[ -d "${REPO_ROOT}/logs" ]]; then
     LATEST_LOG=$(ls -t "${REPO_ROOT}"/logs/build-*.log 2>/dev/null | head -n 1)
     if [[ -n "${LATEST_LOG}" ]]; then
         cp -v "${LATEST_LOG}" "${BOOTSTRAP_REPO}/var/log/mios/builds/${MIOS_VERSION}/latest.log"
-        echo "✓ Build log copied"
+        echo "[OK] Build log copied"
     fi
 fi
 
 # Copy artifacts to /var/lib/mios/artifacts
-echo "▶ Copying artifacts to /var/lib/mios/artifacts..."
+echo "[RUN] Copying artifacts to /var/lib/mios/artifacts..."
 if [[ -d "${REPO_ROOT}/artifacts/ai-rag" ]]; then
     # Copy compressed archives
     cp -v "${REPO_ROOT}"/artifacts/ai-rag/*.tar.xz \
@@ -86,25 +86,25 @@ if [[ -d "${REPO_ROOT}/artifacts/ai-rag" ]]; then
     cp -v "${REPO_ROOT}"/artifacts/ai-rag/rag-manifest.yaml \
         "${BOOTSTRAP_REPO}/etc/mios/" 2>/dev/null || true
     
-    echo "✓ Artifacts copied"
+    echo "[OK] Artifacts copied"
 fi
 
 # Copy SBOMs to /var/lib/mios/artifacts
-echo "▶ Copying SBOMs to /var/lib/mios/artifacts..."
+echo "[RUN] Copying SBOMs to /var/lib/mios/artifacts..."
 if [[ -d "${REPO_ROOT}/usr/lib/mios/artifacts/sbom" ]]; then
     mkdir -p "${BOOTSTRAP_REPO}/var/lib/mios/artifacts/${MIOS_VERSION}/sbom"
     cp -v "${REPO_ROOT}"/usr/lib/mios/artifacts/sbom/* \
         "${BOOTSTRAP_REPO}/var/lib/mios/artifacts/${MIOS_VERSION}/sbom/" 2>/dev/null || true
-    echo "✓ SBOMs copied"
+    echo "[OK] SBOMs copied"
 elif [[ -d "${REPO_ROOT}/artifacts/sbom" ]]; then
     mkdir -p "${BOOTSTRAP_REPO}/var/lib/mios/artifacts/${MIOS_VERSION}/sbom"
     cp -v "${REPO_ROOT}"/artifacts/sbom/* \
         "${BOOTSTRAP_REPO}/var/lib/mios/artifacts/${MIOS_VERSION}/sbom/" 2>/dev/null || true
-    echo "✓ SBOMs copied"
+    echo "[OK] SBOMs copied"
 fi
 
 # Copy repository snapshots to /var/lib/mios/snapshots
-echo "▶ Copying snapshots to /var/lib/mios/snapshots..."
+echo "[RUN] Copying snapshots to /var/lib/mios/snapshots..."
 if [[ -f "${REPO_ROOT}/artifacts/repo-rag-snapshot.json.xz" ]]; then
     cp -v "${REPO_ROOT}/artifacts/repo-rag-snapshot.json.xz" \
         "${BOOTSTRAP_REPO}/var/lib/mios/snapshots/${MIOS_VERSION}/"
@@ -113,10 +113,10 @@ if [[ -f "${REPO_ROOT}/artifacts/manifest.json.xz" ]]; then
     cp -v "${REPO_ROOT}/artifacts/manifest.json.xz" \
         "${BOOTSTRAP_REPO}/var/lib/mios/snapshots/${MIOS_VERSION}/"
 fi
-echo "✓ Snapshots copied"
+echo "[OK] Snapshots copied"
 
 # Copy documentation to /usr/share/doc
-echo "▶ Copying documentation to /usr/share/doc/mios..."
+echo "[RUN] Copying documentation to /usr/share/doc/mios..."
 for doc in Knowledge-Hub.md INDEX.md README.md AI-AGENT-GUIDE.md SELF-BUILD.md SECURITY.md llms.txt; do
     if [[ -f "${REPO_ROOT}/specs/${doc}" ]]; then
         cp -v "${REPO_ROOT}/specs/${doc}" \
@@ -143,10 +143,10 @@ if [[ -f "${REPO_ROOT}/specs/engineering/2026-04-27-Artifact-ENG-007-Bootstrap-I
         "${BOOTSTRAP_REPO}/usr/share/doc/mios/${MIOS_VERSION}/engineering/"
 fi
 
-echo "✓ Documentation copied"
+echo "[OK] Documentation copied"
 
 # Generate unified manifest in /etc/mios
-echo "▶ Generating unified manifest..."
+echo "[RUN] Generating unified manifest..."
 cat > "${BOOTSTRAP_REPO}/etc/mios/manifest.json" << MANIFEST
 {
   "mios_version": "${MIOS_VERSION}",
@@ -207,7 +207,7 @@ cat > "${BOOTSTRAP_REPO}/etc/mios/manifest.json" << MANIFEST
 }
 MANIFEST
 
-echo "✓ Manifest generated: ${BOOTSTRAP_REPO}/etc/mios/manifest.json"
+echo "[OK] Manifest generated: ${BOOTSTRAP_REPO}/etc/mios/manifest.json"
 
 # Create README at repository root
 cat > "${BOOTSTRAP_REPO}/README.md" << README
@@ -217,42 +217,42 @@ cat > "${BOOTSTRAP_REPO}/README.md" << README
 **Architecture:** Linux Filesystem Native  
 **Updated:** $(date -u +%Y-%m-%d)
 
-## 📁 Linux Filesystem Native Structure
+## [DIR] Linux Filesystem Native Structure
 
 This repository follows standard Linux Filesystem Hierarchy Standard (FHS 3.0) where **artifacts, logs, snapshots, and wiki are unified** in native Linux FS layout.
 
 \`\`\`
 MiOS-bootstrap/
-├── var/
-│   ├── log/mios/              # Build logs and runtime logs
-│   │   └── builds/${MIOS_VERSION}/
-│   │       └── latest.log
-│   └── lib/mios/              # State data
-│       ├── artifacts/${MIOS_VERSION}/     # Compressed packages
-│       │   ├── mios-complete-rag-*.tar.xz (509 KB)
-│       │   └── mios-knowledge-complete-*.tar.xz (4.2 KB)
-│       └── snapshots/${MIOS_VERSION}/     # Repository snapshots
-│           ├── repo-rag-snapshot.json.xz (588 KB)
-│           └── manifest.json.xz (588 KB)
-├── usr/
-│   └── share/
-│       ├── doc/mios/${MIOS_VERSION}/      # Documentation (wiki content)
-│       │   ├── INDEX.md
-│       │   ├── README.md
-│       │   ├── AI-AGENT-GUIDE.md
-│       │   ├── SELF-BUILD.md
-│       │   ├── SECURITY.md
-│       │   ├── ai-integration/
-│       │   └── engineering/
-│       └── mios/              # Application data
-│           ├── knowledge/     # Knowledge graphs
-│           └── prompts/       # AI prompts
-└── etc/mios/                  # Configuration
-    ├── manifest.json          # Unified manifest
-    └── rag-manifest.yaml      # FOSS AI configuration
++-- var/
+|   +-- log/mios/              # Build logs and runtime logs
+|   |   +-- builds/${MIOS_VERSION}/
+|   |       +-- latest.log
+|   +-- lib/mios/              # State data
+|       +-- artifacts/${MIOS_VERSION}/     # Compressed packages
+|       |   +-- mios-complete-rag-*.tar.xz (509 KB)
+|       |   +-- mios-knowledge-complete-*.tar.xz (4.2 KB)
+|       +-- snapshots/${MIOS_VERSION}/     # Repository snapshots
+|           +-- repo-rag-snapshot.json.xz (588 KB)
+|           +-- manifest.json.xz (588 KB)
++-- usr/
+|   +-- share/
+|       +-- doc/mios/${MIOS_VERSION}/      # Documentation (wiki content)
+|       |   +-- INDEX.md
+|       |   +-- README.md
+|       |   +-- AI-AGENT-GUIDE.md
+|       |   +-- SELF-BUILD.md
+|       |   +-- SECURITY.md
+|       |   +-- ai-integration/
+|       |   +-- engineering/
+|       +-- mios/              # Application data
+|           +-- knowledge/     # Knowledge graphs
+|           +-- prompts/       # AI prompts
++-- etc/mios/                  # Configuration
+    +-- manifest.json          # Unified manifest
+    +-- rag-manifest.yaml      # FOSS AI configuration
 \`\`\`
 
-## 🌐 FOSS AI APIs Compliance
+## [NET] FOSS AI APIs Compliance
 
 All artifacts follow **FOSS AI APIs protocol**:
 
@@ -268,7 +268,7 @@ All artifacts follow **FOSS AI APIs protocol**:
 - LocalAI (OpenAI-compatible)
 - vLLM (high-throughput)
 
-## 🚀 Quick Start
+## [START] Quick Start
 
 ### Extract Complete Repository
 
@@ -305,7 +305,7 @@ ls usr/share/doc/mios/${MIOS_VERSION}/ai-integration/
 ls usr/share/doc/mios/${MIOS_VERSION}/engineering/
 \`\`\`
 
-## 📊 Statistics
+## [STAT] Statistics
 
 - **Original Repository:** 928 MB
 - **Compressed (XZ):** 509 KB
@@ -313,7 +313,7 @@ ls usr/share/doc/mios/${MIOS_VERSION}/engineering/
 - **Files Preserved:** 722
 - **FHS Compliance:** 100%
 
-## 📚 Documentation
+##  Documentation
 
 All documentation follows standard Linux conventions:
 
@@ -321,7 +321,7 @@ All documentation follows standard Linux conventions:
 - **AI Integration:** \`/usr/share/doc/mios/${MIOS_VERSION}/ai-integration/\`
 - **Engineering Specs:** \`/usr/share/doc/mios/${MIOS_VERSION}/engineering/\`
 
-## 🔄 Updates
+## [SYNC] Updates
 
 This repository updates automatically with every MiOS build:
 
@@ -333,7 +333,7 @@ just build-and-log-native
 ./tools/prepare-bootstrap-native.sh
 \`\`\`
 
-## 📖 Manifest
+##  Manifest
 
 Unified manifest at: \`etc/mios/manifest.json\`
 
@@ -344,7 +344,7 @@ Contains:
 - FHS compliance status
 - Wiki integration details
 
-## 🔗 References
+## [LINK] References
 
 - **Main Repository:** https://github.com/Kabuki94/MiOS-bootstrap
 - **Bootstrap (this repo):** https://github.com/Kabuki94/MiOS-bootstrap
@@ -356,7 +356,7 @@ Contains:
 **License:** Personal Property - MiOS-DEV
 README
 
-echo "✓ README generated: ${BOOTSTRAP_REPO}/README.md"
+echo "[OK] README generated: ${BOOTSTRAP_REPO}/README.md"
 
 # Create .gitignore if needed
 if [[ ! -f "${BOOTSTRAP_REPO}/.gitignore" ]]; then
@@ -378,36 +378,36 @@ if [[ ! -f "${BOOTSTRAP_REPO}/.gitignore" ]]; then
 .DS_Store
 Thumbs.db
 GITIGNORE
-    echo "✓ .gitignore created"
+    echo "[OK] .gitignore created"
 fi
 
 # Summary
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "✅ Bootstrap Repository Prepared (Linux FS Native)"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "[OK] Bootstrap Repository Prepared (Linux FS Native)"
+echo ""
 echo ""
 echo "Structure:"
 echo "  ${BOOTSTRAP_REPO}/"
-echo "  ├── var/log/mios/builds/${MIOS_VERSION}/"
-echo "  │   └── latest.log"
-echo "  ├── var/lib/mios/"
-echo "  │   ├── artifacts/${MIOS_VERSION}/"
-echo "  │   │   ├── mios-complete-rag-*.tar.xz"
-echo "  │   │   └── mios-knowledge-complete-*.tar.xz"
-echo "  │   └── snapshots/${MIOS_VERSION}/"
-echo "  │       ├── repo-rag-snapshot.json.xz"
-echo "  │       └── manifest.json.xz"
-echo "  ├── usr/share/doc/mios/${MIOS_VERSION}/"
-echo "  │   ├── INDEX.md, README.md, etc."
-echo "  │   ├── ai-integration/"
-echo "  │   └── engineering/"
-echo "  ├── usr/share/mios/knowledge/"
-echo "  │   ├── mios-knowledge-graph.json"
-echo "  │   └── script-inventory.json"
-echo "  └── etc/mios/"
-echo "      ├── manifest.json"
-echo "      └── rag-manifest.yaml"
+echo "  +-- var/log/mios/builds/${MIOS_VERSION}/"
+echo "  |   +-- latest.log"
+echo "  +-- var/lib/mios/"
+echo "  |   +-- artifacts/${MIOS_VERSION}/"
+echo "  |   |   +-- mios-complete-rag-*.tar.xz"
+echo "  |   |   +-- mios-knowledge-complete-*.tar.xz"
+echo "  |   +-- snapshots/${MIOS_VERSION}/"
+echo "  |       +-- repo-rag-snapshot.json.xz"
+echo "  |       +-- manifest.json.xz"
+echo "  +-- usr/share/doc/mios/${MIOS_VERSION}/"
+echo "  |   +-- INDEX.md, README.md, etc."
+echo "  |   +-- ai-integration/"
+echo "  |   +-- engineering/"
+echo "  +-- usr/share/mios/knowledge/"
+echo "  |   +-- mios-knowledge-graph.json"
+echo "  |   +-- script-inventory.json"
+echo "  +-- etc/mios/"
+echo "      +-- manifest.json"
+echo "      +-- rag-manifest.yaml"
 echo ""
 echo "Ready to commit and push:"
 echo "  cd ${BOOTSTRAP_REPO}"
@@ -416,15 +416,15 @@ echo "  git status"
 echo "  git commit -m \"Restructure to Linux filesystem native layout - unified artifacts/logs/snapshots/wiki\""
 echo "  git push"
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
 
 # Sync to GitHub Wiki if it exists
 echo ""
-echo "▶ Syncing to GitHub Wiki (if available)..."
+echo "[RUN] Syncing to GitHub Wiki (if available)..."
 WIKI_REPO="${BOOTSTRAP_REPO}.wiki"
 
 if [[ -d "${WIKI_REPO}/.git" ]]; then
-    echo "✓ Wiki repository found: ${WIKI_REPO}"
+    echo "[OK] Wiki repository found: ${WIKI_REPO}"
     
     # Copy all docs from /usr/share/doc to Wiki
     rsync -av "${BOOTSTRAP_REPO}/usr/share/doc/mios/${MIOS_VERSION}/" "${WIKI_REPO}/" \
@@ -438,36 +438,36 @@ if [[ -d "${WIKI_REPO}/.git" ]]; then
 **Updated:** $(date -u +%Y-%m-%d)  
 **Architecture:** Linux FS Native (FHS 3.0)
 
-## 📁 Documentation Structure
+## [DIR] Documentation Structure
 
 All documentation follows Linux Filesystem Hierarchy Standard:
 
 \`\`\`
 /usr/share/doc/mios/${MIOS_VERSION}/
-├── Knowledge-Hub.md    # 🧠 Unified Knowledge Hub
-├── INDEX.md
-├── README.md  
-├── AI-AGENT-GUIDE.md
-├── SELF-BUILD.md
-├── SECURITY.md
-├── llms.txt
-├── ai-integration/     # 6 AI integration guides
-└── engineering/        # Engineering specs
++-- Knowledge-Hub.md    # [MEM] Unified Knowledge Hub
++-- INDEX.md
++-- README.md  
++-- AI-AGENT-GUIDE.md
++-- SELF-BUILD.md
++-- SECURITY.md
++-- llms.txt
++-- ai-integration/     # 6 AI integration guides
++-- engineering/        # Engineering specs
 \`\`\`
 
-## 🧠 Knowledge Hub
+## [MEM] Knowledge Hub
 
-- [**Unified Knowledge Hub**](Knowledge-Hub) — Navigable index of all MiOS knowledge, memories, and research.
+- [**Unified Knowledge Hub**](Knowledge-Hub)  Navigable index of all MiOS knowledge, memories, and research.
 
-## 📚 Core Documentation
+##  Core Documentation
 
-- [INDEX](INDEX) — AI agent hub, architecture laws
-- [README](README) — Project overview
-- [AI-AGENT-GUIDE](AI-AGENT-GUIDE) — AI coding agent guide  
-- [SELF-BUILD](SELF-BUILD) — Build instructions
-- [SECURITY](SECURITY) — Security hardening
+- [INDEX](INDEX)  AI agent hub, architecture laws
+- [README](README)  Project overview
+- [AI-AGENT-GUIDE](AI-AGENT-GUIDE)  AI coding agent guide  
+- [SELF-BUILD](SELF-BUILD)  Build instructions
+- [SECURITY](SECURITY)  Security hardening
 
-## 🤖 AI Integration
+##  AI Integration
 
 - [AI Integration Index](ai-integration/2026-04-27-Artifact-AI-000-Index)
 - [RAG Integration](ai-integration/2026-04-27-Artifact-AI-001-RAG-Integration)
@@ -476,12 +476,12 @@ All documentation follows Linux Filesystem Hierarchy Standard:
 - [Knowledge Graph](ai-integration/2026-04-27-Artifact-AI-004-Knowledge-Graph)
 - [Wiki Discovery](ai-integration/2026-04-27-Artifact-AI-005-Wiki-Discovery)
 
-## 🔧 Engineering
+## [TOOL] Engineering
 
 - [FHS Compliance Audit](engineering/2026-04-27-Artifact-ENG-006-FHS-Compliance-Audit)
 - [Bootstrap Integration](engineering/2026-04-27-Artifact-ENG-007-Bootstrap-Integration)
 
-## 🌐 Linux FS Native Locations
+## [NET] Linux FS Native Locations
 
 - **Artifacts:** \`/var/lib/mios/artifacts/${MIOS_VERSION}/\`
 - **Build Logs:** \`/var/log/mios/builds/${MIOS_VERSION}/\`
@@ -489,7 +489,7 @@ All documentation follows Linux Filesystem Hierarchy Standard:
 - **Knowledge:** \`/usr/share/mios/knowledge/\`
 - **Configuration:** \`/etc/mios/\`
 
-## 📦 Quick Start
+## [PKG] Quick Start
 
 \`\`\`bash
 # Extract complete repository (509 KB, 99.95% compression)
@@ -502,7 +502,7 @@ cat /usr/share/mios/knowledge/mios-knowledge-graph.json | \\
   ollama run llama3.1:8b "Initialize MiOS context"
 \`\`\`
 
-## 📊 Statistics
+## [STAT] Statistics
 
 - **Compressed:** 509 KB XZ (99.95% from 928 MB)
 - **Files:** 722 preserved
@@ -519,10 +519,10 @@ WIKIHOME
     cd "${WIKI_REPO}"
     git add .
     if git diff --cached --quiet; then
-        echo "✓ Wiki already up to date"
+        echo "[OK] Wiki already up to date"
     else
         git commit -m "Auto-sync Wiki from Linux FS native structure - ${MIOS_VERSION} - $(date -u +%Y-%m-%d)" || true
-        echo "✓ Wiki updated (commit created)"
+        echo "[OK] Wiki updated (commit created)"
         echo ""
         echo "Push Wiki updates:"
         echo "  cd ${WIKI_REPO}"
@@ -530,7 +530,7 @@ WIKIHOME
     fi
     cd - > /dev/null
 else
-    echo "⚠️  Wiki repository not found at: ${WIKI_REPO}"
+    echo "[WARN]  Wiki repository not found at: ${WIKI_REPO}"
     echo ""
     echo "Clone Wiki repository:"
     echo "  git clone https://github.com/Kabuki94/MiOS-bootstrap.wiki ${WIKI_REPO}"
@@ -540,4 +540,4 @@ else
 fi
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""

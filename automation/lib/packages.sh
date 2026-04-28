@@ -1,5 +1,5 @@
 #!/bin/bash
-# MiOS v0.1.3 — Package extraction library
+# MiOS v0.1.3  Package extraction library
 # Parses PACKAGES.md fenced code blocks tagged with ```packages-<category>
 #
 # Usage:
@@ -49,7 +49,7 @@ install_packages() {
             echo "[packages.sh] Packages requested: $packages" >&2
         }
     else
-        echo "[packages.sh] WARN: No packages in section '$category' — skipping"
+        echo "[packages.sh] WARN: No packages in section '$category'  skipping"
     fi
 }
 
@@ -76,7 +76,7 @@ install_packages_optional() {
     raw_section=$(sed -n "/^\`\`\`packages-${category}$/,/^\`\`\`$/{/^\`\`\`/d;p}" "$packages_file")
 
     if [[ -z "$raw_section" ]]; then
-        echo "[packages.sh] WARN: Section 'packages-${category}' not found — skipping"
+        echo "[packages.sh] WARN: Section 'packages-${category}' not found  skipping"
         return 0
     fi
 
@@ -89,7 +89,7 @@ install_packages_optional() {
         return 0
     fi
 
-    # Some packages are uncommented — install those
+    # Some packages are uncommented  install those
     local packages
     packages=$(get_packages "$category" "$packages_file")
     if [[ -n "$packages" ]]; then

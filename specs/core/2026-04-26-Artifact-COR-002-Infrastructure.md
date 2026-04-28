@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -22,7 +22,7 @@
 > **Source Reference:** MiOS-Core-v0.1.3
 ---
 
-# 🔌 MiOS Hardware Support
+# [PLUG] MiOS Hardware Support
 
 ```json
 {
@@ -34,9 +34,9 @@
 
 ---
 
-## 🖥️ GPU & CPU Support
+## [PC] GPU & CPU Support
 
-### 🎮 Graphics Acceleration
+### [GAME] Graphics Acceleration
 MiOS provides native-tier performance across all major vendors.
 
 ```json
@@ -50,7 +50,7 @@ MiOS provides native-tier performance across all major vendors.
 }
 ```
 
-### ⚡ Virtualization Mastery
+### [FAST] Virtualization Mastery
 The system operates as a Tier-1 hypervisor.
 
 | Feature | Technology | Usage |
@@ -61,9 +61,9 @@ The system operates as a Tier-1 hypervisor.
 
 ---
 
-## 🛠️ Diagnostic Toolkit
+## [ENG] Diagnostic Toolkit
 
-### 🩺 System Assessment
+###  System Assessment
 Automated health checks built into the base image.
 
 1. **`mios-vfio-check`**: Validates IOMMU groups and stub drivers.
@@ -73,11 +73,11 @@ Automated health checks built into the base image.
 ---
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

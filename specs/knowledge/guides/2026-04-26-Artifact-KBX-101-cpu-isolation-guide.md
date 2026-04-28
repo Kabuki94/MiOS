@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -43,23 +43,23 @@ The script provides interactive menus to:
 
 ## Why CPU Isolation Matters
 
-**Without isolation**: Host OS and VMs compete for CPU time â†’ stuttering, latency spikes, inconsistent performance
+**Without isolation**: Host OS and VMs compete for CPU time  stuttering, latency spikes, inconsistent performance
 
 **With isolation**: 
-- âœ… **Dedicated cores** for VMs (near-native performance)
-- âœ… **Predictable latency** (no host interference)
-- âœ… **Better cache utilization** (no thrashing between host/guest)
-- âœ… **Optimal for gaming** (consistent frame times)
+- ... **Dedicated cores** for VMs (near-native performance)
+- ... **Predictable latency** (no host interference)
+- ... **Better cache utilization** (no thrashing between host/guest)
+- ... **Optimal for gaming** (consistent frame times)
 
 ### AMD Ryzen 9950X3D Specific Benefits
 
 The 9950X3D has **dual CCD architecture**:
-- **CCD0** (8 cores): 32MB L3 + **64MB V-Cache** = 96MB total â†’ Best for gaming
-- **CCD1** (8 cores): 32MB L3, higher boost clocks â†’ Best for productivity
+- **CCD0** (8 cores): 32MB L3 + **64MB V-Cache** = 96MB total  Best for gaming
+- **CCD1** (8 cores): 32MB L3, higher boost clocks  Best for productivity
 
 **Cross-CCD latency penalty**: ~100ns via Infinity Fabric
 
-**Optimal strategy**: Pin gaming VM to CCD0, host to CCD1 â†’ **zero cross-CCD traffic**
+**Optimal strategy**: Pin gaming VM to CCD0, host to CCD1  **zero cross-CCD traffic**
 
 ## CPU Isolation Levels
 
@@ -113,12 +113,12 @@ Use both isolcpus (kernel) + systemd CPUAffinity (userspace) for maximum isolati
 **For AMD X3D**:
 ```
 1) Gaming VM Optimized (Recommended for X3D)
-   - Isolate: CCD0 (V-Cache) â†’ CPUs 0-15
-   - Host: CCD1 (High Freq) â†’ CPUs 16-31
+   - Isolate: CCD0 (V-Cache)  CPUs 0-15
+   - Host: CCD1 (High Freq)  CPUs 16-31
 
 2) Render/Compute Optimized
-   - Isolate: CCD1 (High Freq) â†’ CPUs 16-31
-   - Host: CCD0 (V-Cache) â†’ CPUs 0-15
+   - Isolate: CCD1 (High Freq)  CPUs 16-31
+   - Host: CCD0 (V-Cache)  CPUs 0-15
 
 3) Balanced (50/50)
    - Isolate: Half of each CCD
@@ -146,9 +146,9 @@ Format: Physical/SMT-Thread
 ```
 
 **Selection**:
-- Isolate CCD0 only â†’ Gaming VM
-- Isolate CCD1 only â†’ Compute VM
-- Isolate both â†’ Multi-VM server
+- Isolate CCD0 only  Gaming VM
+- Isolate CCD1 only  Compute VM
+- Isolate both  Multi-VM server
 
 ### 3. NUMA-Based Selection
 
@@ -190,7 +190,7 @@ CPUs to isolate: 0-7 16 17 18-23
 **Configuration**:
 ```bash
 sudo ./universal-cpu-isolator.sh
-# Select: Quick Presets â†’ Gaming VM Optimized
+# Select: Quick Presets  Gaming VM Optimized
 ```
 
 **Result**:
@@ -289,7 +289,7 @@ sudo ./universal-cpu-isolator.sh
 **Configuration**:
 ```bash
 sudo ./universal-cpu-isolator.sh
-# Select: Quick Presets â†’ Balanced
+# Select: Quick Presets  Balanced
 # Isolate: CPUs 0-15
 # Host: CPUs 16-31
 ```
@@ -303,7 +303,7 @@ sudo ./universal-cpu-isolator.sh
 **Configuration**:
 ```bash
 sudo ./universal-cpu-isolator.sh
-# Select: Quick Presets â†’ VM Priority (75/25)
+# Select: Quick Presets  VM Priority (75/25)
 # Isolate: CPUs 0-23 (24 threads)
 # Host: CPUs 24-31 (8 threads)
 ```
@@ -455,7 +455,7 @@ echo 16-31 | sudo tee /proc/irq/16/smp_affinity_list
 **Optimal configuration**:
 ```bash
 sudo ./universal-cpu-isolator.sh
-# Select: Advanced â†’ Performance cores only
+# Select: Advanced  Performance cores only
 # Isolate: CPUs 0-15 (all P-cores)
 # Host: CPUs 16-31 (all E-cores)
 ```
@@ -611,7 +611,7 @@ fi
 
 ## Best Practices
 
-### âœ… DO
+### ... DO
 
 - **Test first**: Use Quick Presets before custom configuration
 - **Monitor**: Use `htop` with CPU affinity display to verify
@@ -620,7 +620,7 @@ fi
 - **Reserve cores for host**: Never isolate ALL CPUs
 - **Use SMT pairs**: For AMD X3D, keep physical+sibling together
 
-### âŒ DON'T
+###  DON'T
 
 - **Over-isolate**: Leave at least 4 threads for host OS
 - **Split CCDs** (AMD X3D): Don't put same VM on both CCDs
@@ -638,20 +638,20 @@ For environments with multiple VMs that don't run simultaneously:
 
 # Create separate hook scripts per VM
 /etc/libvirt/hooks/qemu.d/
-  â”œâ”€â”€ gaming-vm/
-  â”‚   â”œâ”€â”€ prepare/
-  â”‚   â”‚   â””â”€â”€ begin/
-  â”‚   â”‚       â””â”€â”€ pin-ccd0.sh
-  â”‚   â””â”€â”€ release/
-  â”‚       â””â”€â”€ end/
-  â”‚           â””â”€â”€ unpin.sh
-  â””â”€â”€ workstation-vm/
-      â”œâ”€â”€ prepare/
-      â”‚   â””â”€â”€ begin/
-      â”‚       â””â”€â”€ pin-ccd1.sh
-      â””â”€â”€ release/
-          â””â”€â”€ end/
-              â””â”€â”€ unpin.sh
+   gaming-vm/
+      prepare/
+         begin/
+             pin-ccd0.sh
+      release/
+          end/
+              unpin.sh
+   workstation-vm/
+       prepare/
+          begin/
+              pin-ccd1.sh
+       release/
+           end/
+               unpin.sh
 ```
 
 See libvirt hooks documentation for per-VM hook configuration.
@@ -669,11 +669,11 @@ See libvirt hooks documentation for per-VM hook configuration.
 *Maximum performance, zero compromises*
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

@@ -13,9 +13,9 @@ NC='\033[0m'
 
 set -e
 
-echo -e "${BOLD}${GREEN}══════════════════════════════════════════════════════════${NC}"
+echo -e "${BOLD}${GREEN}==========================================================${NC}"
 echo -e "${BOLD}${GREEN}    Xbox VM: Final Configuration + Secure Boot Fix${NC}"
-echo -e "${BOLD}${GREEN}══════════════════════════════════════════════════════════${NC}\n"
+echo -e "${BOLD}${GREEN}==========================================================${NC}\n"
 
 if [ "$EUID" -ne 0 ]; then
     echo -e "${RED}Run as root: sudo $0${NC}\n"
@@ -44,11 +44,11 @@ fi
 
 echo -e "\n${BLUE}[1/6] Checking/installing virt-firmware...${NC}"
 if ! command -v virt-fw-vars &>/dev/null; then
-    echo -e "${RED}✗ virt-firmware is missing!${NC}"
+    echo -e "${RED}[FAIL] virt-firmware is missing!${NC}"
     echo -e "${YELLOW}This tool is required. Please ensure 'virt-firmware' and 'python3-cryptography' are listed in usr/share/mios/PACKAGES.md and rebuild the image.${NC}"
     exit 1
 else
-    echo -e "${GREEN}✓ Already installed${NC}"
+    echo -e "${GREEN}[OK] Already installed${NC}"
 fi
 
 echo -e "\n${BLUE}[2/6] Stopping VM...${NC}"
@@ -57,7 +57,7 @@ if [ "$VM_STATE" == "running" ]; then
     virsh shutdown Xbox
     sleep 5
 fi
-echo -e "${GREEN}✓ Stopped${NC}"
+echo -e "${GREEN}[OK] Stopped${NC}"
 
 echo -e "\n${BLUE}[3/6] Backing up...${NC}"
 BACKUP_DIR="$HOME/xbox-backups/$(date +%Y%m%d-%H%M%S)"
@@ -68,13 +68,13 @@ NVRAM="/var/lib/libvirt/qemu/nvram/Xbox_VARS.fd"
 if [ -f "$NVRAM" ]; then
     cp "$NVRAM" "$BACKUP_DIR/Xbox_VARS.fd"
 fi
-echo -e "${GREEN}✓ Backup: $BACKUP_DIR${NC}"
+echo -e "${GREEN}[OK] Backup: $BACKUP_DIR${NC}"
 
 echo -e "\n${BLUE}[4/6] Applying new configuration...${NC}"
 if virsh define "$XML_FILE"; then
-    echo -e "${GREEN}✓ Configuration applied${NC}"
+    echo -e "${GREEN}[OK] Configuration applied${NC}"
 else
-    echo -e "${RED}✗ Failed${NC}"
+    echo -e "${RED}[FAIL] Failed${NC}"
     exit 1
 fi
 
@@ -86,10 +86,10 @@ echo "Waiting for clean shutdown..."
 sleep 5
 
 if [ ! -f "$NVRAM" ]; then
-    echo -e "${RED}✗ NVRAM not created${NC}"
+    echo -e "${RED}[FAIL] NVRAM not created${NC}"
     exit 1
 fi
-echo -e "${GREEN}✓ Fresh NVRAM created${NC}"
+echo -e "${GREEN}[OK] Fresh NVRAM created${NC}"
 
 echo -e "\n${BLUE}[6/6] Enrolling Microsoft Secure Boot keys...${NC}"
 echo -e "${CYAN}Using virt-fw-vars to inject Microsoft keys...${NC}"
@@ -106,9 +106,9 @@ if virt-fw-vars --input "$TEMP_NVRAM" \
     # Copy back
     cp "$TEMP_NVRAM" "$NVRAM"
     rm "$TEMP_NVRAM"
-    echo -e "${GREEN}✓ Microsoft keys enrolled!${NC}"
+    echo -e "${GREEN}[OK] Microsoft keys enrolled!${NC}"
 else
-    echo -e "${RED}✗ Enrollment failed${NC}"
+    echo -e "${RED}[FAIL] Enrollment failed${NC}"
     echo -e "${YELLOW}Log: /tmp/enrollment.log${NC}"
     rm "$TEMP_NVRAM"
     exit 1
@@ -117,23 +117,23 @@ fi
 echo -e "\n${BLUE}Starting VM with enrolled keys...${NC}"
 virsh start Xbox
 
-echo -e "\n${BOLD}${GREEN}══════════════════════════════════════════════════════════${NC}"
+echo -e "\n${BOLD}${GREEN}==========================================================${NC}"
 echo -e "${BOLD}${GREEN}                  Success!${NC}"
-echo -e "${BOLD}${GREEN}══════════════════════════════════════════════════════════${NC}\n"
+echo -e "${BOLD}${GREEN}==========================================================${NC}\n"
 
 echo -e "${YELLOW}Configuration Summary:${NC}"
-echo -e "  ${CYAN}✓${NC} CPU: 12 vCPUs pinned to C2-7, C18-23"
-echo -e "  ${CYAN}✓${NC} Emulator: C0-1, C16-17"
-echo -e "  ${CYAN}✓${NC} Topology: 6 cores × 2 threads"
-echo -e "  ${CYAN}✓${NC} ${BOLD}${GREEN}Secure Boot: Microsoft keys enrolled${NC}"
-echo -e "  ${CYAN}✓${NC} Network: virtio (high performance)"
-echo -e "  ${CYAN}✓${NC} Audio: none (optimized)"
-echo -e "  ${CYAN}✓${NC} Memory balloon: none"
+echo -e "  ${CYAN}[OK]${NC} CPU: 12 vCPUs pinned to C2-7, C18-23"
+echo -e "  ${CYAN}[OK]${NC} Emulator: C0-1, C16-17"
+echo -e "  ${CYAN}[OK]${NC} Topology: 6 cores  2 threads"
+echo -e "  ${CYAN}[OK]${NC} ${BOLD}${GREEN}Secure Boot: Microsoft keys enrolled${NC}"
+echo -e "  ${CYAN}[OK]${NC} Network: virtio (high performance)"
+echo -e "  ${CYAN}[OK]${NC} Audio: none (optimized)"
+echo -e "  ${CYAN}[OK]${NC} Memory balloon: none"
 echo
 
 echo -e "${YELLOW}Verify in Windows:${NC}"
-echo -e "  ${CYAN}msinfo32${NC} → Secure Boot State = ${GREEN}On${NC}"
-echo -e "  ${CYAN}PowerShell: Confirm-SecureBootUEFI${NC} → ${GREEN}True${NC}"
+echo -e "  ${CYAN}msinfo32${NC}  Secure Boot State = ${GREEN}On${NC}"
+echo -e "  ${CYAN}PowerShell: Confirm-SecureBootUEFI${NC}  ${GREEN}True${NC}"
 echo
 
 echo -e "${YELLOW}Backup:${NC} ${CYAN}$BACKUP_DIR${NC}\n"

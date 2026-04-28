@@ -1,5 +1,5 @@
 #!/bin/bash
-# MiOS v0.1.3 — Build Artifact Deployment
+# MiOS v0.1.3  Build Artifact Deployment
 # Copies build-time logs, manifests, and context hubs to user home directories.
 # Runs on first boot or when new artifacts are detected.
 
@@ -49,7 +49,7 @@ deploy_to_user() {
     done
 
     chown -R "${username}:${username}" "${target_dir}"
-    log "✓ Success for ${username}"
+    log "[OK] Success for ${username}"
 }
 
 # Find all human users (UID >= 1000, excluding nobody)

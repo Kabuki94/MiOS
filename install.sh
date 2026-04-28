@@ -25,10 +25,10 @@ MIOS_VAR_LOG_DIR="/var/log/mios"
 MIOS_BIN_DIR="/usr/local/bin"
 MIOS_TMPFILES_DIR="/etc/tmpfiles.d"
 
-info() { echo -e "${BLUE}ℹ️  ${NC}$*"; }
-success() { echo -e "${GREEN}✅${NC} $*"; }
-warn() { echo -e "${YELLOW}⚠️  ${NC}$*"; }
-error() { echo -e "${RED}❌${NC} $*" >&2; }
+info() { echo -e "${BLUE}  ${NC}$*"; }
+success() { echo -e "${GREEN}[OK]${NC} $*"; }
+warn() { echo -e "${YELLOW}[WARN]  ${NC}$*"; }
+error() { echo -e "${RED}[FAIL]${NC} $*" >&2; }
 
 check_root() {
     if [[ $EUID -ne 0 ]]; then
@@ -65,9 +65,9 @@ bootstrap_source() {
 
 install_mios() {
     echo ""
-    echo "╔══════════════════════════════════════════════════════════════╗"
-    echo "║           MiOS Bootstrap Installer (FHS Native)             ║"
-    echo "╚══════════════════════════════════════════════════════════════╝"
+    echo "+==============================================================+"
+    echo "           MiOS Bootstrap Installer (FHS Native)             "
+    echo "+==============================================================+"
     echo ""
 
     bootstrap_source
@@ -124,7 +124,7 @@ EOF
 set -euo pipefail
 MIOS_SRC_DIR="/usr/src/mios"
 if [[ ! -d "$MIOS_SRC_DIR" ]]; then
-    echo "❌ MiOS source not found at $MIOS_SRC_DIR" >&2
+    echo "[FAIL] MiOS source not found at $MIOS_SRC_DIR" >&2
     exit 1
 fi
 # Always ensure we are in the source dir for just
@@ -139,9 +139,9 @@ EOF
     success "Installed mios command"
 
     echo ""
-    echo "╔══════════════════════════════════════════════════════════════╗"
-    echo "║              ✅ MiOS Installation Complete                   ║"
-    echo "╚══════════════════════════════════════════════════════════════╝"
+    echo "+==============================================================+"
+    echo "              [OK] MiOS Installation Complete                   "
+    echo "+==============================================================+"
     echo ""
     info "Next steps:"
     echo "  1. Initialize user-space: ${CYAN}mios init-user-space${NC}"

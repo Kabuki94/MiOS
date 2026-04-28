@@ -12,7 +12,7 @@
     "modules": [
         {
             "type": "custom",
-            "format": "\u001b[36m════════════════════════════════════════════\u001b[0m"
+            "format": "\u001b[36m============================================\u001b[0m"
         },
         {
             "type": "title",
@@ -20,7 +20,7 @@
         },
         {
             "type": "custom",
-            "format": "\u001b[36m════════════════════════════════════════════\u001b[0m"
+            "format": "\u001b[36m============================================\u001b[0m"
         },
         "break",
         {
@@ -68,49 +68,49 @@
         "break",
         {
             "type": "custom",
-            "format": "\u001b[36m── Services & Management ──────────────────\u001b[0m"
+            "format": "\u001b[36m-- Services & Management ------------------\u001b[0m"
         },
         {
             "type": "command",
-            "key": "  🔧 Cockpit",
+            "key": "  [TOOL] Cockpit",
             "keyColor": "green",
-            "text": "IP=$(ip -4 route get 1.1.1.1 2>/dev/null | grep -o 'src [0-9.]*' | cut -d' ' -f2 | head -1); [ -z \"$IP\" ] && IP=localhost; systemctl is-active --quiet cockpit.socket 2>/dev/null && echo \"✓ https://$IP:9090\" || echo '✗ inactive'"
+            "text": "IP=$(ip -4 route get 1.1.1.1 2>/dev/null | grep -o 'src [0-9.]*' | cut -d' ' -f2 | head -1); [ -z \"$IP\" ] && IP=localhost; systemctl is-active --quiet cockpit.socket 2>/dev/null && echo \"[OK] https://$IP:9090\" || echo '[FAIL] inactive'"
         },
         {
             "type": "command",
-            "key": "  🖥️  RDP",
+            "key": "  [PC]  RDP",
             "keyColor": "green",
-            "text": "IP=$(ip -4 route get 1.1.1.1 2>/dev/null | grep -o 'src [0-9.]*' | cut -d' ' -f2 | head -1); [ -z \"$IP\" ] && IP=localhost; (systemctl is-active --quiet gnome-remote-desktop 2>/dev/null || systemctl is-active --quiet xrdp 2>/dev/null) && echo \"✓ rdp://$IP:3389\" || echo '✗ inactive'"
+            "text": "IP=$(ip -4 route get 1.1.1.1 2>/dev/null | grep -o 'src [0-9.]*' | cut -d' ' -f2 | head -1); [ -z \"$IP\" ] && IP=localhost; (systemctl is-active --quiet gnome-remote-desktop 2>/dev/null || systemctl is-active --quiet xrdp 2>/dev/null) && echo \"[OK] rdp://$IP:3389\" || echo '[FAIL] inactive'"
         },
         {
             "type": "command",
-            "key": "  🔒 SSH",
+            "key": "  [LOCK] SSH",
             "keyColor": "green",
-            "text": "IP=$(ip -4 route get 1.1.1.1 2>/dev/null | grep -o 'src [0-9.]*' | cut -d' ' -f2 | head -1); [ -z \"$IP\" ] && IP=localhost; systemctl is-active --quiet sshd 2>/dev/null && echo \"✓ ssh://$IP:22\" || echo '✗ inactive'"
+            "text": "IP=$(ip -4 route get 1.1.1.1 2>/dev/null | grep -o 'src [0-9.]*' | cut -d' ' -f2 | head -1); [ -z \"$IP\" ] && IP=localhost; systemctl is-active --quiet sshd 2>/dev/null && echo \"[OK] ssh://$IP:22\" || echo '[FAIL] inactive'"
         },
         {
             "type": "command",
-            "key": "  📦 Podman",
+            "key": "  [PKG] Podman",
             "keyColor": "green",
-            "text": "systemctl is-active --quiet podman.socket 2>/dev/null && echo \"✓ $(podman ps -q 2>/dev/null | wc -l) containers\" || echo '✗ inactive'"
+            "text": "systemctl is-active --quiet podman.socket 2>/dev/null && echo \"[OK] $(podman ps -q 2>/dev/null | wc -l) containers\" || echo '[FAIL] inactive'"
         },
         {
             "type": "command",
-            "key": "  🛡️  Firewall",
+            "key": "  [SEC]  Firewall",
             "keyColor": "green",
-            "text": "if systemctl is-active --quiet firewalld 2>/dev/null; then echo '✓ active'; else echo '✗ inactive'; fi"
+            "text": "if systemctl is-active --quiet firewalld 2>/dev/null; then echo '[OK] active'; else echo '[FAIL] inactive'; fi"
         },
         {
             "type": "command",
-            "key": "  ☸ K3s",
+            "key": "   K3s",
             "keyColor": "green",
-            "text": "systemctl is-active --quiet k3s 2>/dev/null && echo '✓ https://localhost:6443' || echo '○ disabled'"
+            "text": "systemctl is-active --quiet k3s 2>/dev/null && echo '[OK] https://localhost:6443' || echo 'o disabled'"
         },
         {
             "type": "command",
-            "key": "  🗄️  Libvirt",
+            "key": "    Libvirt",
             "keyColor": "green",
-            "text": "systemctl is-active --quiet libvirtd.socket 2>/dev/null && echo \"✓ $(virsh list --all 2>/dev/null | grep -c running || echo 0) VMs running\" || echo '✗ inactive'"
+            "text": "systemctl is-active --quiet libvirtd.socket 2>/dev/null && echo \"[OK] $(virsh list --all 2>/dev/null | grep -c running || echo 0) VMs running\" || echo '[FAIL] inactive'"
         },
         "break",
         {

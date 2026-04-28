@@ -5,34 +5,34 @@
 just build         # Build OCI image
 just iso           # Generate bootable ISO
 just wsl           # Generate WSL2 tarball
-just all           # Full pipeline: build → rechunk → images
+just all           # Full pipeline: build  rechunk  images
 bootc container lint  # Validate image
 ```
 
 ## File Hierarchy (Rootfs-Native)
 ```
 mios/
-├── INDEX.md              # AI agent hub (ALWAYS READ FIRST)
-├── Containerfile         # 2-stage OCI build
-├── Justfile              # Build orchestration
-├── .env.mios             # Unified config
-├── specs/
-│   ├── engineering/
-│   │   └── PACKAGES.md  # Package SSOT
-│   ├── core/             # Blueprints
-│   └── knowledge/        # Research
-├── automation/
-│   ├── build.sh          # Master orchestrator
-│   ├── 01-repos.sh       # RPM repos
-│   ├── 10-gnome.sh       # Desktop packages
-│   └── 99-cleanup.sh     # Final cleanup
-├── usr/                  # System binaries (immutable)
-├── etc/                  # Config templates
-└── var/                  # State templates
++-- INDEX.md              # AI agent hub (ALWAYS READ FIRST)
++-- Containerfile         # 2-stage OCI build
++-- Justfile              # Build orchestration
++-- .env.mios             # Unified config
++-- specs/
+|   +-- engineering/
+|   |   +-- PACKAGES.md  # Package SSOT
+|   +-- core/             # Blueprints
+|   +-- knowledge/        # Research
++-- automation/
+|   +-- build.sh          # Master orchestrator
+|   +-- 01-repos.sh       # RPM repos
+|   +-- 10-gnome.sh       # Desktop packages
+|   +-- 99-cleanup.sh     # Final cleanup
++-- usr/                  # System binaries (immutable)
++-- etc/                  # Config templates
++-- var/                  # State templates
 ```
 
 ## Immutable Laws (NEVER Break)
-1. **USR-OVER-ETC**: Static config → /usr/lib/, not /etc/
+1. **USR-OVER-ETC**: Static config  /usr/lib/, not /etc/
 2. **NO-MKDIR-IN-VAR**: Use tmpfiles.d, never mkdir /var/foo
 3. **MANAGED-SELINUX**: semodule -i in RUN layer (primary)
 4. **BOOTC-CONTAINER-LINT**: Final validation step (mandatory)
@@ -41,7 +41,7 @@ mios/
 ## Package Management
 - **SSOT**: usr/share/mios/PACKAGES.md
 - **Categories**: packages-{repos,kernel,gnome,gpu,virt,etc}
-- **Installation**: automation/lib/packages.sh → install_packages <category>
+- **Installation**: automation/lib/packages.sh  install_packages <category>
 
 ## Platform Detection
 ```bash
@@ -61,14 +61,14 @@ systemd-detect-virt  # Returns: none, microsoft, wsl, kvm, container-*
 ## Common AI Tasks
 
 ### Add Package
-1. Edit PACKAGES.md → Add to appropriate category
+1. Edit PACKAGES.md  Add to appropriate category
 2. Update CHANGELOG v0.1.3
 3. Verify automation/build.sh calls install_packages {category}
 
 ### Create Script
 1. Naming: automation/XX-{purpose}.sh
 2. Header: #!/bin/bash + set -euo pipefail
-3. No /var mkdir → Use tmpfiles.d
+3. No /var mkdir  Use tmpfiles.d
 
 ### Debug Build
 1. Check bootc container lint errors

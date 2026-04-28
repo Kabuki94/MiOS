@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 # Logging functions
 log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
 log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
-log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
+log_[WARN]() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 # Check if running as root
@@ -53,7 +53,7 @@ AUDIO_INFO=$(lspci -nn -s "${PCI_ADDRESS%%:*}:" | grep -i "audio" | grep -i "nvi
 AUDIO_ID=$(echo "$AUDIO_INFO" | grep -oP '\[\K[0-9a-f]{4}:[0-9a-f]{4}(?=\])' | head -n1)
 
 if [[ -z "$AUDIO_ID" ]]; then
-    log_warning "Audio controller not found. Proceeding with GPU only."
+    log_[WARN] "Audio controller not found. Proceeding with GPU only."
     VFIO_IDS="$GPU_ID"
 else
     log_success "Found audio controller: $AUDIO_ID"
@@ -81,7 +81,7 @@ case "$CPU_VENDOR" in
 esac
 
 if [[ -z "$IOMMU_CHECK" ]]; then
-    log_warning "IOMMU not detected in dmesg. Make sure it's enabled in BIOS/UEFI."
+    log_[WARN] "IOMMU not detected in dmesg. Make sure it's enabled in BIOS/UEFI."
 else
     log_success "IOMMU support detected for $CPU_VENDOR CPU"
 fi
@@ -96,7 +96,7 @@ log_info "IOMMU Group: $IOMMU_GROUP"
 log_info "Devices in group: $IOMMU_GROUP_DEVICES"
 
 if [[ "$IOMMU_GROUP_DEVICES" -gt 3 ]]; then
-    log_warning "IOMMU group contains $IOMMU_GROUP_DEVICES devices. Consider ACS override patch if isolation is poor."
+    log_[WARN] "IOMMU group contains $IOMMU_GROUP_DEVICES devices. Consider ACS override patch if isolation is poor."
 fi
 
 # Step 4: Create VFIO modprobe configuration
@@ -167,16 +167,16 @@ fi
 echo ""
 log_success "RTX 4090 VFIO configuration complete!"
 echo ""
-echo -e "${BLUE}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
+echo -e "${BLUE}***********************************************************${NC}"
 echo -e "${GREEN}Configuration Summary:${NC}"
-echo -e "${BLUE}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
+echo -e "${BLUE}***********************************************************${NC}"
 echo ""
 echo "GPU Device IDs:        $VFIO_IDS"
 echo "IOMMU Group:           $IOMMU_GROUP ($IOMMU_GROUP_DEVICES devices)"
 echo ""
-echo -e "${BLUE}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
+echo -e "${BLUE}***********************************************************${NC}"
 echo -e "${YELLOW}Next Steps:${NC}"
-echo -e "${BLUE}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
+echo -e "${BLUE}***********************************************************${NC}"
 echo ""
 echo "1. Reboot the system"
 echo ""
@@ -191,16 +191,16 @@ echo "4. Check kernel messages:"
 echo "   $ dmesg | grep -i vfio"
 echo "   $ dmesg | grep $GPU_ID"
 echo ""
-echo -e "${BLUE}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
+echo -e "${BLUE}***********************************************************${NC}"
 echo -e "${YELLOW}Rollback Instructions:${NC}"
-echo -e "${BLUE}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
+echo -e "${BLUE}***********************************************************${NC}"
 echo ""
 echo "If you need to revert changes:"
 echo "  sudo bootc kargs edit --delete vfio-pci.ids=$VFIO_IDS --delete iommu=pt"
 echo "  sudo rm -f $VFIO_CONF"
 echo "  sudo reboot"
 echo ""
-echo -e "${BLUE}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
+echo -e "${BLUE}***********************************************************${NC}"
 echo ""
 
 read -p "Reboot now? (y/N): " REBOOT_NOW
@@ -209,5 +209,5 @@ if [[ "$REBOOT_NOW" =~ ^[Yy]$ ]]; then
     log_info "Rebooting system..."
     systemctl reboot
 else
-    log_warning "Remember to reboot before testing VFIO passthrough!"
+    log_[WARN] "Remember to reboot before testing VFIO passthrough!"
 fi

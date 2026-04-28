@@ -22,7 +22,7 @@
       "schedule": ["before 9am on monday"]
     },
     {
-      "description": "Protect image-versions.yml — require review",
+      "description": "Protect image-versions.yml  require review",
       "matchFileNames": ["image-versions.yml"],
       "automerge": false,
       "assignees": ["Kabuki94"]
@@ -31,7 +31,7 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Pin digest of BASE_IMAGE ARG in Containerfile — the dockerfile manager only pins bare FROM lines, not ARG defaults",
+      "description": "Pin digest of BASE_IMAGE ARG in Containerfile  the dockerfile manager only pins bare FROM lines, not ARG defaults",
       "fileMatch": ["(^|/)Containerfile$"],
       "matchStrings": [
         "ARG BASE_IMAGE=(?<depName>[^:\\s]+):(?<currentValue>[^\\s@]+)(?:@(?<currentDigest>sha256:[a-f0-9]+))?"

@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -24,7 +24,7 @@
 
 # Self-Build Mode Guide
 
-MiOS is a self-replicating OS — the published image can be used as the builder for the next generation. This document explains the self-build architecture and when to use each mode.
+MiOS is a self-replicating OS  the published image can be used as the builder for the next generation. This document explains the self-build architecture and when to use each mode.
 
 ## How Self-Build Works
 
@@ -41,18 +41,18 @@ MiOS-DEV implements an autonomous documentation and artifact cycle triggered on 
 The build chain is:
 
 ```
-MiOS v0.1.3 (running) → builds → MiOS v0.1.4 (OCI image)
-                                        ↓
-                                  Rechunk → Sign → Push to GHCR
-                                        ↓
+MiOS v0.1.3 (running)  builds  MiOS v0.1.4 (OCI image)
+                                        
+                                  Rechunk  Sign  Push to GHCR
+                                        
                               MiOS v0.1.4 (running via bootc upgrade)
-                                        ↓
-                                  builds → MiOS-DEV / MiOS-NXT ...
+                                        
+                                  builds  MiOS-DEV / MiOS-NXT ...
 ```
 
 ## Build Modes
 
-### Mode 1: CI/CD (GitHub Actions) — Recommended
+### Mode 1: CI/CD (GitHub Actions)  Recommended
 
 The GitHub Actions workflow automatically builds, rechunks, signs, and pushes the image on every commit to `main` and on a weekly schedule. This is the recommended approach for production use.
 
@@ -77,7 +77,7 @@ This creates a dedicated `mios-builder` Podman machine, builds the OCI image, re
 1. **Phase 0**: Prompts for username, password, LUKS passphrase, registry credentials
 2. **Phase 1**: Creates the `mios-builder` Podman machine (rootful, all cores, all RAM, 250 GB disk)
 3. **Phase 2**: Injects credentials into `99-overrides.sh`, runs `podman build`, rechunks, restores placeholders
-4. **Phase 3**: Generates disk images via BIB (RAW → VHDX, WSL tarball, Anaconda ISO)
+4. **Phase 3**: Generates disk images via BIB (RAW  VHDX, WSL tarball, Anaconda ISO)
 5. **Phase 4**: Pushes to GHCR, sets package public
 6. **Phase 5**: Restores default Podman machine, prints report
 
@@ -136,7 +136,7 @@ If you're starting from scratch (no existing MiOS image):
 
 1. Install Podman on any Linux system (Fedora, Ubuntu, etc.) or use Podman Desktop on Windows
 2. Clone the repo and run `podman build` (or `mios-build-local.ps1` on Windows)
-3. The Containerfile pulls `{{MIOS_BASE_IMAGE}}` (MiOS-2 primary, pre-signed NVIDIA kmods via ucore-hci) or `quay.io/fedora/fedora-bootc:rawhide` (MiOS-1, akmod-built drivers) as the base — no prior MiOS image needed. Future MiOS-NXT will evaluate Project Hummingbird minimal bases.
+3. The Containerfile pulls `{{MIOS_BASE_IMAGE}}` (MiOS-2 primary, pre-signed NVIDIA kmods via ucore-hci) or `quay.io/fedora/fedora-bootc:rawhide` (MiOS-1, akmod-built drivers) as the base  no prior MiOS image needed. Future MiOS-NXT will evaluate Project Hummingbird minimal bases.
 4. Deploy the resulting image to your target (bare metal via ISO, Hyper-V via VHDX, etc.)
 5. Subsequent builds can use the running MiOS itself (self-build mode)
 
@@ -171,11 +171,11 @@ sudo podman rmi test-build
 The build process downloads ~2-4 GB of RPM packages from Fedora repos, RPM Fusion, Terra, and CrowdSec. Subsequent builds with dnf5 cache mounts are 5-10x faster.
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

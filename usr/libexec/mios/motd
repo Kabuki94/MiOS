@@ -1,5 +1,5 @@
 #!/bin/bash
-# MiOS v0.1.3 — Enhanced MOTD Dashboard
+# MiOS v0.1.3 -- Enhanced MOTD Dashboard
 # Natively supports Role, MOK, and Update status (v0.1.3 baseline).
 [[ $- != *i* ]] && exit 0
 [[ -n "$MIOS_NO_MOTD" ]] && exit 0
@@ -12,19 +12,19 @@ C=$'\033[0;36m';W=$'\033[1;37m';G=$'\033[0;32m';Y=$'\033[0;33m';R=$'\033[0;31m';
 
 _s() {
     if systemctl is-active --quiet "$1" 2>/dev/null; then
-        printf '%s' "${G}●${N}"
+        printf '%s' "${G}*${N}"
     else
-        printf '%s' "${D}○${N}"
+        printf '%s' "${D}o${N}"
     fi
 }
 
-# ── Header ──────────────────────────────────────────────────────────────────
+# -- Header ------------------------------------------------------------------
 echo ""
-printf '%s\n' "${C}════════════════════════════════════════════════════════════${N}"
-printf '%s\n' "${W}  MiOS v0.1.3${N}  ${D}${HN} — ${IP}${N}"
-printf '%s\n' "${C}════════════════════════════════════════════════════════════${N}"
+printf '%s\n' "${C}============================================================${N}"
+printf '%s\n' "${W}  MiOS v0.1.3${N}  ${D}${HN} -- ${IP}${N}"
+printf '%s\n' "${C}============================================================${N}"
 
-# ── Status Row (Role, Update, MOK) ──────────────────────────────────────────
+# -- Status Row (Role, Update, MOK) ------------------------------------------
 ROLE=$(grep "^ROLE=" /var/lib/mios/role.active 2>/dev/null | cut -d= -f2 || echo "unknown")
 case "$ROLE" in
     desktop) ROLE_STR="${G}Desktop${N}" ;;
@@ -33,12 +33,12 @@ case "$ROLE" in
     *) ROLE_STR="${Y}${ROLE}${N}" ;;
 esac
 
-MOK_STATUS="${R}✗ Unverified${N}"
+MOK_STATUS="${R}[FAIL] Unverified${N}"
 if command -v mokutil &>/dev/null; then
     if mokutil --sb-state 2>/dev/null | grep -q "enabled"; then
-        MOK_STATUS="${G}✓ Secure Boot${N}"
+        MOK_STATUS="${G}[OK] Secure Boot${N}"
     else
-        MOK_STATUS="${Y}○ SB Disabled${N}"
+        MOK_STATUS="${Y}o SB Disabled${N}"
     fi
 fi
 
@@ -46,29 +46,29 @@ UP_STATUS="${D}Check with 'mios update'${N}"
 if command -v bootc &>/dev/null; then
     STAGED=$(bootc status --json 2>/dev/null | jq -r '.staged.image.image.repository' 2>/dev/null)
     if [[ "$STAGED" != "null" && -n "$STAGED" ]]; then
-        UP_STATUS="${Y}⚠ Update Staged${N}"
+        UP_STATUS="${Y}[WARN] Update Staged${N}"
     else
-        UP_STATUS="${G}✓ Up-to-date${N}"
+        UP_STATUS="${G}[OK] Up-to-date${N}"
     fi
 fi
 
 printf '  Role: %-15s  Update: %-15s  Boot: %s\n' "$ROLE_STR" "$UP_STATUS" "$MOK_STATUS"
 echo ""
 
-# ── Management ──────────────────────────────────────────────────────────────
+# -- Management --------------------------------------------------------------
 printf '%s\n' "${W}  Management Interfaces${N}"
 printf '%s\n' "  $(_s cockpit.socket)  Cockpit           $(_l "https://${IP}:9090" "https://${IP}:9090")"
 printf '%s\n' "  $(_s sshd)  SSH               $(_l "ssh://${IP}" "${IP}:22")"
 
 if systemctl is-active --quiet gnome-remote-desktop 2>/dev/null; then
-    printf '%s\n' "  ${G}●${N}  Remote Login      $(_l "rdp://${IP}:3389" "${IP}:3389") ${D}(GRD)${N}"
+    printf '%s\n' "  ${G}*${N}  Remote Login      $(_l "rdp://${IP}:3389" "${IP}:3389") ${D}(GRD)${N}"
 fi
 
 if podman ps --format '{{.Names}}' 2>/dev/null | grep -q mios-guacamole; then
-    printf '%s\n' "  ${G}●${N}  Browser Desktop   $(_l "http://${IP}:8080/guacamole/" "http://${IP}:8080/guacamole/")"
+    printf '%s\n' "  ${G}*${N}  Browser Desktop   $(_l "http://${IP}:8080/guacamole/" "http://${IP}:8080/guacamole/")"
 fi
 
-# ── Infrastructure ──────────────────────────────────────────────────────────
+# -- Infrastructure ----------------------------------------------------------
 echo ""
 printf '%s\n' "${W}  Infrastructure Status${N}"
 printf '%s\n' "  $(_s firewalld)  Firewall          ${D}firewall-cmd --list-all${N}"
@@ -77,7 +77,7 @@ printf '%s\n' "  $(_s libvirtd.socket)  Libvirt           ${D}virt-manager / vir
 
 # Optional
 if systemctl is-active --quiet k3s.service 2>/dev/null; then
-    printf '%s\n' "  ${G}●${N}  K3s API           $(_l "https://${IP}:6443" "https://${IP}:6443")"
+    printf '%s\n' "  ${G}*${N}  K3s API           $(_l "https://${IP}:6443" "https://${IP}:6443")"
 fi
 
 echo ""

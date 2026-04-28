@@ -1,8 +1,8 @@
-# 🌐 MiOS Environment Variables Index
+# [NET] MiOS Environment Variables Index
 # This file provides a structured view of the MiOS variable system.
 # ----------------------------------------------------------------------------
 
-## 🛰️ GLOBAL UPDATING VARIABLES (Managed by AI/System)
+##  GLOBAL UPDATING VARIABLES (Managed by AI/System)
 # Source: .env
 # Purpose: Define the immutable architectural baseline and AI operational laws.
 
@@ -18,7 +18,7 @@ AI_JOURNALING_LAW="MANDATORY"
 
 # ----------------------------------------------------------------------------
 
-## 👤 USER SET VARIABLES (Managed by Human)
+##  USER SET VARIABLES (Managed by Human)
 # Source: .env.mios
 # Purpose: Personalization, accounts, and custom application layering.
 

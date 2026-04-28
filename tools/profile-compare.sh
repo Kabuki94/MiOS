@@ -16,9 +16,9 @@ readonly BOLD='\033[1m'
 readonly NC='\033[0m'
 
 print_header() {
-    echo -e "\n${BOLD}${CYAN}═══════════════════════════════════════════════════════════${NC}"
+    echo -e "\n${BOLD}${CYAN}===========================================================${NC}"
     echo -e "${BOLD}${CYAN} $1${NC}"
-    echo -e "${BOLD}${CYAN}═══════════════════════════════════════════════════════════${NC}\n"
+    echo -e "${BOLD}${CYAN}===========================================================${NC}\n"
 }
 
 compare_sections() {
@@ -32,14 +32,14 @@ compare_sections() {
     local tmp1=$(mktemp)
     local tmp2=$(mktemp)
     
-    sed -n "/^╔.*$section/,/^╔/p" "$file1" | head -n -1 > "$tmp1"
-    sed -n "/^╔.*$section/,/^╔/p" "$file2" | head -n -1 > "$tmp2"
+    sed -n "/^+.*$section/,/^+/p" "$file1" | head -n -1 > "$tmp1"
+    sed -n "/^+.*$section/,/^+/p" "$file2" | head -n -1 > "$tmp2"
     
     if ! diff -u "$tmp1" "$tmp2" > /dev/null 2>&1; then
-        echo -e "${RED}✗ Differences found${NC}"
+        echo -e "${RED}[FAIL] Differences found${NC}"
         diff -u "$tmp1" "$tmp2" | head -50
     else
-        echo -e "${GREEN}✓ Identical${NC}"
+        echo -e "${GREEN}[OK] Identical${NC}"
     fi
     
     rm -f "$tmp1" "$tmp2"

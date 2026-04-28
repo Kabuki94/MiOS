@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS — AI-Native Architectural Patterns
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS  AI-Native Architectural Patterns
 
 ```json:knowledge
 {
@@ -16,7 +16,7 @@
 }
 ```
 
-## 🧠 The Cognitive Mirror Pattern
+## [MEM] The Cognitive Mirror Pattern
 The MiOS repository operates as a single cognitive space shared by multiple AI agents (both cloud-based and FOSS models).
 
 ### Core Protocols
@@ -26,7 +26,7 @@ The MiOS repository operates as a single cognitive space shared by multiple AI a
    - **Semantic (Specs):** Permanent architectural blueprints, engineering patterns, and validated knowledge.
 3. **Synchronization:** Handoffs occur via the journal, ensuring the "Brain" is never split across agent sessions.
 
-## 🗂️ Unified Knowledge Base (UKB)
+##  Unified Knowledge Base (UKB)
 MiOS implements a FOSS-native, AI-parseable knowledge structure.
 
 ### Structure: `artifacts/repo-rag-snapshot.json.gz`
@@ -41,23 +41,23 @@ A compressed JSON structure optimized for RAG (Retrieval-Augmented Generation) a
 ### Generation
 The UKB is auto-generated via `tools/generate-unified-knowledge.py` during build and initialization phases.
 
-## 🛠️ MCP (Model Context Protocol) Integration
+## [ENG] MCP (Model Context Protocol) Integration
 MiOS tools are being mapped to the Model Context Protocol for universal tool-calling.
 
 - **MCP Backend:** `mios-mcp.service` (Local engine).
 - **Discovery:** `.well-known/ai-tools.json` provides a manifest of available agentic tools.
 - **Standards:** All MiOS CLI tools (`mios-*`) are designed to be idempotent and return machine-readable (JSON) output when requested.
 
-## 📄 AI-Native File Formats
+## [FILE] AI-Native File Formats
 1. **llms.txt:** Root-level entry point for AI crawlers and LLM context loaders.
 2. **json:knowledge blocks:** Embedded JSON metadata within Markdown files for high-fidelity parsing.
 3. **Manifests:** Directory-level `manifest.json` files for structural discovery.
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

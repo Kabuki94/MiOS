@@ -1,5 +1,5 @@
 #!/bin/bash
-# MiOS v0.1.3 — Upstream Source Synchronization
+# MiOS v0.1.3  Upstream Source Synchronization
 # Fetches the latest 'main' branch root FS from GitHub and populates user folders.
 # Runs on first boot after network is online.
 
@@ -30,7 +30,7 @@ sync_to_user() {
         rm -f "${temp_tar}"
         
         chown -R "${username}:${username}" "${target_dir}"
-        log "✓ Success for ${username}"
+        log "[OK] Success for ${username}"
     else
         warn "Failed to download upstream source for ${username}"
         return 1

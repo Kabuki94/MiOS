@@ -1,5 +1,5 @@
 #!/bin/bash
-# MiOS v0.1.3 — 12-virt: Virtualization, containers, orchestration, gaming
+# MiOS v0.1.3  12-virt: Virtualization, containers, orchestration, gaming
 #
 # CHANGELOG v1.3:
 #   - Looking Glass B7: MOVED to 53-bake-lookingglass-client.sh (refactored out)
@@ -15,26 +15,26 @@ source "${SCRIPT_DIR}/lib/common.sh"
 
 KVER=$(cat /tmp/mios-kver 2>/dev/null || find /usr/lib/modules/ -mindepth 1 -maxdepth 1 -printf "%f\n" | sort -V | tail -1)
 
-# ── KVM / QEMU / Libvirt ────────────────────────────────────────────────────
+# -- KVM / QEMU / Libvirt ----------------------------------------------------
 echo "[12-virt] Installing KVM/QEMU/Libvirt..."
 install_packages_strict "virt"
 
-# ── Containers (Podman, Buildah, Skopeo, bootc, self-build tools) ────────────
+# -- Containers (Podman, Buildah, Skopeo, bootc, self-build tools) ------------
 echo "[12-virt] Installing container runtime and self-building tools..."
 install_packages_strict "containers"
 
 # Extra self-build tools (image-rechunking, etc. - may be repo-dependent)
 install_packages "self-build"
 
-# ── Cockpit Web Management ──────────────────────────────────────────────────
+# -- Cockpit Web Management --------------------------------------------------
 echo "[12-virt] Installing Cockpit..."
 install_packages_strict "cockpit"
 
-# ── Boot & Update Management (bootupd, ukify, etc.) ─────────────────────────
+# -- Boot & Update Management (bootupd, ukify, etc.) -------------------------
 echo "[12-virt] Installing boot and update management tools..."
 install_packages "boot"
 
-# ── CrowdSec IPS (sovereign/offline mode) ───────────────────────────────────
+# -- CrowdSec IPS (sovereign/offline mode) -----------------------------------
 echo "[12-virt] Installing CrowdSec..."
 install_packages "security"
 
@@ -49,11 +49,11 @@ if [ -d /etc/crowdsec ]; then
     echo "[12-virt] CrowdSec configured for sovereign/offline mode"
 fi
 
-# ── Windows Interop & Remote Desktop ────────────────────────────────────────
+# -- Windows Interop & Remote Desktop ----------------------------------------
 echo "[12-virt] Installing Windows interop tools..."
 install_packages "wintools"
 
-# ── Gaming (Steam, Wine, Gamescope) ─────────────────────────────────────────
+# -- Gaming (Steam, Wine, Gamescope) -----------------------------------------
 # NOTE: steam-devices and udev-joystick-blacklist-rm (terra weak dep of
 # gamescope-session-steam) both ship the same udev rules file. Exclude it.
 echo "[12-virt] Installing gaming packages..."
@@ -64,32 +64,32 @@ if [[ -n "$GAMING_PKGS" ]]; then
     }
 fi
 
-# ── Guest Agents ────────────────────────────────────────────────────────────
+# -- Guest Agents ------------------------------------------------------------
 echo "[12-virt] Installing guest agents..."
 install_packages "guests"
 
-# ── Storage ─────────────────────────────────────────────────────────────────
+# -- Storage -----------------------------------------------------------------
 echo "[12-virt] Installing storage packages..."
 install_packages "storage"
 
-# ── High Availability (Pacemaker/Corosync) ──────────────────────────────────
+# -- High Availability (Pacemaker/Corosync) ----------------------------------
 echo "[12-virt] Installing HA stack..."
 install_packages "ha"
 
-# ── CLI Utilities ───────────────────────────────────────────────────────────
+# -- CLI Utilities -----------------------------------------------------------
 echo "[12-virt] Installing CLI utilities..."
 install_packages "utils"
 
-# ── Android (Waydroid) ──────────────────────────────────────────────────────
+# -- Android (Waydroid) ------------------------------------------------------
 echo "[12-virt] Installing Waydroid..."
 install_packages "android"
 
-# ── VirtIO-Win ISO (latest stable) ─────────────────────────────────────────
+# -- VirtIO-Win ISO (latest stable) -----------------------------------------
 echo "[12-virt] Downloading VirtIO-Win ISO..."
 VIRTIO_URL="https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso"
 mkdir -p /usr/share/mios/virtio
 scurl -sL "$VIRTIO_URL" -o /usr/share/mios/virtio/virtio-win.iso 2>/dev/null || {
-    echo "[12-virt] WARNING: VirtIO-Win ISO download failed — download manually later"
+    echo "[12-virt] WARNING: VirtIO-Win ISO download failed  download manually later"
 }
 
 # Symlink the immutable ISO into /var/lib/libvirt/images via tmpfiles.d so it survives upgrades

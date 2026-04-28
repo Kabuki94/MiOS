@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🧠 MiOS Cognitive Journal (Episodic Memory)
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [MEM] MiOS Cognitive Journal (Episodic Memory)
 
 ```json:knowledge
 {
@@ -21,7 +21,7 @@
 
 ---
 
-## 🏛️ Structured Memory Patterns
+## [SEED] Structured Memory Patterns
 MiOS uses a Linux-native filesystem pattern for its cognitive history, following the standard log-rotation and data-storage conventions found in enterprise Linux environments.
 
 | Tier | Path | Purpose |
@@ -32,7 +32,7 @@ MiOS uses a Linux-native filesystem pattern for its cognitive history, following
 
 ---
 
-## 📅 Recent Entries (Rendered)
+##  Recent Entries (Rendered)
 
 ### [2026-04-27 05:20:00 UTC] [AI: Gemini CLI]
 - **Type:** KNOWLEDGE MAPPING & FLATTENING
@@ -41,7 +41,7 @@ MiOS uses a Linux-native filesystem pattern for its cognitive history, following
 - **Result:** Completed historical knowledge flattening directive.
 
 ### [2026-04-27 04:55:00 UTC] [AI: Gemini CLI]
-- **Type:** BUILD FIX — GITHUB ACTIONS SYNC
+- **Type:** BUILD FIX  GITHUB ACTIONS SYNC
 - **Thought:** Investigated GitHub Actions build failure where `home/` and `var/` directories were missing from the build context.
 - **Action:** Created `.gitkeep` files in user-space subdirectories.
 - **Result:** Build context integrity restored for remote runners.
@@ -49,16 +49,16 @@ MiOS uses a Linux-native filesystem pattern for its cognitive history, following
 ... [Historical entries moved to structured JSONL store] ...
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
 
 ### [2026-04-27 05:40:00 UTC] [AI: Gemini CLI]
-- **Type:** ARCHITECTURE — STRUCTURED MEMORY
+- **Type:** ARCHITECTURE  STRUCTURED MEMORY
 - **Thought:** Refactored journaling to be API-native, programmatically parseable, and Linux-native.
 - **Action:** Created `var/lib/mios/memory/journal/v1.jsonl` as the machine-native episodic store.
 - **Action:** Created `tools/journal-sync.py` to migrate legacy Markdown to JSONL.

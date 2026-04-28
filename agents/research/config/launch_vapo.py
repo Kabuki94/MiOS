@@ -10,18 +10,18 @@ def main():
             "service_account": "vertex-express@cloudws-os.iam.gserviceaccount.com"
         }
 
-        print(f"🚀 Launching Vertex AI Prompt Optimization job with config: {config}")
+        print(f"[START] Launching Vertex AI Prompt Optimization job with config: {config}")
         job = client.prompts.launch_optimization_job(
             method=types.PromptOptimizerMethod.VAPO,
             config=config
         )
-        print(f"⏳ Job requested. Waiting for initial state...")
-        print(f"✅ Job launched successfully!")
+        print(f" Job requested. Waiting for initial state...")
+        print(f"[OK] Job launched successfully!")
         print(f"Job Name: {job.name}")
         print(f"State: {job.state}")
         
     except Exception as e:
-        print(f"❌ Error launching job: {e}")
+        print(f"[FAIL] Error launching job: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":

@@ -20,17 +20,17 @@ print_banner() {
     clear
     echo -e "${BOLD}${CYAN}"
     cat << 'EOF'
-╔═══════════════════════════════════════════════════════════════╗
-║                  IOMMU GROUP VISUALIZER                       ║
-║            PCIe Passthrough Topology Analysis                 ║
-╚═══════════════════════════════════════════════════════════════╝
++===============================================================+
+                  IOMMU GROUP VISUALIZER                       
+            PCIe Passthrough Topology Analysis                 
++===============================================================+
 EOF
     echo -e "${NC}\n"
 }
 
 check_iommu() {
     if [ ! -d /sys/kernel/iommu_groups ]; then
-        echo -e "${RED}✗ IOMMU not available${NC}"
+        echo -e "${RED}[FAIL] IOMMU not available${NC}"
         echo "Please enable IOMMU in BIOS and add kernel parameters:"
         echo "  Intel: intel_iommu=on iommu=pt"
         echo "  AMD:   amd_iommu=on iommu=pt"
@@ -38,7 +38,7 @@ check_iommu() {
     fi
     
     if ! dmesg | grep -i iommu | grep -qi enabled; then
-        echo -e "${YELLOW}⚠ IOMMU may not be enabled in kernel${NC}"
+        echo -e "${YELLOW}[WARN] IOMMU may not be enabled in kernel${NC}"
         echo "Check dmesg | grep -i iommu"
         echo ""
     fi
@@ -59,7 +59,7 @@ get_device_color() {
 
 visualize_groups() {
     echo -e "${BOLD}${GREEN}IOMMU Group Topology${NC}"
-    echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+    echo -e "${BOLD}${NC}\n"
     
     local group_count=0
     local gpu_groups=()
@@ -91,17 +91,17 @@ visualize_groups() {
     done | sort -V
     
     echo -e "\n${BOLD}${GREEN}Summary${NC}"
-    echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${BOLD}${NC}"
     echo -e "Total IOMMU Groups: ${BOLD}$group_count${NC}"
     echo -e "GPU Groups: ${BOLD}${#gpu_groups[@]}${NC}"
     
     if [ ${#isolated_gpus[@]} -gt 0 ]; then
-        echo -e "${GREEN}✓ Isolated GPUs (good for passthrough):${NC}"
+        echo -e "${GREEN}[OK] Isolated GPUs (good for passthrough):${NC}"
         for gpu in "${isolated_gpus[@]}"; do
-            echo -e "  • $gpu"
+            echo -e "  * $gpu"
         done
     else
-        echo -e "${YELLOW}⚠ No isolated GPUs found${NC}"
+        echo -e "${YELLOW}[WARN] No isolated GPUs found${NC}"
         echo "GPUs share IOMMU groups with other devices"
     fi
     
@@ -110,7 +110,7 @@ visualize_groups() {
 
 show_gpu_details() {
     echo -e "\n${BOLD}${MAGENTA}GPU Passthrough Analysis${NC}"
-    echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+    echo -e "${BOLD}${NC}\n"
     
     local gpus=$(lspci | grep -E "VGA|3D")
     
@@ -139,7 +139,7 @@ show_gpu_details() {
                     if [ -e "$member" ]; then
                         member_id=$(basename "$member")
                         if [ "$member_id" != "$pci_id" ]; then
-                            lspci -s "$member_id" | sed 's/^/  ├─ /'
+                            lspci -s "$member_id" | sed 's/^/  +- /'
                         fi
                     fi
                 done
@@ -147,9 +147,9 @@ show_gpu_details() {
                 # Check if suitable for passthrough
                 device_count=$(find /sys/kernel/iommu_groups/$n/devices/ -type l | wc -l)
                 if [ "$device_count" -le 2 ]; then
-                    echo -e "  ${GREEN}✓ Good for passthrough (isolated or with audio only)${NC}"
+                    echo -e "  ${GREEN}[OK] Good for passthrough (isolated or with audio only)${NC}"
                 else
-                    echo -e "  ${YELLOW}⚠ Shares group with $((device_count-1)) other device(s)${NC}"
+                    echo -e "  ${YELLOW}[WARN] Shares group with $((device_count-1)) other device(s)${NC}"
                     echo -e "  ${YELLOW}  Consider ACS override patch if needed${NC}"
                 fi
                 
@@ -167,7 +167,7 @@ show_gpu_details() {
 
 show_usb_controllers() {
     echo -e "\n${BOLD}${YELLOW}USB Controller Groups${NC}"
-    echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+    echo -e "${BOLD}${NC}\n"
     
     local usb_controllers=$(lspci | grep -i usb)
     
@@ -203,7 +203,7 @@ export_to_file() {
         echo "Hostname: $(hostname)"
         echo "Kernel: $(uname -r)"
         echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
         echo ""
         
         for d in /sys/kernel/iommu_groups/*/devices/*; do
@@ -216,7 +216,7 @@ export_to_file() {
         done | sort -V
     } > "$output"
     
-    echo -e "${GREEN}✓ Topology exported to: $output${NC}"
+    echo -e "${GREEN}[OK] Topology exported to: $output${NC}"
 }
 
 interactive_menu() {
@@ -252,10 +252,10 @@ main() {
     show_usb_controllers
     
     echo -e "\n${BOLD}${GREEN}Passthrough Recommendations:${NC}"
-    echo -e "• ${GREEN}✓${NC} Isolated GPU groups are ideal for passthrough"
-    echo -e "• ${YELLOW}⚠${NC} Shared groups may need ACS override patch"
-    echo -e "• ${BLUE}ℹ${NC} GPU audio devices in same group is normal and safe"
-    echo -e "• ${BLUE}ℹ${NC} Check that your GPU supports reset (important!)"
+    echo -e "* ${GREEN}[OK]${NC} Isolated GPU groups are ideal for passthrough"
+    echo -e "* ${YELLOW}[WARN]${NC} Shared groups may need ACS override patch"
+    echo -e "* ${BLUE}${NC} GPU audio devices in same group is normal and safe"
+    echo -e "* ${BLUE}${NC} Check that your GPU supports reset (important!)"
     
     if [ "${1:-}" != "--no-menu" ]; then
         interactive_menu

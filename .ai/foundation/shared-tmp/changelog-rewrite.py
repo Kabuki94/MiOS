@@ -1,7 +1,7 @@
 """Reorder CHANGELOG.md so the 2026-04-25 v0.1.3 block sits at top.
 
 Authorised by Kabu 2026-04-25: "yes! FIX please System" (one-shot exception
-to the INDEX.md §8 / settings.json deny rule on Edit(CHANGELOG.md)).
+to the INDEX.md 8 / settings.json deny rule on Edit(CHANGELOG.md)).
 """
 from pathlib import Path
 
@@ -13,14 +13,14 @@ All notable changes to this project will be documented in this file.
 
 ## [v0.1.3] - 2026-04-25
 
-### \U0001f6e0️ Hardware & WSL2 Optimization
+### \U0001f6e0 Hardware & WSL2 Optimization
 * **Intel Battlemage Support:** Implemented strict `xe` driver bindings for Xe2 hardware.
 * **WSL2 Stability:** Resolved `dbus-broker` crashes on WSL2 kernels.
 * **RTX 50 VFIO fix:** Initial Blackwell GSP firmware workaround deployed.
 
 ## [v0.1.3] - 2026-04-22
 
-### ⚙️ Core OS & Role Engine Consolidation
+###  Core OS & Role Engine Consolidation
 * **Unified Role Engine:** Consolidated the asynchronous initialization and role management into the extensionless `usr/libexec/mios/role-apply` script.
 * **Formal Role Targets:** Introduced `mios-{desktop,headless,k3s-master,ha-node}.target` for strict role isolation.
 * **Architectural Overlay Purity:** Consolidated all dynamically created systemd units into the `` overlay. Removed redundant root-level config directories.
@@ -28,7 +28,7 @@ All notable changes to this project will be documented in this file.
 * **2026 Flatpak Standard:** Adopted `/usr/share/flatpak/pre-installed.d/` for mandatory application delivery.
 * **Logging Purity:** Audited and fixed malformed UTF-8/encoding issues in all shell scripts.
 
-### \U0001f3d7️ Build & CI/CD Optimization
+### \U0001f3d7 Build & CI/CD Optimization
 * **Rechunking Fix:** Optimized the CI pipeline to generate 5-10x smaller updates by running rechunking inside a privileged container.
 * **Docs Restructure Fix:** Resolved build failures caused by the relocation of `PACKAGES.md` to `specs/PACKAGES.md`.
 * **Build Diagnostics:** Enhanced `packages.sh` with FATAL error logging for mandatory sections.
@@ -37,7 +37,7 @@ All notable changes to this project will be documented in this file.
 
 ## [v0.1.3] - 2026-04-18
 
-### \U0001f6e0️ Hardware & GPU Passthrough
+### \U0001f6e0 Hardware & GPU Passthrough
 * **NVIDIA 595+ Stability:** Injected `NVreg_UseKernelSuspendNotifiers=1` to fix Wayland freezes on Ada/Blackwell hardware.
 * **WSL v0.1.3 Fix:** Gated `systemd-networkd-wait-online.service` on `!wsl` to prevent session timeouts.
 * **WSL v0.1.3 Fix:** Enforced 0755 on `wsl-user-generator` to fix login failures.
@@ -45,13 +45,13 @@ All notable changes to this project will be documented in this file.
 
 ## [v0.1.3] - 2026-04-16
 
-### ⚙️ Driver & Hardware Optimization
+###  Driver & Hardware Optimization
 * **NVIDIA Open Modules:** Standardized on NVIDIA open kernel modules as the default for Turing+.
 * **CDI Generation:** Integrated build-time CDI specification generation for NVIDIA GPUs.
 
 ## [v0.1.3] - 2026-04-14
 
-### \U0001f5a5️ Desktop & UI Evolution
+### \U0001f5a5 Desktop & UI Evolution
 * **GNOME 50 Transition:** Migrated to GNOME 50 (Wayland-only). Removed all legacy X11 session components.
 * **DNF5 Build Shift:** Fully transitioned the build pipeline to `dnf5`.
 
@@ -70,7 +70,7 @@ All notable changes to this project will be documented in this file.
 
 ## [v0.1.3] - 2026-02-15
 
-### ⚙️ Core OS Foundation
+###  Core OS Foundation
 * **systemd 260 Compliance:** Removed cgroup v1 support and SysV compatibility.
 * **composefs Integration:** Promoted root filesystem to `enabled = yes`.
 """

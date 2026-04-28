@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -26,7 +26,7 @@
 
 A complete, production-ready toolkit for configuring **any PCIe device** for VFIO passthrough on Linux. Originally designed for RTX 4090 on MiOS/systemd-boot, now expanded to support any GPU vendor, any bootloader, and any Linux distribution.
 
-## ðŸš€ Quick Start
+##  Quick Start
 
 ```bash
 # Run the universal configurator (interactive)
@@ -38,15 +38,15 @@ sudo ./universal-vfio-configurator.sh
 
 That's it! The script will guide you through device selection and configuration.
 
-## ðŸ“¦ What's Included
+##  What's Included
 
 | File | Purpose | Interactive? |
 |------|---------|--------------|
-| `universal-vfio-configurator.sh` | Main configuration script with device selection menu | âœ… Yes |
-| `vfio-verify.sh` | Post-reboot verification and diagnostics | âŒ No |
-| `rtx4090-vfio-isolation-guide.md` | Comprehensive manual with examples | ðŸ“– Reference |
+| `universal-vfio-configurator.sh` | Main configuration script with device selection menu | ... Yes |
+| `vfio-verify.sh` | Post-reboot verification and diagnostics |  No |
+| `rtx4090-vfio-isolation-guide.md` | Comprehensive manual with examples |  Reference |
 
-## âœ¨ Universal Features
+##  Universal Features
 
 ### Multi-Vendor GPU Support
 - **NVIDIA**: GeForce, RTX, Quadro, Tesla, A100, H100
@@ -76,7 +76,7 @@ That's it! The script will guide you through device selection and configuration.
 - Suggests ACS override patch when needed
 - Per-device IOMMU group membership display
 
-## ðŸŽ® Common Use Cases
+##  Common Use Cases
 
 ### 1. Gaming VM with GPU Passthrough
 **Scenario**: Pass RTX 4090 to Windows 11 gaming VM, use integrated graphics for Linux host
@@ -125,34 +125,34 @@ sudo ./universal-vfio-configurator.sh
 # Each VM gets different GPU vendor
 ```
 
-## ðŸ“‹ Interactive Menu Example
+##  Interactive Menu Example
 
 ```
-â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
-â•‘ Available PCIe Devices
-â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•£
-â•‘ 1) VGA compatible controller: NVIDIA RTX 4090
-â•‘    PCI: 01:00.0 â”‚ ID: 10de:2684 â”‚ IOMMU: 15
-â•‘    Driver: nvidia
-â• â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•£
-â•‘ 2) Audio device: NVIDIA RTX 4090 Audio
-â•‘    PCI: 01:00.1 â”‚ ID: 10de:22ba â”‚ IOMMU: 15
-â•‘    Driver: snd_hda_intel
-â• â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•£
-â•‘ 3) VGA compatible controller: AMD Radeon RX 7900 XTX
-â•‘    PCI: 0e:00.0 â”‚ ID: 1002:744c â”‚ IOMMU: 30
-â•‘    Driver: amdgpu
-â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+******************************************************************
+* Available PCIe Devices
+******************************************************************
+* 1) VGA compatible controller: NVIDIA RTX 4090
+*    PCI: 01:00.0  ID: 10de:2684  IOMMU: 15
+*    Driver: nvidia
+**
+* 2) Audio device: NVIDIA RTX 4090 Audio
+*    PCI: 01:00.1  ID: 10de:22ba  IOMMU: 15
+*    Driver: snd_hda_intel
+**
+* 3) VGA compatible controller: AMD Radeon RX 7900 XTX
+*    PCI: 0e:00.0  ID: 1002:744c  IOMMU: 30
+*    Driver: amdgpu
+******************************************************************
 
 Selection Options:
-  â€¢ Enter device numbers separated by spaces (e.g., 1 2 3)
-  â€¢ Enter 'a' to select all devices
-  â€¢ Enter 'q' to quit
+   Enter device numbers separated by spaces (e.g., 1 2 3)
+   Enter 'a' to select all devices
+   Enter 'q' to quit
 
 Select devices for VFIO isolation: 1 2
 ```
 
-## ðŸ”§ What the Script Does
+##  What the Script Does
 
 ### Phase 1: System Detection
 - Detects CPU vendor (AMD/Intel) for correct IOMMU parameters
@@ -192,7 +192,7 @@ Select devices for VFIO isolation: 1 2
 - Lists kernel parameters, files modified, rollback instructions
 - Prompts for immediate reboot
 
-## ðŸ›¡ï¸ Safety Features
+##  Safety Features
 
 ### Automatic Backups
 All modified files are backed up with timestamps:
@@ -216,7 +216,7 @@ sudo reboot
 - Validates device selections
 - Confirms initramfs regeneration success
 
-## ðŸ“Š Verification After Reboot
+##  Verification After Reboot
 
 ```bash
 # Run comprehensive verification
@@ -235,9 +235,9 @@ VFIO Configuration Verification
 ================================
 
 Checking VFIO modules...
-  âœ“ vfio loaded
-  âœ“ vfio_pci loaded
-  âœ“ vfio_iommu_type1 loaded
+   vfio loaded
+   vfio_pci loaded
+   vfio_iommu_type1 loaded
 
 Checking device binding...
 Device: 10de:2684
@@ -248,7 +248,7 @@ VFIO device nodes:
   /dev/vfio/15
 ```
 
-## ðŸŽ¯ Advanced Configuration
+##  Advanced Configuration
 
 ### CPU Pinning (Ryzen 9950X3D Example)
 For dual-CCD CPUs, pin VM to V-Cache CCD:
@@ -277,7 +277,7 @@ pcie_acs_override=downstream,multifunction
 
 **Warning**: Reduces isolation security. Only use if necessary.
 
-## ðŸ†˜ Troubleshooting
+##  Troubleshooting
 
 ### GPU Still Bound to nvidia Driver
 **Symptom**: `lspci -nnk` shows `nvidia` instead of `vfio-pci`
@@ -316,7 +316,7 @@ pcie_acs_override=downstream,multifunction
 3. Consider motherboard with better IOMMU support
 4. Use AUR package: `linux-vfio` (includes ACS patch)
 
-## ðŸ”— Integration with MiOS-Build
+##  Integration with MiOS-Build
 
 Add GPU passthrough phase to your MiOS-Build script:
 
@@ -336,18 +336,18 @@ if ask_yes_no "Configure GPU for VFIO passthrough?"; then
 fi
 ```
 
-## ðŸ“š Resources
+##  Resources
 
 - [Arch Wiki - PCI Passthrough](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF)
 - [MiOS Wiki - QEMU Setup](https://wiki.cachyos.org/virtualization/qemu_and_vmm_setup/)
 - [VFIO Subreddit](https://www.reddit.com/r/VFIO/)
 - [Level1Techs VFIO Forum](https://forum.level1techs.com/c/software/vfio/11)
 
-## ðŸ“ License
+##  License
 
 MIT License - Use freely for personal or commercial projects
 
-## ðŸ¤ Contributing
+##  Contributing
 
 Contributions welcome! Areas for improvement:
 - Support for additional bootloaders (Limine, ZFSBootMenu)
@@ -356,7 +356,7 @@ Contributions welcome! Areas for improvement:
 - Automatic VM creation with passed-through devices
 - Single GPU passthrough with dynamic switching
 
-## âš ï¸ Disclaimer
+##  Disclaimer
 
 This toolkit modifies bootloader and kernel configurations. While extensive safety measures are implemented:
 - **Always backup critical data** before proceeding
@@ -368,16 +368,16 @@ The authors are not responsible for any system instability, data loss, or hardwa
 
 ---
 
-**Made with â¤ï¸ for the VFIO community**
+**Made with  for the VFIO community**
 
 *Compatible with MiOS, Fedora Bootc, EndeavourOS, Manjaro, and any systemd-boot/GRUB-based distribution*
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

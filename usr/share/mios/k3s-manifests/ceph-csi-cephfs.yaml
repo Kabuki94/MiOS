@@ -1,4 +1,4 @@
-# MiOS — ceph-csi-cephfs for K3s auto-deploy
+# MiOS  ceph-csi-cephfs for K3s auto-deploy
 # Placeholders replaced by ceph-bootstrap.sh after cluster bootstrap
 apiVersion: helm.cattle.io/v1
 kind: HelmChart

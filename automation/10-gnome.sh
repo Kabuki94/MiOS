@@ -1,19 +1,19 @@
 #!/bin/bash
-# MiOS v0.1.3 — 10-gnome: GNOME 50 desktop — PURE BUILD-UP
+# MiOS v0.1.3  10-gnome: GNOME 50 desktop  PURE BUILD-UP
 #
 # STRATEGY: ucore has ZERO GNOME packages. We install exactly what we need.
 # With install_weakdeps=False (set globally in 01-repos.sh), only hard deps
 # get pulled in. This means:
-#   - malcontent-libs comes in (gnome-control-center hard dep) — CORRECT
-#   - malcontent-control/pam/tools do NOT come in (weak deps) — CORRECT
-#   - No GNOME bloat apps get installed — nothing to remove
+#   - malcontent-libs comes in (gnome-control-center hard dep)  CORRECT
+#   - malcontent-control/pam/tools do NOT come in (weak deps)  CORRECT
+#   - No GNOME bloat apps get installed  nothing to remove
 #
 # The ~25 core packages from the docs produce a fully functional GNOME 50
 # Wayland desktop with GDM, all portals, audio, Bluetooth, networking,
 # security, and proper theming across GTK3/GTK4/Qt.
 #
 # CHANGELOG v0.1.3:
-#   - MANDATORY Bibata cursor download — retries 3x, FAILS BUILD if missing
+#   - MANDATORY Bibata cursor download  retries 3x, FAILS BUILD if missing
 #   - dconf profiles for user + GDM added to 
 #   - Flatpak: 7 apps (added Flatseal + LocalSend)
 #   - adw-gtk3 theme for GTK3 visual consistency
@@ -23,31 +23,31 @@ source "$(dirname "$0")/lib/common.sh"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/packages.sh"
 
-# ═════════════════════════════════════════════════════════════════════════════
-# GNOME 50 — Install from PACKAGES.md (build-up, NOT strip-down)
-# ═════════════════════════════════════════════════════════════════════════════
+# =============================================================================
+# GNOME 50  Install from PACKAGES.md (build-up, NOT strip-down)
+# =============================================================================
 echo "[10-gnome] Installing GNOME 50 desktop (pure build-up)..."
 install_packages "gnome"
 
 # Optional GNOME Core Apps (all commented out by default in PACKAGES.md)
 install_packages_optional "gnome-core-apps"
 
-# ═════════════════════════════════════════════════════════════════════════════
-# Localsearch/tracker — disable indexing without removing
+# =============================================================================
+# Localsearch/tracker  disable indexing without removing
 # Removing localsearch breaks Nautilus search + Activities Overview.
 # Hide via autostart overrides in usr/share/xdg/autostart/
-# ═════════════════════════════════════════════════════════════════════════════
+# =============================================================================
 echo "[10-gnome] Disabling localsearch/tracker indexing (keep package, hide autostart)..."
 
-# ═════════════════════════════════════════════════════════════════════════════
-# Qt Adwaita theming — required for Qt apps to match GNOME look
+# =============================================================================
+# Qt Adwaita theming  required for Qt apps to match GNOME look
 # Managed via usr/lib/environment.d/60-mios-qt-adwaita.conf
-# ═════════════════════════════════════════════════════════════════════════════
+# =============================================================================
 echo "[10-gnome] Setting Qt Adwaita environment variables (managed via overlay)..."
 
-# ═════════════════════════════════════════════════════════════════════════════
+# =============================================================================
 # Geist Font (Vercel)
-# ═════════════════════════════════════════════════════════════════════════════
+# =============================================================================
 echo "[10-gnome] Installing Geist font family..."
 mkdir -p /usr/share/fonts/geist
 git clone --depth=1 https://github.com/vercel/geist-font.git /tmp/geist-font 2>/dev/null || true
@@ -57,8 +57,8 @@ if [ -d /tmp/geist-font ]; then
 fi
 fc-cache -f /usr/share/fonts/geist 2>/dev/null || true
 
-# ═════════════════════════════════════════════════════════════════════════════
-# Bibata Cursor Theme — MANDATORY (build fails if download fails)
+# =============================================================================
+# Bibata Cursor Theme  MANDATORY (build fails if download fails)
 #
 # The cursor shows as a SQUARE when:
 #   - /usr/share/icons/Bibata-Modern-Classic/ doesn't exist (download failed)
@@ -66,8 +66,8 @@ fc-cache -f /usr/share/fonts/geist 2>/dev/null || true
 #   - dconf cursor-theme references a theme with no files
 #
 # FIX: Retry download 3 times. VERIFY the cursors directory exists.
-#      FAIL THE BUILD if cursors are missing — a square cursor is unacceptable.
-# ═════════════════════════════════════════════════════════════════════════════
+#      FAIL THE BUILD if cursors are missing  a square cursor is unacceptable.
+# =============================================================================
 echo "[10-gnome] Installing Bibata-Modern-Classic cursor (MANDATORY)..."
 BIBATA_VER=""
 BIBATA_FALLBACK="2.0.7"
@@ -80,7 +80,7 @@ BIBATA_VER=$( (scurl -sL -H "Accept: application/vnd.github+json" "https://api.g
 # Fallback if API fails (rate limit, network issue)
 if [ -z "$BIBATA_VER" ]; then
     BIBATA_VER="$BIBATA_FALLBACK"
-    echo "[10-gnome]   GitHub API unavailable — using fallback v${BIBATA_VER}"
+    echo "[10-gnome]   GitHub API unavailable  using fallback v${BIBATA_VER}"
 else
     echo "[10-gnome]   Latest release: v${BIBATA_VER}"
 fi
@@ -89,7 +89,7 @@ BIBATA_URL="https://github.com/ful1e5/Bibata_Cursor/releases/download/v${BIBATA_
 BIBATA_DIR="/usr/share/icons/Bibata-Modern-Classic"
 mkdir -p /usr/share/icons
 
-# Download with retries — DO NOT silence errors
+# Download with retries  DO NOT silence errors
 BIBATA_OK=0
 for attempt in 1 2 3; do
     echo "[10-gnome]   Download attempt $attempt/3..."
@@ -104,19 +104,19 @@ for attempt in 1 2 3; do
     sleep 5
 done
 
-# VERIFY cursor files actually exist — log warning if missing but DO NOT fail build
+# VERIFY cursor files actually exist  log [WARN] if missing but DO NOT fail build
 if [ "$BIBATA_OK" -eq 0 ] || [ ! -d "$BIBATA_DIR/cursors" ]; then
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
     echo "  WARNING: Bibata cursor theme download FAILED after 3 attempts"
     echo "  URL: $BIBATA_URL"
     echo "  The cursor will show as a SQUARE until the theme is installed."
     echo "  This failure is non-fatal for the build; users can install later."
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
 else
-    echo "[10-gnome] ✓ Bibata cursor installed: $(find "$BIBATA_DIR/cursors/" -mindepth 1 -maxdepth 1 | wc -l) cursors"
+    echo "[10-gnome] [OK] Bibata cursor installed: $(find "$BIBATA_DIR/cursors/" -mindepth 1 -maxdepth 1 | wc -l) cursors"
 fi
 
-# Comprehensive cursor default — every layer that reads cursor theme
+# Comprehensive cursor default  every layer that reads cursor theme
 # Managed via usr/share/icons/default/index.theme
 # and usr/share/X11/icons/default/index.theme
 
@@ -124,31 +124,31 @@ fi
 if [ -d "$BIBATA_DIR/cursors" ]; then
     update-alternatives --install /usr/share/icons/default/index.theme \
         x-cursor-theme /usr/share/icons/Bibata-Modern-Classic/cursor.theme 100 2>/dev/null || true
-    echo "[10-gnome] ✓ x-cursor-theme alternative set to Bibata"
+    echo "[10-gnome] [OK] x-cursor-theme alternative set to Bibata"
 fi
 
 # 4. Symlink into /usr/share/cursors/xorg-x11 (legacy X11 cursor path)
 mkdir -p /usr/share/cursors/xorg-x11
 ln -sf /usr/share/icons/Bibata-Modern-Classic /usr/share/cursors/xorg-x11/Bibata-Modern-Classic 2>/dev/null || true
 
-# 5. GDM user cursor — ensure cursor files are world-readable
+# 5. GDM user cursor  ensure cursor files are world-readable
 chmod -R a+rX "$BIBATA_DIR" 2>/dev/null || true
 
 # 6. Xresources fallback (oldest X11 cursor method)
 # Managed via usr/lib/X11/Xresources
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# Phosh — Mobile session for portrait/tablet remote access
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
+# Phosh  Mobile session for portrait/tablet remote access
+# ===============================================================================
 echo "[10-gnome] Installing Phosh mobile session..."
 install_packages_optional "phosh"
 # Make session wrapper executable
 chmod +x /usr/local/bin/phosh-session-wrapper 2>/dev/null || true
-# ═════════════════════════════════════════════════════════════════════════════
+# =============================================================================
 # Flatpak Remotes
 # Disable filtered Fedora remote, use unfiltered Flathub for full catalog
-# ═════════════════════════════════════════════════════════════════════════════
+# =============================================================================
 echo "[10-gnome] Configuring Flatpak remotes..."
 if command -v flatpak &>/dev/null; then
     flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo || true
@@ -159,9 +159,9 @@ else
     echo "[10-gnome] WARN: flatpak binary not found, skipping remote configuration"
 fi
 
-# ═════════════════════════════════════════════════════════════════════════════
+# =============================================================================
 # Essential Flatpaks
-# ═════════════════════════════════════════════════════════════════════════════
+# =============================================================================
 echo "[10-gnome] Flatpaks will be installed on first boot (mios-flatpak-install.service)..."
 # NOTE: mios-flatpak-install.service is enabled in Containerfile STEP D
 # (unit file lives in , not available during script execution)

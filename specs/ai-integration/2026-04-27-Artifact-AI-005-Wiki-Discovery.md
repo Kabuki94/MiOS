@@ -1,4 +1,4 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
 # AI Agent Wiki Discovery Pattern
 
 ```json:knowledge
@@ -40,11 +40,11 @@ The MiOS Wiki serves as the **live documentation hub** that updates automaticall
 
 ### Why Wiki-First?
 
-1. **Always Current** — Updates with every build via `tools/log-to-bootstrap.sh`
-2. **Artifact Tracking** — Build logs and compressed artifacts logged automatically
-3. **Research Patterns** — Latest engineering specs and audits available immediately
-4. **Version-Specific** — Documentation organized by MiOS version (v0.1.3, etc.)
-5. **FOSS-Friendly** — No proprietary APIs required, pure GitHub Wiki
+1. **Always Current**  Updates with every build via `tools/log-to-bootstrap.sh`
+2. **Artifact Tracking**  Build logs and compressed artifacts logged automatically
+3. **Research Patterns**  Latest engineering specs and audits available immediately
+4. **Version-Specific**  Documentation organized by MiOS version (v0.1.3, etc.)
+5. **FOSS-Friendly**  No proprietary APIs required, pure GitHub Wiki
 
 ---
 
@@ -96,7 +96,7 @@ live_documentation:
 **During task execution:**
 
 - **Refer to Wiki** for procedural updates (e.g., build workflow changes)
-- **Use static docs** for immutable laws (USR-OVER-ETC, NO-MKDIR-IN-VAR) — these don't change
+- **Use static docs** for immutable laws (USR-OVER-ETC, NO-MKDIR-IN-VAR)  these don't change
 - **Check build logs** in Wiki for recent build failures or patterns
 
 ### Phase 4: Verification
@@ -296,17 +296,17 @@ outputs = llm.generate(prompts, SamplingParams(temperature=0.7, max_tokens=512))
 ### What Gets Updated
 
 **Every Build:**
-- `Home.md` — Latest version, artifact links
+- `Home.md`  Latest version, artifact links
 - All core docs (INDEX, README, AI-AGENT-GUIDE, etc.)
 - All AI integration docs
 - Engineering specs (FHS audit, etc.)
 
 **Every Build with Logs:**
-- `build-logs/VERSION/latest-build.log` — Most recent build output
+- `build-logs/VERSION/latest-build.log`  Most recent build output
 
 **Every Build with Outputs:**
-- `output/VERSION/*.sha256` — Checksums for disk images
-- `output/VERSION/*.json` — Build metadata
+- `output/VERSION/*.sha256`  Checksums for disk images
+- `output/VERSION/*.json`  Build metadata
 
 ---
 
@@ -362,15 +362,15 @@ curl -s https://raw.githubusercontent.com/wiki/Kabuki94/MiOS-bootstrap/AI-AGENT-
 
 ### 1. **Wiki-First for Procedures**
 
-✅ **DO:** Check Wiki for current build workflows, task patterns, recent research
+[OK] **DO:** Check Wiki for current build workflows, task patterns, recent research
 
-❌ **DON'T:** Rely solely on static knowledge graph for procedural information
+[FAIL] **DON'T:** Rely solely on static knowledge graph for procedural information
 
 ### 2. **Static-First for Laws**
 
-✅ **DO:** Use static knowledge graph for immutable laws (USR-OVER-ETC, etc.)
+[OK] **DO:** Use static knowledge graph for immutable laws (USR-OVER-ETC, etc.)
 
-❌ **DON'T:** Expect immutable laws to change in Wiki
+[FAIL] **DON'T:** Expect immutable laws to change in Wiki
 
 ### 3. **Hybrid Approach**
 
@@ -466,9 +466,9 @@ class MiOSAgent:
 
         # Note Wiki as primary source
         self.wiki_base = self.static_knowledge["live_documentation"]["wiki"]
-        print(f"✓ Loaded static knowledge (snapshot)")
-        print(f"✓ Wiki URL: {self.wiki_base}")
-        print(f"⚠️ Will check Wiki for current information")
+        print(f"[OK] Loaded static knowledge (snapshot)")
+        print(f"[OK] Wiki URL: {self.wiki_base}")
+        print(f"[WARN] Will check Wiki for current information")
 
     def get_context(self, task):
         """Get context for task, preferring Wiki"""
@@ -476,10 +476,10 @@ class MiOSAgent:
             # Fetch latest from Wiki
             try:
                 wiki_page = self.fetch_wiki_page("Quick-Reference")
-                print(f"✓ Using Wiki (current): Quick-Reference")
+                print(f"[OK] Using Wiki (current): Quick-Reference")
                 return wiki_page
             except:
-                print(f"⚠️ Wiki unavailable, using static knowledge")
+                print(f"[WARN] Wiki unavailable, using static knowledge")
                 return self.static_knowledge
         else:
             # Use static for architecture
@@ -513,4 +513,4 @@ print(context[:500])  # Preview context
 
 ---
 
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

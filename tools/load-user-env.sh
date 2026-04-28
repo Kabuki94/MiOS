@@ -33,7 +33,7 @@ SYSTEM_TEMPLATE_DIR="${REPO_ROOT}/etc/mios/templates"
 
 # Simple TOML parser for key="value" format
 # Converts TOML sections and keys to environment variables
-# Example: [images] base = "foo" → MIOS_IMAGES_BASE="foo"
+# Example: [images] base = "foo"  MIOS_IMAGES_BASE="foo"
 parse_toml() {
     local toml_file="$1"
     local prefix="${2:-MIOS}"

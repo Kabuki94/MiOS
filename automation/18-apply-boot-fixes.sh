@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 # MiOS: Systemd execution analysis & WSL2 Boot Loop fixes
 # Resolves ordering cycles, executable stripping, and hardware-dependent
 # failure cascades detected during F44 boots on varied hardware/hypervisors.
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 set -euo pipefail
 
 echo "==> Applying MiOS system service fixes..."

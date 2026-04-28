@@ -31,14 +31,14 @@ declare -a SELECTED_DRIVERS=()
 
 # Logging functions
 log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
-log_success() { echo -e "${GREEN}[âœ“]${NC} $1"; }
-log_warning() { echo -e "${YELLOW}[âš ]${NC} $1"; }
-log_error() { echo -e "${RED}[âœ—]${NC} $1"; }
+log_success() { echo -e "${GREEN}[]${NC} $1"; }
+log_[WARN]() { echo -e "${YELLOW}[]${NC} $1"; }
+log_error() { echo -e "${RED}[]${NC} $1"; }
 log_header() { 
     echo ""
-    echo -e "${CYAN}â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—${NC}"
-    echo -e "${CYAN}â•‘${NC} ${BOLD}$1${NC}"
-    echo -e "${CYAN}â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
+    echo -e "${CYAN}******************************************************************${NC}"
+    echo -e "${CYAN}*${NC} ${BOLD}$1${NC}"
+    echo -e "${CYAN}******************************************************************${NC}"
     echo ""
 }
 
@@ -64,7 +64,7 @@ detect_bootloader() {
     elif [[ -f /boot/refind_linux.conf ]] || [[ -f /boot/EFI/refind/refind.conf ]]; then
         BOOTLOADER="refind"
     else
-        log_warning "Could not detect bootloader automatically"
+        log_[WARN] "Could not detect bootloader automatically"
         echo "Please select your bootloader:"
         echo "  1) systemd-boot"
         echo "  2) GRUB"
@@ -100,7 +100,7 @@ detect_cpu_and_iommu() {
             IOMMU_TYPE="Intel VT-d"
             ;;
         *)
-            log_warning "Unknown CPU vendor: $CPU_VENDOR"
+            log_[WARN] "Unknown CPU vendor: $CPU_VENDOR"
             IOMMU_PARAM="iommu=on"
             IOMMU_TYPE="Generic"
             ;;
@@ -112,7 +112,7 @@ detect_cpu_and_iommu() {
     if dmesg | grep -iq "$IOMMU_TYPE"; then
         log_success "IOMMU ($IOMMU_TYPE) detected and initialized"
     else
-        log_warning "IOMMU not detected - ensure it's enabled in BIOS/UEFI"
+        log_[WARN] "IOMMU not detected - ensure it's enabled in BIOS/UEFI"
     fi
 }
 
@@ -123,7 +123,7 @@ detect_initramfs() {
     elif command -v dracut &>/dev/null; then
         INITRAMFS="dracut"
     else
-        log_warning "Could not detect initramfs system"
+        log_[WARN] "Could not detect initramfs system"
         INITRAMFS="unknown"
     fi
     log_info "Initramfs system: $INITRAMFS"
@@ -156,9 +156,9 @@ display_devices() {
     local -n dev_array=$1
     local counter=1
     
-    echo -e "${CYAN}â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—${NC}"
-    echo -e "${CYAN}â•‘${NC} ${BOLD}Available PCIe Devices${NC}"
-    echo -e "${CYAN}â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•£${NC}"
+    echo -e "${CYAN}******************************************************************${NC}"
+    echo -e "${CYAN}*${NC} ${BOLD}Available PCIe Devices${NC}"
+    echo -e "${CYAN}******************************************************************${NC}"
     
     for device in "${dev_array[@]}"; do
         local pci_addr=$(echo "$device" | awk '{print $1}')
@@ -185,15 +185,15 @@ display_devices() {
             color=$BLUE
         fi
         
-        echo -e "${CYAN}â•‘${NC} ${BOLD}${counter})${NC} ${color}${device_desc}${NC}"
-        echo -e "${CYAN}â•‘${NC}    PCI: ${pci_addr} â”‚ ID: ${device_id} â”‚ IOMMU: ${iommu_group}"
-        echo -e "${CYAN}â•‘${NC}    Driver: ${current_driver}"
-        echo -e "${CYAN}â• â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•£${NC}"
+        echo -e "${CYAN}*${NC} ${BOLD}${counter})${NC} ${color}${device_desc}${NC}"
+        echo -e "${CYAN}*${NC}    PCI: ${pci_addr}  ID: ${device_id}  IOMMU: ${iommu_group}"
+        echo -e "${CYAN}*${NC}    Driver: ${current_driver}"
+        echo -e "${CYAN}**${NC}"
         
         counter=$((counter + 1))
     done
     
-    echo -e "${CYAN}â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
+    echo -e "${CYAN}******************************************************************${NC}"
 }
 
 # Interactive device selection
@@ -206,9 +206,9 @@ select_devices() {
     
     echo ""
     echo -e "${BOLD}Selection Options:${NC}"
-    echo "  â€¢ Enter device numbers separated by spaces (e.g., 1 2 3)"
-    echo "  â€¢ Enter 'a' to select all devices"
-    echo "  â€¢ Enter 'q' to quit"
+    echo "   Enter device numbers separated by spaces (e.g., 1 2 3)"
+    echo "   Enter 'a' to select all devices"
+    echo "   Enter 'q' to quit"
     echo ""
     
     while true; do
@@ -262,7 +262,7 @@ select_devices() {
     echo ""
     log_success "Selected ${#SELECTED_DEVICES[@]} device(s):"
     for i in "${!SELECTED_DEVICES[@]}"; do
-        echo "  â€¢ ${SELECTED_DEVICES[$i]} [${SELECTED_IDS[$i]}] - Driver: ${SELECTED_DRIVERS[$i]}"
+        echo "   ${SELECTED_DEVICES[$i]} [${SELECTED_IDS[$i]}] - Driver: ${SELECTED_DRIVERS[$i]}"
     done
 }
 
@@ -309,12 +309,12 @@ detect_related_devices() {
     done
     
     if [[ ${#additional_devices[@]} -gt 0 ]]; then
-        log_warning "Found ${#additional_devices[@]} related device(s) in same IOMMU group(s):"
+        log_[WARN] "Found ${#additional_devices[@]} related device(s) in same IOMMU group(s):"
         echo ""
         
         for entry in "${additional_devices[@]}"; do
             IFS='|' read -r addr id info <<< "$entry"
-            echo "  â€¢ $info"
+            echo "   $info"
         done
         
         echo ""
@@ -343,20 +343,20 @@ analyze_iommu_groups() {
             local group=$(basename $(readlink "/sys/bus/pci/devices/0000:$pci_addr/iommu_group"))
             local group_size=$(ls "/sys/kernel/iommu_groups/$group/devices/" 2>/dev/null | wc -l)
             
-            echo -e "${CYAN}â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—${NC}"
-            echo -e "${CYAN}â•‘${NC} Device: $pci_addr â”‚ IOMMU Group: $group â”‚ Size: $group_size device(s)"
-            echo -e "${CYAN}â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•£${NC}"
+            echo -e "${CYAN}******************************************************************${NC}"
+            echo -e "${CYAN}*${NC} Device: $pci_addr  IOMMU Group: $group  Size: $group_size device(s)"
+            echo -e "${CYAN}******************************************************************${NC}"
             
             for dev in /sys/kernel/iommu_groups/$group/devices/*; do
                 local dev_id=$(basename "$dev")
                 local dev_info=$(lspci -nns "${dev_id}" | sed 's/^[^ ]* //')
-                echo -e "${CYAN}â•‘${NC} $dev_info"
+                echo -e "${CYAN}*${NC} $dev_info"
             done
             
-            echo -e "${CYAN}â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
+            echo -e "${CYAN}******************************************************************${NC}"
             
             if [[ $group_size -gt 5 ]]; then
-                log_warning "Large IOMMU group detected ($group_size devices)"
+                log_[WARN] "Large IOMMU group detected ($group_size devices)"
                 echo "  Consider enabling ACS override if passthrough fails"
             fi
             
@@ -472,7 +472,7 @@ configure_initramfs() {
             configure_dracut
             ;;
         *)
-            log_warning "Unknown initramfs system - skipping automatic configuration"
+            log_[WARN] "Unknown initramfs system - skipping automatic configuration"
             log_info "Manually add: vfio_pci vfio vfio_iommu_type1 to your initramfs"
             ;;
     esac
@@ -502,7 +502,7 @@ configure_mkinitcpio() {
     # Verify hook order
     local hooks_line=$(grep "^HOOKS=" "$MKINITCPIO_CONF")
     if [[ "$hooks_line" =~ kms.*modconf ]]; then
-        log_warning "Hook order issue: 'modconf' should come before 'kms'"
+        log_[WARN] "Hook order issue: 'modconf' should come before 'kms'"
         log_info "Current: $hooks_line"
         
         read -p "Fix hook order automatically? [Y/n]: " fix_hooks
@@ -622,7 +622,7 @@ configure_systemd_boot() {
         
         # Check if parameters already exist
         if grep -q "vfio-pci.ids=" "$entry"; then
-            log_warning "VFIO parameters already present, updating..."
+            log_[WARN] "VFIO parameters already present, updating..."
             # Remove old vfio parameters
             sed -i 's/\(amd_iommu\|intel_iommu\)=[^ ]* //g' "$entry"
             sed -i 's/iommu=[^ ]* //g' "$entry"
@@ -695,7 +695,7 @@ configure_refind() {
     local params="$1"
     
     log_info "Configuring rEFInd..."
-    log_warning "rEFInd configuration is typically manual"
+    log_[WARN] "rEFInd configuration is typically manual"
     
     echo ""
     echo "Add these parameters to your boot stanza in refind_linux.conf:"
@@ -767,9 +767,9 @@ echo ""
 echo "Checking VFIO modules..."
 for mod in vfio vfio_pci vfio_iommu_type1; do
     if lsmod | grep -q "^\$mod"; then
-        echo "  âœ“ \$mod loaded"
+        echo "   \$mod loaded"
     else
-        echo "  âœ— \$mod NOT loaded"
+        echo "   \$mod NOT loaded"
     fi
 done
 echo ""
@@ -875,14 +875,14 @@ main() {
     generate_summary
     
     # Prompt for reboot
-    echo -e "${YELLOW}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
+    echo -e "${YELLOW}****************************************************************${NC}"
     read -p "Reboot now to apply changes? [y/N]: " reboot_now
     
     if [[ "$reboot_now" =~ ^[Yy]$ ]]; then
         log_info "Rebooting system..."
         systemctl reboot
     else
-        log_warning "Remember to reboot before testing VFIO passthrough!"
+        log_[WARN] "Remember to reboot before testing VFIO passthrough!"
         echo ""
         echo "After reboot, run: vfio-verify"
     fi

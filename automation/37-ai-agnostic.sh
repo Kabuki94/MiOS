@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🌐 MiOS
+# [NET] MiOS
 # 37-ai-agnostic: Configure Unified AI API Redirects and agnostic environment
 set -euo pipefail
 

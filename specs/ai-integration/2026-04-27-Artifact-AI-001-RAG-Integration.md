@@ -2,11 +2,11 @@
 
 **Version:** 0.1.3  
 **Target:** FOSS AI APIs (Ollama, llama.cpp, LocalAI, vLLM)  
-**Compression Ratio:** 928MB → 752KB context bundle (99.92% reduction)
+**Compression Ratio:** 928MB  752KB context bundle (99.92% reduction)
 
 ---
 
-## 📦 What's Included
+## [PKG] What's Included
 
 This compressed RAG package contains the complete MiOS knowledge base optimized for FOSS AI ingestion:
 
@@ -14,7 +14,7 @@ This compressed RAG package contains the complete MiOS knowledge base optimized 
 
 1. **mios-knowledge-graph.json** (3.3KB)
    - Structured knowledge graph with core concepts
-   - Version history (MiOS-1 → MiOS-2 → MiOS-NXT)
+   - Version history (MiOS-1  MiOS-2  MiOS-NXT)
    - Immutable laws, build pipeline, security hardening
    - Integration points for Ollama, k3s, VFIO
 
@@ -52,7 +52,7 @@ This compressed RAG package contains the complete MiOS knowledge base optimized 
 
 ---
 
-## 🚀 Quick Start with FOSS AI
+## [START] Quick Start with FOSS AI
 
 ### Option 1: Ollama (Recommended for Linux)
 
@@ -204,7 +204,7 @@ JSON
 
 ---
 
-## 📊 RAG Architecture
+## [STAT] RAG Architecture
 
 ### Embedding Strategy
 
@@ -238,7 +238,7 @@ context_window: 4096      # Model context size (adjust per model)
 
 ---
 
-## 🧩 Unified AI API Redirects
+##  Unified AI API Redirects
 
 MiOS implements an agnostic API layer to prevent provider lock-in. All agents should target the local proxy or use the standardized environment variables.
 
@@ -258,7 +258,7 @@ See **[Unified Redirects](2026-04-27-Artifact-AI-006-Unified-Redirects.md)** for
 
 ---
 
-## 🧠 AI Agent Initialization
+## [MEM] AI Agent Initialization
 
 ### System Prompt Template
 
@@ -269,7 +269,7 @@ You are an expert in MiOS v0.1.3, a bootc-based immutable Linux distribution.
 
 Core Knowledge:
 - Based on Fedora Rawhide + ucore-hci
-- Uses bootc (OCI → bootable OS) + composefs
+- Uses bootc (OCI  bootable OS) + composefs
 - Self-building: running MiOS builds next MiOS
 - Multi-surface: WSL2, Hyper-V, bare metal, k3s
 

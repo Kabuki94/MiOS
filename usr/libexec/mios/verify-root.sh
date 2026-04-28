@@ -1,13 +1,13 @@
 #!/usr/bin/bash
-# verify-root.sh — MiOS post-pivot root filesystem verification.
+# verify-root.sh  MiOS post-pivot root filesystem verification.
 #
 # Three-tier strategy:
-#   Tier A: existence check (~22 critical paths). Always runs. Failure → exit 1.
+#   Tier A: existence check (~22 critical paths). Always runs. Failure  exit 1.
 #   Tier B: fsverity measure check against /usr/lib/mios/verify-root.digests.
 #           No-op silently if file not present or if path lacks fs-verity.
-#           (Default Fedora bootc composefs is unsigned — Tier B is advisory.)
+#           (Default Fedora bootc composefs is unsigned  Tier B is advisory.)
 #   Tier C: policy.json SHA-256 check against /usr/lib/mios/policy.json.sha256.
-#           The baseline digest lives under /usr (composefs-covered). Failure → exit 1.
+#           The baseline digest lives under /usr (composefs-covered). Failure  exit 1.
 #
 # Wire into greenboot via:
 #   /etc/greenboot/check/required.d/10-mios-composefs.sh
@@ -18,11 +18,11 @@ TIER_B_FAIL=0
 TIER_C_FAIL=0
 
 log_info()  { echo "$*" | systemd-cat -t mios-verify -p info; }
-log_warn()  { echo "$*" | systemd-cat -t mios-verify -p warning; }
+log_warn()  { echo "$*" | systemd-cat -t mios-verify -p [WARN]; }
 log_err()   { echo "$*" | systemd-cat -t mios-verify -p err; }
 log_crit()  { echo "$*" | systemd-cat -t mios-verify -p crit; }
 
-# ── Tier A: existence ─────────────────────────────────────────────────────────
+# -- Tier A: existence ---------------------------------------------------------
 
 TIER_A_PATHS=(
     # bootc / ostree
@@ -71,10 +71,10 @@ if [[ ! -d "/usr/lib/modules/${KVER}" ]]; then
 fi
 
 if (( MISSING > 0 )); then
-    log_crit "mios-verify TierA: ${MISSING} critical path(s) missing — image may be corrupt"
+    log_crit "mios-verify TierA: ${MISSING} critical path(s) missing  image may be corrupt"
 fi
 
-# ── Tier B: fsverity measure ──────────────────────────────────────────────────
+# -- Tier B: fsverity measure --------------------------------------------------
 
 DIGESTS_FILE=/usr/lib/mios/verify-root.digests
 if [[ -f "$DIGESTS_FILE" ]] && command -v fsverity >/dev/null 2>&1; then
@@ -98,13 +98,13 @@ if [[ -f "$DIGESTS_FILE" ]] && command -v fsverity >/dev/null 2>&1; then
         fi
     done < "$DIGESTS_FILE"
     if (( TIER_B_FAIL > 0 )); then
-        log_warn "mios-verify TierB: ${TIER_B_FAIL} digest mismatch(es) — review /usr/lib/mios/verify-root.digests"
+        log_warn "mios-verify TierB: ${TIER_B_FAIL} digest mismatch(es)  review /usr/lib/mios/verify-root.digests"
     fi
 else
     log_info "mios-verify TierB: skipped (no digests file or fsverity not available)"
 fi
 
-# ── Tier C: policy.json SHA-256 ───────────────────────────────────────────────
+# -- Tier C: policy.json SHA-256 -----------------------------------------------
 
 POLICY_FILE=/etc/containers/policy.json
 POLICY_HASH_FILE=/usr/lib/mios/policy.json.sha256
@@ -130,7 +130,7 @@ else
     log_info "mios-verify TierC: skipped (no policy.json.sha256 baseline)"
 fi
 
-# ── Summary ───────────────────────────────────────────────────────────────────
+# -- Summary -------------------------------------------------------------------
 
 if (( MISSING > 0 || TIER_C_FAIL > 0 )); then
     log_crit "mios-verify: FAILED (TierA=${MISSING} TierB=${TIER_B_FAIL} TierC=${TIER_C_FAIL})"

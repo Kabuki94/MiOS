@@ -1,5 +1,5 @@
 #!/bin/bash
-# MiOS v0.1.3 — Podman Garbage Collection
+# MiOS v0.1.3 -- Podman Garbage Collection
 set -euo pipefail
 echo "==> Running Podman Garbage Collection..."
 /usr/bin/podman system prune -a -f

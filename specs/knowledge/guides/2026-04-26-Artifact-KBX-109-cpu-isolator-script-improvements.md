@@ -1,5 +1,5 @@
-<!-- 🌐 MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
-# 🌐 MiOS
+<!-- [NET] MiOS Artifact | Proprietor: MiOS-DEV | https://github.com/Kabuki94/MiOS-bootstrap -->
+# [NET] MiOS
 ```json:knowledge
 {
   "summary": "> **Proprietor:** MiOS-DEV",
@@ -29,10 +29,10 @@
 
 The original script had a critical limitation: it would configure systemd CPUAffinity in `/etc/systemd/system.conf` but **would not apply the changes immediately**. This meant:
 
-1. âœ— Commented `#CPUAffinity=` line wasn't being uncommented
-2. âœ— systemd daemon wasn't being reloaded
-3. âœ— Existing processes weren't moved to host cores
-4. âœ— All host processes would pile up on a single core (typically core 31)
+1.  Commented `#CPUAffinity=` line wasn't being uncommented
+2.  systemd daemon wasn't being reloaded
+3.  Existing processes weren't moved to host cores
+4.  All host processes would pile up on a single core (typically core 31)
 
 ### Improvements Made
 
@@ -47,9 +47,9 @@ The original script had a critical limitation: it would configure systemd CPUAff
 **After:**
 ```bash
 # Handles three scenarios:
-1. Uncommented line (CPUAffinity=...) â†’ Update value
-2. Commented line (#CPUAffinity=) â†’ Uncomment and set value
-3. Missing line â†’ Insert after [Manager] section
+1. Uncommented line (CPUAffinity=...)  Update value
+2. Commented line (#CPUAffinity=)  Uncomment and set value
+3. Missing line  Insert after [Manager] section
 
 # Immediate actions:
 - systemctl daemon-reexec (reload systemd)
@@ -82,9 +82,9 @@ cpu-isolate status
 #### 3. Better User Feedback
 
 The script now provides clear feedback at each step:
-- âœ“ "Moved X processes to host cores (Y failed - expected for kernel threads)"
-- âœ“ "systemd daemon reloaded"
-- âœ“ "CPU affinity is now active - check with 'htop' to verify"
+-  "Moved X processes to host cores (Y failed - expected for kernel threads)"
+-  "systemd daemon reloaded"
+-  "CPU affinity is now active - check with 'htop' to verify"
 
 ### What Happens Now
 
@@ -125,10 +125,10 @@ cpu-isolate status
 | Aspect | Before (Old Script) | After (Improved Script) |
 |--------|---------------------|-------------------------|
 | systemd config | Appends line only | Handles commented/uncommented |
-| Daemon reload | âŒ Not done | âœ“ Immediate reload |
-| Process migration | âŒ Not done | âœ“ Moves all processes |
+| Daemon reload |  Not done |  Immediate reload |
+| Process migration |  Not done |  Moves all processes |
 | User feedback | Generic message | Detailed counts & status |
-| Immediate effect | âŒ Requires reboot | âœ“ Active immediately |
+| Immediate effect |  Requires reboot |  Active immediately |
 | Host core usage | All on core 31 | Spread across all host cores |
 
 ### Technical Details
@@ -195,11 +195,11 @@ Possible future improvements:
 **Tested On**: MiOS with AMD Ryzen 9 9950X3D
 
 ---
-### ⚖️ Legal & Source Reference
+###  Legal & Source Reference
 - **Copyright:** (c) 2026 MiOS-DEV
 - **Status:** Personal Property / Private Infrastructure
 - **Project Repository:** [Kabuki94/MiOS-bootstrap](https://github.com/Kabuki94/MiOS-bootstrap)
 - **Documentation:** [MiOS Navigation Hub](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/Home.md)
 - **Artifact Hub:** [ai-context.json](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/ai-context.json)
 ---
-<!-- ⚖️ MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->
+<!--  MiOS Proprietary Artifact | Copyright (c) 2026 MiOS-DEV -->

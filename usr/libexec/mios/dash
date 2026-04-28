@@ -21,9 +21,9 @@ N=$'\033[0m'
 
 _s() {
     if systemctl is-active --quiet "$1" 2>/dev/null; then
-        printf "  ${G}●${N} %-20s [${G}Active${N}]\n" "$1"
+        printf "  ${G}*${N} %-20s [${G}Active${N}]\n" "$1"
     else
-        printf "  ${D}○${N} %-20s [${D}Inactive${N}]\n" "$1"
+        printf "  ${D}o${N} %-20s [${D}Inactive${N}]\n" "$1"
     fi
 }
 
@@ -34,9 +34,9 @@ while true; do
     fi
     
     echo ""
-    printf "${C}════════════════════════════════════════════════════════════${N}\n"
+    printf "${C}============================================================${N}\n"
     printf "${W}  MiOS Dynamic Diagnostic Dashboard${N}  ${D}(Press Ctrl-C to exit)${N}\n"
-    printf "${C}════════════════════════════════════════════════════════════${N}\n"
+    printf "${C}============================================================${N}\n"
     echo ""
     
     printf "${W}System Services:${N}\n"
@@ -103,7 +103,7 @@ while true; do
     fi
 
     echo ""
-    printf "${C}════════════════════════════════════════════════════════════${N}\n"
+    printf "${C}============================================================${N}\n"
     printf "  ${D}Auto-updating every 2 seconds. Press Ctrl-C to enter shell.${N}\n"
     
     sleep 2

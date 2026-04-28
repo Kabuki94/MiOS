@@ -34,7 +34,7 @@ tags = ["latest", "v0.1.3"]
 registry = "ghcr.io"
 
 # Repository path (for pushing)
-# Example: "your-username/mios" → ghcr.io/your-username/mios:latest
+# Example: "your-username/mios"  ghcr.io/your-username/mios:latest
 repository = "Kabuki94/MiOS-bootstrap"
 
 [registry]
