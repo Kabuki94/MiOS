@@ -14,7 +14,7 @@ MiOS is a bootc-based, self-building, immutable workstation OS on Fedora Rawhide
 - [Chronological-Journal](https://github.com/mios-project/mios/blob/main/.ai/foundation/memories/journal.md): Shared chronological brain for all agents.
 
 ## 🛠️ Engineering
-- [Package-Manifest](https://github.com/mios-project/mios/blob/main/specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md): SSOT for all system components.
+- [Package-Manifest](https://github.com/mios-project/mios/blob/main/specs/engineering/PACKAGES.md): SSOT for all system components.
 - [Build-Pipeline](https://github.com/mios-project/mios/blob/main/Containerfile): The OCI build process and stage logic.
 
 ## 🔬 Research Presets

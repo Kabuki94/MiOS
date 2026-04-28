@@ -292,7 +292,7 @@ Before any suggestion, verify against INDEX.md laws.
 **Q: How do I add package 'nginx' to MiOS?**
 ```
 A: Steps:
-1. Edit specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md
+1. Edit usr/share/mios/PACKAGES.md
 2. Find packages-networking or packages-web section
 3. Add 'nginx' alphabetically
 4. Update CHANGELOG v0.1.3

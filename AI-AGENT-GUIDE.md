@@ -61,7 +61,7 @@ just clean                                  # Remove output/ and local images
 
 The `Containerfile` has two stages:
 
-1. **`ctx` stage** — Assembles a `scratch` image from: `automation/`, `usr/`, `etc/`, `var/`, `home/`, `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` (mounted as `/ctx/PACKAGES.md`), `VERSION`, `config/artifacts/`, `tools/`
+1. **`ctx` stage** — Assembles a `scratch` image from: `automation/`, `usr/`, `etc/`, `var/`, `home/`, `usr/share/mios/PACKAGES.md` (mounted as `/ctx/PACKAGES.md`), `VERSION`, `config/artifacts/`, `tools/`
 
 2. **`main` stage** — Runs `08-system-files-overlay.sh`, then `automation/build.sh` (executes all `automation/[0-9][0-9]-*.sh` scripts in order), then explicitly calls these post-build scripts in the Containerfile: `18-`, `19-`, `20-fapolicyd-trust`, `21-`, `22-`, `23-`, `25-`, `26-`, `37-ollama-prep`
 
@@ -69,7 +69,7 @@ The `Containerfile` has two stages:
 
 ### Package System
 
-All packages are declared in `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` in fenced blocks:
+All packages are declared in `usr/share/mios/PACKAGES.md` in fenced blocks:
 
 ````
 ```packages-<category>
@@ -147,7 +147,7 @@ Never: `[kargs]` section header · `delete =` · `delete_kargs =` · `kargs.appe
 Do not modify without explicit authorization from MiOS-DEV:
 
 - `VERSION` and `CHANGELOG.md` — managed only via `push-to-github.ps1`
-- `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` — surgical edits only; never regenerate wholesale
+- `usr/share/mios/PACKAGES.md` — surgical edits only; never regenerate wholesale
 - `.github/workflows/build-sign.yml` and `.github/workflows/build-artifacts.yml`
 - `specs/memory/**` — AI semantic memory store
 

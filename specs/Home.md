@@ -29,7 +29,7 @@
 - 🌐 MiOS ([Linux-Native Memory Standards](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/core/2026-04-27-Artifact-COR-006-Linux-Native-Memory-Standards.md))
 
 ## Engineering
-- 🌐 MiOS ([Package Management](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md))
+- 🌐 MiOS ([Package Management](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/usr/share/mios/PACKAGES.md))
 - 🌐 MiOS ([Security Hardening](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/engineering/2026-04-26-Artifact-ENG-002-Security.md))
 - 🌐 MiOS ([Self-Build Pipeline](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/engineering/2026-04-26-Artifact-ENG-003-Self-Build.md))
 - 🌐 MiOS ([Validation Testing](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/engineering/2026-04-26-Artifact-ENG-004-Testing.md))

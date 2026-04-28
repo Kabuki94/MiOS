@@ -18,7 +18,7 @@ mios/
 ├── .env.mios             # Unified config
 ├── specs/
 │   ├── engineering/
-│   │   └── 2026-04-26-Artifact-ENG-001-Packages.md  # Package SSOT
+│   │   └── PACKAGES.md  # Package SSOT
 │   ├── core/             # Blueprints
 │   └── knowledge/        # Research
 ├── automation/
@@ -39,7 +39,7 @@ mios/
 5. **UNIFIED-AI-REDIRECTS**: Agnostic API variables, local proxy
 
 ## Package Management
-- **SSOT**: specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md
+- **SSOT**: usr/share/mios/PACKAGES.md
 - **Categories**: packages-{repos,kernel,gnome,gpu,virt,etc}
 - **Installation**: automation/lib/packages.sh → install_packages <category>
 

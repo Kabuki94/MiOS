@@ -30,7 +30,7 @@
 - [Memory-Research-Strategy](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/memory/2026-04-26-Artifact-MEM-003-Research-Strategy.md)
 
 ### 🛠️ Engineering
-- [Engineering-Packages](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md)
+- [Engineering-Packages](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/usr/share/mios/PACKAGES.md)
 - [Engineering-Security](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/engineering/2026-04-26-Artifact-ENG-002-Security.md)
 - [Engineering-Self-Build](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/engineering/2026-04-26-Artifact-ENG-003-Self-Build.md)
 - [Engineering-Testing](https://github.com/Kabuki94/MiOS-bootstrap/blob/main/specs/engineering/2026-04-26-Artifact-ENG-004-Testing.md)

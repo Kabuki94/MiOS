@@ -276,7 +276,7 @@ $ram = [math]::Floor((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory 
 Write-OK "CPU: $cpu cores | RAM: $ram MB"
 
 if ($DoBuild) {
-    foreach ($f in "Containerfile","specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md","VERSION","automation/build.sh","automation/31-user.sh") {
+    foreach ($f in "Containerfile","usr/share/mios/PACKAGES.md","VERSION","automation/build.sh","automation/31-user.sh") {
         if (-not (Test-Path $f)) { Write-Fatal "Missing required file: $f — are you in the MiOS repo root?" }
     }
     Write-OK "All repo files present"

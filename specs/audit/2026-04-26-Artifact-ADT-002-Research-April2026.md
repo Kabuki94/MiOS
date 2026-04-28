@@ -512,7 +512,7 @@ Waydroid does not work with NVIDIA proprietary drivers on ucore-hci. NVIDIA open
 - **VRR + fractional scaling default ON** at the Mutter level.
 - **HDR screen sharing** available in GNOME 50.
 
-**MiOS action check:** verify `grdctl` is shipped (it's been in `gnome-remote-desktop` since GNOME 42, so this should already be satisfied). Ensure mutter/gnome-remote-desktop packages are present in the GNOME package set in `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` (not a scope-of-today item — flag in NEXT-RESEARCH if not already pulled in).
+**MiOS action check:** verify `grdctl` is shipped (it's been in `gnome-remote-desktop` since GNOME 42, so this should already be satisfied). Ensure mutter/gnome-remote-desktop packages are present in the GNOME package set in `usr/share/mios/PACKAGES.md` (not a scope-of-today item — flag in NEXT-RESEARCH if not already pulled in).
 
 **10. cosign v3 bundle format breaks bootc/rpm-ostree:**
 Cosign v3 enables `--new-bundle-format` (protobuf) by default, incompatible with the `containers/image` library used by rpm-ostree and bootc for signature verification. Always sign with `cosign sign --new-bundle-format=false --yes $DIGEST` or stay on cosign v2.6.x until rpm-ostree#5509 is resolved.

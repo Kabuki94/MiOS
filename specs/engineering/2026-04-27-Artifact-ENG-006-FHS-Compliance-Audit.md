@@ -278,7 +278,7 @@ COPY usr /ctx/usr
 COPY etc /ctx/etc
 COPY var /ctx/var
 COPY home /ctx/home
-COPY specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md /ctx/PACKAGES.md
+COPY usr/share/mios/PACKAGES.md /ctx/PACKAGES.md
 ```
 
 **Only `usr/`, `etc/`, `var/`, `home/` are deployed.** Build scripts (`automation/`) are used during the build process but not included in the final image.

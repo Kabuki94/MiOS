@@ -27,7 +27,7 @@
 ```json
 {
   "status": "Verified",
-  "data_source": "specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md"
+  "data_source": "usr/share/mios/PACKAGES.md"
 }
 ```
 

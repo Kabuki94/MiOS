@@ -61,7 +61,7 @@ All agents MUST strictly enforce these patterns to prevent state drift and techn
 
 
 ## 4. THE COORDINATION LAW
-All agents MUST respect the global engineering baseline defined in `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` and the `.env` file. You MUST ensure your local settings (e.g., `.ai/foundation/settings.json`, `.vscode/settings.json`) are in sync with the global baseline before committing changes.
+All agents MUST respect the global engineering baseline defined in `specs/engineering/PACKAGES.md` and the `.env` file. You MUST ensure your local settings (e.g., `.ai/foundation/settings.json`, `.vscode/settings.json`) are in sync with the global baseline before committing changes.
 
 ## 5. FOLDER MANIFEST
 The persistent memory and knowledge of the AI collective is structured as follows:

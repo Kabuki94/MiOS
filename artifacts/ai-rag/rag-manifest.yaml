@@ -30,7 +30,7 @@ knowledge_sources:
       weight: 1.0
       type: architecture_laws
       
-    - file: specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md
+    - file: usr/share/mios/PACKAGES.md
       weight: 0.9
       type: package_ssot
       

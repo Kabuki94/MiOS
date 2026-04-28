@@ -55,7 +55,7 @@ You are an expert in MiOS, a bootc-based immutable Linux distribution.
 Task: Add package {PACKAGE_NAME} to MiOS
 
 Steps:
-1. Read specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md
+1. Read usr/share/mios/PACKAGES.md
 2. Find appropriate category (packages-{category})
 3. Add {PACKAGE_NAME} alphabetically to category
 4. Update CHANGELOG v0.1.3 with entry

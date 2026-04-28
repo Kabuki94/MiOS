@@ -18,7 +18,7 @@
   },
   "key_files": {
     "index": "INDEX.md (AI agent hub, laws, directory map)",
-    "packages": "specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md",
+    "packages": "usr/share/mios/PACKAGES.md",
     "build": "Containerfile (2-stage OCI build)",
     "orchestration": "Justfile (build targets), automation/build.sh (master runner)",
     "config": ".env.mios (unified environment variables)",

@@ -150,7 +150,7 @@ just clean                                 # Remove output/ and local images
 
 The `Containerfile` has two stages:
 
-1. **`ctx` stage** — `scratch` image assembling: `automation/`, `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` (as `/ctx/PACKAGES.md`), `VERSION`, `config/`, `tools/`
+1. **`ctx` stage** — `scratch` image assembling: `automation/`, `usr/share/mios/PACKAGES.md` (as `/ctx/PACKAGES.md`), `VERSION`, `config/`, `tools/`
 2. **`main` stage** — applies system overlay via `08-system-files-overlay.sh`, then runs `automation/build.sh` (all `automation/[0-9][0-9]-*.sh` in order)
 
 Scripts `18-`, `19-`, `20-`, `21-`, `22-`, `23-`, `25-`, `26-`, `37-` are called explicitly by the Containerfile *after* `build.sh` completes — do not also run them inside `build.sh`.
@@ -162,7 +162,7 @@ MiOS-DEV uses a multi-layered manifest system for AI agent awareness:
 - **`ai-context.json`**: Entry point for agents; maps all sub-manifests (`usr/`, `etc/`, `specs/`, etc.).
 - **`artifacts/manifest.json.gz`**: Machine-readable index of historical blobs and compressed research.
 
-All packages declared in `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` in fenced blocks:
+All packages declared in `usr/share/mios/PACKAGES.md` in fenced blocks:
 
 ````
 ```packages-<category>
@@ -238,9 +238,9 @@ Never: `[kargs]` section header · `delete =` · `delete_kargs =` · `kargs.appe
 
 ### Packages / Containerfile
 
-- `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` is the package SSOT — never regenerate wholesale
+- `usr/share/mios/PACKAGES.md` is the package SSOT — never regenerate wholesale
 - The `gnome-core-apps` block must remain commented out
-- COPY path for packages: `COPY specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md /ctx/PACKAGES.md`
+- COPY path for packages: `COPY usr/share/mios/PACKAGES.md /ctx/PACKAGES.md`
 
 ### Disk image generation
 
@@ -295,7 +295,7 @@ All agents append to `journal.md` with timestamp + agent identity tag:
 Do not modify without explicit authorization from MiOS-DEV:
 
 - `VERSION` and `CHANGELOG.md` — managed only via `push-to-github.ps1`
-- `specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md` — surgical edits only
+- `usr/share/mios/PACKAGES.md` — surgical edits only
 - `.github/workflows/build-sign.yml` and `.github/workflows/build-artifacts.yml`
 - `specs/memory/**` — AI semantic memory store
 

@@ -117,7 +117,7 @@ The core build logic that executes all numbered scripts in sequence. This is typ
 | [Security Guide](specs/engineering/2026-04-26-Artifact-ENG-002-Security.md) | Execution whitelisting, integrity checks (fs-verity), and network rules. |
 | [Hardware Support](specs/core/2026-04-26-Artifact-COR-002-Infrastructure.md) | GPU-PV, SR-IOV, VFIO, and Silicon vendor details. |
 | [Windows Workflow](specs/knowledge/guides/WINDOWS-BUILD-WORKFLOW.md) | Primary building environment: Windows 11 + Podman Desktop + WSL2/g. |
-| [Package SSOT](specs/engineering/2026-04-26-Artifact-ENG-001-Packages.md) | Single Source of Truth for all system components. |
+| [Package SSOT](usr/share/mios/PACKAGES.md) | Single Source of Truth for all system components. |
 | [AI-Native Standards](specs/knowledge/research/2026-04-27-Artifact-KBX-025-FOSS-AI-Deep-Dive.md) | 2026 FOSS AI integration and ingestion patterns. |
 
 ## 🚀 Developer Workflow
