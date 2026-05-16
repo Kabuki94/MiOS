@@ -7,15 +7,24 @@
 
 ---
 
-## Top-priority action items (current — 2026-05-11)
+## Top-priority action items (current — 2026-05-16)
 
 These are flagged in `NEXT-RESEARCH.md` as `ACTION REQUIRED`. They are surfaced here for visibility but **never applied by the research agent itself.**
 
-1. **Base image is on an archived repo.** `bsherman/ucore-hci` upstream is **archived**; dev consolidated under `ublue-os/ucore`. New canonical tag for the NVIDIA-LTS profile MiOS targets is `ghcr.io/ublue-os/ucore:stable-nvidia-lts` (pre-signed `kmod-nvidia-open` 580 LTS). Renovate cannot self-correct a depName change — must be edited by hand.
-2. **cosign verification bypass — patch immediately.** `CVE-2026-22703` (Rekor entry not bound to artifact) and `CVE-2026-31431` (`verify-blob-attestation` false-OK) — both fixed in **cosign ≥ 3.0.6**. Any signature-verification gate using older cosign is bypassable.
-3. **NVIDIA driver Jan 2026 advisory.** Pin `kmod-nvidia-open` ≥ **580.126.20** (LTS) or ≥ **595.71.05** (feature). CVEs `CVE-2025-33219`, `CVE-2025-23277`, `CVE-2025-23280` — kernel-module LPE/RCE.
-4. **Secure Boot 2011-CA expiry — 2026-06-26.** Microsoft stops signing with the 2011 CA in late June 2026. MiOS image must pick up Fedora's **2023-CA-signed shim** before that date or new installs onto firmware that has updated `db` will fail. Already-running systems continue to boot.
-5. **RTX 50-series VFIO passthrough is broken.** Reset bug acknowledged by NVIDIA, no fix shipped. RTX 4090 (project's target) is unaffected, but any roadmap upgrade should be deferred.
+1. **Base image is on an archived/deleted repo.** `bsherman/ucore-hci` returns HTTP 404 (updated 2026-05-16: was "archived" — now deleted or made private). Dev consolidated under `ublue-os/ucore`; `ghcr.io/ublue-os/ucore-hci:stable-nvidia-lts` container is actively rebuilt by that org (tag `stable-nvidia-lts-20260511` published 2026-05-11). New canonical tag for the NVIDIA-LTS profile MiOS targets remains `ghcr.io/ublue-os/ucore:stable-nvidia-lts` (pre-signed `kmod-nvidia-open` 580 LTS). Renovate cannot self-correct a depName change — must be edited by hand. **Watch `ublue-os/ucore` issue #385** — kernel bump pending to address kernel Copy Fail CVE (see item 7).
+2. **cosign verification bypass — patch immediately.** `CVE-2026-22703` (Rekor entry not bound to artifact) fixed in **cosign 2.6.2 / 3.0.4**. Multiple cosign GHSAs (`GHSA-w6c6-c85g-mmv6`, `GHSA-wfqv-66vq-46rm`, `GHSA-whqx-f9j3-ch6m`) all fixed in **cosign ≥ 3.0.6 / 2.6.3**. Any signature-verification gate using older cosign is bypassable. (updated 2026-05-16: removed mis-attribution of `CVE-2026-31431` to cosign — that CVE is the Linux kernel "Copy Fail" LPE, see item 7.)
+3. **NVIDIA driver pin — bump LTS floor.** Pin `kmod-nvidia-open` ≥ **580.159.04** (LTS — 2026-05-14) or ≥ **595.71.05** (feature — 2026-04-28). (updated 2026-05-16: LTS floor lifted from 580.126.20 → 580.159.04; new branch release post the Jan 2026 advisory. The Jan 2026 NVIDIA bulletin advisory `a_id/5747` covers CVEs `CVE-2025-33219`, `CVE-2025-23277`, `CVE-2025-23280` — kernel-module LPE/RCE — and is fully patched in 580.126.09+.)
+4. **Secure Boot 2011-CA expiry — 2026-06-26 (~6 weeks out, URGENT).** Microsoft stops signing with the 2011 CA in late June 2026. (updated 2026-05-16: **Fedora 44 final still ships `shim-16.1-5` which is 2021-key signed only** — Rawhide has `shim-16.1-6` with 2023-key signing but it has not landed in F44 stable yet. Track `bodhi.fedoraproject.org` for shim-16.1-6+ updates-testing → stable promotion.) MiOS image must pick up Fedora's **2023-CA-signed shim** before that date or new installs onto firmware that has updated `db` will fail. Already-running systems continue to boot.
+5. **RTX 50-series VFIO passthrough is broken.** Reset bug acknowledged by NVIDIA, no fix shipped (verified 2026-05-16; 595.71.05 LTS / 595.x feature did NOT ship a fix; no 600-series driver yet; kernel 6.18 ships no Blackwell-specific FLR/IOMMU 1:1 patches). RTX 4090 (project's target) is unaffected, but any roadmap upgrade should be deferred.
+6. **`image-builder-cli` v64 (2026-05-13) — `bootc` subcommand now GA** (updated 2026-05-16). PR #510 dropped "bootc is experimental". Canonical container is `ghcr.io/osbuild/image-builder-cli:latest`. **Confirms `ghcr.io/osautomation/...` reference in `image-versions.yml` is a typo for `osbuild`** — the `osautomation` GitHub user exists with zero public repos / no GHCR packages. **MiOS can now plan migration from `bootc-image-builder` to `image-builder-cli` as the unified tool** — but BIB remains a separate active repo, so this is "now possible" not "forced".
+7. **Podman 6.0 GA imminent — week of 2026-05-25** (NEW 2026-05-16). Fedora Podman 6.0 Test Days ran 2026-05-11 → 2026-05-15 (window just closed). Breaking removals: **BoltDB** (→ SQLite), **slirp4netns** (→ Pasta), **cgroups v1** entirely. netavark switches **iptables → nftables** default. Quadlet 6.0 adds `.artifact` file type, `AppArmor=` key, `HttpProxy=`, `StopTimeout=`, multi-doc `.kube`, templated vol/net deps. **Pre-flight review needed before bumping Podman version label** — any Quadlet relying on slirp4netns/cgroup-v1/BoltDB on-disk state will break.
+8. **Linux kernel DRM/Copy-Fail/Dirty-Frag CVE cluster — 2026-05-01 → 2026-05-08** (NEW 2026-05-16). Affects host kernel on AMD 9950X3D + RTX 4090:
+   - `CVE-2026-31431` — "Copy Fail" root LPE (Microsoft advisory 2026-05-01).
+   - `CVE-2026-43398` — AMDGPU OOM DoS (NVD 2026-05-08) — **directly hits AMD GPU stack**, though MiOS uses NVIDIA for display; AMD iGPU still present on 9950X3D.
+   - `CVE-2026-43300` — DRM panel NULL deref (mainline 2026-05-08).
+   - `CVE-2026-43287` — DRM property-blob memcg accounting.
+   - `CVE-2026-43284` — "Dirty Frag" kernel LPE via ESP/RxRPC (2026-05-08).
+   - **Mitigation:** Track ublue-os/ucore issue #385 for kernel rev; cherry-pick fixes are upstream-merged on the kernel-6.18 stable branch. MiOS image rebuild needed after `ucore-hci` kernel bump lands.
 
 ---
 
@@ -23,18 +32,18 @@ These are flagged in `NEXT-RESEARCH.md` as `ACTION REQUIRED`. They are surfaced 
 
 | # | Topic group | Last updated |
 | - | ----------- | ------------ |
-| 1 | bootc + bootc-image-builder + image-builder-cli | 2026-05-11 |
-| 2 | ucore-hci / Universal Blue base | 2026-05-11 |
+| 1 | bootc + bootc-image-builder + image-builder-cli | 2026-05-16 |
+| 2 | ucore-hci / Universal Blue base | 2026-05-16 |
 | 3 | Fedora bootc / FCOS / composefs / OSTree | 2026-05-11 |
-| 4 | Podman + Quadlet + rechunk | 2026-05-11 |
-| 5 | K3s + Ceph + Pacemaker/Corosync | 2026-05-11 |
-| 6 | CrowdSec + fapolicyd + usbguard + SELinux | 2026-05-11 |
-| 7 | cosign/Sigstore + Secure Boot/MOK | 2026-05-11 |
-| 8 | NVIDIA kmods + Container Toolkit / CDI | 2026-05-11 |
-| 9 | VFIO/IOMMU + Looking Glass + KVMFR + QEMU + libvirt | 2026-05-11 |
-| 10 | Gamescope + Waydroid + Mesa/ROCm | 2026-05-11 |
-| 11 | FreeIPA/SSSD + GNOME + WSL2 | 2026-05-11 |
-| 12 | kargs.d + Renovate + systemd-sysext + tmpfiles + bootc lifecycle | 2026-05-11 |
+| 4 | Podman + Quadlet + rechunk | 2026-05-16 |
+| 5 | K3s + Ceph + Pacemaker/Corosync | 2026-05-16 |
+| 6 | CrowdSec + fapolicyd + usbguard + SELinux + kernel CVEs | 2026-05-16 |
+| 7 | cosign/Sigstore + Secure Boot/MOK | 2026-05-16 |
+| 8 | NVIDIA kmods + Container Toolkit / CDI | 2026-05-16 |
+| 9 | VFIO/IOMMU + Looking Glass + KVMFR + QEMU + libvirt | 2026-05-16 |
+| 10 | Gamescope + Waydroid + Mesa/ROCm | 2026-05-16 |
+| 11 | FreeIPA/SSSD + GNOME + WSL2 | 2026-05-16 |
+| 12 | kargs.d + Renovate + systemd-sysext + tmpfiles + bootc lifecycle | 2026-05-16 |
 
 ---
 
@@ -63,29 +72,35 @@ These are flagged in `NEXT-RESEARCH.md` as `ACTION REQUIRED`. They are surfaced 
 - Source: `https://github.com/osbuild/bootc-image-builder`, `https://osbuild.org/docs/bootc/`.
 
 ### 1.3 image-builder-cli
-*Recorded 2026-05-11.*
+*Recorded 2026-05-11.* *(updated 2026-05-16: v64 dropped "bootc is experimental" — bootc subcommand now GA; `osautomation` confirmed as typo for `osbuild`.)*
 
-- **Upstream:** `github.com/osbuild/image-builder-cli` (63 releases; latest April 2026).
-- **Status:** **Not a drop-in BIB replacement yet.** Today's split: BIB for container→bootc; image-builder-cli for package→traditional. Unified release expected 2026 H2.
-- **Project note:** `image-versions.yml` references `ghcr.io/osautomation/image-builder-cli` (digest `0000…0000` placeholder). No `osautomation` org is locatable upstream. **This is either a typo for `ghcr.io/osbuild/image-builder-cli` or an internal fork.** Flagged for clarification in `NEXT-RESEARCH.md`.
-- Source: `https://github.com/osbuild/image-builder-cli`.
+- **Upstream:** `github.com/osbuild/image-builder-cli`. **Latest: v64 (2026-05-13)** — PR #510 "drop 'bootc is experimental'", so the `bootc` subcommand is no longer experimental.
+- **Status:** **`image-builder-cli` is now a viable BIB replacement for bootc workflows.** Canonical container is `ghcr.io/osbuild/image-builder-cli:latest`. Invocation: `podman run --privileged ghcr.io/osbuild/image-builder-cli build --distro fedora-43 --bootc-ref ... --bootc-build-ref ...`.
+- **BIB still active.** `osbuild/bootc-image-builder` remains a separate repo with open issues (e.g. #1190 "Bootcfile, a proposal"). No formal unification milestone/RFC has been published; the projects coexist with overlap.
+- **`osautomation` typo confirmed.** GitHub user `osautomation` exists with **zero public repos and no GHCR packages**. The `ghcr.io/osautomation/image-builder-cli` reference in `image-versions.yml` is a typo for `ghcr.io/osbuild/image-builder-cli`. Source: https://github.com/osautomation. **Flagged ACTION REQUIRED for hand-fix.**
+- Source: https://github.com/osbuild/image-builder-cli/releases, https://osbuild.org/docs/developer-guide/projects/image-builder/usage/.
 
 ---
 
 ## 2. ucore-hci / Universal Blue
-*Recorded 2026-05-11.*
+*Recorded 2026-05-11.* *(updated 2026-05-16: `bsherman/ucore-hci` upstream now 404 / deleted-or-private; ublue-os/ucore-hci container rebuilt 2026-05-11; tracking issues #362 and #385 added.)*
 
 - **Project base image today:** `ghcr.io/ublue-os/ucore-hci:stable-nvidia` (Containerfile line 19 / `image-versions.yml`).
 - **Upstream reality:**
-  - `bsherman/ucore-hci` repo is **ARCHIVED**. All development consolidated into mainline `ublue-os/ucore`.
+  - `bsherman/ucore-hci` repo **returns HTTP 404** as of 2026-05-16 — was previously archived, now appears deleted or made private. All development consolidated into mainline `ublue-os/ucore`.
+  - `ublue-os/ucore-hci` GHCR container is still actively rebuilt by the ublue-os org. Tag `stable-nvidia-lts-20260511` was published 2026-05-11; this is the migration target, not a separate `ucore-hci` repo.
   - Canonical NVIDIA tags from `ublue-os/ucore`:
     - `:stable-nvidia` — current default NVIDIA driver (590-series open, pre-signed kmod).
     - `:stable-nvidia-lts` — 580 LTS open driver (NVIDIA-recommended "preferred" since March 2026).
     - `:testing-nvidia-lts` — pre-release LTS.
 - **Streams:** Daily builds across `stable`/`testing`/`lts`. `stable` tracks FCOS stable stream on kernel **6.12 LTS** for server consistency. `testing` tracks rolling upstream kernel.
 - **ZFS:** Now included in all `ucore*` images (NVIDIA and non-NVIDIA) — image count reduction. Verify build assumptions don't conflict.
+- **Open tracking issues in `ublue-os/ucore`** (updated 2026-05-16):
+  - **#385** — "Bump kernel to address 'Copy Fail' (CVE-2026-31431)" filed 2026-05-01. Kernel rev pending; MiOS rebuilds must wait for this to land in `stable-nvidia-lts`.
+  - **#362** — "Migrate LTS image from longterm-6.12 to longterm-6.18" still open. Once merged, MiOS's `iommu=pt` / VFIO assumptions need re-validation on 6.18.
 - **Recommendation for MiOS:** Migrate `BASE_IMAGE` from `ghcr.io/ublue-os/ucore-hci:stable-nvidia` to `ghcr.io/ublue-os/ucore:stable-nvidia-lts`. Renovate's `customManagers` regex on `Containerfile` will need its `depName` updated too. **Flagged ACTION REQUIRED.**
-- Source: `https://github.com/ublue-os/ucore`, `https://universal-blue.discourse.group/t/question-about-ucore-releases/11108`.
+- **Note on releases:** `ublue-os/ucore` has **zero published GitHub Releases**; tags are flowed only through OCI registry. Renovate must track via the docker datasource on the GHCR image, not via github-releases.
+- Source: https://github.com/ublue-os/ucore, https://github.com/ublue-os/ucore/issues, https://github.com/ublue-os/ucore/pkgs/container/ucore-hci.
 
 ---
 
@@ -120,19 +135,25 @@ These are flagged in `NEXT-RESEARCH.md` as `ACTION REQUIRED`. They are surfaced 
 ## 4. Podman + Quadlet + rechunk
 
 ### 4.1 Podman + Quadlet
-*Recorded 2026-05-11.*
+*Recorded 2026-05-11.* *(updated 2026-05-16: Podman 6.0 GA imminent — Fedora Test Days closed 2026-05-15, GA target week of 2026-05-25.)*
 
-- **Latest:** **Podman v5.8.2** (2026-04-14). **v6.0 is on the horizon** — BoltDB→SQLite auto-migration in v5.8.0 is a **required transitional step** before upgrading to 6.0.
+- **Latest stable:** **Podman v5.8.2** (2026-04-14). **v6.0 GA is imminent — target week of 2026-05-25 to 2026-05-29.** Fedora ran Podman 6.0 Test Days 2026-05-11 → 2026-05-15.
 - **Recent line:**
   - `v5.8.2` (Apr 14) — fixes for `unless-stopped` restart policy and Quadlet config bugs; CVE fix (see below).
   - `v5.8.0` (Feb 12) — Quadlet supports multiple units per file via `---` delimiters; new `AppArmor=` and `HttpProxy=` keys for `.container`; `podman update --ulimit`; mandatory BoltDB→SQLite migration.
   - `v5.7.0` (Nov 2025) — TLS/mTLS for remote, multi-YAML `podman kube play`, new **`.artifact` Quadlet unit type**.
-- **Quadlet unit coverage:** `.container`, `.volume`, `.network`, `.build` (with `BuildArg`, `IgnoreFile`), `.pod` (with `StopTimeout`), `.kube` (multi-doc YAML), `.image`, `.artifact`.
+- **Podman 6.0 breaking removals** (updated 2026-05-16, source: https://fedoraproject.org/wiki/Changes/Podman6):
+  - **BoltDB removed** — SQLite is the only storage backend. v5.8.0 auto-migration is a hard prerequisite; un-migrated state will not boot under 6.0.
+  - **slirp4netns removed** — Pasta is the only rootless networking backend.
+  - **cgroups v1 removed** — host must be running unified-cgroup-v2 (Fedora bootc already is, so MiOS unaffected).
+  - **netavark default switches iptables → nftables** — any host-side firewall integration assuming iptables backend needs review.
+- **Quadlet unit coverage in 6.0:** `.container`, `.volume`, `.network`, `.build` (with `BuildArg`, `IgnoreFile`), `.pod` (with `StopTimeout`), `.kube` (multi-doc YAML), `.image`, `.artifact`. Templated vol/net dependencies stabilized.
 - **AutoUpdate=registry:** Behavior unchanged — requires systemd-managed unit, daily timer (`podman-auto-update.timer`). Use `local` policy when CI pre-pulls.
 - **LBI (Logically Bound Images):** Stable. **Quadlet remains the recommended path** for bootc-integrated lifecycle — `podman kube` works but is not the bootc-preferred direction. No move away from Quadlet observed.
 - **CVE:** **CVE-2026-33414** — Podman 5.8.x Windows Hyper-V backend. **Not relevant to Linux bootc deployments**, but note when bumping `podman` version label.
 - **Project status (LBI):** `Containerfile` lines 67–76 currently have LBI pre-pull **disabled** due to lack of `--privileged` BuildKit on GitHub-hosted runners. Quadlet `AutoUpdate=registry` first-boot pull (commented hint in Containerfile) is the migration path.
-- Source: `https://github.com/containers/podman/releases`, `https://bootc.dev/bootc/logically-bound-images.html`.
+- **Pre-flight review needed before pulling Podman 6.0** — see `NEXT-RESEARCH.md` ACTION REQUIRED item. Verify no MiOS Quadlet relies on slirp4netns, no iptables-only host integration, no BoltDB on-disk state surviving across the 5.8 → 6.0 boundary.
+- Source: https://github.com/containers/podman/releases, https://bootc.dev/bootc/logically-bound-images.html, https://communityblog.fedoraproject.org/join-us-for-podman-6-0-test-days-may-11-15-2026/.
 
 ### 4.2 `bootc-base-imagectl rechunk`
 *Recorded 2026-05-11.*
@@ -147,18 +168,22 @@ These are flagged in `NEXT-RESEARCH.md` as `ACTION REQUIRED`. They are surfaced 
 ## 5. K3s + Ceph + Pacemaker/Corosync
 
 ### 5.1 K3s
-*Recorded 2026-05-11.*
+*Recorded 2026-05-11.* *(updated 2026-05-16: v1.34.8-rc1, v1.35.5-rc1 cut 2026-05-14; v1.36.0 stable 2026-05-06; etcd 3.5.30 shipped 2026-05-01.)*
 
-- **Latest:** `v1.34.7+k3s1` (top of v1.34 line). `v1.33.9+k3s1` and `v1.32.11+k3s1` on active maintenance lines.
+- **Latest stable:** `v1.34.7+k3s1`. **NEW: `v1.36.0+k3s1` stable shipped 2026-05-06** (Kubernetes 1.36). **NEW: `v1.34.8-rc1+k3s1` and `v1.35.5-rc1+k3s1` both cut 2026-05-14** — still pre-release. `v1.33.9+k3s1` and `v1.32.11+k3s1` on active maintenance lines.
 - **Bundled runtimes:** v1.34 → containerd `2.2.3-k3s1`, runc `1.4.2`; v1.33 → containerd `2.1.x` / runc `1.3.4`.
-- **etcd:** v1.34 ships embedded **etcd 3.6.7-k3s1**; v1.33 stays on 3.5.26. **Migration: etcd 3.5 → 3.6 is NOT direct** — must transit v3.5.26 first.
+- **etcd line state** (updated 2026-05-16):
+  - v1.34 ships embedded **etcd 3.6.7-k3s1**; v1.33 stays on 3.5.x.
+  - **etcd 3.5.30 shipped 2026-05-01** (latest 3.5.x). 3.5.29 (2026-04-01), 3.5.28 (2026-03-20 — security release: CVE-2026-33343 nested-txn authz bypass + CVE-2026-33413 gRPC authn bypass).
+  - **Migration: etcd 3.5 → 3.6 is NOT direct** — must transit through one of v3.5.26+ first (3.5.30 is fine).
 - **Containerd config:** Now uses **versioned drop-in dirs** (`config.toml.d` for v2, `config-v3.toml.d` for v3) — auto-loaded.
 - **SELinux:** `k3s-selinux` policy still ships separately; `selinux=true` in config. No regressions reported.
 - **Sqlite remains default** for single-node; embedded etcd still required for HA.
 - **CVEs (ecosystem):**
-  - `CVE-2026-33186` — gRPC-Go authz bypass via malformed `:path`; affects any k8s component pinning vulnerable grpc-go.
-  - `CVE-2026-31431` — Linux kernel "Copy Fail" LPE; hits nodes (NOT cosign-31431; different vuln with same number assignment in the report — verify).
-- Source: `https://github.com/k3s-io/k3s/releases`, `https://scans.k3s.io/`.
+  - `CVE-2026-33186` — gRPC-Go authz bypass via malformed `:path`; fixed in grpc-go v1.79.3. (updated 2026-05-16: K3s v1.34.8-rc1 notes do not explicitly call out a grpc-go bump — needs verification at GA.)
+  - `CVE-2026-33343` — etcd nested-txn authz bypass (fixed in 3.5.28).
+  - `CVE-2026-33413` — etcd gRPC authn bypass (fixed in 3.5.28).
+- Source: https://github.com/k3s-io/k3s/releases, https://github.com/etcd-io/etcd/releases, https://etcd.io/blog/2026/mar20-patch-release/.
 
 ### 5.2 Ceph
 *Recorded 2026-05-11.*
@@ -222,6 +247,21 @@ These are flagged in `NEXT-RESEARCH.md` as `ACTION REQUIRED`. They are surfaced 
 - **Operational pain points:** Fedora 43 Silverblue reports of Quadlet units entering restart loops under enforcing; boot-time denial reports surfaced April 2026. Track before promoting any new Quadlet-managed K3s/Ceph/CrowdSec service.
 - No CVEs.
 
+### 6.5 Linux kernel CVE cluster — May 2026
+*Added 2026-05-16.*
+
+Five kernel CVEs disclosed in the 2026-05-01 → 2026-05-08 window directly affect the MiOS host kernel (AMD 9950X3D + RTX 4090). Fixes are merged on the kernel-6.18 stable branch; MiOS rebuild required after `ublue-os/ucore` issue #385 lands a kernel rev.
+
+- **CVE-2026-31431 — "Copy Fail" (Microsoft advisory 2026-05-01).** Root local privilege escalation. Broad kernel impact. Source: https://access.redhat.com/security/cve/cve-2026-31431, https://www.microsoft.com/en-us/security/blog/2026/05/01/cve-2026-31431-copy-fail-vulnerability-enables-linux-root-privilege-escalation/.
+- **CVE-2026-43398 — AMDGPU OOM DoS (NVD 2026-05-08).** Directly affects the AMD GPU subsystem. MiOS uses NVIDIA for display, but the AMD iGPU on the 9950X3D is still bound by the kernel `amdgpu` driver unless explicitly blacklisted. Source: https://windowsnews.ai/article/cve-2026-43398-amdgpu-kernel-driver-bug-exposes-linux-systems-to-oom-denial-of-service.417456.
+- **CVE-2026-43300 — DRM panel NULL deref (mainline 2026-05-08).** DRM core. Source: https://windowsnews.ai/article/cve-2026-43300-linux-drm-null-pointer-flaw-flagged-by-microsoft-for-windows-environments.417437.
+- **CVE-2026-43287 — DRM property-blob memcg accounting (2026-05-08).** DRM core memory-accounting bug.
+- **CVE-2026-43284 — "Dirty Frag" (2026-05-08).** Kernel LPE via ESP / RxRPC fragmentation. Source: https://www.wiz.io/blog/dirty-frag-linux-kernel-local-privilege-escalation-via-esp-and-rxrpc.
+
+**Project status:** None of these have remediation paths the MiOS image owns directly — the fix lands when `ucore-hci`'s base kernel is bumped. Track `ublue-os/ucore` issue #385 (Copy Fail tracker, opened 2026-05-01). Once the kernel rev lands in `stable-nvidia-lts`, MiOS needs a rebuild for the CVE pin to take effect.
+
+**Note on CVE-2026-31431 mis-attribution:** The bootstrap pass on 2026-05-11 listed this CVE under §7.1 (cosign) as a `verify-blob-attestation` bug. **That was wrong** — the CVE is the kernel "Copy Fail" LPE. Corrected here and in §7.1.
+
 ---
 
 ## 7. cosign / Sigstore + Secure Boot / MOK
@@ -236,11 +276,11 @@ These are flagged in `NEXT-RESEARCH.md` as `ACTION REQUIRED`. They are surfaced 
   - Single-file trust root + signing service URL.
   - `--bundle` flag for bundle output is **REQUIRED** (was optional in v2).
 - **Breaking:** Bundle-format default affects CI signing pipelines and any signature artifacts stored alongside images. policy-controller 0.15.x requires re-checking `ClusterImagePolicy` CRDs against v3 trust-root format.
-- **CVEs (FLAG — pin ≥ 3.0.6):**
+- **CVEs (FLAG — pin ≥ 3.0.6):** *(updated 2026-05-16: removed mis-attribution of CVE-2026-31431 to cosign — that CVE is the Linux kernel "Copy Fail" LPE, not cosign-related. See §6.5 for the kernel CVE cluster.)*
   - `CVE-2026-22703` — Cosign accepts a Rekor entry that doesn't reference the artifact's digest/sig/key (verification bypass). Fixed in 2.6.2 / 3.0.4.
-  - `CVE-2026-31431` — `cosign verify-blob-attestation` falsely reports "Verified OK" for malformed/mismatched predicate-type attestations. Fixed in 2.6.3 / 3.0.6.
+  - **Cosign GHSAs** (collectively fixed in **3.0.6 / 2.6.3**): `GHSA-w6c6-c85g-mmv6` (published 2026-04-06), `GHSA-wfqv-66vq-46rm`, `GHSA-whqx-f9j3-ch6m`. Pinning cosign ≥ 3.0.6 covers all currently-known sig-verification bypasses.
 - **Project status:** `automation/42-cosign-policy.sh` exists. Verify cosign binary version baked in and confirm signature verification flow uses the new bundle format.
-- Source: `https://blog.sigstore.dev/cosign-3-0-available/`.
+- Source: https://blog.sigstore.dev/cosign-3-0-available/, https://github.com/sigstore/cosign/security/advisories.
 
 ### 7.2 Secure Boot / MOK
 *Recorded 2026-05-11.*
@@ -263,19 +303,22 @@ These are flagged in `NEXT-RESEARCH.md` as `ACTION REQUIRED`. They are surfaced 
 ## 8. NVIDIA kmods + Container Toolkit / CDI
 
 ### 8.1 NVIDIA open kernel modules (`nvidia-open`)
-*Recorded 2026-05-11.*
+*Recorded 2026-05-11.* *(updated 2026-05-16: LTS floor lifted to 580.159.04, released 2026-05-14.)*
 
-- **Production Branch (LLB):** **580.126.20** (Datacenter) / **580.126.09** (Display). NVIDIA "preferred" since March 2026.
-- **New Feature Branch:** **595.71.05** (released ~2026-04-24).
+- **Production Branch (LTS, "preferred"):** **580.159.04** (released 2026-05-14 — post Jan-2026 advisory). Earlier `580.126.20` / `580.126.09` are still safe-from-CVE but superseded.
+- **Feature Branch:** **595.71.05** (released 2026-04-28). Beta `595.44.08` (Vulkan beta, 2026-05-15).
+- **No 600-series driver shipped** as of 2026-05-16. Kernel 6.18 ships no Blackwell-specific FLR/IOMMU 1:1 patches.
 - **Blackwell (RTX 50-series):** Requires open modules — proprietary blob is unsupported. NVIDIA has fully transitioned to open modules.
 - **Open issues to track:**
   - Issue #1117 — RTX 50-series s2idle resume hangs on **kernel 7.0**; works on 6.17.
   - Issue #1132 — GB205 (RTX 5070) BAR1→BAR3 mapping triggers `krcWatchdog` lock with rBAR disabled.
-- **CVEs (Jan 2026 bulletin — pin ≥ 580.126.20):**
+- **CVEs (Jan 2026 bulletin, advisory `a_id/5747` — pin ≥ 580.126.09 or LTS 580.159.04):**
   - `CVE-2025-33219` — integer overflow in kernel module → LPE / RCE.
   - `CVE-2025-23277`, `CVE-2025-23280` — UAF on Linux.
+- **No May 2026 NVIDIA bulletin published** (verified 2026-05-16); Jan 2026 remains current.
 - **VM-gating impact:** None — `modprobe.d` blacklist + `softdep nvidia pre: vfio-pci` pattern is unchanged. NVIDIA 595 keeps `nvidia-drm.ko modeset=1` default. **Avoid kernel 7.0 on any Blackwell host.**
-- **Project status:** Project targets RTX 4090 — passthrough remains stable. RTX 50 upgrade should be deferred (see §9).
+- **Project status:** Project targets RTX 4090 — passthrough remains stable. RTX 50 upgrade should be deferred (see §9). Project pin floor should track 580.159.04 (LTS) or 595.71.05 (feature).
+- Source: https://github.com/NVIDIA/open-gpu-kernel-modules/releases, https://nvidia.custhelp.com/app/answers/detail/a_id/5747.
 
 ### 8.2 NVIDIA Container Toolkit + CDI
 *Recorded 2026-05-11.*
@@ -318,13 +361,14 @@ These are flagged in `NEXT-RESEARCH.md` as `ACTION REQUIRED`. They are surfaced 
 - **Project status:** `automation/53-bake-lookingglass-client.sh` exists.
 
 ### 9.3 KVMFR (`/dev/kvmfr0`)
-*Recorded 2026-05-11.*
+*Recorded 2026-05-11.* *(updated 2026-05-16: kernel ≥6.13 build patches noted.)*
 
 - **Source:** Still **DKMS-only**; not in mainline, no submission planned. Lives in LookingGlass repo (`module/`).
 - **Secure Boot signing:** Required — Fedora bootc will refuse unsigned `kvmfr.ko`.
   - On immutable rootfs, **signing must happen at image build time** in the Containerfile, not first-boot (DKMS auto-sign assumes mutable rootfs).
   - `/etc/dkms/framework.conf` needs `mok_signing_key=` and `mok_certificate=` for auto-sign on rebuild.
 - **Setup:** sysfs-based — `kvmfr.static_size_mb=128` modprobe option; udev rule for `/dev/kvmfr0` owner/group/mode. Older sysconfig approach is deprecated in B7 docs.
+- **Kernel compat patches (updated 2026-05-16):** Community patches required to build kvmfr against **kernel ≥6.13** — add `#include <linux/vmalloc.h>` and `MODULE_IMPORT_NS("DMA_BUF")` in `module/module.c`. No upstream submission. Once ucore-hci LTS image migrates from 6.12 → 6.18 (issue #362), these patches must be applied before the rebuild succeeds. Source: https://forums.gentoo.org/viewtopic-t-1176809.html.
 - **Project status:** `automation/52-bake-kvmfr.sh` exists.
 
 ### 9.4 QEMU
@@ -351,14 +395,16 @@ These are flagged in `NEXT-RESEARCH.md` as `ACTION REQUIRED`. They are surfaced 
 ## 10. Gamescope + Waydroid + Mesa/ROCm
 
 ### 10.1 Gamescope
-*Recorded 2026-05-11.*
+*Recorded 2026-05-11.* *(updated 2026-05-16: 3.16.21/22/23 point releases noted; 3.17 still not tagged.)*
 
-- **Latest:** **3.16.17** (Sept 2025 line, still current packaging in Arch as of early 2026). No 3.17 cut yet.
-- **Open regressions (last ~90 days):**
-  - HDR regression on Fedora 43 / GNOME 49 / KDE Plasma 6.5.3 (issues #2018, #2037). Fix committed upstream but **no tagged release** yet.
+- **Latest:** **3.16.23** (2026-04-07) — point releases 3.16.21 (2026-03-12), 3.16.22 (2026-03-15), 3.16.23 (2026-04-07) all shipped since the bootstrap pass mis-recorded "3.16.17" as latest. **No 3.17 cut yet.**
+- **Open regressions (still open as of 2026-05-16):**
+  - HDR regression on Fedora 43 / GNOME 49 / KDE Plasma 6.5.3 (issue #2018 — still open).
+  - Wayland NVIDIA HDR (issue #2037 — reporter cites upstream commit `7d4e835` as the fix, but no tagged release yet contains it).
   - NVIDIA + Plasma 6.5 Wayland HDR produces grey/washed image (#2000).
-- **HDR pipeline on NVIDIA 595 + gamescope 3.16.17 has color-correctness regressions** — **hold HDR rollout until next gamescope tag.**
+- **HDR pipeline on NVIDIA 595 + gamescope 3.16.x has color-correctness regressions** — **hold HDR rollout until next gamescope minor tag.**
 - `--expose-wayland` flag still required for native Wayland clients inside Gamescope. HDR requires compositor with `xx-color-management-v4` or `frog-color-management-v1`.
+- Source: https://github.com/ValveSoftware/gamescope/tags, https://github.com/ValveSoftware/gamescope/issues/2018, https://github.com/ValveSoftware/gamescope/issues/2037.
 
 ### 10.2 Waydroid
 *Recorded 2026-05-11.*
@@ -401,13 +447,14 @@ These are flagged in `NEXT-RESEARCH.md` as `ACTION REQUIRED`. They are surfaced 
 - **Breaking:** X11 session gone. Any X11 fallback in ucore-hci/MiOS profile should be removed.
 
 ### 11.3 WSL2 + bootc
-*Recorded 2026-05-11.*
+*Recorded 2026-05-11.* *(updated 2026-05-16: WSL 2.7.5 pre-release with kernel 6.18.26.1 shipped 2026-05-15; 2.7.4 was skipped.)*
 
-- **WSL 2.7.3** (2026-04-25, pre-release). **2.6 stable** is the first **open-source** release (MIT-licensed). 2.5.6 is the conservative stable channel.
+- **Latest pre-release: WSL 2.7.5** (2026-05-15) — **kernel 6.18.26.1**, skips 2.7.4. **2.7.3** (2026-04-25) was the prior pre-release. **2.6 stable** is the first **open-source** release (MIT-licensed). 2.5.6 is the conservative stable channel.
 - **2.7.x:** VirtIO networking IPv6, DNS tunneling, statx in VirtioFS, directory mounting; .NET bumped for **CVE-2026-26127** mitigation.
 - `wsl --import` + `.wsl` tarball install (since 2.4.4) is the practical path for Fedora bootc images.
 - systemd-in-WSL via `/etc/wsl.conf` `[boot] systemd=true` is mature.
-- **No first-class bootc-aware path** in microsoft/WSL — you import a bootc-rendered rootfs tarball; `bootc upgrade` works inside, but kernel comes from WSL host.
+- **No first-class bootc-aware path** in microsoft/WSL — you import a bootc-rendered rootfs tarball; `bootc upgrade` works inside, but kernel comes from WSL host. **Kernel 6.18 on WSL 2.7.5 inherits the May 2026 DRM CVE cluster fixes (CVE-2026-43398/43300/43287)** — see §6.5.
+- Source: https://github.com/microsoft/WSL/releases.
 
 ---
 
@@ -424,9 +471,9 @@ These are flagged in `NEXT-RESEARCH.md` as `ACTION REQUIRED`. They are surfaced 
 - **Project status:** `usr/lib/bootc/kargs.d/*.toml` files follow the flat-array rule correctly. `00-mios.toml` header reaffirms it. **Honor strictly when editing.**
 
 ### 12.2 Renovate
-*Recorded 2026-05-11.*
+*Recorded 2026-05-11.* *(updated 2026-05-16: now v43.181.0.)*
 
-- **Renovate:** v43.173.0 (2026-05-11) — current line. v42/v41 shipped earlier in 2026.
+- **Renovate:** **v43.181.0** (2026-05-16). 8 minor bumps in the past 5 days (43.173 → 43.181) — all feature/bugfix; no security advisories surfaced in the window.
 - v43 stream: patch-heavy, GitHub noreply email handling for GHE Cloud, GitLab merge-trains MR support, dryRun fixes.
 - v41 added JSONC support in configs/presets and Merge Confidence badges by default in `config:recommended`.
 - `customManagers` (renamed from `regexManagers`) — automerge enabled by combining `matchManagers`, `matchDatasources`, and `matchUpdateTypes: ["digest", ...]`.
@@ -435,9 +482,9 @@ These are flagged in `NEXT-RESEARCH.md` as `ACTION REQUIRED`. They are surfaced 
 - Caveat: v41 changed branch-name composition for `separateMultipleMinor=true` with customized `branchTopic` — project does not customize `branchTopic`, so not affected.
 
 ### 12.3 systemd-sysext
-*Recorded 2026-05-11.*
+*Recorded 2026-05-11.* *(updated 2026-05-16: systemd 260 stable already shipped 2026-03-17 — bootstrap doc said "in development"; that was wrong.)*
 
-- **systemd 258 (Sep 2025) stable; systemd 259 released** with major sysext improvements; v260 in development.
+- **systemd 260 stable shipped 2026-03-17** (drops SysV, adds mstack, Varlink metrics). systemd 259.5 latest in 259 series. systemd 258 (Sep 2025) introduced major sysext improvements.
 - v258 — sysext respects `ID_LIKE=` from os-release (broader cross-derivative use).
 - v259 — `/etc/systemd/systemd-sysext.conf` and `/etc/systemd/systemd-confext.conf` config files; image-policy and mutability configurable centrally. `--mutable=help` lists modes. overlayfs mount options via `$SYSTEMD_SYSEXT_OVERLAYFS_MOUNT_OPTIONS` / `$SYSTEMD_CONFEXT_OVERLAYFS_MOUNT_OPTIONS`. `systemd-stub` loads global sysexts/confexts from `ESP/loader/extensions/*.{sysext,confext}.raw` — relevant if MiOS adopts UKIs.
 - **bootc + sysext integration** (sysexts as separate OCI tags managed in lockstep) is still **WIP** — not production-blessed.
@@ -469,6 +516,10 @@ These are flagged in `NEXT-RESEARCH.md` as `ACTION REQUIRED`. They are surfaced 
 
 ---
 
-## Closing note (2026-05-11)
+## Closing note
 
-This file was bootstrapped today. Subsequent passes should **edit in place** — find the relevant subsection, update the data point, and add `(updated YYYY-MM-DD: <reason>)` inline. Use new dated subsections under a topic when a finding doesn't replace existing material. Remove proven-false content and note the removal in `ai-journal.md`.
+This file was bootstrapped 2026-05-11. Subsequent passes should **edit in place** — find the relevant subsection, update the data point, and add `(updated YYYY-MM-DD: <reason>)` inline. Use new dated subsections under a topic when a finding doesn't replace existing material. Remove proven-false content and note the removal in `ai-journal.md`.
+
+**Iterations:**
+- 2026-05-11 — bootstrap, 12 topic groups (`scheduled-research-daily`).
+- 2026-05-16 — daily pass: NVIDIA LTS floor bumped (580.126.20 → 580.159.04), Podman 6.0 GA imminent, `image-builder-cli` v64 GA-ed bootc subcommand, K3s v1.34.8-rc1 + v1.35.5-rc1 + v1.36.0, etcd 3.5.30, WSL 2.7.5, Renovate 43.181.0, systemd 260 (correction — already shipped 2026-03-17), bsherman/ucore-hci now 404, CVE-2026-31431 reclassified to Linux kernel (corrected mis-attribution in §7.1), §6.5 added for May 2026 kernel CVE cluster.
