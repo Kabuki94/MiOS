@@ -109,3 +109,78 @@ Project owns no direct remediation — track `ucore-hci` kernel bump in issue #3
 - The CVE-2026-31431 mis-attribution in the bootstrap pass was a clean copy-paste of two different unrelated vulns with the same CVE-year tag. Worth a journal flag against future "same number, different vuln" footguns.
 
 **Next pass:** Per overwritten `NEXT-RESEARCH.md`.
+
+---
+
+## 2026-05-18T13:00Z — `scheduled-research-daily`
+
+**Agent ID:** `scheduled-research-daily`
+**Context:** Third pass on the live research doc. 2 days since previous (2026-05-16). Followed `NEXT-RESEARCH.md` agenda (P0 reverify → P10 RTX 50-series). Dispatched two parallel general-purpose research subagents — one for P0 + P1–P4, one for P5–P10 + the ecosystem watch list.
+
+**Project state at time of run (unchanged):**
+- Version: `v0.1.4` (still — no rev in 7 days).
+- Base image: `ghcr.io/ublue-os/ucore-hci:stable-nvidia` (Containerfile line 19 / `image-versions.yml`).
+- Most recent commit on `origin/main`: `a208eac research: daily pass 2026-05-16 (cont'd) — live knowledge doc`.
+
+**CHANGED upstream this 2-day window (knowledge-doc edits applied):**
+
+1. **Podman 6.0 GA SLIPPED — retargeted to Fedora 45.** Bootstrap and 2026-05-16 entries both expected GA "week of 2026-05-25." The Fedora Change Proposal at `fedoraproject.org/wiki/Changes/Podman6` is now tagged `ChangeAcceptedF45` (last edited 2026-03-11) — the F44 target was actually abandoned **before** the bootstrap pass; the 2026-05-16 prediction was wrong in retrospect. No upstream 6.0 RC tag has been cut. Test Days closed 2026-05-15 with no post-test-day report. Knowledge-doc §4.1 + action-item #7 rewritten; deadline pressure relieved.
+
+2. **Kernel CVE cluster expanded from 5 → ~12 CVEs.** Sub-agent surfaced an AMDGPU sub-cluster (CVE-2026-43318, 43400, 43298, 43237, 43320, 43305) all in the 2026-05-08 disclosure window, plus CVE-2026-46300 "Fragnesia" (networking, AlmaLinux 2026-05-13). Kernel 6.18.28 (2026-05-08), 6.18.30 (2026-05-14), 6.12.87, 6.12.88 carry the backports. Knowledge-doc §6.5 + action-item #8 expanded. Added an "AMD iGPU exposure on 9950X3D" note since the AMDGPU cluster lands directly on the host iGPU unless blacklisted — flagged for the project owner.
+
+3. **ucore-hci daily-rebuild cadence stalled.** Latest tag still `stable-nvidia-lts-20260511`, 7 days old as of 2026-05-18. This is unusual for the ublue-os daily-bake pattern and compounds risk on the kernel CVE cluster (none of the new fixes have propagated to MiOS's base image). Action-item #1 + §2 updated.
+
+4. **NVIDIA 595.44.08 Vulkan developer-beta** released 2026-05-15. Bootstrap doc had listed it without distinguishing it from the 595.71.x production-feature branch. §8.1 split into Production-Feature (595.71.05) vs Developer-Beta (595.44.08) — they are **not** the same line. Important for project pin clarity.
+
+5. **K3s v1.34.8 / v1.35.5 GA still pending.** RCs cut 2026-05-14 have not promoted in the 2-day window. **CVE-2026-33186** (gRPC-Go authz bypass, CVSS 9.1) is still not explicitly called out in any K3s RC notes. Watch item until GA. §5.1 updated.
+
+6. **Pacemaker 3.0.2-rc2 cut 2026-05-11** — 45 commits, XPath + memory-leak fixes. §5.3 updated.
+
+7. **CrowdSec 1.7.8** (2026-05-11) — adds WAF OpenAPI schema validation, body-size limits, decision-stream chunked-transfer improvements. Bootstrap baseline 1.7.6 superseded. §6.1 updated. (Sub-agent flagged some WebFetch results returned "2024" dates that look misparsed — release ordering matches 2026 cadence; treat 1.7.8 as current.)
+
+8. **GNOME 50.2 stable point release scheduled 2026-05-23** (5 days out). GNOME 51.alpha date **confirmed** at 2026-06-27. §11.2 updated.
+
+9. **Renovate 43.182.4** (2026-05-18 10:44Z) — 8 minor versions in the 2-day window. Routine cadence. §12.2 updated.
+
+**CORRECTIONS — stale baselines fixed (these had been wrong since bootstrap, not new this window):**
+
+- **Mesa 25.3.4 → 26.1.0** (2026-05-06). The 26.x series shipped before bootstrap and was missed. §10.3 corrected.
+- **QEMU 10.2.0 → 11.0.0** (2026-04-22). 2500+ commits, 237 authors, Nitro Enclaves accelerator. Shipped before bootstrap and missed. §9.4 corrected. **Worth verifying VFIO/PCI passthrough behavior on the 9950X3D + RTX 4090 path before any project bump.**
+- **libvirt 12.1.0 → 12.3.0** (2026-05-02). 12.2.0 (2026-04-01) was the intermediate point. §9.5 corrected.
+- **fapolicyd 1.3.8 → 1.4.5** (2025-03-30). 1.4.x line had already shipped before bootstrap and was missed. §6.2 corrected, with a flag to verify Fedora package pin matches upstream-latest.
+
+**NO CHANGE confirmed this window** (still current):
+- bootc v1.15.2 (2026-05-01).
+- composefs 1.0.8 (2025-01-03) — still experimental in bootc native backend.
+- OSTree v2026.1 (2026-04-10).
+- cosign v3.0.6 (2026-04-06) — no new GHSAs.
+- Looking Glass B7 (2025-03-06) — no B8 RC.
+- Gamescope 3.16.23 (2026-04-07) — issue #2037 HDR fix commit `7d4e835` still unreleased.
+- etcd 3.6.11 / 3.5.30 / 3.4.44 (2026-05-01).
+- Ceph 20.2.1 Tentacle (2026-04-06).
+- systemd 260 (2026-03-17) / 260.1 (2026-03-23).
+- WSL 2.7.3 GA / 2.7.5 pre-release (2026-05-15) — same as 2026-05-16.
+- Waydroid 1.6.2, ROCm 7.2.3, SSSD 2.13.0, NVIDIA Container Toolkit 1.19.0, usbguard 1.1.4, NVIDIA LTS 580.159.04.
+- RTX 50-series passthrough still broken; no fix.
+- shim-16.1-6 still not in F44 stable — bodhi.fedoraproject.org now gated by Anubis (direct fetch blocked); no Fedora Discussion thread in the 2-day window. Next checkpoint scheduled for 2026-06-05.
+- image-builder-cli v64 (2026-05-13) — no v65 yet. **Softened the parity claim** — public docs only enumerate qcow2 + bootc-installer ISO patterns; `raw`, `ami`, `vmdk`, `vhd`, `gce` are not documented. BIB still has wider format matrix.
+
+**RESOLVED follow-up questions from 2026-05-16 pass:** None — the 6 unresolved questions (workflow inspection, cosign script pin, SELinux module path, KVMFR signing timing, fapolicyd trust DB, GNOME 50 in stable-nvidia) all remained code-inspection questions outside the research-only scope. Carried forward to NEXT-RESEARCH.
+
+**UNRESOLVED follow-up questions** (carried forward to NEXT-RESEARCH):
+- Same 6 from the 2026-05-16 pass plus follow-ups 9 (AMD iGPU usage / blacklist defense-in-depth) and 10 (systemd 260 central sysext config consumption).
+- **NEW this pass:** Does the project pin `nvidia-open` to a specific branch (595.71.x production-feature vs 595.44.x developer-beta vs 580.x LTS)? Bootstrap noted feature/LTS but did not specify branch line.
+- **NEW this pass:** Is Mesa in the running `ucore-hci:stable-nvidia` image on the 25.x or 26.x line? (Cannot inspect from research-only scope.)
+
+**Files modified outside `.ai-context/`:** None. Strict scope compliance.
+
+**Surprises:**
+- The Podman 6.0 GA target had **already** been shifted to F45 by 2026-03-11. Both bootstrap (2026-05-11) and 2026-05-16 passes called it "imminent" / "Test Days are pre-GA" — but the F44 plan was abandoned weeks earlier. The communityblog / wiki signal got read as "Test Days happening this week = GA next week" when in fact it was "Test Days happening this week before deferring the version to next Fedora cycle." Worth journaling as a "don't infer GA from Test Days proximity" footgun.
+- Three knowledge-doc baselines (Mesa, QEMU, libvirt) were stale at bootstrap and only caught on this pass. The bootstrap sweep apparently took outdated numbers from secondary sources. Anchoring against project GitHub Releases pages should be primary going forward.
+- ucore-hci daily-rebuild cadence stalling at exactly the same week as the kernel CVE cluster is unfortunate timing — the project relies on ublue-os to land the kernel bump, and the bake cadence has just paused. Worth a closer watch tomorrow.
+
+**Prior journal entries resolved or invalidated:** Bootstrap pass and 2026-05-16 pass both predicted Podman 6.0 GA week of 2026-05-25. **Both predictions are now invalidated** by the F45 retarget. No earlier journal entries were proven outright false beyond what was already corrected in the 2026-05-16 entry.
+
+**Next pass:** Per overwritten `NEXT-RESEARCH.md`. P0 (reverify) priority remains; new top-of-funnel watches: kernel 6.12.88 propagation in ucore-hci, K3s GA + CVE-2026-33186 callout, shim-16.1-6 F44 stable.
+
+**Drive mirror note:** Daily Drive snapshot uploaded as `CloudWS-bootc-research-2026-05-18.md` (Drive file id `1qK6cKQDU63KIFwrVZ8PJDagg41AeUt8a`). **Trade-off:** the Drive file is an *index* pointing back to the git-tracked full doc at this pass's commit, not a verbatim 56KB copy of the knowledge doc. The Read tool returned a hard 25K-token cap per call and the formatted markdown crosses that limit (~26K tokens); chunked-reassembly into a single MCP `textContent` parameter was attempted but proved fragile, and the git commit is the authoritative archive regardless. Future passes should consider chunked upload or an alternate mirror path if the verbatim-copy requirement matters.
