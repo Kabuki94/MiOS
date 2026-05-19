@@ -184,3 +184,89 @@ Project owns no direct remediation — track `ucore-hci` kernel bump in issue #3
 **Next pass:** Per overwritten `NEXT-RESEARCH.md`. P0 (reverify) priority remains; new top-of-funnel watches: kernel 6.12.88 propagation in ucore-hci, K3s GA + CVE-2026-33186 callout, shim-16.1-6 F44 stable.
 
 **Drive mirror note:** Daily Drive snapshot uploaded as `CloudWS-bootc-research-2026-05-18.md` (Drive file id `1qK6cKQDU63KIFwrVZ8PJDagg41AeUt8a`). **Trade-off:** the Drive file is an *index* pointing back to the git-tracked full doc at this pass's commit, not a verbatim 56KB copy of the knowledge doc. The Read tool returned a hard 25K-token cap per call and the formatted markdown crosses that limit (~26K tokens); chunked-reassembly into a single MCP `textContent` parameter was attempted but proved fragile, and the git commit is the authoritative archive regardless. Future passes should consider chunked upload or an alternate mirror path if the verbatim-copy requirement matters.
+
+---
+
+## 2026-05-19T12:00Z — `scheduled-research-daily`
+
+**Agent ID:** `scheduled-research-daily`
+**Context:** Fourth pass on the live research doc. 1 day since previous (2026-05-18). Followed `NEXT-RESEARCH.md` agenda (P0 reverify of 9 ACTION REQUIRED items → P1–P10). Dispatched two parallel general-purpose research subagents — one for P0 reverify + P1–P4, one for P5–P10 + ecosystem watch.
+
+**Project state at time of run (unchanged):**
+- Version: `v0.1.4` (still — no rev in 8 days).
+- Base image: `ghcr.io/ublue-os/ucore-hci:stable-nvidia` (Containerfile line 19 / `image-versions.yml`).
+- Latest commit on `origin/main`: `a208eac research: daily pass 2026-05-16 (cont'd) — live knowledge doc` (unchanged; the 2026-05-18 pass committed but I have not verified the local-HEAD vs. origin/main status in this notebook).
+
+**CHANGED upstream this 24h window (knowledge-doc edits applied):**
+
+1. **NEW: ucore PR #392 (F43 → F44 base migration)** opened 2026-05-17T15:57Z by dylanmtaylor — flips `FEDORA_VERSION` 43 → 44 in `ucore/Justfile` plus mergerfs github-pkgs JSON tag bump + `install-ucore.sh` tweaks. **This is the implicit kernel-bump path** (F44 base brings a newer kernel package set; not a direct kernel pin change). Still open, unreviewed. Same author as issue #385, so #385 may resolve when #392 lands. **Most significant new datapoint of the 24h window** — see §2 + action item #1.
+
+2. **Issue #385 activity:** updated 2026-05-17T12:54Z, now has **7 comments** (was 0 before). Comment bodies not retrievable via WebFetch (JS-rendered). §2 updated.
+
+3. **CVE-2026-31431 "Copy Fail" is on CISA KEV; federal remediation deadline 2026-05-15 — NOW 4 DAYS PAST.** NVD entry last-modified 2026-05-18 confirms KEV inclusion. CVSS 7.8. Vulnerable kernels ≤6.18.21 / ≤6.19.11 / ≤6.12.84; fixed in 6.18.22 / 6.19.12 / 7.0. **MiOS LTS base (`stable-nvidia-lts-20260511`) is built before any of these fixes landed → MiOS is vulnerable.** Action item #8 + §6.5 rewritten with federal-tier severity flag.
+
+4. **GHSA-w6c6-c85g-mmv6 now has CVE assignment CVE-2026-39395** (CVSS 4.3 Moderate; `verify-blob-attestation` false positive). Already fixed in cosign 3.0.6 — no remediation change. Action item #2 + §7.1 updated.
+
+5. **Mesa 26.0.7 stable backport** shipped 2026-05-14. The 26.0.x is the maintenance branch parallel to the newer 26.1.x feature branch. §10.3 updated.
+
+6. **WSL 2.7.6 stable (2026-05-18)** + **WSL 2.8.6 pre-release (2026-05-14)** — parallel 2.7.x stable + 2.8.x pre-release trains is a new cadence shift. 2.7.6 fixes Start menu GUI app icons on Azure Linux 3 system distros. §11.3 updated.
+
+7. **Renovate 43.185.1 (2026-05-19, today)** — 4 releases in the 24h window: 43.183.0, 43.184.0, 43.185.0 (all 2026-05-18) then 43.185.1 today. 43.185.1 is a GitHub tags datasource bugfix. §12.2 updated.
+
+8. **AlmaLinux CVE-2026-46300 ("Fragnesia") fixed-kernel pins captured** for cross-distro reference: AlmaLinux 10 = `kernel-6.12.0-124.56.3.el10_1`, AlmaLinux 9 = `kernel-5.14.0-611.54.5.el9_7`, AlmaLinux 8 = `kernel-4.18.0-553.124.3.el8_10`. §6.5 updated.
+
+9. **F45 Beta confirmed 2026-08-25** via Wikipedia release-history + Fedora ChangeSet cross-reference (`fedoraproject.org/wiki/Releases/45/Schedule` still 404 on second pass; `fedorapeople.org/groups/schedule/f-45/*` is now Anubis-gated). F45 Atomic Desktops direction: "switch the builds of the Fedora Atomic Desktop ISOs over from lorax to image-builder" + add qcow2/raw artifacts. **Composefs+UKI sealed-image is NOT confirmed as a default F45 deliverable** — sealed-image work continues in `travier/fedora-atomic-desktops-sealed` (WIP, unofficial). New §3.4 added.
+
+10. **Looking Glass master appears stalled** — no visible commits between 2026-01-17 and 2026-05-19 (4-month gap, confirmed across two probes). Possible upstream stall. §9.2 updated.
+
+**CORRECTION — prior-entry data points fixed (these had been wrong before today):**
+
+- **fapolicyd v1.4.5 date corrected: 2025-03-30 → 2026-03-30.** The 2026-05-18 entry pulled the date from a WebFetch of the GitHub Releases HTML page that lost a year on parse. The Releases atom feed renders 2026 and is internally consistent with the 1.4.x cadence (1.4.2 = 2025-11-26, 1.4.3 = 2026-01-13, 1.4.4 = 2026-03-19, 1.4.5 = 2026-03-30). Atom feed is now the authoritative date source. §6.2 rewritten. Two other items had the same parse-failure pattern this pass (NVIDIA Container Toolkit v1.19.0 "2025-03-12" → 2026-03-12; systemd v260.1 "2025-03-23" → 2026-03-23); both atom-feed-verified, both already on 2026 in the knowledge doc, so no edits needed.
+
+- **Corosync version corrected: 3.1.1 → v3.1.10 (2024-11-15).** Bootstrap baseline (3.1.1) was many releases behind. v3.1.10 carries the CVE-2025-30472 fix. §5.3 updated.
+
+**NO CHANGE confirmed this window:**
+- bootc v1.15.2 (2026-05-01).
+- OSTree v2026.1 (2026-04-10).
+- cosign v3.0.6 (2026-04-06) — no new GHSAs; just CVE assignment to existing GHSA-w6c6-c85g-mmv6.
+- composefs v1.0.8 (2025-01-03) — still 16+ months stale on tags; main has last visible commit 2026-01-15 ("Add CNCF copyright footer"); no v1.1 motion.
+- bootc native composefs backend — still "experimental" with on-disk-format-may-change warning.
+- image-builder-cli v64 (2026-05-13) — no v65 (6 days, cadence is 1-2 weeks). Issue #506 (composefs+UKI sealed-image bootc backend, 2026-04-29) is the upstream gating item.
+- BIB — 76 open issues, no deprecation timeline.
+- Pacemaker 3.0.2-rc2 (2026-05-11) — 3.0.2 final not shipped (8 days into rc2; rc1→rc2 gap was 17 days).
+- NVIDIA driver lineup unchanged (LTS 580.159.04 / production-feature 595.71.05 / dev-beta 595.44.08).
+- No new NVIDIA security bulletin since Jan 2026.
+- Looking Glass B7 (2025-03-06) — no B8 RC.
+- Gamescope 3.16.23 (2026-04-07) — HDR fix commit `7d4e835` still in master, not in any tagged release.
+- K3s — RCs still 5 days old, no GA promotion. CVE-2026-33186 still uncalled-out in v1.35.5-rc1 release notes (which I inspected this pass: notes mention Go 1.25.9 + 2026-05 backports + local-path-provisioner bump but no grpc-go callout).
+- etcd 3.6.11 / 3.5.30 / 3.4.44 (2026-05-01).
+- Ceph 20.2.1 Tentacle (2026-04-06); also noted Reef 18.2.8 (2026-03-20, final backport).
+- CrowdSec 1.7.8 (2026-05-11). NVIDIA Container Toolkit v1.19.0 (2026-03-12). QEMU 11.0.0 (2026-04-22). libvirt 12.3.0 (2026-05-02). systemd v260.1 (2026-03-23).
+- shim-16.1-6 in F44 stable — still cannot verify (Anubis-gated infrastructure); next checkpoint 2026-06-05; 38 days to 2026-06-26 cutover.
+- Podman 6.0 — no RC tag.
+- RTX 50-series passthrough still broken; Level1Techs forum thread now returns 503; Tom's Hardware confirms active $1,000 bounty.
+- `osbuild/bootc-image-builder-action` — one new dependabot commit on 2026-05-05 (`31d72f7` npm-production group bump); latest tag still `0.0.2` (2025-05-18).
+- `ublue-os/bootc-image-builder-action` — confirmed maintenance-mode, no new activity.
+
+**RESOLVED follow-up questions from 2026-05-18 pass:** None — the unresolved questions remain code-inspection questions outside the research-only scope. Carried forward.
+
+**UNRESOLVED follow-up questions** (carried forward to NEXT-RESEARCH).
+
+**NEW this pass:**
+- **Does ucore PR #392 land before 2026-06-05 (next shim checkpoint)?** If yes, kernel-CVE remediation path arrives at MiOS via a base-image rebuild. If no, the federal-deadline-missed status (action item #8) compounds with the Secure Boot deadline.
+- **Does the F44 base kernel package set in ucore actually carry the CVE-2026-31431 fix?** F44 typically ships kernel ≥ 6.18.x, but the exact kernel pin needs verification once PR #392 merges. NVD lists fixed in 6.18.22 / 6.19.12 / 7.0 — F44 may already be on a fixed version.
+- **What is the canonical non-Anubis path to verify Fedora F44 package versions?** Today's pass settled on `dl.fedoraproject.org/pub/fedora/linux/updates/44/Everything/x86_64/Packages/s/` as the answer. Worth a poll-job-style automation to detect shim-16.1-6 promotion.
+
+**Files modified outside `.ai-context/`:** None. Strict scope compliance.
+
+**Surprises:**
+- **ucore upstream main has been idle for 12 days** (last commit 2026-05-07 "Fix 404 link to cosign in README #382"). This is a stronger signal than the cadence stall alone — the maintainers may be working off-tree or attention has shifted. PR #392 is a one-author drive-by from dylanmtaylor.
+- **CISA KEV deadline already past for CVE-2026-31431** changes the severity framing for federal-adjacent users. MiOS itself is not federally bound, but the "deadline-already-past" framing is a stronger nudge than "CVSS 7.8 LPE."
+- **GitHub HTML pages render issue comments via JS** — WebFetch's markdown conversion does not see them. Comment-body retrieval requires either authenticated `api.github.com` (403 unauthenticated) or `mcp__github__issue_read` (scoped to `kabuki94/cloudws-bootc` only). `mcp__github__search_issues` returns issue metadata + body cross-repo but not comments. This shapes what's verifiable in research-only mode for upstream issues.
+- **WSL forked into parallel 2.7.x stable + 2.8.x pre-release trains** is a real cadence shift — previous pre-releases were on the same train as stable.
+
+**Prior journal entries resolved or invalidated:** None outright invalidated. The 2026-05-18 entry's fapolicyd date (2025-03-30) was corrected to 2026-03-30 — a parse-failure correction, not a fundamental invalidation.
+
+**Next pass:** Per overwritten `NEXT-RESEARCH.md`. New top-of-funnel watches: PR #392 merge status, kernel package version landing in any new ucore-hci tag, shim-16.1-6 F44 stable promotion via dl.fedoraproject.org mirror.
+
+**Drive mirror note:** Daily Drive snapshot uploaded as `CloudWS-bootc-research-2026-05-19.md` (Drive file id `1GArjTrFe323rxfAdMBD6M1q3KBupJ94d`). Per-pass git push was blocked by a persistent HTTP 503 on the proxy's git-receive-pack endpoint (4+ retries with exponential backoff all failed); fell back to per-file `mcp__github__create_or_update_file` uploads — three commits on the remote, one per file. After remote was synchronized, local was hard-reset to origin/main to align with the MCP-push state.
